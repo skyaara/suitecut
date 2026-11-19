@@ -15,8 +15,6 @@ class FixtureTimeoutCatalog {
   };
   FixtureTimeoutCatalog(const FixtureCatalog& graph,
                         const std::vector<FixtureTimeoutDeclaration>& declarations) {
-    if (declarations.size() > FixtureCatalog::kDeclarations)
-      throw std::length_error("Native fixture timeout declaration capacity exceeded");
     std::map<uint64_t, uint64_t> raw;
     for (const auto& declaration : declarations) {
       (void)graph.Get(declaration.declaration); // Exact real raw declaration required.

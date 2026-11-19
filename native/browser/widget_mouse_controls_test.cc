@@ -20,7 +20,7 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));
   }
   assert(!calls.empty());auto call=std::move(calls.front());calls.pop_front();assert(call.method==method);call.done(ok,json);
  };
- const auto probe=R"({"schemaVersion":1,"protocol":"suitecut-widget-mouse-v1","maxLeases":64,"maxPending":64})";
+ const auto probe=R"({"schemaVersion":1,"protocol":"suitecut-widget-mouse-v1"})";
  bool ready=false;mouse->Probe([&](bool ok,const auto&){ready=ok;});assert(!ready&&mouse->physical());reply("Input.getMouseWidgetReceiptCapabilities",probe);assert(ready&&mouse->available());
  auto event=[](const char*type,const char*button="left"){auto p=CefDictionaryValue::Create();p->SetString("type",type);p->SetString("button",button);p->SetDouble("x",50);p->SetDouble("y",60);p->SetInt("clickCount",1);return p;};
  auto ack=[](int sequence,const char*outcome="rendererAck",int source=2){return std::string("{\"receipt\":{\"lease\":\"lease\",\"sequence\":")+std::to_string(sequence)+",\"documentToken\":\"document\",\"outcome\":\""+outcome+"\",\"ackObserved\":true,\"ackSource\":"+std::to_string(source)+",\"ackState\":1}}";};

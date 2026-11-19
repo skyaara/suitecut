@@ -12,12 +12,7 @@ import {
   MAX_FRAMES_PER_SECOND,
 } from './frame-rate.js'
 import { LIVE_AUDIO_DELAY_MS, type LiveAudioTransport } from './live-audio.js'
-import {
-  LiveCongestion,
-  LIVE_RECOVERY_WINDOW_MS,
-  LIVE_FRAME_BUFFER_BYTES,
-  LIVE_NO_PROGRESS_MS,
-} from './live-congestion.js'
+import { LiveCongestion, LIVE_RECOVERY_WINDOW_MS, LIVE_NO_PROGRESS_MS } from './live-congestion.js'
 import { createPersistentLiveStream } from './live-publisher.js'
 import { waitForProcessExit } from './process.js'
 import {
@@ -68,17 +63,8 @@ export function createLiveStreamAttempt(
     inputFormat !== 'mjpeg' && inputSize
       ? inputSize.width * inputSize.height * (inputFormat === 'bgra' ? 4 : 1.5)
       : undefined
-  // Keep the audio-delay window in a fixed-size raw video buffer.
-  const frameBufferBytes =
-    rawFrameBytes === undefined
-      ? LIVE_FRAME_BUFFER_BYTES
-      : Math.max(
-          LIVE_FRAME_BUFFER_BYTES,
-          rawFrameBytes * (Math.ceil((framesPerSecond * LIVE_AUDIO_DELAY_MS) / 1000) + 3),
-        )
   const audioInput = encodedOutput ? undefined : audio?.createInput()
   const frames: { at: number; data: Buffer }[] = []
-  let frameBytes = 0
   const congestion = new LiveCongestion(options.onDiagnostic)
   const size = options.size ?? fallbackSize
   const bitrate = options.bitrateKbps ?? 4500
@@ -233,7 +219,6 @@ export function createLiveStreamAttempt(
   let progress = ''
   child.stdio[3]?.on('data', (chunk: Buffer) => {
     progress += chunk.toString('utf8')
-    if (progress.length > 16_384) progress = progress.slice(-16_384)
     const lines = progress.split('\n')
     progress = lines.pop() ?? ''
     for (const line of lines) {
@@ -330,7 +315,7 @@ export function createLiveStreamAttempt(
     firstWriteAt ??= performance.now()
     const scheduledAt = firstWriteAt + (writtenFrames * 1000) / framesPerSecond
     const lag = Math.max(0, performance.now() - scheduledAt)
-    // If a byte cap evicted required video, skip its corresponding audio too.
+    // If the recovery window evicted required video, skip its corresponding audio too.
     const missingVideo =
       audio !== undefined &&
       frames.length > 0 &&
@@ -346,8 +331,7 @@ export function createLiveStreamAttempt(
       firstWriteAt + (writtenFrames * 1000) / framesPerSecond - (audio ? LIVE_AUDIO_DELAY_MS : 0)
     let selectedFrame = latestFrame
     if (audio) {
-      while (frames.length > 1 && (frames[1]?.at ?? Infinity) <= mediaAt)
-        frameBytes -= frames.shift()?.data.length ?? 0
+      while (frames.length > 1 && (frames[1]?.at ?? Infinity) <= mediaAt) frames.shift()
       selectedFrame = frames[0]?.data ?? latestFrame
     }
     pendingStage = 'processing'
@@ -446,7 +430,7 @@ export function createLiveStreamAttempt(
       if (failure !== undefined) throw failure
     },
     update: (frame, timestampMs = performance.now()) => {
-      if (closing || failure !== undefined || frame.length > frameBufferBytes) return
+      if (closing || failure !== undefined) return
       if (rawFrameBytes !== undefined && frame.length !== rawFrameBytes)
         throw new Error('Raw frame length does not match input dimensions')
       if (!Number.isFinite(timestampMs)) throw new Error('Invalid capture timestamp')
@@ -454,7 +438,6 @@ export function createLiveStreamAttempt(
       if (audio) {
         const now = performance.now()
         frames.push({ at: timestampMs, data: frame })
-        frameBytes += frame.length
         while (
           frames.length > 1 &&
           (frames.length >
@@ -464,10 +447,9 @@ export function createLiveStreamAttempt(
                 1000,
             ) +
               3 ||
-            frameBytes > frameBufferBytes ||
             (frames[0]?.at ?? now) < now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS)
         )
-          frameBytes -= frames.shift()?.data.length ?? 0
+          frames.shift()
       }
       if (firstWriteAt === undefined) schedule()
     },
@@ -481,7 +463,6 @@ export function createLiveStreamAttempt(
         await writing
         latestFrame = undefined
         frames.length = 0
-        frameBytes = 0
         audioInput?.close()
         child.stdin?.end()
         await waitForProcessExit(child, completion, {

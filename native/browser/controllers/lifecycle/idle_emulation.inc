@@ -12,7 +12,7 @@ void NativeIdleEnsure(){
       auto params=CefDictionaryValue::Create();if(state){params->SetBool("isUserActive",state->user_active);params->SetBool("isScreenUnlocked",state->screen_unlocked);}
       auto receipt=std::make_shared<suitecut::NativeIdleControls::Receipt>(std::move(done));
       native_idle_dispatch_=id;
-      devtools_.emplace(id,DevToolsCall{owner,[self=CefRefPtr<Source>(this),id,receipt](bool ok,const std::string&error){if(self->native_idle_dispatch_==id)self->native_idle_dispatch_=0;receipt->Settle(ok,error);},session,true,65536,true});
+      devtools_.emplace(id,DevToolsCall{owner,[self=CefRefPtr<Source>(this),id,receipt](bool ok,const std::string&error){if(self->native_idle_dispatch_==id)self->native_idle_dispatch_=0;receipt->Settle(ok,error);},session,true,true});
       if(!SubmitDevTools(id,state?"Emulation.setIdleOverride":"Emulation.clearIdleOverride",params,session)){
         const auto found=devtools_.find(id);if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native idle command dispatch failed");}
       }

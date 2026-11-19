@@ -54,7 +54,6 @@ class NativeSuiteWorkerPlan {
        operation.skip_cause!=pending_->skip_cause || operation.skipped_tests!=pending_->skipped_tests)
       return false;
     if(!ok) {
-      if(failures_.size()>=8192)throw std::runtime_error("Native suite failure capacity exceeded");
       failures_.push_back(*pending_);
       retire_=true;
     }

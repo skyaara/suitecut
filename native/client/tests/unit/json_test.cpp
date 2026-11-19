@@ -58,10 +58,14 @@ int main() {
     rejects([] { (void)Json::parse("[1,2]", {20, 64, 2, 20}); });
     rejects([] { (void)Json::parse("[[0]]", {20, 1, 20, 20}); });
     rejects([] { (void)Json("long").dump({3, 64, 10, 10}); });
-    rejects([] { (void)Json::parse("0", {20, 257, 20, 20}); });
-    std::string nested(70, '['); nested += '0'; nested.append(70, ']'); rejects([&] { (void)Json::parse(nested); });
-    const std::string large(1024 * 1024, 'x');
-    check(Json::parse(Json(large).dump()).as_string() == large, "Large JSON string roundtrip failed");
+    // Default limits are zero, meaning no limit; any depth a caller chooses is accepted.
+    check(Json::parse("0", {20, 257, 20, 20}) == Json(0), "Caller depth above the former 256 bound was rejected");
+    std::string nested(1000, '['); nested += '0'; nested.append(1000, ']');
+    check(Json::parse(nested).dump() == nested, "Nesting past the former default depth of 64 was rejected");
+    const std::string large(193 * 1024 * 1024, 'x');
+    check(Json::parse(Json(large).dump()).as_string() == large, "JSON string past the former 192 MiB default was not passed through whole");
+    Json::array many(2 * 1024 * 1024, Json(1));
+    check(Json::parse(Json(many).dump()).as_array().size() == many.size(), "Node count past the former 1 Mi default was rejected");
     const std::string prefix(4096, 'a'), suffix(4096, 'z');
     const auto mixed = prefix + "\"\\\n東京" + suffix;
     const auto quoted = '"' + prefix + "\\\"\\\\\\u000a東京" + suffix + '"';

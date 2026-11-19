@@ -68,8 +68,7 @@ export class NativeContextWorkerEvents {
       processSignal: transport.processSignal ?? transport.signal,
       ...(transport.processClosed ? { processClosed: transport.processClosed } : {}),
       processExit: () => transport.processExit?.(),
-      workerRetirements: () =>
-        transport.contextWorkerRetirements?.(contextId) ?? { records: [], truncated: false },
+      workerRetirements: () => transport.contextWorkerRetirements?.(contextId) ?? { records: [] },
       runAutomation: (command, params = {}, actionSignal) => {
         if (command === 'worker')
           return transport.runContext('worker', { contextId, ...params }, actionSignal)

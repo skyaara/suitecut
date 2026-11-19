@@ -59,7 +59,7 @@ function describe(error: UntrustedInput): string {
     // Authored coercion is intentionally observed with its private waiver suspended.
     try {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string -- Preserve authored error coercion within the callback boundary.
-      return (error instanceof Error ? error.message : String(error)).slice(0, 4096)
+      return error instanceof Error ? error.message : String(error)
     } catch {
       return 'Native locator handler callback failed'
     }

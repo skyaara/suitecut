@@ -32,10 +32,10 @@ class RunnerCallbackRetries {
     std::function<double()> now;
     std::function<bool(const StepOwner&)> infrastructure;
   };
-  RunnerCallbackRetries(Hooks hooks,TestSteps::Budget& budget):hooks_(std::move(hooks)),budget_(budget){}
+  explicit RunnerCallbackRetries(Hooks hooks):hooks_(std::move(hooks)){}
   void WorkerStarted(){if(!IdleReady())throw std::runtime_error("Native callback retries still own worker callbacks");nonce_=0;}
   void Open(const StepOwner& owner,double deadline,double now){
-    if(contexts_.size()>=TestSteps::kOwners||contexts_.contains(Key(owner)))throw std::runtime_error("Native callback retry context capacity/identity rejected");
+    if(contexts_.contains(Key(owner)))throw std::runtime_error("Native callback retry context identity rejected");
     if(owner.callback_kind!="body"&&owner.callback_kind!="beforeEach"&&owner.callback_kind!="afterEach")return;
     if(!std::isfinite(deadline)||deadline<=now)throw std::runtime_error("Native callback retry context original cap rejected");
     contexts_.emplace(Key(owner),Context{owner,deadline});
@@ -63,7 +63,6 @@ class RunnerCallbackRetries {
     const auto* actual=hooks_.step(step);
     if(!forward||!actual||actual->owner!=owner||actual->callback_iteration||step_fences_.contains(step))throw std::runtime_error("Native callback retry parent fence is foreign or duplicate");
     if(!PendingWithin(owner,step)){forward(std::nullopt);return;}
-    if(step_fences_.size()>=TestSteps::kPhysical)throw std::runtime_error("Native callback retry parent fence capacity exceeded");
     auto [entry,inserted]=step_fences_.emplace(step,StepFence{owner,std::move(forward)});(void)inserted;
     for(auto&[id,op]:operations_)if(op.record.owner==owner&&Within(op.record.parent,step)){
       if(op.schedule->Result()==Schedule::Verdict::Pending&&!entry->second.error)entry->second.error="\"Owning step settled before its native toPass operation\"";
@@ -102,7 +101,7 @@ class RunnerCallbackRetries {
     return context!=contexts_.end()&&!context->second.closed&&!actual.raw_received&&op.schedule->Result()==Schedule::Verdict::Pending&&now<op.schedule->Deadline()&&native->status==StepStatus::Running;
   }
   void FileFailure(const StepOwner& owner,const AttachmentRetryProvenance& p,const std::string& error,bool infrastructure,double now){
-    if(!ValidateRetry(owner,0,p,now,true)||!JsonString(error,8192))throw std::runtime_error("Native callback retry file failure has stale ownership");
+    if(!ValidateRetry(owner,0,p,now,true)||!JsonString(error))throw std::runtime_error("Native callback retry file failure has stale ownership");
     auto& op=operations_.at(p.assertion_id);
     if(infrastructure){op.schedule->FailInfrastructure(now);HardCause(op,error);ObserveLogical(op.record.id,now);}
     else if(!op.file_error)op.file_error=error;
@@ -124,7 +123,7 @@ class RunnerCallbackRetries {
     }else if(f[0]=="TOPASS_RAW"){
       Size(f,13);const auto raw=f[8]=="P"?Schedule::Raw::Returned:f[8]=="E"?Schedule::Raw::Threw:f[8]=="I"?Schedule::Raw::InfrastructureFailure:throw std::runtime_error("Native callback retry raw outcome rejected");
       const auto error=RuntimeSkipReason(f[9]);if(raw==Schedule::Raw::Returned&&error!="\"\"")throw std::runtime_error("Native callback retry raw pass has an error");
-      const auto source=UInt(f[10]);SetSource(op,UInt(f[11]));op.front_pending=UInt(f[12]);if(op.front_pending>128)throw std::runtime_error("Native callback retry captured operation capacity exceeded");
+      const auto source=UInt(f[10]);SetSource(op,UInt(f[11]));op.front_pending=UInt(f[12]);
       op.schedule->RawSettled(op.schedule->Actual().invocation,raw,now);CleanupOrigin(op,now);
       if(raw==Schedule::Raw::InfrastructureFailure)HardCause(op,error);
       else if(raw==Schedule::Raw::Threw&&!op.hard_error)op.error=error;
@@ -135,9 +134,9 @@ class RunnerCallbackRetries {
   }
   void Tick(double now){
     // A snapshot of IDs permits synchronous physical callbacks to retire an
-    // operation; it is bounded by the existing real native step admission cap.
-    std::array<uint64_t,TestSteps::kPhysical> ids{};size_t count=0;
-    for(const auto&[id,op]:operations_){(void)op;if(count==ids.size())throw std::runtime_error("Native callback retry physical admission invariant failed");ids[count++]=id;}
+    // operation while this loop runs.
+    std::vector<uint64_t> ids;ids.reserve(operations_.size());
+    for(const auto&[id,op]:operations_){(void)op;ids.push_back(id);}const size_t count=ids.size();
     bool dispatched=false;
     const auto split=static_cast<size_t>(std::upper_bound(ids.begin(),ids.begin()+count,last_dispatched_)-ids.begin());
     for(size_t i=0;i<count;++i){const auto id=ids[(split+i)%count];auto found=operations_.find(id);if(found==operations_.end())continue;auto& op=found->second;
@@ -196,11 +195,11 @@ class RunnerCallbackRetries {
   Context* Find(const StepOwner& o){const auto found=contexts_.find(Key(o));return found!=contexts_.end()&&found->second.owner==o?&found->second:nullptr;}
   Operation& Exact(const std::vector<std::string>& f){const auto found=operations_.find(UInt(f[5]));if(found==operations_.end()||found->second.record.request!=UInt(f[1])||Identity(found->second.record.owner)!=f[2]+" "+f[3]+" "+f[4])throw std::runtime_error("Native callback retry receipt owner rejected");return found->second;}
   Operation* Iteration(const StepOwner& owner,uint64_t step){for(auto&[id,op]:operations_){(void)id;if(op.record.owner==owner&&op.schedule->Actual().invocation.step==step&&op.schedule->Physical())return &op;}return nullptr;}
-  bool Within(uint64_t parent,uint64_t root)const{for(size_t depth=0;parent&&depth<=TestSteps::kDepth;++depth){if(parent==root)return true;const auto* step=hooks_.step(parent);if(!step)return false;parent=step->parent;}return false;}
+  bool Within(uint64_t parent,uint64_t root)const{while(parent){if(parent==root)return true;const auto* step=hooks_.step(parent);if(!step||step->parent>=parent)return false;parent=step->parent;}return false;}
   bool PendingWithin(const StepOwner& owner,uint64_t root)const{for(const auto&[id,op]:operations_){(void)id;if(op.record.owner==owner&&(!root||Within(op.record.parent,root)))return true;}return false;}
   double OwnerDeadline(const Operation& op)const{const auto found=contexts_.find(Key(op.record.owner));if(found==contexts_.end())return 0;double deadline=found->second.deadline;if(op.record.parent){const auto* step=hooks_.step(op.record.parent);if(!step||step->owner!=op.record.owner)return 0;deadline=std::min(deadline,step->deadline);}return deadline;}
   void HardCause(Operation& op,const std::string& error){if(!op.hard_error){op.hard_error=true;op.error=error;hooks_.hard(op.record.owner,error);}}
-  void Rejected(uint64_t request,const StepOwner& owner){hooks_.send("TOPASS_ADMITTED "+N(request)+" "+Identity(owner)+" 0 0 "+StepWire("\"Native toPass admission capacity exhausted\""));}
+  void Rejected(uint64_t request,const StepOwner& owner){hooks_.send("TOPASS_ADMITTED "+N(request)+" "+Identity(owner)+" 0 0 "+StepWire("\"Native toPass admission rejected\""));}
   static void CleanupOrigin(Operation& op,double now){if(!op.cleanup_end)op.cleanup_end=now+1000;}
   static void SetSource(Operation& op,uint64_t ticket){if(ticket&&op.source_ticket&&op.source_ticket!=ticket)throw std::runtime_error("Native callback retry used another Source registration");if(ticket)op.source_ticket=ticket;}
   void Begin(const std::vector<std::string>& f,double now,bool stopped,bool cleanup){
@@ -208,29 +207,21 @@ class RunnerCallbackRetries {
     const auto key=KeyType{UInt(f[2]),UInt(f[3]),UInt(f[4])};const auto context=contexts_.find(key);
     if(context==contexts_.end()||context->second.closed||(stopped&&!(cleanup&&context->second.owner.callback_kind=="afterEach")))throw std::runtime_error("Native callback retry admission has no live author scope");
     const auto owner=context->second.owner;const auto parent=UInt(f[5]);const auto timeout=f[6]=="-"?0:UInt(f[6]);
-    std::array<uint64_t,Schedule::kIntervals> intervals{};size_t count=0;
-    if(f[7]!="-"){std::string_view values=f[7];for(;;){if(count==intervals.size())throw std::runtime_error("Native callback retry interval count exceeded");const auto end=values.find(',');intervals[count++]=UInt(values.substr(0,end));if(end==values.npos)break;values.remove_prefix(end+1);}}
+    std::vector<uint64_t> intervals;
+    if(f[7]!="-"){std::string_view values=f[7];for(;;){const auto end=values.find(',');intervals.push_back(UInt(values.substr(0,end)));if(end==values.npos)break;values.remove_prefix(end+1);}}
     (void)PrepareStepLocation(f[8],UInt(f[9]),UInt(f[10]),UInt(f[11]));
-    if(timeout>Schedule::kSafeDuration||std::any_of(intervals.begin(),intervals.begin()+count,[](uint64_t value){return value>Schedule::kSafeDuration;}))throw std::runtime_error("Native callback retry safe duration exceeded");
-    if(operations_.size()>=TestSteps::kPhysical){Rejected(request,owner);return;}
+    if(timeout>Schedule::kSafeDuration||std::any_of(intervals.begin(),intervals.end(),[](uint64_t value){return value>Schedule::kSafeDuration;}))throw std::runtime_error("Native callback retry safe duration exceeded");
     const auto id=hooks_.next_step();if(!id){Rejected(request,owner);return;}
     Operation op;op.record.id=id;op.record.request=request;op.record.parent=parent;op.record.owner=owner;op.record.started=now;
     op.owner_deadline=OwnerDeadline(op);
-    op.schedule.emplace(Schedule::Identity{id,parent,owner},Schedule::Options{timeout,f[7]=="-"?std::nullopt:std::make_optional(std::span<const uint64_t>(intervals.data(),count))},op.owner_deadline,now);
+    op.schedule.emplace(Schedule::Identity{id,parent,owner},Schedule::Options{timeout,f[7]=="-"?std::nullopt:std::make_optional(std::span<const uint64_t>(intervals.data(),intervals.size()))},op.owner_deadline,now);
     op.record.own_deadline=op.schedule->OwnDeadline();
-    const auto charge=2*(8192*6+2)+1024;
-    if(budget_.reserved>TestSteps::kMetadata)throw std::runtime_error("Native callback retry shared metadata invariant failed");
-    if(charge>TestSteps::kMetadata-budget_.reserved){Rejected(request,owner);return;}
-    // Unused actors allocate no journal. Reserve its existing maximum before
-    // any actual invocation so final physical publication cannot allocate.
-    if(records_.capacity()<TestSteps::kRecords)records_.reserve(TestSteps::kRecords);
-    op.error.reserve(8192*6+2);op.record.error_json.reserve(8192*6+2);
-    auto actual=operations_.emplace(id,std::move(op));budget_.reserved+=charge;
+    auto actual=operations_.emplace(id,std::move(op));
     std::optional<uint64_t> step;
     try{step=hooks_.begin(owner,parent,0,1,actual.first->second.schedule->OwnDeadline(),now);}
-    catch(...){if(!hooks_.step(id)){operations_.erase(id);budget_.reserved-=charge;}else if(!publication_failure_)publication_failure_=std::current_exception();throw;}
+    catch(...){if(!hooks_.step(id)){operations_.erase(id);}else if(!publication_failure_)publication_failure_=std::current_exception();throw;}
     if(!step||*step!=id){
-      if(!step&&!hooks_.step(id)){operations_.erase(id);budget_.reserved-=charge;Rejected(request,owner);return;}
+      if(!step&&!hooks_.step(id)){operations_.erase(id);Rejected(request,owner);return;}
       try{throw std::runtime_error("Native callback retry actual first iteration admission failed");}catch(...){if(hooks_.step(id)&&!publication_failure_)publication_failure_=std::current_exception();throw;}
     }
     try{hooks_.send("TOPASS_ADMITTED "+N(request)+" "+Identity(owner)+" "+N(id)+" 1 -");Dispatch(actual.first->second,now,true);}
@@ -299,6 +290,6 @@ class RunnerCallbackRetries {
     catch(...){draining_contexts_=false;throw;}
     draining_contexts_=false;
   }
-  Hooks hooks_;TestSteps::Budget& budget_;std::map<KeyType,Context> contexts_;std::map<uint64_t,StepFence> step_fences_;std::map<uint64_t,Operation> operations_;std::vector<CallbackAssertionRecord> records_;uint64_t nonce_=0,last_dispatched_=0;bool draining_steps_=false,draining_contexts_=false;std::exception_ptr publication_failure_;
+  Hooks hooks_;std::map<KeyType,Context> contexts_;std::map<uint64_t,StepFence> step_fences_;std::map<uint64_t,Operation> operations_;std::vector<CallbackAssertionRecord> records_;uint64_t nonce_=0,last_dispatched_=0;bool draining_steps_=false,draining_contexts_=false;std::exception_ptr publication_failure_;
 };
 } // namespace suitecut::runner

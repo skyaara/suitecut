@@ -12,19 +12,13 @@ struct ReportResourceLockGroup {
 // Cross-check native lock retirement metadata against actual selected project
 // identities and confirmed OS worker exits. No elapsed-time/absence inference.
 template<class Report>void ValidateResourceLockReports(const Report& report){
-  const auto limit=report.work_groups.empty()?128:TestWorkGroups::kGroups;
-  if(report.resource_locks.size()>limit)throw std::invalid_argument("Native lock report group capacity exceeded");
-  std::set<uint64_t> projects,generations,groups;size_t references=0,bytes=0;
+  std::set<uint64_t> projects,generations,groups;
   for(const auto& group:report.resource_locks){
-    if(!group.project_id||!group.generation||group.generation>limit||!generations.insert(group.generation).second||
-       group.names.empty()||group.names.size()>ResourceLocks::kNames||group.names.size()>ResourceLocks::kReferences-references||
-       (group.receipt!="physicalRetired"&&group.receipt!="neverStarted"))throw std::invalid_argument("Invalid native resource-lock report identity/receipt/capacity");
-    references+=group.names.size();
+    if(!group.project_id||!group.generation||!generations.insert(group.generation).second||
+       group.names.empty()||
+       (group.receipt!="physicalRetired"&&group.receipt!="neverStarted"))throw std::invalid_argument("Invalid native resource-lock report identity/receipt");
     if(!std::is_sorted(group.names.begin(),group.names.end())||std::adjacent_find(group.names.begin(),group.names.end())!=group.names.end())throw std::invalid_argument("Native lock report names are not a canonical atomic set");
-    for(const auto& name:group.names){
-      if(name.size()%2||name.size()>kResourceLockUnits*2||name.size()+32>ResourceLocks::kMetadata-bytes)throw std::invalid_argument("Native lock report UTF16/name metadata capacity exceeded");
-      bytes+=name.size()+32;
-    }
+    for(const auto& name:group.names)if(name.size()%2)throw std::invalid_argument("Native lock report name is not UTF16");
     const auto project=std::find_if(report.projects.begin(),report.projects.end(),[&](const auto& p){return p.id==group.project_id;});
     if(project==report.projects.end()||project->selection_role=="notSelected")throw std::invalid_argument("Native lock report lacks actual selected project identity");
     if(group.work_group_id){

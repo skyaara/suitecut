@@ -104,7 +104,6 @@ class HookPhases {
     if (!Matches(scope, generation) || active_->phase != Phase::Acquire ||
         active_->request != request || terminating_) return;
     if (!ok) { active_->infrastructure_failure = true; Fail(error, now); return; }
-    if (leases_.size() >= 64) { Terminate("Physical hook callback capacity64 exceeded"); return; }
     const auto token = NextToken();
     if (!token) return;
     const auto& call = active_->calls[active_->index];
@@ -169,7 +168,7 @@ class HookPhases {
 
   bool RequestSkip(uint64_t token, uint64_t scope, uint64_t generation,
                    const std::string& reason_json, double now, std::function<void()> accepted = {}, bool defer_cleanup = false) {
-    if (!std::isfinite(now) || !JsonString(reason_json, 8192)) return false;
+    if (!std::isfinite(now) || !JsonString(reason_json)) return false;
     ObserveDeadline(now);
     if (!Matches(scope, generation) || terminating_ || active_->phase != Phase::Invoke ||
         active_->token != token || !token || active_->cleanup || active_->timed_out ||
@@ -318,7 +317,7 @@ class HookPhases {
   }
   static bool Cleanup(HookKind kind) { return kind == HookKind::AfterEach; }
   static void Validate(const std::vector<HookCall>& calls) {
-    if (calls.empty() || calls.size() > 256) throw std::invalid_argument("Hook group capacity must be 1..256");
+    if (calls.empty()) throw std::invalid_argument("Hook group requires at least one call");
     if (calls[0].kind == HookKind::BeforeAll || calls[0].kind == HookKind::AfterAll) {
       if (calls.size() != 1) throw std::invalid_argument("Each all-hook requires a fresh fixture scope");
     } else {
@@ -331,18 +330,15 @@ class HookPhases {
       }
       if (bodies != 1) throw std::invalid_argument("Test group requires one body");
     }
-    size_t names = 0;
     for (const auto& call : calls) {
       if (call.kind != HookKind::BeforeAll && call.kind != HookKind::BeforeEach &&
           call.kind != HookKind::Body && call.kind != HookKind::AfterEach &&
           call.kind != HookKind::AfterAll) throw std::invalid_argument("Unknown native hook kind");
-      if (!call.callback || call.fixtures.size() > 256) throw std::invalid_argument("Invalid native hook callback declaration");
+      if (!call.callback) throw std::invalid_argument("Invalid native hook callback declaration");
       for (const auto& fixture : call.fixtures) {
-        if (fixture.empty() || fixture.size() > 256) throw std::invalid_argument("Invalid native hook fixture name");
-        names += fixture.size();
+        if (fixture.empty()) throw std::invalid_argument("Invalid native hook fixture name");
       }
     }
-    if (names > 1048576) throw std::invalid_argument("Hook fixture metadata budget1MiB exceeded");
   }
   bool Matches(uint64_t scope, uint64_t generation) const {
     return active_ && active_->scope == scope && active_->generation == generation;
@@ -352,8 +348,8 @@ class HookPhases {
     return ++nonce_;
   }
   void Record(const std::string& error,uint64_t originating_step=0) {
-    if (active_ && active_->errors.size() < 256){
-      active_->errors.push_back(JsonString(error, 8192) ? error : error.substr(0, 8192));
+    if (active_){
+      active_->errors.push_back(error);
       active_->error_sources.push_back(originating_step);
     }
   }

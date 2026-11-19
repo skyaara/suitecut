@@ -6,11 +6,10 @@
 #include <span>
 namespace suitecut::runner {
 // Ownership policy only. Native adapters retain the actual host/controllers;
-// SDK idle ACKs never mean waitpid or physical retirement. All storage is
-// allocated before the first native host is admitted.
+// SDK idle ACKs never mean waitpid or physical retirement. Host slots are
+// allocated for the requested worker count before the first host is admitted.
 class WorkerReusePool {
  public:
-  static constexpr size_t kHosts=8,kGroups=8192,kFixtures=64;
   using Group=FileGroupPool::Admission;
   enum class Outcome {Passed,Failed,Interrupted};
   struct Completion {bool all_done=false,global_stopped=false,native_failure=false,actual_interrupted=false,unexpected_failure=false,all_expected=true;};
@@ -25,7 +24,7 @@ class WorkerReusePool {
   struct Host {uint64_t lease=0;unsigned worker=0;int64_t pid=0;bool operator==(const Host&)const=default;};
   struct Borrow {Host host;Group group;uint64_t generation=0;bool operator==(const Borrow&)const=default;};
   struct Fixture {uint64_t token=0,test=0,generation=0;bool operator==(const Fixture&)const=default;};
-  struct Fixtures {std::array<Fixture,kFixtures> values{};size_t count=0;};
+  struct Fixtures {std::vector<Fixture> values;};
   struct GroupFence {
     size_t raw_callbacks=0,steps=0,step_callbacks=0,file_jobs=0,file_callbacks=0,
       file_step_fences=0,output_jobs=0,output_handshakes=0,test_fixtures=0,mutations=0,soft_pending=0,soft_contexts=0;
@@ -34,7 +33,7 @@ class WorkerReusePool {
   };
   struct IdleRequest {Borrow borrow;uint64_t request=0;double requested=0,deadline=0;size_t fixtures=0;};
   struct IdleACK {Borrow borrow;uint64_t request=0;size_t fixtures=0;};
-  struct Probe {uint64_t version=0;std::array<Host,kHosts> hosts{};size_t count=0;};
+  struct Probe {uint64_t version=0;std::vector<Host> hosts;};
   struct Inventory {Probe probe;double observed=0;bool complete=false,children_clear=false;};
   struct CohortFence {Borrow borrow;GroupFence fence;};
   struct RetirementFence {
@@ -49,8 +48,8 @@ class WorkerReusePool {
     uint64_t idle_request=0,canceled_idle_request=0;double acknowledged=0,transferred=0,canceled_acknowledged=0;
   };
   WorkerReusePool(Key key,size_t limit,size_t group_capacity,std::optional<double> original_global_deadline=std::nullopt)
-      :key_(key),limit_(limit),host_records_(group_capacity),borrows_(group_capacity),groups_(group_capacity),global_deadline_(original_global_deadline){
-    if(!key.file.id||!key.catalog||!limit||limit>kHosts||!group_capacity||group_capacity>kGroups)
+      :key_(key),limit_(limit),live_(limit),host_records_(group_capacity),borrows_(group_capacity),groups_(group_capacity),global_deadline_(original_global_deadline){
+    if(!key.file.id||!key.catalog||!limit||!group_capacity)
       throw std::invalid_argument("Native reusable worker key/capacity rejected");
     if(global_deadline_&&(!std::isfinite(*global_deadline_)||*global_deadline_<=0))throw std::invalid_argument("Native reusable worker original deadline rejected");
   }
@@ -80,7 +79,7 @@ class WorkerReusePool {
        !Clean(fence)||!Extends(live->fixtures,fence.retained)||!std::isfinite(now)||!std::isfinite(deadline)||now<host_records_[*live->record].last_observed||deadline<=now||
        deadline>now+1000||(global_deadline_&&deadline>*global_deadline_)||request_==UINT64_MAX||!CanChange())return std::nullopt;
     live->fixtures=fence.retained;host_records_[*live->record].last_observed=now;
-    live->idle=IdleRequest{borrow,++request_,now,deadline,fence.retained.count};live->state=State::AwaitingACK;Changed();return live->idle;
+    live->idle=IdleRequest{borrow,++request_,now,deadline,fence.retained.values.size()};live->state=State::AwaitingACK;Changed();return live->idle;
   }
   bool Acknowledge(const IdleACK& ack,double now)noexcept{
     auto* live=Find(ack.borrow.host);
@@ -99,18 +98,18 @@ class WorkerReusePool {
   }
   std::optional<Probe> InventoryProbe()const noexcept{
     if(stopped_||draining_||!physical_)return std::nullopt;
-    Probe probe;probe.version=version_;bool pending=false;
+    Probe probe;probe.version=version_;probe.hosts.reserve(physical_);bool pending=false;
     for(const auto& live:live_)if(live.record){
       if(live.state!=State::AwaitingInventory&&live.state!=State::Idle)return std::nullopt;
-      pending|=live.state==State::AwaitingInventory;probe.hosts[probe.count++]=host_records_[*live.record].host;
+      pending|=live.state==State::AwaitingInventory;probe.hosts.push_back(host_records_[*live.record].host);
     }
     return pending?std::optional<Probe>(probe):std::nullopt;
   }
   bool ConfirmInventory(const Inventory& inventory,std::span<const CohortFence> fences,double now)noexcept{
     const auto expected=InventoryProbe();
-    if(!expected||!inventory.complete||!inventory.children_clear||inventory.probe.version!=expected->version||inventory.probe.count!=expected->count||
-       fences.size()!=expected->count||!std::isfinite(now)||!std::isfinite(inventory.observed)||inventory.observed<0||inventory.observed>now||!CanChange())return false;
-    for(size_t i=0;i<expected->count;++i){
+    if(!expected||!inventory.complete||!inventory.children_clear||inventory.probe.version!=expected->version||inventory.probe.hosts.size()!=expected->hosts.size()||
+       fences.size()!=expected->hosts.size()||!std::isfinite(now)||!std::isfinite(inventory.observed)||inventory.observed<0||inventory.observed>now||!CanChange())return false;
+    for(size_t i=0;i<expected->hosts.size();++i){
       if(inventory.probe.hosts[i]!=expected->hosts[i]||fences[i].borrow.host!=expected->hosts[i])return false;
       const auto* live=Find(expected->hosts[i]);
       if(!live||!Current(*live,fences[i].borrow)||!Clean(fences[i].fence)||!SameFixtures(live->fixtures,fences[i].fence.retained))return false;
@@ -160,7 +159,7 @@ class WorkerReusePool {
   bool Transferred(const Borrow& borrow)const noexcept{const auto* row=Find(borrow);return row&&row->receipt==Receipt::IdleTransferred;}
   bool PhysicallyRetired(const Host& host)const noexcept{return host.lease&&host.lease<=host_count_&&host_records_[host.lease-1].host==host&&host_records_[host.lease-1].physical_retired;}
   size_t Physical()const noexcept{return physical_;}
-  size_t RetainedFixtures()const noexcept{size_t count=0;for(const auto& live:live_)if(live.record)count+=live.fixtures.count;return count;}
+  size_t RetainedFixtures()const noexcept{size_t count=0;for(const auto& live:live_)if(live.record)count+=live.fixtures.values.size();return count;}
   bool Draining()const noexcept{return draining_;}
   std::span<const HostRecord> Hosts()const noexcept{return {host_records_.data(),host_count_};}
   std::span<const BorrowRecord> Borrows()const noexcept{return {borrows_.data(),borrow_count_};}
@@ -169,16 +168,15 @@ class WorkerReusePool {
   static bool Clean(const GroupFence& f)noexcept{return !f.raw_callbacks&&!f.steps&&!f.step_callbacks&&!f.file_jobs&&!f.file_callbacks&&!f.file_step_fences&&!f.output_jobs&&!f.output_handshakes&&!f.test_fixtures&&!f.mutations&&!f.soft_pending&&!f.soft_contexts&&f.clean_outcomes&&f.control_open&&f.fixtures_ready;}
   static bool RetirementReady(const RetirementFence& f)noexcept{return !f.raw_callbacks&&!f.steps&&!f.step_callbacks&&!f.file_jobs&&!f.file_callbacks&&!f.file_step_fences&&!f.output_jobs&&!f.output_handshakes&&!f.worker_fixtures&&!f.test_fixtures&&!f.soft_pending&&!f.soft_contexts&&f.descendants_retired;}
   static bool Valid(const Fixtures& fixtures)noexcept{
-    if(fixtures.count>kFixtures)return false;
-    uint64_t previous=0;for(size_t i=0;i<fixtures.count;++i){const auto& f=fixtures.values[i];if(!f.token||!f.test||!f.generation||f.token<=previous)return false;previous=f.token;}return true;
+    uint64_t previous=0;for(size_t i=0;i<fixtures.values.size();++i){const auto& f=fixtures.values[i];if(!f.token||!f.test||!f.generation||f.token<=previous)return false;previous=f.token;}return true;
   }
   static bool Extends(const Fixtures& previous,const Fixtures& next)noexcept{
     if(!Valid(next))return false;
-    for(size_t i=0;i<previous.count;++i){bool found=false;for(size_t j=0;j<next.count;++j)found|=previous.values[i]==next.values[j];if(!found)return false;}return true;
+    for(size_t i=0;i<previous.values.size();++i){bool found=false;for(size_t j=0;j<next.values.size();++j)found|=previous.values[i]==next.values[j];if(!found)return false;}return true;
   }
   static bool SameFixtures(const Fixtures& a,const Fixtures& b)noexcept{
-    if(a.count!=b.count||!Valid(b))return false;
-    for(size_t i=0;i<a.count;++i)if(a.values[i]!=b.values[i])return false;
+    if(a.values.size()!=b.values.size()||!Valid(b))return false;
+    for(size_t i=0;i<a.values.size();++i)if(a.values[i]!=b.values[i])return false;
     return true;
   }
   bool NewGroup(const Group& group)const noexcept{return group.file==key_.file&&group.generation&&group.index<groups_.size()&&!groups_[group.index]&&borrow_count_<borrows_.size();}
@@ -195,6 +193,6 @@ class WorkerReusePool {
   void Changed()noexcept{if(version_<UINT64_MAX)++version_;}
   Key key_;size_t limit_,host_count_=0,borrow_count_=0,physical_=0;unsigned highest_worker_=0;
   uint64_t version_=1,request_=0;bool draining_=false,stopped_=false;
-  std::array<Live,kHosts> live_{};std::vector<HostRecord> host_records_;std::vector<BorrowRecord> borrows_;std::vector<std::optional<size_t>> groups_;std::optional<double> global_deadline_;
+  std::vector<Live> live_;std::vector<HostRecord> host_records_;std::vector<BorrowRecord> borrows_;std::vector<std::optional<size_t>> groups_;std::optional<double> global_deadline_;
 };
 }

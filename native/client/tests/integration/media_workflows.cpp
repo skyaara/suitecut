@@ -47,8 +47,8 @@ int main(int argc,char** argv) {
         "declared cadence and sample-and-hold metadata at "+std::to_string(fps)+" fps",checks);
       require(recording.at("verification").at("streams").at(0).at("nb_read_frames").as_string()==
         std::to_string(recording.at("outputFrames").as_int()),"ffprobe independently decoded frame count at "+std::to_string(fps)+" fps",checks);
-      require(recording.at("peakQueuedFrameBytes").as_int()<=recording.at("queueByteLimit").as_int()&&
-        recording.at("peakSpoolBytes").as_int()<=recording.at("spoolByteLimit").as_int(),"bounded recording queue and actual spool at "+std::to_string(fps)+" fps",checks);
+      require(recording.at("peakQueuedFrameBytes").as_int()>0&&recording.at("peakSpoolBytes").as_int()>0&&
+        !recording.contains("queueByteLimit")&&!recording.contains("spoolByteLimit"),"unbounded recording queue and actual spool reported at "+std::to_string(fps)+" fps",checks);
       if(fps==120)require(recording.at("duplicatedFrames").as_int()>0,
         "120 fps output reports repeated source frames instead of claiming 120 unique compositor frames",checks);
     }

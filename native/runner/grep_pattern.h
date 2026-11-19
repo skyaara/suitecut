@@ -14,22 +14,19 @@
 
 namespace suitecut::runner {
 // Boolean ECMAScript non-Unicode matching over UTF16 code units. A Thompson
-// automaton bounds work even for nested ambiguous repetitions. Unsupported
+// automaton keeps work linear even for nested ambiguous repetitions. Unsupported
 // syntax fails during compilation; it never falls through to another engine.
 class GrepPattern {
  public:
-  static constexpr size_t kPatternUnits=4096,kStates=2048,kTitleUnits=32768;
   struct Options {bool insensitive=false,multiline=false,dot_all=false,sticky=false;};
   using Work=GrepWork;
   explicit GrepPattern(std::u16string source,bool insensitive=false):GrepPattern(std::move(source),Options{insensitive,false,false,false}){}
   GrepPattern(std::u16string source,Options options):source_(std::move(source)),insensitive_(options.insensitive),options_(options){
-    if(source_.size()>kPatternUnits)Fail("pattern capacity4096 exceeded");
     const auto root=Disjunction();if(position_!=source_.size())Fail("unexpected closing delimiter");
     auto expression=Compile(root);const auto accept=Emit({Kind::Accept});Patch(expression.ends,accept);start_=expression.start;
     nodes_.clear();nodes_.shrink_to_fit();
   }
   bool Matches(std::u16string_view title,Work& work)const{
-    if(title.size()>kTitleUnits)Fail("title capacity32768 UTF16 units exceeded");
     // A stop callback may synchronously match again using the same budget.
     // Lease owner-local storage while keeping nested matching independent.
     GrepNFAScratch nested;
@@ -128,12 +125,12 @@ class GrepPattern {
     }
     return Normalize(std::move(result));
   }
-  size_t Add(Node node){if(nodes_.size()>=4096)Fail("syntax node capacity4096 exceeded");nodes_.push_back(std::move(node));return nodes_.size()-1;}
+  size_t Add(Node node){nodes_.push_back(std::move(node));return nodes_.size()-1;}
   size_t Binary(Kind kind,size_t left,size_t right){Node node{kind};node.left=left;node.right=right;return Add(std::move(node));}
   bool Take(char16_t c){if(position_<source_.size()&&source_[position_]==c){++position_;return true;}return false;}
   size_t Disjunction(){
-    if(++depth_>64)Fail("group nesting capacity64 exceeded");
-    auto result=Sequence();while(Take('|'))result=Binary(Kind::Alternative,result,Sequence());--depth_;return result;
+    GrepStackCheck();
+    auto result=Sequence();while(Take('|'))result=Binary(Kind::Alternative,result,Sequence());return result;
   }
   size_t Sequence(){size_t result=none;
     while(position_<source_.size()&&source_[position_]!=')'&&source_[position_]!='|'){
@@ -143,7 +140,7 @@ class GrepPattern {
   unsigned Number(){
     if(position_==source_.size()||source_[position_]<'0'||source_[position_]>'9')Fail("bounded quantifier requires a number");
     unsigned value=0;while(position_<source_.size()&&source_[position_]>='0'&&source_[position_]<='9'){
-      value=value*10+(source_[position_++]-'0');if(value>256)Fail("repeat capacity256 exceeded");}return value;
+      if(value>(std::numeric_limits<unsigned>::max()-9)/10)Fail("quantifier bound overflows");value=value*10+(source_[position_++]-'0');}return value;
   }
   size_t Term(){const auto atom=Atom();if(position_==source_.size())return atom;
     const auto c=source_[position_];unsigned minimum=0,maximum=0;bool repeat=true;
@@ -192,7 +189,7 @@ class GrepPattern {
         if(item[0].first>last[0].first)Fail("reversed character range");
         item={{item[0].first,last[0].first}};
       }
-      ranges.insert(ranges.end(),item.begin(),item.end());if(ranges.size()>4096)Fail("character class range capacity4096 exceeded");
+      ranges.insert(ranges.end(),item.begin(),item.end());
     }
     if(!Take(']'))Fail("unterminated character class");
     ranges=FoldRanges(Normalize(std::move(ranges)));if(negative)ranges=Invert(ranges);
@@ -211,18 +208,27 @@ class GrepPattern {
     else node.ranges=CaseRanges({{c,c}});
     return Add(std::move(node));
   }
-  size_t Emit(State state){if(states_.size()>=kStates)Fail("automaton state capacity2048 exceeded");
-    if(state.ranges.size()>16384-range_count_)Fail("automaton range capacity16384 exceeded");
+  size_t Emit(State state){
     range_count_+=state.ranges.size();
     states_.push_back(std::move(state));return states_.size()-1;
   }
   void Patch(const std::vector<Edge>& edges,size_t target){for(const auto& edge:edges)(edge.second?states_[edge.state].second:states_[edge.state].first)=target;}
   Fragment Join(Fragment left,Fragment right){Patch(left.ends,right.start);return{left.start,std::move(right.ends)};}
   Fragment Empty(){const auto state=Emit({Kind::Jump});return{state,{{state}}};}
-  Fragment Compile(size_t id){const auto& node=nodes_[id];
+  // Concat and Alternative chains are left-deep; walk them iteratively so only
+  // group nesting recurses.
+  std::vector<size_t> Chain(size_t id,Kind kind)const{std::vector<size_t> parts;
+    while(nodes_[id].kind==kind){parts.push_back(nodes_[id].right);id=nodes_[id].left;}
+    parts.push_back(id);std::reverse(parts.begin(),parts.end());return parts;
+  }
+  Fragment Compile(size_t id){GrepStackCheck();const auto& node=nodes_[id];
     if(node.kind==Kind::Empty)return Empty();
-    if(node.kind==Kind::Concat)return Join(Compile(node.left),Compile(node.right));
-    if(node.kind==Kind::Alternative){auto left=Compile(node.left),right=Compile(node.right);const auto split=Emit({Kind::Split,left.start,right.start});left.ends.insert(left.ends.end(),right.ends.begin(),right.ends.end());return{split,std::move(left.ends)};}
+    if(node.kind==Kind::Concat){const auto parts=Chain(id,Kind::Concat);auto result=Compile(parts[0]);
+      for(size_t i=1;i<parts.size();++i)result=Join(std::move(result),Compile(parts[i]));return result;}
+    if(node.kind==Kind::Alternative){const auto parts=Chain(id,Kind::Alternative);auto result=Compile(parts[0]);
+      for(size_t i=1;i<parts.size();++i){auto right=Compile(parts[i]);const auto split=Emit({Kind::Split,result.start,right.start});
+        result.ends.insert(result.ends.end(),right.ends.begin(),right.ends.end());result.start=split;}
+      return result;}
     if(node.kind==Kind::Repeat){auto result=Empty();for(unsigned i=0;i<node.minimum;++i)result=Join(std::move(result),Compile(node.left));
       if(node.maximum==std::numeric_limits<unsigned>::max()){
         auto child=Compile(node.left);const auto split=Emit({Kind::Split,child.start});Patch(child.ends,split);result=Join(std::move(result),{split,{{split,true}}});
@@ -231,14 +237,13 @@ class GrepPattern {
     }
     State state{node.kind};state.ranges=node.ranges;const auto emitted=Emit(std::move(state));return{emitted,{{emitted}}};
   }
-  std::u16string source_;bool insensitive_;Options options_;size_t position_=0,depth_=0,start_=0,range_count_=0;std::vector<Node> nodes_;std::vector<State> states_;
+  std::u16string source_;bool insensitive_;Options options_;size_t position_=0,start_=0,range_count_=0;std::vector<Node> nodes_;std::vector<State> states_;
 };
 
 // Stock public CLI recognizes slash delimiters only with g/i suffixes. A bare
 // argument uses gi. Matching is boolean and fresh per title, so g changes no
 // selection state. Native does not claim public config RegExp/array support.
 inline GrepPattern CompileCLIGrepNFA(std::u16string argument){
-  if(argument.size()>GrepPattern::kPatternUnits)throw std::invalid_argument("Native grep CLI argument capacity4096 exceeded");
   bool insensitive=true;
   if(!argument.empty()&&argument.front()=='/'){
     const auto slash=argument.rfind('/');

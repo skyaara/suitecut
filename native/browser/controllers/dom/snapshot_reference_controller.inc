@@ -24,7 +24,7 @@ suitecut::SnapshotReferences& SnapshotReferences(){
       if(!group.document.session.empty()&&!sessions_.contains(group.document.session)){ack(true,"");return;}
       const int tool=AllocateDevToolsId();if(!tool){ack(false,"Native snapshot reference release ID exhausted");return;}
       auto params=CefDictionaryValue::Create();params->SetString("objectGroup",group.name);const auto session=group.document.session;
-      devtools_.emplace(tool,DevToolsCall{0,[ack=std::move(ack)](bool ok,const std::string&)mutable{ack(ok,ok?"":"Native snapshot reference group release failed");},session,true,kMaxResponseBytes,true,false});
+      devtools_.emplace(tool,DevToolsCall{0,[ack=std::move(ack)](bool ok,const std::string&)mutable{ack(ok,ok?"":"Native snapshot reference group release failed");},session,true,true,false});
       if(!SubmitDevTools(tool,"Runtime.releaseObjectGroup",params,session)){
         const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"");}
       }
@@ -45,7 +45,7 @@ void ReferenceRequest(const std::shared_ptr<SnapshotReferenceCapture>& work,cons
     }
     done(result);
   };
-  if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,kMaxResponseBytes,true);return;}
+  if(!work->ticket){DevTools(work->owner,method,params,std::move(callback),work->document.session,true,true);return;}
   auto lease=SnapshotReferences().Use(work->ticket);
   if(!lease){Complete(work->owner,false,"Native snapshot reference capture is unavailable");return;}
   ReferenceSubmit(work->owner,work->generation,work->document.session,method,params,[]{return true;},

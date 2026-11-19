@@ -39,7 +39,7 @@ struct Harness {
     rh.source=[](const auto&,uint64_t,uint64_t,uint64_t,uint64_t,uint64_t,double,double){return RunnerCallbackRetries::SourceFence::Ready;};
     rh.step=[this](uint64_t id){return steps->Find(id);};
     rh.hard=[this](const auto&,const auto& e){errors.push_back(e);};rh.terminate=[this](const auto& e){errors.push_back(e);};
-    retries=std::make_unique<RunnerCallbackRetries>(std::move(rh),budget);
+    retries=std::make_unique<RunnerCallbackRetries>(std::move(rh));
     HookWorker::Callbacks wh;
     wh.now=[this]{return now;};wh.send=[this](const auto& p){Send(p);};
     wh.completed=[this](const auto& r){results.push_back(r);};wh.terminate=[this](const auto& e){errors.push_back(e);};

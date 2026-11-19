@@ -146,8 +146,6 @@ export class NativeViewerGate {
     this.processSignal.throwIfAborted()
     if (this.mode === 'closed') return Promise.reject(new Error('Browser viewer is closed'))
     if (ready()) return Promise.resolve()
-    if (this.changes.size >= 64)
-      return Promise.reject(new Error('Too many waiting viewer agent steps'))
     return new Promise((resolve, reject) => {
       const cleanup = (): void => {
         this.changes.delete(check)

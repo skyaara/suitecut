@@ -434,7 +434,7 @@ export const NativePacketSchema = z.discriminatedUnion('type', [
     ...base,
     type: z.literal('audio'),
     timestampMs: timestamp,
-    frames: z.number().int().min(1).max(4096),
+    frames: z.number().int().min(1),
   }),
   z.strictObject({
     ...base,

@@ -72,7 +72,7 @@ class RunnerSteps {
   void ObserveRawResult(uint64_t token,uint64_t scope,uint64_t generation,const std::string& error={},uint64_t source=0){
     const auto found=owners_.find(Key(token,scope,generation));
     if(found==owners_.end()||found->second.outer_observed||found->second.forward)throw std::runtime_error("Native outer raw-result observation is stale or duplicate");
-    if(!error.empty()&&!JsonString(error,8192))throw std::runtime_error("Native outer observed error scalar rejected");
+    if(!error.empty()&&!JsonString(error))throw std::runtime_error("Native outer observed error scalar rejected");
     if(source){if(error.empty())throw std::runtime_error("Native originating step has no observed outer error");FailureSource(token,scope,generation,source);}
     found->second.outer_observed=true;found->second.observed_error=error;found->second.observed_source=source;
   }
@@ -88,7 +88,7 @@ class RunnerSteps {
     auto& callback=found->second;
     if(callback.outer_observed){if(callback.observed_source!=source||callback.observed_error!=actual_error)throw std::runtime_error("Native outer forward changed its actual observed raw result/source");}else ObserveRawResult(token,scope,generation,actual_error,source);
     if(!callback.closed){if(!steps_.Close(callback.owner,now))throw std::runtime_error("Native step callback close rejected");callback.closed=true;}
-    if(!actual_error.empty()){if(!JsonString(actual_error,8192))throw std::runtime_error("Invalid actual native outer callback error");callback.actual_error=actual_error;callback.actual_source=source;}
+    if(!actual_error.empty()){if(!JsonString(actual_error))throw std::runtime_error("Invalid actual native outer callback error");callback.actual_error=actual_error;callback.actual_source=source;}
     callback.forward=std::move(forward);callback.cleanup_deadline=now+1000;Emit();Drain(now);
   }
   bool Packet(const std::vector<std::string>& fields,double now,bool stopped){
@@ -117,10 +117,10 @@ class RunnerSteps {
       }
       const auto request=UInt(fields[1]),token=UInt(fields[2]),scope=UInt(fields[3]),generation=UInt(fields[4]),parent=UInt(fields[5]),timeout=UInt(fields[7]);
       if(!request||request_nonce_==UINT64_MAX||request!=++request_nonce_)throw std::runtime_error("Native step admission nonce is stale");
-      const auto title=DecodeHex(fields[6],4096*6+2);if(!JsonString(title,4096))throw std::runtime_error("Invalid native step title scalar");
+      const auto title=DecodeHex(fields[6]);if(!JsonString(title))throw std::runtime_error("Invalid native step title scalar");
       const auto found=owners_.find(Key(token,scope,generation));std::optional<uint64_t> id;
       if(!stopped&&found!=owners_.end()&&!found->second.closed&&!found->second.outer_observed)id=fields[0]=="STEP_BEGIN_SKIP"?steps_.DeclareSkipped(found->second.owner,parent,title,timeout,request,now,location,box):steps_.Begin(found->second.owner,parent,title,timeout,now,location,box);
-      Emit();hooks_.send(std::string(fields[0]=="STEP_BEGIN_SKIP"?"STEP_ADMITTED_NOT_INVOKED ":"STEP_ADMITTED ")+fields[1]+" "+fields[2]+" "+fields[3]+" "+fields[4]+" "+std::to_string(id.value_or(0))+" "+(id?"1 -":"0 "+StepWire("\"Native step admission rejected: stale, expired, stopped or capacity exceeded\"")));
+      Emit();hooks_.send(std::string(fields[0]=="STEP_BEGIN_SKIP"?"STEP_ADMITTED_NOT_INVOKED ":"STEP_ADMITTED ")+fields[1]+" "+fields[2]+" "+fields[3]+" "+fields[4]+" "+std::to_string(id.value_or(0))+" "+(id?"1 -":"0 "+StepWire("\"Native step admission rejected: stale, expired or stopped\"")));
     }else{
       const bool from_step=fields[0]=="STEP_SETTLED_FROM_STEP";
       if(fields.size()!=(from_step?8:7))throw std::runtime_error("Invalid native step callback receipt packet");

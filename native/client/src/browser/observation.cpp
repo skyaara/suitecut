@@ -8,9 +8,6 @@
 
 namespace suitecut {
 namespace {
-constexpr std::size_t kMaxNodes = 4096;
-constexpr std::size_t kMaxText = 1024 * 1024;
-constexpr std::size_t kMaxScan = 65536;
 const Json* field(const Json& node, std::string_view key) {
   if (!node.is_object()) return nullptr;
   const auto found = node.as_object().find(key);
@@ -47,13 +44,15 @@ std::size_t utf8_prefix(std::string_view value, std::size_t bytes) {
   return size;
 }
 struct Budget {
-  std::size_t remaining;
+  std::size_t limit; // 0: no limit.
+  std::size_t used = 0;
   bool limited = false;
   void copy(Json& target, std::string_view key, std::string_view value, bool indivisible = false) {
-    const auto length = indivisible && value.size() > remaining ? 0 : utf8_prefix(value, remaining);
+    const auto remaining = limit - used;
+    const auto length = !limit ? value.size() : indivisible && value.size() > remaining ? 0 : utf8_prefix(value, remaining);
     if (length < value.size()) limited = true;
     if (length || value.empty()) target[key] = std::string(value.substr(0, length));
-    remaining -= length;
+    used += length;
   }
 };
 using Context = std::vector<const Json*>;
@@ -93,8 +92,7 @@ Json make_node(const Json& source, const Json::array& path, const Context& conte
     result["box"] = *box;
   }
   Json::array ancestors;
-  const auto first = context.size() > 4 ? context.size() - 4 : 0;
-  for (std::size_t index = first; index < context.size(); ++index) {
+  for (std::size_t index = 0; index < context.size(); ++index) {
     Json ancestor(Json::object{});
     budget.copy(ancestor, "role", text(*context[index], "role"), true);
     budget.copy(ancestor, "name", text(*context[index], "name"));
@@ -121,15 +119,11 @@ std::string slot(const Json& node) {
 }
 const Json::array& checked_nodes(const Json& observation) {
   const auto nodes = field(observation, "nodes");
-  if (!nodes || !nodes->is_array() || nodes->as_array().size() > kMaxNodes)
-    throw std::invalid_argument("Expected bounded compact observation nodes");
-  std::size_t bytes = 0;
+  if (!nodes || !nodes->is_array())
+    throw std::invalid_argument("Expected compact observation nodes");
   for (const auto& node : nodes->as_array()) {
-    if (!node.is_object() || !node.contains("path") || !node.at("path").is_array() ||
-        node.at("path").as_array().size() > 65)
+    if (!node.is_object() || !node.contains("path") || !node.at("path").is_array())
       throw std::invalid_argument("Expected compact observation node with path");
-    bytes += node.dump({4 * kMaxText, 16, 4096, kMaxText}).size();
-    if (bytes > 4 * kMaxText) throw std::invalid_argument("Compact observation exceeds diff bounds");
   }
   return nodes->as_array();
 }
@@ -137,8 +131,6 @@ const Json::array& checked_nodes(const Json& observation) {
 
 Json compact_observation(const Json& forest, ObservationOptions options) {
   if (!forest.is_array()) throw std::invalid_argument("Observation must be an array forest");
-  if (options.max_nodes > kMaxNodes || options.max_text_bytes > kMaxText || options.max_scan_nodes > kMaxScan)
-    throw std::invalid_argument("Observation options exceed hard bounds");
   struct Frame {
     const Json::array* nodes;
     std::size_t index = 0;
@@ -150,7 +142,7 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
   Json::array path, output;
   Budget budget{options.max_text_bytes};
   std::size_t scanned = 0;
-  bool node_limit = false, scan_limit = false, depth_limit = false;
+  bool node_limit = false, scan_limit = false;
   while (!frames.empty()) {
     auto& frame = frames.back();
     if (frame.index == frame.nodes->size()) {
@@ -160,7 +152,7 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
       if (!path.empty()) path.pop_back();
       continue;
     }
-    if (scanned >= options.max_scan_nodes) { scan_limit = true; break; }
+    if (options.max_scan_nodes && scanned >= options.max_scan_nodes) { scan_limit = true; break; }
     const auto index = frame.index++;
     const auto& node = frame.nodes->at(index);
     ++scanned;
@@ -168,27 +160,24 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     const bool protected_parent = frame.protected_parent;
     const bool hidden = protected_parent || password(node);
     if (!options.interactive_only || interactive(node)) {
-      if (output.size() >= options.max_nodes) { node_limit = true; break; }
+      if (options.max_nodes && output.size() >= options.max_nodes) { node_limit = true; break; }
       path.emplace_back(index);
       output.push_back(make_node(node, path, context, hidden, protected_parent, budget));
       path.pop_back();
     }
     const auto children = field(node, "children");
     if (!children || !children->is_array() || children->as_array().empty()) continue;
-    if (frames.size() >= 65) { depth_limit = true; continue; }
     path.emplace_back(index);
     const bool push_context = !hidden && !text(node, "name").empty();
     if (push_context) context.push_back(&node);
     frames.push_back({&children->as_array(), 0, hidden, push_context});
   }
-  return Json{{"nodes", std::move(output)}, {"truncated", node_limit || scan_limit || depth_limit || budget.limited},
+  return Json{{"nodes", std::move(output)}, {"truncated", node_limit || scan_limit || budget.limited},
               {"nodeLimit", node_limit}, {"textLimit", budget.limited}, {"scanLimit", scan_limit},
-              {"depthLimit", depth_limit}, {"scannedNodes", scanned},
-              {"textBytes", options.max_text_bytes - budget.remaining}};
+              {"scannedNodes", scanned}, {"textBytes", budget.used}};
 }
 
 Json observation_diff(const Json& previous, const Json& current, std::size_t max_changes) {
-  if (max_changes > kMaxNodes) throw std::invalid_argument("Diff change limit exceeds hard bound");
   const auto& before = checked_nodes(previous);
   const auto& after = checked_nodes(current);
   using Groups = std::map<std::string, std::vector<std::size_t>>;
@@ -200,7 +189,7 @@ Json observation_diff(const Json& previous, const Json& current, std::size_t max
   std::size_t changes = 0;
   bool limited = false, ambiguous = false;
   auto append = [&](Json::array& destination, Json node) {
-    if (changes >= max_changes) { limited = true; return; }
+    if (max_changes && changes >= max_changes) { limited = true; return; }
     ++changes;
     destination.push_back(std::move(node));
   };

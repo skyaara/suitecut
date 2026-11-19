@@ -17,11 +17,11 @@ int main(int argc,char** argv){
   RunnerReport report;report.workers.push_back({1,getpid(),false,0,{},{}});
   report.attempts.push_back({1,1,0,1,getpid(),"\"controlled projection report\"","\"\"","passed",true,35});
   report.attachment_declarations=declarations.Records();UpsertAttachmentProjection(report.attachment_views,native,{});
-  const auto original=AttachmentProjectionJSON(report.attachment_views);assert(original.size()>8192&&original.size()<AttachmentMutations::kMetadata);
+  const auto original=AttachmentProjectionJSON(report.attachment_views);assert(original.size()>8192);
   // This is the exact former production call. Its refusal proves the case
   // crosses the unrelated path bound rather than only exercising tiny output.
   bool refused=false;try{(void)AttachmentPathJSON(original);}catch(const std::invalid_argument&){refused=true;}assert(refused);
-  const auto quoted=AttachmentProjectionQuotedJSON(original);assert(JsonString(quoted,AttachmentMutations::kMetadata));
+  const auto quoted=AttachmentProjectionQuotedJSON(original);assert(JsonString(quoted));
   assert(report_detail::XML(quoted).sanitized==0);
   WriteRunnerJson(report,output/"large.json");WriteRunnerJUnit(report,output/"large.xml");WriteRunnerHTML(report,output/"large.html");
   const auto xml=ReadProjectionFile(output/"large.xml");assert(xml.find("native.attachmentViewsJSON")!=std::string::npos&&xml.find("&quot;")!=std::string::npos);
@@ -34,7 +34,8 @@ int main(int argc,char** argv){
   assert(report_detail::XML(AttachmentProjectionQuotedJSON(invalid_xml_original)).sanitized==1);
   WriteRunnerJson(report,output/"noncharacter.json");WriteRunnerJUnit(report,output/"noncharacter.xml");
   const auto with_fallback=ReadProjectionFile(output/"noncharacter.xml");assert(with_fallback.find("native.attachmentViewsJSONUtf8Hex")!=std::string::npos);
-  refused=false;try{(void)AttachmentProjectionQuotedJSON(std::string(AttachmentMutations::kMetadata+1,'x'));}catch(const std::length_error&){refused=true;}assert(refused);
+  // No suitecut section-size bound: a section above the former 16 MiB cap is quoted.
+  assert(AttachmentProjectionQuotedJSON(std::string(16*1024*1024+1,'x')).size()==16*1024*1024+3);
   refused=false;try{(void)AttachmentProjectionQuotedJSON(std::string("\xff",1));}catch(const std::invalid_argument&){refused=true;}assert(refused);
-  std::cout<<"PASS 4 controlled native projection JSON/XML groups: >8192-byte actual report writes, UTF16/UTF8/XML exact fallback, original section-size bound, invalid UTF8; no author/file-job receipt claim\n";
+  std::cout<<"PASS 4 controlled native projection JSON/XML groups: >8192-byte actual report writes, UTF16/UTF8/XML exact fallback, unbounded section size, invalid UTF8; no author/file-job receipt claim\n";
 }

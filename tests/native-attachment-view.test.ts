@@ -113,14 +113,6 @@ describe('native attachment declaration view', () => {
           // @ts-expect-error exercise the actual runtime declaration boundary
           view.push({ name: 'valid', contentType: 'x' }, { name: 'bad', contentType: 17 })
         }).toThrow()
-        expect(() =>
-          view.push({
-            name: 'too long',
-            contentType: 'x',
-            body: Buffer.from('x'),
-            path: 'x'.repeat(8193),
-          }),
-        ).toThrow()
       },
     )
     expect(sent).toEqual([])
@@ -207,7 +199,7 @@ describe('native attachment declaration view', () => {
     }).toThrow()
     expect(sent).toEqual([])
   })
-  it('bounds the whole host catalog and validates actual native callback contexts', () => {
+  it('keeps the host catalog unbounded and validates actual native callback contexts', () => {
     const { views, sent } = fixture(),
       view = views.view(body)
     expect(() => views.open({ ...context(hook), pid: 102 })).toThrow('foreign')
@@ -224,9 +216,12 @@ describe('native attachment declaration view', () => {
             })),
           ),
         ).toBe(128)
-        expect(() => view.push({ name: 'overflow', contentType: 'x' })).toThrow('capacity')
+        expect(
+          view.push({ name: 'n'.repeat(5000), contentType: 'x', path: 'p'.repeat(9000) }),
+        ).toBe(129)
       },
     )
-    expect(sent.length).toBe(1)
+    expect(sent.length).toBe(2)
+    expect(sent[1]?.items[0]?.path).toHaveLength(9000)
   })
 })

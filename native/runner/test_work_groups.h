@@ -14,14 +14,13 @@ struct TestWorkGroup {
 // ancestor always owns the entire selected serial unit.
 class TestWorkGroups {
  public:
-  static constexpr size_t kGroups=8192,kTests=4096,kProjects=128;
   TestWorkGroups(std::vector<WorkGroupTest> tests,std::vector<SuiteDeclaration> suites,
       std::vector<SuiteTestDeclaration> members,std::map<uint64_t,WorkGroupMode> modes,
       const std::vector<bool>& selected_projects,const std::vector<std::vector<uint64_t>>& selected_tests,
       const std::vector<bool>& fully_parallel):by_project_(selected_projects.size()){
     const auto count=selected_projects.size();
-    if(!count||count>kProjects||selected_tests.size()!=count||fully_parallel.size()!=count||tests.size()>kTests)
-      throw std::invalid_argument("Native test work-group project/test capacity or shape rejected");
+    if(!count||selected_tests.size()!=count||fully_parallel.size()!=count)
+      throw std::invalid_argument("Native test work-group project/test shape rejected");
     std::map<uint64_t,size_t> owners;std::vector<uint64_t> order;
     for(const auto& test:tests){
       if(!test.id||test.project>=count||!owners.emplace(test.id,test.project).second)
@@ -37,7 +36,6 @@ class TestWorkGroups {
           throw std::invalid_argument("Native work-group selection has unknown, duplicate or foreign test identity");
       if(!selected_projects[project])continue;
       for(auto& group:tree.Resolve(selected_tests[project],fully_parallel[project])){
-        if(groups_.size()>=kGroups)throw std::invalid_argument("Native work-group capacity8192 exceeded");
         by_project_[project].push_back(groups_.size());
         groups_.push_back({project,group.mode,group.suite,std::move(group.tests)});
       }

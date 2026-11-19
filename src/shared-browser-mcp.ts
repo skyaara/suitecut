@@ -251,13 +251,7 @@ export function sharedBrowserTools(browser: () => Promise<SharedBrowser>): Recor
           .describe(
             'Output file, such as demo.mp4; relative to the server directory. Must not exist yet.',
           ),
-        fps: z
-          .number()
-          .int()
-          .min(1)
-          .max(120)
-          .optional()
-          .describe('Frames per second; defaults to 60'),
+        fps: z.number().int().min(1).optional().describe('Frames per second; defaults to 60'),
         audio: z.boolean().optional().describe("Record the front tab's sound; defaults to false"),
       }),
       run: async ({ path, fps, audio }) => {
@@ -300,13 +294,15 @@ export function sharedBrowserTools(browser: () => Promise<SharedBrowser>): Recor
     browser_events: tool({
       description:
         'Recent browser events: popups, downloads, dialogs, permission prompts, load errors.',
-      input: z.object({ limit: z.number().int().max(200).optional() }),
+      input: z.object({
+        limit: z.number().int().optional().describe('Only the most recent events; defaults to all'),
+      }),
       run: async ({ limit }) => {
         const owner = await browser()
         const recent = owner
           .eventsSince(0)
           .filter((e) => e.event !== 'loading' && e.event !== 'page')
-          .slice(-(limit ?? 30))
+          .slice(limit === undefined ? 0 : -limit)
         return recent.map((e) => JSON.stringify(e)).join('\n') || 'No events'
       },
     }),

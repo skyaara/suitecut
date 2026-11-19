@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-/** Incremental FLV framing with strict size limits for encoder output. */
+/** Incremental FLV framing for encoder output. */
 export class LiveFlvParser {
   private pending = Buffer.allocUnsafe(13)
   private filled = 0
@@ -29,8 +29,8 @@ export class LiveFlvParser {
       } else if (this.pending.length === 11) {
         const length = this.pending.readUIntBE(1, 3) + 15
 
-        if (length > 8 * 1024 * 1024) throw new Error('Live encoded frame exceeds buffer limit')
-        // Once the tag header is complete, allocate its bounded payload once.
+        // Once the tag header is complete, allocate its payload once; the
+        // 24-bit FLV data size field bounds it.
         const tag = Buffer.allocUnsafe(length)
         this.pending.copy(tag)
         this.pending = tag

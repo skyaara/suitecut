@@ -9,7 +9,10 @@ actual renderer delivery.
 
 Target: Chromium `refs/tags/156.0.8078.17`, used by CEF
 `47dbc1df023e99f006fb9e850a8d83cc19b4fdd9`. The JSON beside this document pins
-all six original/patched files and the patch's SHA-256.
+all six original/patched files and the patch's SHA-256. SuiteCut's own lease,
+pending, coordinate and click-count caps were later removed; the
+`input_handler.cc` patched hash is null until it is re-applied to the pinned
+source and recomputed.
 
 ## Underlying gap
 
@@ -86,9 +89,10 @@ strong orphan lease even after the final native callback disappears. A new
 session cannot acquire that still-live original widget and forget its held
 native input state.
 
-A UI-thread process registry permits at most 64 widget leases (including
-orphans) and 64 pending receipts, with one lease per original widget across
-sessions. Admission prunes an orphan only after the actual original weak widget
+A UI-thread process registry holds one lease per original widget across
+sessions (including orphans). SuiteCut caps neither the number of leases nor
+the number of pending receipts. Coordinates must be finite and `clickCount`
+non-negative; SuiteCut sets no upper bound on either. Admission prunes an orphan only after the actual original weak widget
 is dead and its physical callback is no longer pending. It removes the registry
 entry before releasing the orphan owner. Every destructor and pending-state
 update checks the immutable lease token, so a late old owner cannot erase or
@@ -106,6 +110,6 @@ controller are verified together. This source patch alone does not enable it.
 Required runtime checks include real trusted press/release, browser-filtered
 and nonblocking outcomes, renderer crashes, same-process/cross-process document
 replacement before dispatch and ACK, session detachment, callback destruction,
-interleaved ordinary/leased senders, replayed sequences, bounds and actual
+interleaved ordinary/leased senders, replayed sequences and actual
 browser closure. Existing authored drag behavior needs separate verification.
 E2E and fuzz execution remain deferred by the user.

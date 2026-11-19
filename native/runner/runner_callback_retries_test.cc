@@ -34,7 +34,7 @@ struct Fixture {
     };
     h.step=[this](uint64_t id){return steps->Find(id);};h.hard=[this](const auto&,const auto& e){hard.push_back(e);};
     h.terminate=[this](const auto& e){terminated.push_back(e);};h.now=[this]{return now;};h.infrastructure=[this](const auto&){return infrastructure;};
-    retries=std::make_unique<Controller>(std::move(h),budget);
+    retries=std::make_unique<Controller>(std::move(h));
     steps->BeginCallback(owner,10000,now);retries->Open(owner,10000,now);
   }
   uint64_t Begin(std::string cap="-",std::string intervals="-",uint64_t parent=0){
@@ -134,7 +134,7 @@ int main(int argc,char** argv){
     Fixture f;const auto id=f.Begin();f.infrastructure=true;f.Tick(11);f.PumpRaw(id,true);assert(f.retries->Records()[0].status==CallbackAssertionStatus::Infrastructure);++controls;
   }
   {
-    Fixture f;f.deny_begin=true;const auto reserved=f.budget.reserved;f.Begin();assert(f.retries->Records().empty()&&!f.retries->Physical()&&f.budget.reserved==reserved&&!f.steps->Physical());++controls;
+    Fixture f;f.deny_begin=true;f.Begin();assert(f.retries->Records().empty()&&!f.retries->Physical()&&!f.steps->Physical());++controls;
   }
   {
     Fixture f;const auto id=f.Begin();auto raw=f.Prefix("TOPASS_RAW",id);raw.insert(raw.end(),{"P","-","0","0","0"});raw[3]="9";Reject([&]{f.retries->Packet(raw,f.now,false);});
@@ -168,14 +168,14 @@ int main(int argc,char** argv){
     assert(f.retries->Records()[0].status==CallbackAssertionStatus::TimedOut&&f.retries->Records()[0].deadline==20&&!f.retries->Records()[0].own_deadline);++controls;
   }
   {
-    Fixture f;const auto count=f.budget.records,reserved=f.budget.reserved;
-    Reject([&]{f.Begin("9007199254740992");});assert(!f.retries->Physical()&&f.budget.records==count&&f.budget.reserved==reserved);
+    Fixture f;const auto sequence=f.budget.sequence;
+    Reject([&]{f.Begin("9007199254740992");});assert(!f.retries->Physical()&&f.budget.sequence==sequence);
     Reject([&]{f.retries->Packet({"TOPASS_BEGIN","2","0","1","4","0","-","0","-","0","0","0"},f.now,true);});
     assert(!f.retries->Physical()&&f.retries->Records().empty()&&f.steps->Records().empty());++controls;
   }
   {
-    Fixture f;f.throw_begin=true;const auto reserved=f.budget.reserved;Reject([&]{f.Begin();});
-    assert(!f.retries->Physical()&&f.retries->Records().empty()&&f.budget.reserved==reserved&&f.steps->Records().empty());++controls;
+    Fixture f;f.throw_begin=true;Reject([&]{f.Begin();});
+    assert(!f.retries->Physical()&&f.retries->Records().empty()&&f.steps->Records().empty());++controls;
   }
   {
     Fixture f;bool complete=false;f.retries->Fence(owner,[&](const auto& error){assert(!error);f.retries->WorkerExited(owner.worker_index,owner.pid,f.now);complete=true;},f.now);
@@ -189,18 +189,18 @@ int main(int argc,char** argv){
   }
   }
   {
-    Fixture f;assert(f.retries->Records().capacity()==0);f.budget.reserved=TestSteps::kMetadata;const auto sequence=f.budget.sequence;
-    f.Begin();assert(f.sent.back().starts_with("TOPASS_ADMITTED 1 0 1 4 0 0 ")&&f.budget.sequence==sequence&&f.steps->Records().empty()&&!f.retries->Physical()&&f.retries->Records().capacity()==0);
-    f.budget.reserved=0;const auto id=f.Begin();assert(id==1&&f.retries->Records().capacity()>=TestSteps::kRecords);f.now=11;f.PumpRaw(id,true);assert(f.retries->Records()[0].attempts==1);++controls;
+    // No suitecut metadata budget: admission is never refused for ledger size.
+    Fixture f;const auto id=f.Begin();assert(id==1&&f.retries->Physical()==1);f.now=11;f.PumpRaw(id,true);assert(f.retries->Records()[0].attempts==1);++controls;
   }
   {
-    Fixture f;f.deny_begin=true;const auto reserved=f.budget.reserved;f.Begin();
-    assert(f.sent.back().starts_with("TOPASS_ADMITTED 1 0 1 4 0 0 ")&&f.budget.reserved==reserved&&f.budget.sequence==0&&f.steps->Records().empty()&&f.retries->Records().empty());
+    Fixture f;f.deny_begin=true;f.Begin();
+    assert(f.sent.back().starts_with("TOPASS_ADMITTED 1 0 1 4 0 0 ")&&f.budget.sequence==0&&f.steps->Records().empty()&&f.retries->Records().empty());
     auto stale=std::vector<std::string>{"TOPASS_RAW","1","0","1","4","0","1","0","P","-","0","0","0"};Reject([&]{f.retries->Packet(stale,f.now,false);});++controls;
   }
   {
-    Fixture f;for(size_t i=0;i<TestSteps::kPhysical;++i)f.Begin("-","0");const auto sequence=f.budget.sequence,reserved=f.budget.reserved;
-    f.Begin();assert(f.sent.back().starts_with("TOPASS_ADMITTED 65 0 1 4 0 0 ")&&f.budget.sequence==sequence&&f.budget.reserved==reserved&&f.retries->Physical()==TestSteps::kPhysical&&f.steps->Physical()==TestSteps::kPhysical);
+    // The former 64-operation physical cap is gone: a 65th concurrent operation is admitted.
+    Fixture f;for(size_t i=0;i<64;++i)f.Begin("-","0");const auto sequence=f.budget.sequence;
+    f.Begin();assert(f.sent.back().starts_with("TOPASS_ADMITTED 65 0 1 4 ")&&!f.sent.back().starts_with("TOPASS_ADMITTED 65 0 1 4 0 0 ")&&f.budget.sequence>sequence&&f.retries->Physical()==65&&f.steps->Physical()==65);
     Reject([&]{f.retries->Packet({"TOPASS_BEGIN","66","0","9","4","0","-","0","-","0","0","0"},f.now,false);});++controls;
   }
   {

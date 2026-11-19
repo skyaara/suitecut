@@ -22,10 +22,10 @@ struct SuiteFileToken {
 class SuiteFileOwner {
  public:
   SuiteFileOwner(uint64_t id,const std::string& input){
-    if(!id||input.empty()||input.size()>16384||input.find('\0')!=std::string::npos)
+    if(!id||input.empty()||input.find('\0')!=std::string::npos)
       throw std::invalid_argument("Native suite file identity/path rejected");
     path_=std::filesystem::canonical(input).native();
-    if(path_.size()>16384||!UTF8(path_))throw std::invalid_argument("Native suite file path must be bounded UTF8");
+    if(!UTF8(path_))throw std::invalid_argument("Native suite file path must be UTF8");
     fd_=::open(path_.c_str(),O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_NOFOLLOW);
     if(fd_<0)throw std::system_error(errno,std::generic_category(),"Native suite file open failed");
     try{
@@ -53,10 +53,10 @@ class SuiteFileOwner {
   bool Open()const{return fd_>=0;}
   const SuiteFileToken& Token()const{return token_;}
   const std::string& Path()const{return path_;}
-  std::string ReadBytes(size_t limit)const{
+  std::string ReadBytes()const{
     Validate();
-    if(version_.st_size<0||static_cast<uint64_t>(version_.st_size)>limit)
-      throw std::length_error("Native source file exceeds bounded read capacity");
+    if(version_.st_size<0)
+      throw std::runtime_error("Native source file size observation failed");
     std::string bytes(static_cast<size_t>(version_.st_size),'\0');size_t offset=0;
     while(offset<bytes.size()){
       const auto count=::pread(fd_,bytes.data()+offset,bytes.size()-offset,static_cast<off_t>(offset));

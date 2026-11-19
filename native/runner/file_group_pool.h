@@ -15,11 +15,10 @@ class FileGroupPool {
     SuiteFileToken file;size_t index;uint64_t generation;
     bool operator==(const Admission&)const=default;
   };
-  static constexpr size_t kWorkers=8;
   FileGroupPool(FileWorkGroups groups,size_t limit)
       :plan_(std::move(groups)),rows_(plan_.Groups().size()),limit_(limit){
-    if(!limit||limit>kWorkers||rows_.empty()||rows_.size()>NativeTestGroupTree::kGroups)
-      throw std::invalid_argument("Native file work-group pool capacity rejected");
+    if(!limit||rows_.empty())
+      throw std::invalid_argument("Native file work-group pool needs workers and groups");
   }
   std::optional<Admission> Next(const std::function<bool(size_t)>& ready={}){
     if(stopped_||active_>=limit_)return std::nullopt;

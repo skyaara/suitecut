@@ -55,8 +55,10 @@ int main(int argc, char** argv) {
       check(body(transport->call_json(Json::object{{"command", "echo"}, {"prepared", true}})).at("prepared").as_bool(), "Prepared Json request path failed");
       const auto error = transport->call("{\"command\":\"error\"}");
       check(!Json::parse(error.header).at("ok").as_bool() && body(error).at("detail").as_int() == 9, "Raw command errors lost their structured packet");
-      rejects([&] { transport->submit(std::string("{\"command\":\"echo\",\"text\":\"") + std::string(65500, 'x') + "\"}"); }, "Oversized final wire envelope accepted");
-      check(transport->stats().pending == 0, "Rejected command retained pending state");
+      // No suitecut command line cap: a command past the old 64 KiB limit round-trips whole.
+      check(body(transport->call(std::string("{\"command\":\"echo\",\"text\":\"") + std::string(200000, 'x') + "\"}")).at("text").as_string() == std::string(200000, 'x'),
+            "Command past the old 64 KiB line limit was rejected or changed");
+      check(transport->stats().pending == 0, "Large command retained pending state");
       auto canceled = transport->submit("{\"command\":\"hang\"}"); transport->cancel(canceled.id);
       rejects([&] { canceled.result.get(); }, "Canceled future did not reject");
       auto timed = transport->submit("{\"command\":\"late\",\"delay\":30}", 3ms);
@@ -144,7 +146,7 @@ int main(int argc, char** argv) {
       auto transport = Transport::launch(options);
       transport->call("{\"command\":\"large-frame\"}");
       const auto frame = transport->poll();
-      check(frame && frame->payload.size() == 3840 * 2160 * 4, "Default event budget dropped supported 4K BGRA frame");
+      check(frame && frame->payload.size() == 3840 * 2160 * 4, "Default (unlimited) event queue dropped a 4K BGRA frame");
       transport->close();
     }
     {
@@ -163,15 +165,14 @@ int main(int argc, char** argv) {
       transport->close(); check(transport->stats().pending == 0, "Overflow left pending futures");
     }
     {
-      auto blocked = options; blocked.arguments = {"--transport-test-mode=blocked"}; blocked.max_pending = 256;
+      // No suitecut writer cap: while the child never reads, 256 commands past
+      // the old 64 KiB line limit (25 MiB, past the old 4 MiB writer) queue.
+      auto blocked = options; blocked.arguments = {"--transport-test-mode=blocked"};
       auto transport = Transport::launch(blocked);
       std::vector<suitecut::Request> requests;
-      bool full = false;
-      for (int count = 0; count < 256; ++count) {
-        try { requests.push_back(transport->submit(Json(Json::object{{"command", "echo"}, {"large", std::string(60000, 'x')}}).dump())); }
-        catch (...) { full = true; break; }
-      }
-      check(full, "Blocked child writer did not exert bounded backpressure");
+      for (int count = 0; count < 256; ++count)
+        requests.push_back(transport->submit(Json(Json::object{{"command", "echo"}, {"large", std::string(100000, 'x')}}).dump()));
+      check(transport->stats().pending == 256, "Blocked child writer rejected commands past the old caps");
       const auto start = std::chrono::steady_clock::now(); transport->close();
       check(std::chrono::steady_clock::now() - start < 2s, "Blocked writer prevented bounded close");
       for (auto& request : requests) rejects([&] { request.result.get(); }, "Blocked writer future survived close");
@@ -185,7 +186,7 @@ int main(int argc, char** argv) {
     {
       auto silent = options; silent.arguments = {"--transport-test-mode=stderr-silent"}; silent.startup_timeout = 100ms;
       try { Transport::launch(silent); check(false, "Silent startup succeeded"); }
-      catch (const std::exception& error) { check(std::string(error.what()).size() < 17000, "Stderr diagnostics exceeded bounded tail"); }
+      catch (const std::exception& error) { check(std::string(error.what()).size() >= 256 * 1024, "Startup stderr diagnostics were clipped"); }
       silent.arguments = {"--transport-test-mode=truncated"};
       rejects([&] { Transport::launch(silent); }, "Truncated response startup accepted");
     }
@@ -212,7 +213,7 @@ int main(int argc, char** argv) {
     rejects([&] { Transport::launch(invalid); }, "Fractional native capture ceiling accepted");
     invalid = options; invalid.arguments = {"--suitecut-profile=/tmp/foreign"};
     rejects([&] { Transport::launch(invalid); }, "Managed profile override accepted");
-    std::cout << "transport lifecycle, concurrency, bounded queues, 1400 seeded I/O cases and readiness churn passed\n";
+    std::cout << "transport lifecycle, concurrency, caller queue limits, 1400 seeded I/O cases and readiness churn passed\n";
     return 0;
   } catch (const std::exception& error) { std::cerr << "transport lifecycle failure: " << error.what() << '\n'; return 1; }
 }

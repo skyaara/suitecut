@@ -34,8 +34,8 @@ admission/cleanup path, without inventing test attempts.
 
 `WorkGroupPool::Admission` has distinct group index, original project index,
 monotonic group generation and teardown marker. It is not a project admission.
-The pool holds at most eight active groups, bounds groups to8192, selected tests
-to4096 and projects to128. A selected project's groups may overlap. Dependency
+The pool's active group count is the caller's worker option; native imposes no
+group, selected test or project count limit. A selected project's groups may overlap. Dependency
 and teardown readiness use the aggregate project result only after every group
 has both a logical result and its physical worker retirement receipt. A failed
 group does not fabricate attempts for unadmitted siblings or block a dependency
@@ -52,7 +52,7 @@ owned. Waiting does not create a test clock or restart the global clock.
 `WorkGroupLocks` uses the distinct native work-group receipt type and leaves the
 existing ordinary-project `ResourceLocks` implementation unchanged. Native
 `WorkGroupLockNames` resolves the inherited union from each selected group's
-original test IDs. It shares the existing bounded UTF16 name/namespace/metadata
+original test IDs. It shares the existing UTF16 name/namespace/metadata
 rules, with no SDK-provided ownership, readiness or release callbacks.
 
 The adapter must supply `WorkerExited` only after actual known-PID host waitpid,

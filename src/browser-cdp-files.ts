@@ -104,7 +104,7 @@ export function createCDPFileControls(
     if (wire.isConnected()) void cancel(guid, entry.contextId).catch(() => undefined)
   }
   const removeBegin = wire.on('Browser.downloadWillBegin', (event) => {
-    if (disposed || typeof event.guid !== 'string' || !/^[\w-]{1,128}$/u.test(event.guid)) return
+    if (disposed || typeof event.guid !== 'string' || !/^[\w-]+$/u.test(event.guid)) return
     const guid = event.guid
     if (active.has(guid)) return
     const pageId = typeof event.frameId === 'string' ? hooks.pageForFrame(event.frameId) : undefined

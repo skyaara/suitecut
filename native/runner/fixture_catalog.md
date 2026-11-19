@@ -17,9 +17,8 @@ fixtures retain their first author-name insertion order when overridden.
 
 The final graph is validated before any callback can be admitted: unknown
 dependencies, cycles, worker-to-test dependencies, duplicate names within a
-layer, malformed IDs, and capacity overflow reject the catalog. Limits are 32
-layers, 256 raw declarations, 4096 raw dependency edges, and 2 MiB of charged
-metadata. Shadowed declarations count toward raw limits even when not executed.
+layer, and malformed IDs reject the catalog. Native imposes no layer,
+declaration, dependency edge or metadata size limit.
 The unchanged `FixtureGraph` and `FixtureOwners` own planning, actual tokens,
 callback readiness, and teardown; this catalog supplies their native keys.
 

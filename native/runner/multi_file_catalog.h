@@ -29,13 +29,11 @@ struct MultiFileSelection {
 class MultiFileCatalog {
  public:
   explicit MultiFileCatalog(std::vector<CollectedSuiteFile> files):files_(std::move(files)){
-    if(files_.empty()||files_.size()>128)throw std::invalid_argument("Native multi-file collection requires1..128 file receipts");
-    std::set<uint64_t> file_ids;std::set<std::string> paths;size_t bytes=0;
+    if(files_.empty())throw std::invalid_argument("Native multi-file collection requires a file receipt");
+    std::set<uint64_t> file_ids;std::set<std::string> paths;
     for(const auto& file:files_){
       if(!file.file.id||!file.file.inode||file.path.empty()||file.path.front()!='/'||!file_ids.insert(file.file.id).second||!paths.insert(file.path).second)
         throw std::invalid_argument("Native multi-file collection identity rejected");
-      if(file.catalog.protocol.size()>16*1024*1024-bytes)throw std::invalid_argument("Native multi-file collection transcript capacity16MiB exceeded");
-      bytes+=file.catalog.protocol.size();
       if(file.catalog.projects.empty()){
         if(!file.catalog.project_tests.empty())throw std::invalid_argument("Native anonymous file has forged project membership");
       }else{
@@ -46,7 +44,6 @@ class MultiFileCatalog {
           if(!local_names.insert(project.name).second)throw std::invalid_argument("Native file repeats a project declaration");
           const auto found=project_names_.find(project.name);
           if(found==project_names_.end()){
-            if(projects_.size()>=127)throw std::invalid_argument("Native multi-file authored project capacity127 exceeded");
             project_names_.emplace(project.name,projects_.size());projects_.push_back(project);
           }else if(!Same(projects_[found->second],project))throw std::invalid_argument("Native files disagree on project dependencies/teardown/default: "+project.name);
         }
@@ -68,7 +65,7 @@ class MultiFileCatalog {
           suite_focus_projects_.insert(project_names_.at(file.catalog.projects.at(project).name));
       }
       for(const auto& test:file.catalog.tests){
-        if(!test.id||!local.insert(test.id).second||tests_.size()>=4096)throw std::invalid_argument("Native multi-file test identity/capacity4096 rejected");
+        if(!test.id||!local.insert(test.id).second)throw std::invalid_argument("Native multi-file test identity rejected");
         size_t project=anonymous_project_;
         if(!file.catalog.projects.empty()){
           const auto membership=file.catalog.project_tests.find(test.id);
@@ -89,7 +86,6 @@ class MultiFileCatalog {
     const std::vector<uint64_t> focus(focused_.begin(),focused_.end());
     // Validate caller's exact IDs and global focus before any worker admission.
     (void)SelectTestIndices(ids,selection,focus,!suite_focus_projects_.empty());
-    if(patterns.size()>128)throw std::invalid_argument("Native multi-file project selector capacity128 exceeded");
     std::vector<bool> roots(projects_.size());
     if(patterns.empty()){
       for(size_t p=0;p<projects_.size();++p)roots[p]=projects_[p].default_enabled&&!graph_->IsTeardown(p);

@@ -75,24 +75,22 @@ describe('raw native fixture declaration layers', () => {
     ])
       expect(() => extendNativeFixtures(invalid as NativeFixtureDeclarations, {})).toThrow()
   })
-  it('bounds total raw declarations and layer count, counting shadowed versions', () => {
+  it('keeps declarations and layers past the former 256/32 caps', () => {
     const base = Object.fromEntries(
-      Array.from({ length: 256 }, (_, index) => [`f${index}`, { setup }]),
+      Array.from({ length: 300 }, (_, index) => [`f${index}`, { setup }]),
     )
-    expect(extendNativeFixtures(base, {}).layers[0]).toHaveProperty('f255')
-    expect(() => extendNativeFixtures(base, { f0: { setup } })).toThrow('capacity')
+    expect(extendNativeFixtures(base, { f0: { setup } }).layers[0]).toHaveProperty('f299')
     let catalog = extendNativeFixtures({}, {})
-    for (let index = 2; index < 32; index++) catalog = extendNativeFixtures(catalog, {})
-    expect(catalog.layers).toHaveLength(32)
-    expect(() => extendNativeFixtures(catalog, {})).toThrow('capacity32')
+    for (let index = 2; index < 40; index++) catalog = extendNativeFixtures(catalog, {})
+    expect(extendNativeFixtures(catalog, {}).layers).toHaveLength(41)
   })
-  it('bounds raw dependency edges before native catalog admission', () => {
+  it('keeps dependency edges past the former 4096-edge cap', () => {
     const base = Object.fromEntries(
       Array.from({ length: 17 }, (_, index) => [
         `f${index}`,
-        { setup, dependencies: Array<string>(256).fill('base') },
+        { setup, dependencies: Array<string>(300).fill('base') },
       ]),
     )
-    expect(() => extendNativeFixtures(base, {})).toThrow('capacity')
+    expect(extendNativeFixtures(base, {}).layers[0]?.f16).toHaveProperty('dependencies')
   })
 })

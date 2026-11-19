@@ -36,8 +36,8 @@ struct AgentActionResult {
   std::optional<AgentEvidence> evidence;
 };
 struct AgentBatchOptions {
-  std::size_t max_actions = 64;       // Hard maximum: 256.
-  std::size_t max_bytes = 256 * 1024; // Hard maximum: 4 MiB.
+  std::size_t max_actions = 0; // Optional action-count limit; 0 means no limit.
+  std::size_t max_bytes = 0;   // Optional serialized-batch byte limit; 0 means no limit.
   bool final_observation = true;
   Timeout max_duration{60000}; // Whole batch, including readbacks/observation; 1..300000 ms.
 };
@@ -55,7 +55,7 @@ struct AgentBatchResult {
 // pointerClick(x,y), insertText(text), observe(boxes?,depth?).
 // Also: hover/focus/clear/scrollIntoView(target), type(target,value),
 // wait(target,state?), upload(target,files[]), back/forward/reload(waitUntil?),
-// evaluate(expression), command(family,fields). Generic commands remain bounded
+// evaluate(expression), command(family,fields). Generic commands remain scoped
 // to the same page and batch deadline; backend-specific unsupported fields fail.
 // Targets: {kind:ref|css|role|text|label|placeholder|testid,value:string,name?,exact?,nth?}.
 // name is role-only; exact is role/text/label-only; nth is optional >=0.
@@ -64,7 +64,7 @@ struct AgentBatchResult {
 // for textContent (text), and nonnegative integers for count. Checks read once.
 // confirmed means this supplied postcondition matched, not task completion.
 // Evidence records only kind/matched; expected and observed values are omitted.
-// All shapes, types and serialized bounds are validated before any dispatch.
+// All shapes, types and any caller-set size limits are validated before any dispatch.
 // Actions execute in order, stop at the first failure, and are never retried.
 // One invocation can replace multiple agent tool calls; this does not make
 // engine commands atomic or pipeline dependent UI mutations concurrently.

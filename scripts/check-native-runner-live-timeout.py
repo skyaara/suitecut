@@ -34,8 +34,8 @@ assert v['summary']['expected']==1 and v['globalErrors']==[]
 v=run('cleanup-amendment-after-main-timeout',"export default defineNativeSuite({hooks:{afterEach:[{run:async(_,i)=>{assert.equal(i.status,'timedOut');await i.setTimeout(200);await wait(80)}}]},tests:[{title:'real timed out main',timeout:50,run:async(_,i)=>aborted(i)}]});",1)
 assert v['attempts'][0]['status']=='timedOut' and v['globalErrors']==[] and v['workers'][0]['exitCode']==0
 assert_attempt_secondary(v,'Fixture scope original deadline expired')
-v=run('bounded-native-ACK-ledger-retains-ignored-mutations',"export default defineNativeSuite({tests:[{title:'real bounded mutation admission',timeout:0,run:(_,i)=>{for(let n=0;n<129;n++)i.setTimeout(1000)}}]});",1)
-assert 'Native live timeout amendment capacity exceeded' in v['attempts'][0]['error'] and v['workers'][0]['exitCode']==0 and v['globalErrors']==[]
+v=run('native-ACK-ledger-admits-ignored-mutations-past-former-128',"export default defineNativeSuite({tests:[{title:'real unbounded mutation admission',timeout:0,run:(_,i)=>{for(let n=0;n<129;n++)i.setTimeout(1000)}}]});")
+assert v['summary']['expected']==1 and 'capacity' not in str(v['attempts'][0]) and v['workers'][0]['exitCode']==0 and v['globalErrors']==[]
 v=run('settled-amendments-do-not-impose-cumulative-quota',"export default defineNativeSuite({tests:[{title:'real sequential native amendments',timeout:0,run:async(_,i)=>{for(let n=0;n<4100;n++)await i.setTimeout(0);assert.equal(i.timeout,0)}},{title:'same actual worker remains usable',run:async(_,i)=>{assert.equal(i.timeout,30000);await i.setTimeout(400)}}]});")
 assert v['summary']['expected']==2 and len(v['workers'])==1 and v['globalErrors']==[]
 v=run('earlier-main-timeout-is-not-overwritten-by-global-cleanup-stop',"export default defineNativeSuite({hooks:{afterEach:[{run:async(_,i)=>{assert.equal(i.status,'timedOut');await i.setTimeout(2000);await aborted(i)}}]},tests:[{title:'earlier native main deadline',timeout:50,run:async(_,i)=>aborted(i)}]});",1,('--global-timeout','1000'))

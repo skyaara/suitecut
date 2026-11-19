@@ -2,6 +2,7 @@
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
+#include <limits>
 #include <cassert>
 #include "include/cef_api_hash.h"
 #include "private_response_session.h"
@@ -20,7 +21,7 @@ struct Harness{
  void InnerReply(int id,const std::string&result){auto message=CefDictionaryValue::Create();message->SetInt("id",id);message->SetDictionary("result",Parse(result));Nested(JSON(message));}
  void Nested(const std::string&message){auto packet=CefDictionaryValue::Create();packet->SetString("targetId","actual-target");packet->SetString("sessionId","actual-private");packet->SetString("message",message);assert(collector->Event("Target.receivedMessageFromTarget",packet));}
  void Event(const std::string&method,Dict actual){auto message=CefDictionaryValue::Create();message->SetString("method",method);message->SetDictionary("params",actual->Copy(false));Nested(JSON(message));}
- void Initialize(){assert(collector->Start(100,[this](bool ok,const auto&){if(ok)++ready;}));ACK(0,R"({"targetInfo":{"type":"page","targetId":"actual-target"}})");auto attached=Parse(R"({"sessionId":"actual-private","targetInfo":{"targetId":"actual-target","type":"page"}})");assert(collector->Event("Target.attachedToTarget",attached));ACK(1,R"({"sessionId":"actual-private"})");assert(sent[2].method=="Target.sendMessageToTarget");auto inner=Parse(sent[2].params->GetString("message"));assert(inner->GetString("method")=="Network.enable");auto settings=inner->GetDictionary("params");assert(settings->GetBool("enableDurableMessages")&&settings->GetInt("maxTotalBufferSize")==256*1048576);ACK(2,"{}");assert(collector->physical()==1&&ready==0);InnerReply(ID(2),"{}");assert(collector->ready()&&ready==1&&collector->physical()==0);}
+ void Initialize(){assert(collector->Start(100,[this](bool ok,const auto&){if(ok)++ready;}));ACK(0,R"({"targetInfo":{"type":"page","targetId":"actual-target"}})");auto attached=Parse(R"({"sessionId":"actual-private","targetInfo":{"targetId":"actual-target","type":"page"}})");assert(collector->Event("Target.attachedToTarget",attached));ACK(1,R"({"sessionId":"actual-private"})");assert(sent[2].method=="Target.sendMessageToTarget");auto inner=Parse(sent[2].params->GetString("message"));assert(inner->GetString("method")=="Network.enable");auto settings=inner->GetDictionary("params");assert(settings->GetBool("enableDurableMessages")&&settings->GetInt("maxTotalBufferSize")==std::numeric_limits<int>::max()&&settings->GetInt("maxResourceBufferSize")==std::numeric_limits<int>::max());ACK(2,"{}");assert(collector->physical()==1&&ready==0);InnerReply(ID(2),"{}");assert(collector->ready()&&ready==1&&collector->physical()==0);}
  void Admit(const std::string&id){auto request=Actual(id);collector->Primary("Network.requestWillBeSent",request);Event("Network.requestWillBeSent",request);collector->Primary("Network.loadingFinished",request);Event("Network.loadingFinished",request);}
  void Detached(){auto packet=CefDictionaryValue::Create();packet->SetString("sessionId","actual-private");assert(collector->Event("Target.detachedFromTarget",packet));}
 };

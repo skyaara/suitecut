@@ -40,9 +40,7 @@ void check_client(sc_client *client) {
   if (!client) throw std::invalid_argument("Client is null");
 }
 std::string command(const char *json, size_t size) {
-  // Engine command framer also has a finite limit. Reject before allocating.
-  if (!json || !size || size > 65536)
-    throw std::invalid_argument("Command is null, empty or exceeds the protocol line limit");
+  if (!json || !size) throw std::invalid_argument("Command is null or empty");
   return std::string(json, size);
 }
 }
@@ -54,8 +52,7 @@ void sc_launch_options_init(sc_launch_options *out) {
   out->struct_size = sizeof(*out); out->abi_version = SC_ABI_VERSION;
   out->width = 1280; out->height = 720; out->frames_per_second = 60; out->headless = 1;
   out->startup_timeout_ms = 30000; out->shutdown_timeout_ms = 5000;
-  out->max_pending = 256; out->max_event_bytes = 64 * 1024 * 1024;
-  out->max_payload_bytes = 192 * 1024 * 1024;
+  // max_pending, max_event_bytes and max_payload_bytes stay 0: no limit.
 }
 static sc_status launch_client(const sc_launch_options *options, sc_client **out, sc_error *error,
                                suitecut::BrowserBackend backend, const char *endpoint = nullptr,
@@ -67,7 +64,7 @@ static sc_status launch_client(const sc_launch_options *options, sc_client **out
       throw std::invalid_argument("Invalid launch options or ABI version");
     if (options->headless != 0 && options->headless != 1)
       throw std::invalid_argument("headless must be zero or one");
-    if (options->argument_count > 1024 || (options->argument_count && !options->arguments))
+    if (options->argument_count && !options->arguments)
       throw std::invalid_argument("Invalid launch arguments");
     suitecut::LaunchOptions config;
     if (options->executable) config.executable = options->executable;
@@ -79,7 +76,7 @@ static sc_status launch_client(const sc_launch_options *options, sc_client **out
       if(connection->tls_client_certificate)config.tls_client_certificate=connection->tls_client_certificate;
       if(connection->tls_client_key)config.tls_client_key=connection->tls_client_key;
       if(connection->headers_json) {
-        const auto headers=suitecut::Json::parse(connection->headers_json,{65536,4,256,16384});
+        const auto headers=suitecut::Json::parse(connection->headers_json);
         for(const auto& [key,value]:headers.as_object())config.connect_headers.emplace(key,value.as_string());
       }
     }

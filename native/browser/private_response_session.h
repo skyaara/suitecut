@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -50,8 +51,9 @@ class NativePrivateResponseSession {
         if(!session_.empty()&&session_!=attached){Fail("Private body Inspector attachment identity mismatch");return;}
         session_=std::move(attached);attaching_=false;
         if(detaching_||now_()>=deadline_){Detach("Private body initialization deadline exceeded");return;}
-        auto params=CefDictionaryValue::Create();params->SetInt("maxTotalBufferSize",256*1048576);
-        params->SetInt("maxResourceBufferSize",128*1048576);params->SetBool("enableDurableMessages",true);
+        auto params=CefDictionaryValue::Create();// The largest integer Network.enable accepts; Chromium applies its own limits.
+        params->SetInt("maxTotalBufferSize",std::numeric_limits<int>::max());
+        params->SetInt("maxResourceBufferSize",std::numeric_limits<int>::max());params->SetBool("enableDurableMessages",true);
         if(!Inner("Network.enable",params,deadline_,[this,alive](bool ok,const std::string&){
           if(!*alive||closed_)return;
           if(!ok||now_()>=deadline_){Detach("Private body Network enable failed or expired");return;}

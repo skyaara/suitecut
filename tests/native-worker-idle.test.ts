@@ -74,7 +74,7 @@ describe('native worker idle receipt marshalling', () => {
       bad[index] = '0'
       expect(() => f.idle.packet(bad)).toThrow()
     }
-    for (const count of ['65', '-1', '0x2', '2.0', '']) {
+    for (const count of ['-1', '0x2', '2.0', '']) {
       const bad = request()
       bad[7] = count
       expect(() => f.idle.packet(bad)).toThrow()

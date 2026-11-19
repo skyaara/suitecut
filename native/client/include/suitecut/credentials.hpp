@@ -15,10 +15,6 @@ namespace suitecut {
 // to call concurrently and use a bounded five-second lock acquisition deadline.
 class CredentialVault {
  public:
-  static constexpr std::size_t max_entries = 256;
-  static constexpr std::size_t max_name_bytes = 128;
-  static constexpr std::size_t max_credential_bytes = 64 * 1024;
-  static constexpr std::size_t max_file_bytes = 1024 * 1024;
   // path names a file in a private directory. Missing directories are created
   // privately. Opening an existing vault authenticates it before any mutation.
   CredentialVault(const std::string& path, const std::string& master_password);

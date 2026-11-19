@@ -119,6 +119,7 @@ export interface NativeAPIRequestOptions {
     Record<string, string | number | boolean | NativeMultipartFile | ReadStream> | FormData
   timeout?: number
   failOnStatusCode?: boolean
+  /** Redirects to follow; defaults to no limit. Zero returns the redirect response. */
   maxRedirects?: number
   maxRetries?: number
   ignoreHTTPSErrors?: boolean
@@ -957,7 +958,8 @@ export class NativeAPIRequestContext {
         url: target.href,
         method: (config.method ?? 'GET').toUpperCase(),
         headers: headersArray(headers),
-        maxRedirects: config.maxRedirects ?? this.options.maxRedirects ?? 20,
+        // INT32 max, the largest count the native helper reads: no suitecut limit.
+        maxRedirects: config.maxRedirects ?? this.options.maxRedirects ?? 2147483647,
         maxRetries: config.maxRetries ?? this.options.maxRetries ?? 0,
         ...(config.ignoreHTTPSErrors === undefined
           ? {}

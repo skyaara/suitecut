@@ -24,17 +24,16 @@ struct ProjectDeclaration {
 // ownership stay native; the callback host never computes this order.
 class ProjectGraph {
  public:
-  static constexpr size_t kProjects=128,kEdges=4096;
   explicit ProjectGraph(std::vector<ProjectDeclaration> declarations):declarations_(std::move(declarations)) {
-    if(declarations_.empty()||declarations_.size()>kProjects)throw std::invalid_argument("Native projects require1..128 declarations");
+    if(declarations_.empty())throw std::invalid_argument("Native projects require at least one declaration");
     for(size_t i=0;i<declarations_.size();++i){const auto& name=declarations_[i].name;
-      if(name.empty()||name.size()>256||name.find('\0')!=std::string::npos||!names_.emplace(name,i).second)
-        throw std::invalid_argument("Native project names must be unique nonempty strings up to256 bytes");
+      if(name.empty()||name.find('\0')!=std::string::npos||!names_.emplace(name,i).second)
+        throw std::invalid_argument("Native project names must be unique nonempty strings");
     }
-    dependencies_.resize(declarations_.size());teardown_.resize(declarations_.size());size_t edges=0;
+    dependencies_.resize(declarations_.size());teardown_.resize(declarations_.size());
     for(size_t i=0;i<declarations_.size();++i){std::set<size_t> seen;
       for(const auto& name:declarations_[i].dependencies){const auto target=Index(name);
-        if(target==i||!seen.insert(target).second||++edges>kEdges)throw std::invalid_argument("Native project dependency identity/capacity rejected");
+        if(target==i||!seen.insert(target).second)throw std::invalid_argument("Native project dependency identity rejected");
         dependencies_[i].push_back(target);
       }
       if(declarations_[i].teardown){const auto target=Index(*declarations_[i].teardown);
@@ -56,7 +55,6 @@ class ProjectGraph {
   bool IsTeardown(size_t index)const{return teardowns_.contains(index);}
   std::optional<size_t> Teardown(size_t index)const{return teardown_.at(index);}
   std::vector<bool> Roots(const std::vector<std::string>& patterns={})const {
-    if(patterns.size()>kProjects)throw std::invalid_argument("Native project selector capacity128 exceeded");
     std::vector<bool> roots(declarations_.size());
     if(patterns.empty()){for(size_t i=0;i<declarations_.size();++i)roots[i]=declarations_[i].default_enabled&&!IsTeardown(i);return roots;}
     bool any=false;
@@ -79,7 +77,7 @@ class ProjectGraph {
  private:
   std::string Available(std::string message)const {
     message+=" Available projects: ";bool first=true;
-    for(const auto& declaration:declarations_){if(message.size()+declaration.name.size()+4>7000){message+="... (available project list truncated)";break;}if(!first)message+=", ";first=false;message+='"'+declaration.name+'"';}return message;
+    for(const auto& declaration:declarations_){if(!first)message+=", ";first=false;message+='"'+declaration.name+'"';}return message;
   }
   std::vector<ProjectDeclaration> declarations_;std::map<std::string,size_t> names_;
   std::vector<std::vector<size_t>> dependencies_;std::vector<std::optional<size_t>> teardown_;std::set<size_t> teardowns_;
@@ -134,7 +132,6 @@ class SerialProjectPlan {
   // Global deadline, failure-limit and interruption policies stop new author
   // admissions, including teardown. They never release a live physical worker.
   void Stop(const std::string& reason){
-    if(reason.size()>8192)throw std::invalid_argument("Native project stop reason capacity exceeded");
     if(stopped_)return;
     stopped_=true;
     if(active_&&!active_->started){results_[active_->admission.index]={State::NotRun,std::nullopt,reason};active_.reset();}

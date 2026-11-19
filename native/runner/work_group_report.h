@@ -20,13 +20,13 @@ template<class Report>const ReportWorkGroup* FindWorkGroup(const Report& report,
 }
 template<class Report>void ValidateWorkGroupReports(const Report& report){
   if(report.work_groups.empty())return;
-  if(report.work_groups.size()>TestWorkGroups::kGroups||report.projects.empty())throw std::invalid_argument("Native work-group report requires bounded genuine projects");
+  if(report.projects.empty())throw std::invalid_argument("Native work-group report requires genuine projects");
   std::set<uint64_t> tests,generations;std::set<unsigned> workers;std::map<uint64_t,std::vector<const ReportWorkGroup*>> projects;
   for(size_t index=0;index<report.work_groups.size();++index){
     const auto& group=report.work_groups[index];(void)WorkGroupModeName(group.mode);
-    if(group.id!=index+1||!group.project_id||group.tests.size()>TestWorkGroups::kTests-tests.size()||group.workers.size()>8192-workers.size()||
-       (group.mode==WorkGroupMode::Serial&&!group.suite)||(group.mode==WorkGroupMode::Parallel&&group.tests.size()!=1))throw std::invalid_argument("Invalid native work-group report identity or capacity");
-    if(group.generation&&(!*group.generation||*group.generation>TestWorkGroups::kGroups||!generations.insert(*group.generation).second))throw std::invalid_argument("Invalid native work-group admission generation");
+    if(group.id!=index+1||!group.project_id||
+       (group.mode==WorkGroupMode::Serial&&!group.suite)||(group.mode==WorkGroupMode::Parallel&&group.tests.size()!=1))throw std::invalid_argument("Invalid native work-group report identity");
+    if(group.generation&&(!*group.generation||!generations.insert(*group.generation).second))throw std::invalid_argument("Invalid native work-group admission generation");
     const auto project=std::find_if(report.projects.begin(),report.projects.end(),[&](const auto& value){return value.id==group.project_id;});
     if(project==report.projects.end()||project->selection_role=="notSelected"||(group.tests.empty()&&!project->selected_test_ids.empty()))throw std::invalid_argument("Native group report has no original selected project");
     projects[group.project_id].push_back(&group);

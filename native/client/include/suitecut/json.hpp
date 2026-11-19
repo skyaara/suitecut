@@ -14,11 +14,12 @@
 #include <vector>
 
 namespace suitecut {
+// Optional caller limits. Zero, the default, means no limit.
 struct JsonLimits {
-  std::size_t max_bytes = 192 * 1024 * 1024;
-  std::size_t max_depth = 64;
-  std::size_t max_nodes = 1024 * 1024;
-  std::size_t max_string_bytes = 192 * 1024 * 1024;
+  std::size_t max_bytes = 0;
+  std::size_t max_depth = 0;
+  std::size_t max_nodes = 0;
+  std::size_t max_string_bytes = 0;
 };
 // Small, owning JSON value. Integers remain exact; accessors never coerce types.
 // Parsing rejects duplicate keys, invalid UTF-8, unpaired surrogates and numbers

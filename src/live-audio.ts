@@ -27,9 +27,9 @@ export class LiveAudioBuffer {
     )
       return
     this.chunks.push({ at, pcm })
-    this.chunks = this.chunks
-      .filter((chunk) => chunk.at >= now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS)
-      .slice(-510)
+    this.chunks = this.chunks.filter(
+      (chunk) => chunk.at >= now - LIVE_RECOVERY_WINDOW_MS - LIVE_AUDIO_DELAY_MS,
+    )
   }
 
   read(at: number, samples: number): Buffer {

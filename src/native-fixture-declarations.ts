@@ -11,9 +11,9 @@ import {
 import { type NativeFixtureDefinition } from './native-suite.js'
 import { type UntrustedInput } from './untrusted.js'
 
-const name = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,255}$/u)
+const name = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/u)
 const fields = {
-  title: z.string().max(4096).optional(),
+  title: z.string().optional(),
   timeout: z.number().int().min(0).max(120000).optional(),
   scope: z.enum(['worker', 'test']).optional(),
   automatic: z.boolean().optional(),
@@ -21,7 +21,7 @@ const fields = {
 }
 const callback = z.strictObject({
   ...fields,
-  dependencies: z.array(name).max(256).optional(),
+  dependencies: z.array(name).optional(),
   setup: z.custom<NativeFixtureDefinition['setup']>((value) => typeof value === 'function'),
 })
 const literal = z.strictObject({

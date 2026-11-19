@@ -48,7 +48,7 @@ void OwnerFrameDocumentCommand(const std::shared_ptr<OwnerFrameDocumentJob>&job,
   if(value.ok&&method==Read::Method::Describe){auto node=result->GetDictionary("node");if(node&&node->GetInt("nodeType")==9&&node->GetType("backendNodeId")==VTYPE_INT)value.backend=node->GetInt("backendNodeId");else value.ok=false;}
   done(std::move(value));
  };
- devtools_.emplace(call,DevToolsCall{0,[reply](bool ok,const std::string&json){reply->Settle(ok,json);},job->session,true,kMaxResponseBytes,true,method==Read::Method::Describe||method==Read::Method::Document});WakeDeadlines();
+ devtools_.emplace(call,DevToolsCall{0,[reply](bool ok,const std::string&json){reply->Settle(ok,json);},job->session,true,true,method==Read::Method::Describe||method==Read::Method::Document});WakeDeadlines();
  if(!SubmitDevTools(call,command,params,job->session)){const auto found=devtools_.find(call);if(found!=devtools_.end()){auto failed=std::exchange(found->second.callback, nullptr);devtools_.erase(found);failed(false,"{}");}}
 }
 bool OwnerFrameCandidateCurrent(CefRefPtr<Source>peer,const std::string&frame,int context,int utility,const std::string&session,const std::string&loader){
@@ -117,7 +117,7 @@ void OwnerFrameResolveOrigin(const std::shared_ptr<OwnerFrameWork>&work,int back
      auto node=result->GetDictionary(method==Origin::Method::Resolve?"object":"result");value.node=node&&node->GetString("type")=="object"&&node->GetString("subtype")=="node";if(node&&node->GetType("objectId")==VTYPE_STRING)value.object=node->GetString("objectId");
     }else if(value.ok){auto node=result->GetDictionary("node");if(node&&node->GetType("nodeType")==VTYPE_INT&&node->GetType("backendNodeId")==VTYPE_INT){value.type=node->GetInt("nodeType");value.backend=node->GetInt("backendNodeId");}}
     reply(std::move(value));
-   },std::nullopt,false,kMaxResponseBytes,true);
+   },std::nullopt,false,true);
   },[this,work]{return OwnerFrameCurrent(work);},
   [this,work,done=std::move(done)](Origin::Result result){if(!OwnerFrameCurrent(work))return;if(!result.ok){Complete(work->owner,false,result.error);return;}if(result.no_owner){Complete(work->owner,true,"","null");return;}done(result.object);},backend,type);
  transaction->Start();
@@ -160,7 +160,7 @@ void OwnerFramePrepared(int id,uint64_t generation,int handle_id,const std::stri
     auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto node=result?result->GetDictionary("node"):nullptr;
      if(!ok||!node||node->GetInt("nodeType")!=9||node->GetType("backendNodeId")!=VTYPE_INT||node->GetInt("backendNodeId")<=0){Complete(work->owner,false,"Native element owner document backend unavailable");return;}OwnerFrameOriginIsolate(work,node->GetInt("backendNodeId"));
     });
-   },std::nullopt,false,kMaxResponseBytes,true);
+   },std::nullopt,false,true);
   });
   });
 }

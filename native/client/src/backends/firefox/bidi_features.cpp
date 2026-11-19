@@ -13,12 +13,11 @@
 namespace suitecut::detail {
 namespace {
 using Clock=std::chrono::steady_clock;
-constexpr std::size_t max_records=4096,max_record_bytes=8*1024*1024;
 std::string text(const Json& value,const char* key,const std::string& fallback={}) {
   return value.contains(key)?value.at(key).as_string():fallback;
 }
 std::filesystem::path absolute_path(const std::string& value,const char* label) {
-  if(value.empty()||value.size()>65536||value.find('\0')!=std::string::npos||
+  if(value.empty()||value.find('\0')!=std::string::npos||
      !std::filesystem::path(value).is_absolute())
     throw std::invalid_argument(std::string(label)+" must be an absolute filesystem path");
   return std::filesystem::path(value).lexically_normal();
@@ -56,39 +55,31 @@ struct BidiFeatures::Impl {
     int page=0;
     std::string directory,local_path;
     Json info;
-    std::size_t bytes=0;
   };
   std::mutex mutex;
   BidiPrivileged privileged;
   bool subscribed=false,closed=false;
-  std::size_t record_bytes=0;
   std::map<std::string,int> pages;
   std::map<std::string,std::string> parents;
   std::map<int,std::string> directories;
   std::map<std::string,Record> records;
   std::map<std::string,int> page_contexts;
   int owner(std::string context)const {
-    for(int depth=0;depth<64;++depth) {
+    for(std::size_t depth=0;depth<=parents.size();++depth) {
       if(const auto found=pages.find(context);found!=pages.end())return found->second;
       const auto parent=parents.find(context);
       if(parent==parents.end())return 0;
       context=parent->second;
     }
-    throw std::runtime_error("Firefox download context nesting exceeds64");
+    throw std::runtime_error("Firefox download context parents form a cycle");
   }
   void tree(const Json& node,const std::string& parent={}) {
     const auto name=node.at("context").as_string();
     if(!parent.empty()) {
-      if(parents.size()>=4096&&!parents.contains(name))throw std::runtime_error("Firefox feature frame capacity exceeded");
       parents[name]=parent;
     }
     if(node.contains("children")&&node.at("children").is_array())
       for(const auto& child:node.at("children").as_array())tree(child,name);
-  }
-  void update_bytes(Record& record) {
-    const auto size=record.info.dump({65536,16,32768,65536}).size()+record.local_path.size()+record.directory.size();
-    if(size>max_record_bytes-(record_bytes-record.bytes))throw std::runtime_error("Firefox download record byte budget exceeded");
-    record_bytes=record_bytes-record.bytes+size;record.bytes=size;
   }
   std::filesystem::path source(const Record& record,bool local)const {
     if(!local)throw std::runtime_error("Firefox remote download files cannot be read from the SDK host");
@@ -125,14 +116,13 @@ void BidiFeatures::observe(const Json& event) {
   std::lock_guard lock(impl_->mutex);if(impl_->closed)return;
   if(method=="browsingContext.contextCreated") {
     if(params.contains("parent")&&params.at("parent").is_string()) {
-      if(impl_->parents.size()>=4096&&!impl_->parents.contains(context))throw std::runtime_error("Firefox feature frame capacity exceeded");
       impl_->parents[context]=params.at("parent").as_string();
     }
     return;
   }
   if(method=="browsingContext.contextDestroyed"){impl_->parents.erase(context);return;}
   const auto id=params.at("download").as_string();
-  if(id.empty()||id.size()>1024)throw std::runtime_error("Invalid Firefox native download id");
+  if(id.empty())throw std::runtime_error("Invalid Firefox native download id");
   auto found=impl_->records.find(id);
   // A frame may disappear while its native download keeps running. A known
   // download retains its original owning page independently of that frame.
@@ -141,7 +131,6 @@ void BidiFeatures::observe(const Json& event) {
   if(!page)return;
   if(owner&&owner!=page)throw std::runtime_error("Firefox download changed owning context");
   if(found==impl_->records.end()) {
-    if(impl_->records.size()>=max_records)throw std::runtime_error("Firefox download record capacity exceeded");
     Impl::Record record;record.page=page;
     auto root=context;while(!impl_->pages.contains(root)&&impl_->parents.contains(root))root=impl_->parents.at(root);
     if(const auto owner=impl_->page_contexts.find(root);owner!=impl_->page_contexts.end())
@@ -159,13 +148,11 @@ void BidiFeatures::observe(const Json& event) {
     record.info["state"]=status=="complete"?"completed":"canceled";
     if(status=="complete"&&params.contains("filepath")&&params.at("filepath").is_string())record.local_path=params.at("filepath").as_string();
   }
-  impl_->update_bytes(record);
 }
 
 void BidiFeatures::setup(BidiRuntime& runtime,BidiPage& page,Deadline deadline) {
   bool subscribe=false;
   {std::lock_guard lock(impl_->mutex);if(impl_->closed)throw std::runtime_error("Firefox features are closed");
-    if(impl_->pages.size()>=4096&&!impl_->pages.contains(page.browsing_context))throw std::runtime_error("Firefox feature page capacity exceeded");
     impl_->pages[page.browsing_context]=page.id;impl_->page_contexts[page.browsing_context]=page.context;subscribe=!impl_->subscribed;}
   if(subscribe) {
     runtime.call("session.subscribe",Json{{"events",Json::array{"browsingContext.downloadWillBegin","browsingContext.downloadEnd"}}},deadline);
@@ -184,7 +171,7 @@ void BidiFeatures::forget(const std::string& context) {
   for(bool changed=true;changed;){changed=false;for(const auto&[child,parent]:impl_->parents)if(erased.contains(parent)&&!erased.contains(child)){erased.insert(child);changed=true;}}
   for(const auto& name:erased)impl_->parents.erase(name);
   for(auto record=impl_->records.begin();record!=impl_->records.end();) {
-    if(record->second.page==page){impl_->record_bytes-=record->second.bytes;record=impl_->records.erase(record);}else ++record;
+    if(record->second.page==page)record=impl_->records.erase(record);else ++record;
   }
   impl_->pages.erase(found);impl_->page_contexts.erase(context);
 }
@@ -209,15 +196,15 @@ Json BidiFeatures::command(BidiRuntime& runtime,BidiPage& page,const Json& field
       }
     }else if(action=="timezone") {
       validate_fields(fields,{"timezoneId"});method="emulation.setTimezoneOverride";
-      const auto timezone=fields.at("timezoneId").as_string();if(timezone.size()>1024)throw std::invalid_argument("Firefox timezone exceeds1024 bytes");
+      const auto timezone=fields.at("timezoneId").as_string();
       params["timezone"]=timezone.empty()?Json{}:Json(timezone);
     }else if(action=="userAgent") {
       validate_fields(fields,{"userAgent","acceptLanguage","platform"});
       if(fields.contains("acceptLanguage")||fields.contains("platform"))throw std::runtime_error("Firefox native BiDi user-agent override does not support acceptLanguage or platform; use locale for language emulation");
-      const auto user_agent=fields.at("userAgent").as_string();if(user_agent.size()>8192||user_agent.find('\0')!=std::string::npos)throw std::invalid_argument("Invalid Firefox user agent");
+      const auto user_agent=fields.at("userAgent").as_string();if(user_agent.find('\0')!=std::string::npos)throw std::invalid_argument("Invalid Firefox user agent");
       method="emulation.setUserAgentOverride";params["userAgent"]=user_agent.empty()?Json{}:Json(user_agent);
     }else if(action=="locale") {
-      validate_fields(fields,{"locale"});const auto locale=fields.at("locale").as_string();if(locale.size()>1024)throw std::invalid_argument("Firefox locale exceeds1024 bytes");method="emulation.setLocaleOverride";params["locale"]=locale.empty()?Json{}:Json(locale);
+      validate_fields(fields,{"locale"});const auto locale=fields.at("locale").as_string();method="emulation.setLocaleOverride";params["locale"]=locale.empty()?Json{}:Json(locale);
     }else if(action=="media") {
       validate_fields(fields,{"media","colorScheme","reducedMotion","forcedColors","contrast"});
       return impl_->privileged.command(runtime,page,fields,deadline);
@@ -229,7 +216,6 @@ Json BidiFeatures::command(BidiRuntime& runtime,BidiPage& page,const Json& field
   if(action=="setDirectory"||action=="configure") {
     validate_fields(fields,{"path"});const auto path=absolute_path(fields.at("path").as_string(),"Download directory");
     std::string directory=path.string();
-    {std::lock_guard lock(impl_->mutex);if(impl_->directories.size()>=4096&&!impl_->directories.contains(page.context))throw std::runtime_error("Firefox download directory context capacity exceeded");}
     if(local){std::filesystem::create_directories(path);directory=std::filesystem::canonical(path).string();}
     const auto user=runtime.contexts.at(page.context);
     runtime.call("browser.setDownloadBehavior",Json{{"downloadBehavior",Json{{"type","allowed"},{"destinationFolder",directory}}},{"userContexts",Json::array{user}}},deadline);
@@ -274,7 +260,7 @@ void BidiFeatures::close(BidiRuntime& runtime,Deadline deadline) {
   // Privileged page-native overrides need explicit restoration while their
   // browsing contexts and the BiDi session are still alive.
   impl_->privileged.close(runtime,deadline);
-  std::lock_guard lock(impl_->mutex);impl_->closed=true;impl_->records.clear();impl_->record_bytes=0;
+  std::lock_guard lock(impl_->mutex);impl_->closed=true;impl_->records.clear();
   impl_->pages.clear();impl_->parents.clear();impl_->page_contexts.clear();impl_->directories.clear();
 }
 }

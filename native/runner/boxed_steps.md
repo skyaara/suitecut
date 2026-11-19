@@ -1,6 +1,6 @@
 # Native boxed step attribution
 
-`info.step(title, callback, {box:true})` preserves the exact authored rejection value and error object. Reports retain the existing bounded original stack/error text (up to 8192 UTF16 units). It does not rewrite JavaScript stacks. Native JSON, JUnit and HTML reports expose a separate primary `errorAttribution` for failed, timed out or interrupted boxed steps.
+`info.step(title, callback, {box:true})` preserves the exact authored rejection value and error object. Reports retain the original stack/error text whole; native does not truncate it. It does not rewrite JavaScript stacks. Native JSON, JUnit and HTML reports expose a separate primary `errorAttribution` for failed, timed out or interrupted boxed steps.
 
 The existing genuine V8 callsite bridge captures at most two external frames before author callback invocation. The first is the step callsite; the second, when present, is its caller. Exact internal SDK source/map paths are filtered by the existing location mechanism. C++ validates each bounded UTF16 location, rejects explicit-location provenance in captured frames, checks the actual callback/attempt/worker/PID and parent at admission, and reserves the metadata in the shared native ledger before invoking author code. C++ prefers the captured caller, falls back to the captured step callsite, and omits attribution when runtime metadata is unavailable. Explicit `options.location` remains independently available as `step.location`; it never becomes a counterfeit captured caller.
 

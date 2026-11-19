@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "multi_file_catalog.h"
+#include <limits>
 #include "repeat_execution.h"
 #include "repeat_group_partition.h"
 
@@ -23,7 +24,7 @@ class MultiFilePlan {
   };
   MultiFilePlan(const MultiFileCatalog& catalog,MultiFileSelection selection,size_t workers,unsigned max_failures=0,bool require_native_progress=false,std::shared_ptr<const NativeRepeatSelection> repeats={},std::shared_ptr<const NativeRepeatGroupPartition> groups={})
       :catalog_(catalog),selection_(std::move(selection)),limit_(workers),max_failures_(max_failures),require_native_progress_(require_native_progress),projects_(catalog.Graph().Declarations().size(),ProjectState::NotSelected),no_work_(projects_.size(),false),repeats_(std::move(repeats)),groups_(std::move(groups)){
-    if(!workers||workers>8||max_failures>4096||selection_.projects.selected.size()!=projects_.size()||selection_.project_tests.size()!=projects_.size()||selection_.roles.size()!=projects_.size())throw std::invalid_argument("Native multi-file plan shape/capacity rejected");
+    if(!workers||selection_.projects.selected.size()!=projects_.size()||selection_.project_tests.size()!=projects_.size()||selection_.roles.size()!=projects_.size())throw std::invalid_argument("Native multi-file plan shape rejected");
     if(!selection_.projects.no_dependencies&&catalog.Graph().Closure(selection_.projects.selected)!=selection_.projects.selected)throw std::invalid_argument("Native multi-file plan omits project closure");
     for(size_t p=0;p<projects_.size();++p)if(selection_.projects.selected[p]){
       projects_[p]=ProjectState::Pending;bool actual_declaration=false;
@@ -54,7 +55,6 @@ class MultiFilePlan {
       }
       for(size_t p=0;p<projects_.size();++p)if(selection_.projects.selected[p])no_work_[p]=std::none_of(segments_.begin(),segments_.end(),[&](const auto& segment){return segment.project==p;});
     }
-    if(segments_.size()>128*128)throw std::invalid_argument("Native multi-file segment capacity exceeded");
   }
   std::optional<Admission> Next(){
     Refresh();if(stopped_||Occupied()>=limit_)return std::nullopt;
@@ -72,13 +72,13 @@ class MultiFilePlan {
     pids_.insert(pid);segment->pid=pid;segment->state=State::Running;return true;
   }
   bool RefusedBeforeStart(const Admission& admission,const std::string& reason){
-    auto* segment=Exact(admission);if(!segment||segment->state!=State::Reserved||reason.size()>8192)return false;
+    auto* segment=Exact(admission);if(!segment||segment->state!=State::Reserved)return false;
     segment->state=State::Failed;segment->reason=reason;segment->outcome=Outcome::Failed;
     // No process was accepted; this is not a fabricated actual exit receipt.
     Refresh();return true;
   }
   bool Complete(const Admission& admission,Outcome outcome,unsigned unexpected){
-    auto* segment=Exact(admission);if(!segment||segment->state!=State::Running||segment->outcome||unexpected>4096)return false;
+    auto* segment=Exact(admission);if(!segment||segment->state!=State::Running||segment->outcome)return false;
     if((outcome==Outcome::Passed&&unexpected)||(require_native_progress_&&!segment->native_progress))return false;
     if(segment->native_progress){if(unexpected!=segment->unexpected)return false;}
     else if(!UnexpectedReceipt(admission,unexpected))return false;
@@ -86,8 +86,8 @@ class MultiFilePlan {
     Retire(*segment);Refresh();return true;
   }
   bool UnexpectedReceipt(const Admission& admission,unsigned cumulative){
-    auto* segment=Exact(admission);if(!segment||segment->state!=State::Running||segment->outcome||cumulative<segment->unexpected||cumulative>4096)return false;
-    const auto delta=cumulative-segment->unexpected;if(delta>4096-failures_)return false;
+    auto* segment=Exact(admission);if(!segment||segment->state!=State::Running||segment->outcome||cumulative<segment->unexpected)return false;
+    const auto delta=cumulative-segment->unexpected;if(delta>std::numeric_limits<unsigned>::max()-failures_)return false;
     if(max_failures_&&failures_+delta>=max_failures_)Stop("Native multi-file maximum failure count reached");
     // A duplicate total is harmless but cannot add a second global failure.
     segment->native_progress=true;segment->unexpected=cumulative;failures_+=delta;return true;
@@ -97,7 +97,7 @@ class MultiFilePlan {
     segment->physical_exit=true;pids_.erase(pid);Retire(*segment);Refresh();return true;
   }
   void Stop(const std::string& reason){
-    if(reason.empty()||reason.size()>8192)throw std::invalid_argument("Native multi-file stop reason rejected");
+    if(reason.empty())throw std::invalid_argument("Native multi-file stop reason rejected");
     if(stopped_)return;
     // All reason allocations precede the state transition. Running segments
     // retain their original actual receipt obligations and cleanup budgets.

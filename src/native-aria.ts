@@ -459,11 +459,9 @@ export function formatNativeAriaTree(
     const inlineText = text !== undefined && !children.length && !properties.length
     if (text !== undefined && !inlineText) children = [{ role: 'text', text }, ...children]
     if (depth >= (options.depth ?? Infinity)) children = []
-    // Keep full names available for matching; bound repeated YAML name previews.
-    // AI snapshots also drop a name its children already spell out.
+    // AI snapshots drop a name its children already spell out.
     const namePreview =
       node.name &&
-      node.name.length <= 1000 &&
       !(options.mode === 'ai' && children.length && repeatsChildren(node.name, children))
         ? node.name
         : undefined
@@ -663,10 +661,10 @@ export function formatNativeAriaInteractive(
     'tree',
   ])
   const output: string[] = []
-  const textOf = (node: NativeAriaJSONNode | string, limit: number): string => {
+  const textOf = (node: NativeAriaJSONNode | string): string => {
     let text = ''
     const pending: (NativeAriaJSONNode | string)[] = [node]
-    while (pending.length && text.length < limit) {
+    while (pending.length) {
       const item = pending.pop()
       if (item === undefined) break
       if (typeof item === 'string') text += item
@@ -682,7 +680,6 @@ export function formatNativeAriaInteractive(
     }
     return text.replace(/\s+/gu, ' ').trim()
   }
-  const short = (value: string) => (value.length > 100 ? `${value.slice(0, 99)}…` : value)
   const kept = (node: NativeAriaJSONNode) =>
     interactiveRoles.has(node.role) ||
     node.editable === true ||
@@ -691,9 +688,9 @@ export function formatNativeAriaInteractive(
     const name = node.name?.length
       ? node.name
       : node.role === 'heading' || kept(node)
-        ? textOf(node, 100)
+        ? textOf(node)
         : ''
-    let text = `${'  '.repeat(depth)}- ${node.role}${name ? ` ${JSON.stringify(short(name))}` : ''}`
+    let text = `${'  '.repeat(depth)}- ${node.role}${name ? ` ${JSON.stringify(name)}` : ''}`
     for (const key of [
       'checked',
       'disabled',
@@ -708,7 +705,7 @@ export function formatNativeAriaInteractive(
       else if (state !== undefined && (state !== false || key === 'expanded'))
         text += ` [${key}=${String(state)}]`
     }
-    if (node.placeholder) text += ` [placeholder=${JSON.stringify(short(node.placeholder))}]`
+    if (node.placeholder) text += ` [placeholder=${JSON.stringify(node.placeholder)}]`
     if (options.boxes && node.box)
       text += ` [box=${[node.box.x, node.box.y, node.box.width, node.box.height].join(',')}]`
     if (node.ref !== undefined) text += ` [ref=${node.ref}]`
@@ -716,7 +713,7 @@ export function formatNativeAriaInteractive(
       (node.role === 'textbox' || node.role === 'searchbox' || node.role === 'combobox') &&
       node.text
     )
-      text += `: ${JSON.stringify(short(node.text))}`
+      text += `: ${JSON.stringify(node.text)}`
     return text
   }
   // Each node renders into its own buffer; a container is written only when a

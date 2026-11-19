@@ -4,6 +4,7 @@
 #include <atomic>
 #include <optional>
 #include <cmath>
+#include <limits>
 #include <memory>
 #include "network_post_data.h"
 
@@ -28,7 +29,7 @@ inline CefRefPtr<CefDictionaryValue> NativeRouteFetchRequest(
   auto fail=[&](const char* message)->CefRefPtr<CefDictionaryValue>{error=message;return nullptr;};
   if(!request||!NativeRouteFetchDeadline(options,now,original,paused,error))return nullptr;
   for(const char* field:{"maxRedirects","maxRetries","timeoutMs"})if(options->HasKey(field)&&options->GetType(field)!=VTYPE_INT)return fail("Invalid native route fetch limits");
-  const int redirects=options->HasKey("maxRedirects")?options->GetInt("maxRedirects"):20;
+  const int redirects=options->HasKey("maxRedirects")?options->GetInt("maxRedirects"):std::numeric_limits<int>::max();
   const int retries=options->HasKey("maxRetries")?options->GetInt("maxRetries"):0;
   const int timeout=options->HasKey("timeoutMs")?options->GetInt("timeoutMs"):30000;
   if(redirects<0||retries<0||timeout<0)return fail("Invalid native route fetch limits");

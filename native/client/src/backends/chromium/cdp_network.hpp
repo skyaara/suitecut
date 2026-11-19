@@ -5,7 +5,7 @@
 #include <memory>
 namespace suitecut::detail {
 struct CdpAutomatic { std::string method, session; Json params; };
-// Bounded internal observer state; public CDP events remain in the wire queue.
+// Internal observer state; public CDP events remain in the wire queue.
 // No observer method performs I/O or waits for a CDP response.
 class CdpNetwork {
  public:

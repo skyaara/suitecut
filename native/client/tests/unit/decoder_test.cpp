@@ -38,15 +38,22 @@ int main() {
       PacketDecoder decoder; decoder.feed(std::span(reply).first(cut), discard);
       rejects([&] { decoder.finish(); }); rejects([&] { decoder.feed({}, discard); });
     }
-    for (const std::uint32_t length : {0u, 1u, 65537u, 0xffffffffu}) {
+    for (const std::uint32_t length : {0u, 1u}) {
       const std::uint8_t prefix[] = {static_cast<std::uint8_t>(length), static_cast<std::uint8_t>(length >> 8), static_cast<std::uint8_t>(length >> 16), static_cast<std::uint8_t>(length >> 24)};
       PacketDecoder decoder; rejects([&] { decoder.feed(prefix, discard); });
     }
+    // No suitecut header cap: any 4-byte length is accepted and waits for its bytes.
+    for (const std::uint32_t length : {65537u, 0xffffffffu}) {
+      const std::uint8_t prefix[] = {static_cast<std::uint8_t>(length), static_cast<std::uint8_t>(length >> 8), static_cast<std::uint8_t>(length >> 16), static_cast<std::uint8_t>(length >> 24)};
+      PacketDecoder decoder; decoder.feed(prefix, discard); rejects([&] { decoder.finish(); });
+    }
+    { const std::string header = R"({"version":1,"type":"ready","bytes":0,"padding":")" + std::string(70000, 'p') + R"("})";
+      PacketDecoder decoder; std::size_t count = 0; decoder.feed(packet(header), [&](Packet&&) { ++count; }); decoder.finish();
+      check(count == 1, "Header past the old 64 KiB cap was rejected"); }
     for (const auto header : {
       R"({"version":2,"type":"ready","bytes":0})", R"({"version":1.0,"type":"ready","bytes":0})", R"({"version":1,"type":null,"bytes":0})",
       R"({"version":1,"type":"unknown","bytes":0})", R"({"version":1,"type":"ready","bytes":-1})", R"({"version":1,"type":"ready","bytes":0.0})",
       R"({"version":1,"type":"ready","bytes":1})", R"({"version":1,"type":"ready","bytes":0,"bytes":0})",
-      R"({"version":1,"type":"console","bytes":33177601})", R"({"version":1,"type":"response","bytes":201326593,"id":1,"ok":true})",
       R"({"version":1,"type":"response","bytes":0,"id":0,"ok":true})", R"({"version":1,"type":"response","bytes":0,"id":1,"ok":"yes"})",
       R"({"version":1,"type":"frame","bytes":16,"width":3841,"height":2})", R"({"version":1,"type":"frame","bytes":15,"width":2,"height":2})",
       R"({"version":1,"type":"frame","bytes":9,"width":3,"height":2,"pixelFormat":"i420"})", R"({"version":1,"type":"audio","bytes":4,"frames":2})",
@@ -55,10 +62,21 @@ int main() {
       rejects([&] { decoder.feed(encoded, discard); }); rejects([&] { decoder.finish(); });
     }
     { PacketDecoder decoder(65536, 2); rejects([&] { decoder.feed(reply, discard); }); }
-    rejects([] { PacketDecoder decoder(65537); }); rejects([] { PacketDecoder decoder(65536, 201326593); });
-    // Advertising the largest allowed response without any payload must not
-    // allocate the advertised 192 MiB; EOF still rejects the incomplete packet.
-    { PacketDecoder decoder; auto encoded = packet(R"({"version":1,"type":"response","bytes":201326592,"id":1,"ok":true})"); decoder.feed(encoded, discard); rejects([&] { decoder.finish(); }); }
+    rejects([] { PacketDecoder decoder(1); });
+    { PacketDecoder header_cap(65537), payload_cap(65536, 201326593); (void)header_cap; (void)payload_cap; }
+    // No suitecut payload cap. Advertising a response or event past the old
+    // 192 MiB / 4K-frame limits without any payload must not allocate the
+    // advertised bytes; EOF still rejects the incomplete packet.
+    for (const auto header : {R"({"version":1,"type":"response","bytes":8589934592,"id":1,"ok":true})", R"({"version":1,"type":"console","bytes":33177601})"}) {
+      PacketDecoder decoder; auto encoded = packet(header); decoder.feed(encoded, discard); rejects([&] { decoder.finish(); });
+    }
+    { // A frame wider than the old 3840 cap and a PCM block past the old 4096 frames pass through whole.
+      const auto wide = packet(R"({"version":1,"type":"frame","bytes":30728,"width":3841,"height":2})", std::vector<std::uint8_t>(30728, 5));
+      const auto pcm = packet(R"({"version":1,"type":"audio","bytes":16388,"frames":4097})", std::vector<std::uint8_t>(16388, 3));
+      PacketDecoder decoder; std::vector<Packet> received;
+      decoder.feed(wide, [&](Packet&& value) { received.push_back(std::move(value)); });
+      decoder.feed(pcm, [&](Packet&& value) { received.push_back(std::move(value)); }); decoder.finish();
+      check(received.size() == 2 && received[0].payload.size() == 30728 && received[1].payload.size() == 16388, "Media past the old caps was rejected"); }
     { PacketDecoder decoder; rejects([&] { decoder.feed(ready, [&](Packet&&) { decoder.feed(ready, discard); }); }); rejects([&] { decoder.finish(); }); }
     { PacketDecoder decoder; rejects([&] { decoder.feed(ready, [&](Packet&&) { throw std::runtime_error("callback"); }); }); rejects([&] { decoder.finish(); }); }
     { PacketDecoder decoder; rejects([&] { decoder.feed({}, {}); }); decoder.feed(ready, discard); decoder.finish(); }
@@ -68,7 +86,7 @@ int main() {
     PacketDecoder decoder; std::size_t completed = 0;
     for (const auto& byte : large) decoder.feed(std::span(&byte, 1), [&](Packet&& value) { check(value.payload.size() == length && value.payload.front() == 7 && value.payload.back() == 7, "Large fragmented payload changed"); check(value.payload.capacity() <= length, "Payload allocated beyond advertised length"); ++completed; });
     decoder.finish(); check(completed == 1, "Large packet callback count changed");
-    std::cout << "Incremental packet fragmentation, bounds, EOF, poisoning and ownership passed\n";
+    std::cout << "Incremental packet fragmentation, caller limits, EOF, poisoning and ownership passed\n";
     return 0;
   } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
 }

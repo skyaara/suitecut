@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <chrono>
+#include <limits>
 #include <string>
 #include "include/cef_values.h"
 namespace suitecut::browser {
 using Clock = std::chrono::steady_clock;
 using Dict = CefRefPtr<CefDictionaryValue>;
-inline constexpr size_t kMaxResponseBytes = 192 * 1048576;
+// Network.enable buffer sizes: the largest integer the protocol accepts, so
+// Chromium's own limits apply instead of a suitecut-chosen one.
+inline constexpr int kDevToolsBufferBytes = std::numeric_limits<int>::max();
 double Now();
 Dict Header(const char* type);
 std::string Json(Dict dict);

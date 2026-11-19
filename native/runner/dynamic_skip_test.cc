@@ -35,7 +35,7 @@ int main(){using K=HookKind;
   assert(RuntimeSkipReason("-")=="\"\"");
   assert(RuntimeSkipReason("610000d80000")=="\"\\u0061\\ud800\\u0000\"");
   std::string maximum;for(size_t n=0;n<8192;++n)maximum+="00d8";
-  assert(JsonString(RuntimeSkipReason(maximum),8192));
+  assert(JsonString(RuntimeSkipReason(maximum)));
   for(const auto& invalid:std::vector<std::string>{"", "000", "000x", maximum+"0000"}){
     bool rejected=false;try{(void)RuntimeSkipReason(invalid);}catch(const std::invalid_argument&){rejected=true;}assert(rejected);
   }

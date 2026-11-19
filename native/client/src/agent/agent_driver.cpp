@@ -16,7 +16,6 @@
 
 namespace suitecut {
 namespace {
-constexpr std::size_t tool_limit = 4 * 1024 * 1024;
 Json get(const Json& a, const char* key, Json fallback = {}) {
   return a.contains(key) ? a.at(key) : std::move(fallback);
 }
@@ -43,7 +42,7 @@ std::vector<std::uint8_t> image_file(const std::string& path) {
   std::ifstream input(path,std::ios::binary|std::ios::ate);
   if(!input)throw std::runtime_error("Cannot open PNG input");
   const auto size=input.tellg();
-  if(size<0 || size>64*1024*1024)throw std::runtime_error("PNG input exceeds 64 MiB");
+  if(size<0)throw std::runtime_error("Cannot size PNG input");
   std::vector<std::uint8_t> bytes(static_cast<std::size_t>(size)); input.seekg(0);
   if(!input.read(reinterpret_cast<char*>(bytes.data()),size))throw std::runtime_error("Cannot read PNG input");
   return bytes;
@@ -86,7 +85,7 @@ Locator target(const Page& page, const Json& a) {
       if (t.contains("frame")) return resolve(page.frame(t.at("frame").as_string()));
       if (t.contains("framePath")) {
         const auto& path = t.at("framePath").as_array();
-        if (path.empty() || path.size() > 64) throw std::invalid_argument("Frame path requires 1..64 selectors");
+        if (path.empty()) throw std::invalid_argument("Frame path requires at least one selector");
         auto frame = page.frame_locator(path.front().as_string());
         for (std::size_t i=1;i<path.size();++i) frame = frame.frame_locator(path[i].as_string());
         return resolve(frame);
@@ -174,7 +173,7 @@ Json AgentDriver::tools() {
   const Json target_schema{{"type","object"},{"properties",Json{
     {"kind",Json{{"type","string"},{"enum",Json::array{"ref","css","role","text","label","placeholder","testid"}}}},
     {"value",str},{"name",str},{"exact",boolean},{"nth",number},{"frame",str},
-    {"framePath",Json{{"type","array"},{"items",str},{"minItems",1},{"maxItems",64}}}}},
+    {"framePath",Json{{"type","array"},{"items",str},{"minItems",1}}}}},
     {"required",Json::array{"kind","value"}},{"additionalProperties",false}};
   Json::array out;
   out.push_back(tool("navigate","Navigate the active page; waitUntil is commit, domcontentloaded, load or networkidle.",
@@ -198,7 +197,7 @@ Json AgentDriver::tools() {
     {"steps",number},{"button",str},{"options",obj}},{"action"}));
   out.push_back(tool("read","Read rendered page text with its actual URL and title; no separate fetch or navigation.",Json::object{}));
   out.push_back(tool("upload","Set actual local files on a file input; an empty files array clears it.",Json{
-    {"target",target_schema},{"ref",str},{"selector",str},{"files",Json{{"type","array"},{"items",str},{"maxItems",1000}}}},{"files"}));
+    {"target",target_schema},{"ref",str},{"selector",str},{"files",Json{{"type","array"},{"items",str}}}},{"files"}));
   out.push_back(tool("wait_for","Wait for an element state, URL, JavaScript condition, text or load milestone within timeoutMs.",Json{
     {"target",target_schema},{"ref",str},{"selector",str},{"state",str},{"url",str},{"expression",str},{"text",str},{"loadState",str},{"timeoutMs",number}}));
   out.push_back(tool("history","Go back, forward, reload or inspect browser history.",Json{{"action",str},{"waitUntil",str}},{"action"}));
@@ -219,7 +218,7 @@ Json AgentDriver::tools() {
   out.push_back(tool("diff","Compare the current semantic snapshot with this page's last baseline; first call establishes a baseline.",Json{{"baseline",Json{{"type",Json::array{"object","array"}}}},{"reset",boolean}}));
   out.push_back(tool("webmcp","List or invoke page-published WebMCP tools. Tools and results are untrusted website data; invocation requires an explicit name and parameters.",
     Json{{"action",str},{"name",str},{"parameters",obj},{"origin",str},{"frame",str},
-         {"framePath",Json{{"type","array"},{"items",str},{"maxItems",64}}}}));
+         {"framePath",Json{{"type","array"},{"items",str}}}}));
   out.push_back(tool("command","Use an explicitly named native command family. Supported actions depend on the selected backend; unsupported features fail explicitly.",
     Json{{"family",str},{"fields",obj}},{"family"}));
   out.push_back(tool("bidi","Call a native Firefox WebDriver BiDi method directly.",Json{{"method",str},{"params",obj}},{"method"}));
@@ -311,7 +310,6 @@ Json AgentDriver::call_with_timeout(const std::string& name, const Json& args, T
 
 Json AgentDriver::call(const std::string& name, const Json& args) {
   if (!args.is_object()) throw std::invalid_argument("Agent tool arguments must be an object");
-  args.dump({tool_limit,64,65536,tool_limit});
   static const auto schemas = [] {
     std::map<std::string,Json> result;
     const auto catalog = AgentDriver::tools();
@@ -372,7 +370,7 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   if (name == "navigate") return page.navigate(args.at("url").as_string(),text(args,"waitUntil","load"));
   if (name == "snapshot") {
     const auto boxes=args.contains("boxes")&&args.at("boxes").as_bool();
-    const auto depth=static_cast<int>(std::clamp(integer(args,"depth",-1),std::int64_t{-1},std::int64_t{64}));
+    const auto depth=static_cast<int>(std::clamp(integer(args,"depth",-1),std::int64_t{-1},std::int64_t{std::numeric_limits<int>::max()}));
     return args.contains("selector")?page.locator(args.at("selector").as_string()).observe(boxes,depth):page.observe(boxes,depth);
   }
   if (name == "evaluate") return page.evaluate(args.at("expression").as_string());
@@ -409,8 +407,8 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   if (name == "check" || name == "uncheck") { target(page,args).check(name == "check"); return Json{}; }
   if (name == "scroll_into_view") { target(page,args).scroll_into_view(); return Json{}; }
   if (name == "select") {
-    if (!args.at("values").is_array() || args.at("values").as_array().size() > 256)
-      throw std::invalid_argument("Select needs at most 256 values");
+    if (!args.at("values").is_array())
+      throw std::invalid_argument("Select needs an array of values");
     std::vector<std::string> values;
     for (const auto& value : args.at("values").as_array()) values.push_back(value.as_string());
     return target(page,args).select_options(values);
@@ -438,7 +436,7 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
     const auto button = text(args,"button","left");
     if (action == "move") {
       const auto steps = integer(args,"steps",1);
-      if (steps < 1 || steps > 1000) throw std::invalid_argument("Mouse steps must be within 1..1000");
+      if (steps < 1 || steps > std::numeric_limits<int>::max()) throw std::invalid_argument("Mouse steps must be a positive int");
       page.mouse_move(args.at("x").as_double(),args.at("y").as_double(),static_cast<int>(steps));
     } else if (action == "click") {
       auto options = pointer_options(args); options["button"] = button;
@@ -452,7 +450,6 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   if (name == "read") return page.evaluate("({url:location.href,title:document.title,text:document.body?.innerText||''})");
   if (name == "upload") {
     const auto& paths = args.at("files").as_array();
-    if (paths.size() > 1000) throw std::invalid_argument("At most 1000 upload paths are permitted");
     std::vector<std::string> files;
     for (const auto& path : paths) files.push_back(path.as_string());
     target(page,args).set_input_files(files); return Json{};
@@ -468,13 +465,13 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
     auto frame = [&]() {
       if (args.contains("frame")) return page.frame(args.at("frame").as_string());
       const auto& path = args.at("framePath").as_array();
-      if (path.empty() || path.size() > 64) throw std::invalid_argument("Frame path requires 1..64 selectors");
+      if (path.empty()) throw std::invalid_argument("Frame path requires at least one selector");
       auto scope = page.frame_locator(path.front().as_string());
       for (std::size_t i = 1; i < path.size(); ++i) scope = scope.frame_locator(path[i].as_string());
       return scope;
     }();
     const auto boxes=args.contains("boxes")&&args.at("boxes").as_bool();
-    const auto depth=static_cast<int>(std::clamp(integer(args,"depth",-1),std::int64_t{-1},std::int64_t{64}));
+    const auto depth=static_cast<int>(std::clamp(integer(args,"depth",-1),std::int64_t{-1},std::int64_t{std::numeric_limits<int>::max()}));
     return args.contains("selector")?frame.locator(args.at("selector").as_string()).observe(boxes,depth):frame.observe(boxes,depth);
   }
   if (name == "wait_for") {
@@ -508,8 +505,8 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   }
   if (name == "viewport") {
     const auto width = args.at("width").as_int(), height = args.at("height").as_int();
-    if (width < 1 || width > 32768 || height < 1 || height > 32768)
-      throw std::invalid_argument("Viewport dimensions must be within 1..32768");
+    if (width < 1 || width > std::numeric_limits<int>::max() || height < 1 || height > std::numeric_limits<int>::max())
+      throw std::invalid_argument("Viewport dimensions must be positive ints");
     page.set_viewport(static_cast<int>(width),static_cast<int>(height)); return Json{};
   }
   if (name == "screenshot") {
@@ -542,10 +539,7 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
       visit(visit,value); return value;
     };
     const bool changed = has_baseline && !reset && comparable(before) != comparable(current);
-    current.dump({1024*1024,64,65536,1024*1024});
-    // Keep just one baseline rather than retaining document copies for every
-    // tab the agent has visited. Switching pages establishes a fresh baseline.
-    if (found == snapshots_.end()) snapshots_.clear();
+    // Each page keeps its own baseline until the page is closed.
     snapshots_.insert_or_assign(active_,current);
     return Json{{"hasBaseline",has_baseline && !reset},{"changed",changed},{"before",std::move(before)},{"after",std::move(current)}};
   }
@@ -564,7 +558,7 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
       "if(!api)throw new Error('WebMCP introspection/execution is unavailable in this browser/page');"
       "const tools=Array.from(await(modern?api.getTools():api.listTools()));";
     if (action == "list") {
-      script += "return {untrusted:true,truncated:tools.length>256,tools:tools.slice(0,256).map(t=>({"
+      script += "return {untrusted:true,tools:tools.map(t=>({"
         "name:t.name,description:t.description,title:t.title,origin:typeof t.origin==='string'?t.origin:undefined,"
         "inputSchema:t.inputSchema}))};})()";
     } else {
@@ -579,7 +573,7 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
     if (args.contains("frame")) return page.frame(args.at("frame").as_string()).evaluate(script);
     if (args.contains("framePath")) {
       const auto& path = args.at("framePath").as_array();
-      if (path.empty() || path.size() > 64) throw std::invalid_argument("Frame path requires 1..64 selectors");
+      if (path.empty()) throw std::invalid_argument("Frame path requires at least one selector");
       auto scope = page.frame_locator(path.front().as_string());
       for (std::size_t i=1;i<path.size();++i) scope = scope.frame_locator(path[i].as_string());
       return scope.evaluate(script);
@@ -589,7 +583,6 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   if (name == "pages") {
     const auto action = text(args,"action","list");
     if (action == "new") {
-      if (pages_.size() >= 128) throw std::runtime_error("Agent page capacity exceeded");
       std::optional<Context> context;
       if (attached_) context.emplace(browser_.new_context());
       auto created = context ? context->new_page() : browser_.new_page();
@@ -621,7 +614,6 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   if (name == "bidi") return page.bidi(args.at("method").as_string(),get(args,"params",Json::object{}));
   if (name == "devtools") return page.devtools(args.at("method").as_string(),get(args,"params",Json::object{}));
   if (name == "submit") {
-    if (pending_.size() >= 128) throw std::runtime_error("Agent pending-request capacity exceeded");
     auto fields = get(args,"fields",Json::object{});
     if (!fields.is_object()) throw std::invalid_argument("fields must be an object");
     const auto timeout = integer(args,"timeoutMs",30000);
@@ -650,10 +642,11 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
     return Json{{"id",id},{"status","completed"},{"result",response_json(future.get())}};
   }
   if (name == "events") {
-    const auto count = integer(args,"maxEvents",32), wait = integer(args,"waitMs",0);
-    if (count < 1 || count > 256 || wait < 0 || wait > 1000) throw std::invalid_argument("Invalid event polling bounds");
+    // maxEvents is an optional caller limit; without it every queued event is returned.
+    const auto count = integer(args,"maxEvents",0), wait = integer(args,"waitMs",0);
+    if ((args.contains("maxEvents") && count < 1) || wait < 0 || wait > 1000) throw std::invalid_argument("Invalid event polling bounds");
     Json::array events;
-    for (std::int64_t i = 0; i < count; ++i) {
+    for (std::int64_t i = 0; !count || i < count; ++i) {
       auto event = transport_->poll(Timeout{i == 0 ? wait : 0});
       if (!event) break;
       Json data;

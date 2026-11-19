@@ -79,7 +79,7 @@ class Source : public CefBaseRefCounted {
     if(method=="Runtime.releaseObjectGroup")remote_groups.erase(params->GetString("objectGroup"));
     return SubmitDevTools(++next_call,method,params,session)?next_call:0;
   }
-  void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,size_t limit=16*1048576,bool lossless_scalars=false) {
+  void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback callback,std::optional<std::string> session=std::nullopt,bool retained=false,bool lossless_scalars=false) {
     (void)limit;assert(operations_.Contains(owner));
     assert(!lossless_scalars||method=="Runtime.getProperties");
     devtools_.emplace(++next_call,DevToolsCall{owner,std::move(callback),session.value_or(operation_sessions_[owner]),method,params,retained});

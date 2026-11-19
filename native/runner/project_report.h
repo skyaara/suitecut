@@ -20,12 +20,10 @@ struct ReportProject {
 };
 inline const ReportProject* ProjectForTest(const std::vector<ReportProject>& projects,uint64_t test){for(const auto& project:projects)for(const auto id:project.test_ids)if(id==test)return &project;return nullptr;}
 inline void ValidateProjectReports(const std::vector<ReportProject>& projects){
-  if(projects.size()>128)throw std::invalid_argument("Native project report capacity128 exceeded");
-  std::set<uint64_t> ids,tests;std::set<unsigned> workers;size_t total_tests=0,total_edges=0;
+  std::set<uint64_t> ids,tests;std::set<unsigned> workers;
   for(const auto& project:projects){
-    if(!project.id||!ids.insert(project.id).second||(project.name_json=="\"\""||!JsonString(project.name_json,256))||!ProjectMetadataJSON(project.metadata_json)||project.test_ids.size()>4096-total_tests||project.dependencies.size()>4096-total_edges||project.workers.size()>8192)
-      throw std::invalid_argument("Invalid native project report declaration or capacity");
-    total_tests+=project.test_ids.size();total_edges+=project.dependencies.size();
+    if(!project.id||!ids.insert(project.id).second||(project.name_json=="\"\""||!JsonString(project.name_json))||!ProjectMetadataJSON(project.metadata_json))
+      throw std::invalid_argument("Invalid native project report declaration");
     if(project.status!="notSelected"&&project.status!="passed"&&project.status!="failed"&&project.status!="blocked"&&project.status!="interrupted"&&project.status!="notRun")throw std::invalid_argument("Native project report requires terminal native state");
     for(const auto test:project.test_ids)if(!test||!tests.insert(test).second)throw std::invalid_argument("Native project test identity duplicated");
     if(project.selection_role!="notSelected"&&project.selection_role!="primary"&&project.selection_role!="dependency"&&project.selection_role!="teardown")throw std::invalid_argument("Invalid native project selection role");

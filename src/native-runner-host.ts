@@ -44,40 +44,37 @@ import {
 } from './native-suite.js'
 import { toError, type UntrustedInput } from './untrusted.js'
 
-const Name = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,255}$/u)
+const Name = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/u)
 const Fixture = NativeFixtureDeclarationSchema
 const FixtureOption = z.custom<NativeFixtureLiteral>((value) => {
   nativeFixtureLiteralWire(value as UntrustedInput)
   return true
 })
-const Lock = z.union([z.string().max(1024), z.array(z.string().max(1024)).max(64)])
-const Tag = z.union([
-  z.string().startsWith('@').max(256),
-  z.array(z.string().startsWith('@').max(256)).max(64),
-])
+const Lock = z.union([z.string(), z.array(z.string())])
+const Tag = z.union([z.string().startsWith('@'), z.array(z.string().startsWith('@'))])
 const Test = z.strictObject({
   lock: Lock.optional(),
-  title: z.string().max(4096),
+  title: z.string(),
   tag: Tag.optional(),
-  fixtures: z.array(Name).max(256).optional(),
-  retries: z.number().int().min(0).max(100).optional(),
+  fixtures: z.array(Name).optional(),
+  retries: z.number().int().min(0).optional(),
   timeout: z.number().int().min(0).max(120000).optional(),
   expectedFailure: z.boolean().optional(),
-  skip: z.union([z.boolean(), z.string().max(8192)]).optional(),
+  skip: z.union([z.boolean(), z.string()]).optional(),
   only: z.boolean().optional(),
   run: z.custom<NativeTestDefinition['run']>((value) => typeof value === 'function'),
 })
 const Hook = z.strictObject({
-  fixtures: z.array(Name).max(256).optional(),
+  fixtures: z.array(Name).optional(),
   timeout: z.number().int().min(0).max(120000).optional(),
   run: z.custom<NativeHookDefinition['run']>((value) => typeof value === 'function'),
 })
 const HookKind = z.enum(['beforeAll', 'beforeEach', 'afterEach', 'afterAll'])
 const Hooks = z.strictObject({
-  beforeAll: z.array(Hook).max(256).optional(),
-  beforeEach: z.array(Hook).max(256).optional(),
-  afterEach: z.array(Hook).max(256).optional(),
-  afterAll: z.array(Hook).max(256).optional(),
+  beforeAll: z.array(Hook).optional(),
+  beforeEach: z.array(Hook).optional(),
+  afterEach: z.array(Hook).optional(),
+  afterAll: z.array(Hook).optional(),
 })
 type ParsedTest = z.infer<typeof Test>
 type ParsedHooks = z.infer<typeof Hooks>
@@ -94,38 +91,24 @@ interface ParsedSuite {
 const NestedSuite: z.ZodType<ParsedSuite> = z.lazy(() =>
   z.strictObject({
     lock: Lock.optional(),
-    title: z.string().max(4096),
+    title: z.string(),
     tag: Tag.optional(),
     mode: z.enum(['default', 'serial', 'parallel']).optional(),
-    skip: z.union([z.boolean(), z.string().max(8192)]).optional(),
+    skip: z.union([z.boolean(), z.string()]).optional(),
     only: z.boolean().optional(),
     hooks: Hooks.optional(),
-    entries: z.array(z.union([Test, NestedSuite])).max(4096),
+    entries: z.array(z.union([Test, NestedSuite])),
   }),
 )
 const ProjectName = z
   .string()
   .min(1)
-  .max(256)
-  .refine(
-    (value) =>
-      !value.includes('\0') &&
-      Buffer.byteLength(value) <= 256 &&
-      Buffer.from(value).toString('utf8') === value,
-  )
-const ProjectMetadata = z
-  .record(z.string(), z.json())
-  .refine((value) => Buffer.byteLength(JSON.stringify(value)) <= 16384)
-const Grep = z.union([z.instanceof(RegExp), z.array(z.instanceof(RegExp)).max(128)])
+  .refine((value) => !value.includes('\0') && Buffer.from(value).toString('utf8') === value)
+const ProjectMetadata = z.record(z.string(), z.json())
+const Grep = z.union([z.instanceof(RegExp), z.array(z.instanceof(RegExp))])
 const ProjectOutputDir = z
   .string()
-  .max(7900)
-  .refine(
-    (value) =>
-      !value.includes('\0') &&
-      Buffer.byteLength(value) <= 7900 &&
-      Buffer.from(value).toString('utf8') === value,
-  )
+  .refine((value) => !value.includes('\0') && Buffer.from(value).toString('utf8') === value)
 const Project = z
   .strictObject({
     repeatEach: nativeRepeatCount.optional(),
@@ -136,16 +119,13 @@ const Project = z
     grepInvert: Grep.optional(),
     fullyParallel: z.boolean().optional(),
     name: ProjectName,
-    dependencies: z.array(ProjectName).max(128).optional(),
+    dependencies: z.array(ProjectName).optional(),
     teardown: ProjectName.optional(),
     default: z.boolean().optional(),
     metadata: ProjectMetadata.optional(),
     hooks: Hooks.optional(),
-    tests: z.array(Test).max(4096).optional(),
-    entries: z
-      .array(z.union([Test, NestedSuite]))
-      .max(4096)
-      .optional(),
+    tests: z.array(Test).optional(),
+    entries: z.array(z.union([Test, NestedSuite])).optional(),
   })
   .refine(
     (value) => (value.tests === undefined) !== (value.entries === undefined),
@@ -168,13 +148,10 @@ const Definition = z
       ])
       .optional(),
     fixtureOptions: z.record(Name, FixtureOption).optional(),
-    projects: z.array(Project).min(1).max(128).optional(),
+    projects: z.array(Project).min(1).optional(),
     hooks: Hooks.optional(),
-    tests: z.array(Test).max(4096).optional(),
-    entries: z
-      .array(z.union([Test, NestedSuite]))
-      .max(4096)
-      .optional(),
+    tests: z.array(Test).optional(),
+    entries: z.array(z.union([Test, NestedSuite])).optional(),
   })
   .refine(
     (value) =>
@@ -191,13 +168,11 @@ const hex = (text: string) => Buffer.from(text, 'utf8').toString('hex') || '-'
 const jsonHex = (value: string) => hex(JSON.stringify(value))
 const unhex = (text: string) => (text === '-' ? '' : Buffer.from(text, 'hex').toString('utf8'))
 const send = async (...fields: (string | number)[]): Promise<void> => {
-  const line = fields.join(' ')
-  if (Buffer.byteLength(line) > 65536) throw new Error('Native runner control packet exceeds64KiB')
-  if (!channel.write(line + '\n')) await once(channel, 'drain')
+  if (!channel.write(fields.join(' ') + '\n')) await once(channel, 'drain')
 }
 const describe = (error: UntrustedInput): string => {
   try {
-    return (toError(error).stack ?? toError(error).message).slice(0, 8192)
+    return toError(error).stack ?? toError(error).message
   } catch {
     return 'Thrown value could not be represented'
   }
@@ -243,10 +218,7 @@ interface MutationRequest {
   reject: (error: Error) => void
 }
 const ExpectedStatus = z.enum(['passed', 'failed', 'skipped'])
-const annotationWire = z
-  .string()
-  .max(32768)
-  .regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
+const annotationWire = z.string().regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
 const parseAnnotation = (fields: readonly string[]): NativeTestAnnotation => {
   const [type, present, reason, file, line, column] = z
     .tuple([
@@ -260,7 +232,7 @@ const parseAnnotation = (fields: readonly string[]): NativeTestAnnotation => {
     .parse(fields)
   const decode = (value: string): string =>
     value === '-' ? '' : Buffer.from(value, 'hex').toString('utf16le')
-  const description = z.string().max(8192).parse(decode(reason))
+  const description = decode(reason)
   if (present === '0' && reason !== '-')
     throw new Error('Invalid native annotation reason presence')
   if ((file === '-') !== (line === 0 && column === 0) || (file !== '-' && (!line || !column)))
@@ -271,7 +243,7 @@ const parseAnnotation = (fields: readonly string[]): NativeTestAnnotation => {
     ...(file === '-'
       ? {}
       : {
-          location: Object.freeze({ file: z.string().max(4096).parse(decode(file)), line, column }),
+          location: Object.freeze({ file: decode(file), line, column }),
         }),
   })
 }
@@ -287,7 +259,6 @@ const parseAdmissionMetadata = (
     .number()
     .int()
     .min(0)
-    .max(256)
     .parse(fields[offset + 1])
   if (fields.length !== offset + 2 + count * 6)
     throw new Error('Invalid native callback annotation snapshot')
@@ -312,8 +283,8 @@ const amendTimeout = (callback: Body, token: string, timeout: number): Promise<v
   const actual = z.number().int().min(0).max(120000).parse(timeout)
   if (!callback.acceptsAmendments || callback.abort.signal.aborted || closing)
     throw new Error('Native live timeout callback is no longer active')
-  if (mutationRequests.size >= 128 || mutationNonce === 18446744073709551615n)
-    throw new Error('Native live timeout amendment capacity exceeded')
+  if (mutationNonce === 18446744073709551615n)
+    throw new Error('Native live timeout amendment nonce exhausted')
   const request = String(++mutationNonce)
   const promise = new Promise<void>((resolve, reject) => {
     mutationRequests.set(request, {
@@ -351,10 +322,9 @@ const callbackSkip = (
   function skip(reason: string): never
   function skip(condition: boolean, reason?: string): void
   function skip(conditionOrReason: boolean | string = true, reason?: string): void {
-    const condition = z.union([z.boolean(), z.string().max(8192)]).parse(conditionOrReason)
+    const condition = z.union([z.boolean(), z.string()]).parse(conditionOrReason)
     const actualReason = z
       .string()
-      .max(8192)
       .optional()
       .parse(typeof condition === 'string' ? condition : reason)
     if (condition === false) return
@@ -362,8 +332,8 @@ const callbackSkip = (
       throw new Error('Native runtime skip supports test bodies, beforeEach and beforeAll hooks')
     if (!callback.acceptsAmendments || callback.abort.signal.aborted || closing)
       throw new Error('Native runtime skip callback is no longer active')
-    if (mutationRequests.size >= 128 || mutationNonce === 18446744073709551615n)
-      throw new Error('Native callback mutation capacity exceeded')
+    if (mutationNonce === 18446744073709551615n)
+      throw new Error('Native callback mutation nonce exhausted')
     const request = String(++mutationNonce)
     const promise = new Promise<void>((resolve, reject) => {
       mutationRequests.set(request, {
@@ -411,10 +381,9 @@ const callbackFail =
     kind: 'body' | z.infer<typeof HookKind>,
   ): NativeTestInfo['fail'] =>
   (conditionOrReason = true, reason) => {
-    const condition = z.union([z.boolean(), z.string().max(8192)]).parse(conditionOrReason)
+    const condition = z.union([z.boolean(), z.string()]).parse(conditionOrReason)
     const actualReason = z
       .string()
-      .max(8192)
       .optional()
       .parse(typeof condition === 'string' ? condition : reason)
     if (condition === false) return Promise.resolve()
@@ -422,8 +391,8 @@ const callbackFail =
       throw new Error('Native dynamic expected failure supports test bodies and beforeEach hooks')
     if (!callback.acceptsAmendments || callback.abort.signal.aborted || closing)
       throw new Error('Native expected failure callback is no longer active')
-    if (mutationRequests.size >= 128 || mutationNonce === 18446744073709551615n)
-      throw new Error('Native callback mutation capacity exceeded')
+    if (mutationNonce === 18446744073709551615n)
+      throw new Error('Native callback mutation nonce exhausted')
     const request = String(++mutationNonce)
     const promise = new Promise<void>((resolve, reject) => {
       mutationRequests.set(request, {
@@ -729,12 +698,7 @@ try {
   const hookCallbacks = new Map<string, z.infer<typeof Hook>>()
   type MetadataRow = readonly (string | number)[]
   const rows: MetadataRow[] = []
-  let rowBytes = 0
   const queueRow = (row: MetadataRow): void => {
-    const bytes = Buffer.byteLength(row.join(' ')) + 1
-    if (bytes > 16777216 - rowBytes || rows.length >= 32768)
-      throw new Error('Native declaration metadata capacity16MiB exceeded')
-    rowBytes += bytes
     rows.push(row)
   }
   const addLocks = (
@@ -783,7 +747,6 @@ try {
       for (const pattern of patterns) {
         const source = pattern.source,
           flags = pattern.flags
-        if (source.length > 4096) throw new Error('Native config grep source capacity4096 exceeded')
         queueRow(['GREP_REGEXP', owner, kind, jsonHex(source), flags || '-'])
       }
     }
@@ -809,7 +772,7 @@ try {
           throw new Error(
             'Per-test hook timeout overrides are unsupported; set the native test timeout',
           )
-        if (++callbackCount > 8192) throw new Error('Native hook declaration capacity8192 exceeded')
+        ++callbackCount
         const id = suiteId === undefined ? index + 1 : callbackCount
         hookCallbacks.set(kind + ':' + id, hook)
         hookOwners.set(kind + ':' + id, {
@@ -847,7 +810,6 @@ try {
     titles: readonly string[] = [],
     components: readonly TitleComponent[] = [],
   ): void => {
-    if (tests.length >= 4096) throw new Error('Native test declaration capacity4096 exceeded')
     tests.push(test)
     const id = tests.length
     testTitlePaths.set(String(id), [...titles, test.title])
@@ -886,13 +848,10 @@ try {
     parent: number,
     position: number,
     titles: readonly string[],
-    depth: number,
     modifiers?: Pick<ParsedSuite, 'skip' | 'only' | 'mode' | 'lock'>,
     components: readonly TitleComponent[] = [],
   ): void => {
-    if (++suiteCount > 256 || depth > 64)
-      throw new Error('Native suite declaration capacity exceeded')
-    const id = suiteCount
+    const id = ++suiteCount
     queueRow(['SUITE', id, parent, position, jsonHex(titles.at(-1) ?? '')])
     addLocks(modifiers?.lock, 'SLOCK', id)
     if (modifiers?.mode !== undefined) queueRow(['SMODE', id, modifiers.mode])
@@ -908,16 +867,10 @@ try {
     addHooks(hooks, id, titles)
     for (const [index, entry] of entries.entries()) {
       if ('entries' in entry)
-        addSuite(
-          entry.entries,
-          entry.hooks,
-          id,
-          index,
-          [...titles, entry.title],
-          depth + 1,
-          entry,
-          [...components, { title: entry.title, tag: entry.tag }],
-        )
+        addSuite(entry.entries, entry.hooks, id, index, [...titles, entry.title], entry, [
+          ...components,
+          { title: entry.title, tag: entry.tag },
+        ])
       else addTest(entry, id, index, titles, components)
     }
   }
@@ -948,13 +901,13 @@ try {
     addHooks(suite.hooks, root, [])
     for (const [index, project] of suite.projects.entries()) {
       const before = tests.length
-      addSuite(project.entries ?? project.tests ?? [], project.hooks, root, index, [], 2)
+      addSuite(project.entries ?? project.tests ?? [], project.hooks, root, index, [])
       for (let test = before + 1; test <= tests.length; ++test) {
         projectMembership.set(String(test), index + 1)
         queueRow(['PROJECT_TEST', index + 1, test])
       }
     }
-  } else if (suite.entries !== undefined) addSuite(suite.entries, suite.hooks, 0, 0, [], 1)
+  } else if (suite.entries !== undefined) addSuite(suite.entries, suite.hooks, 0, 0, [])
   else {
     for (const test of suite.tests ?? []) addTest(test)
     addHooks(suite.hooks)
@@ -1030,7 +983,6 @@ try {
       const file = z
         .string()
         .min(1)
-        .max(16384)
         .parse(JSON.parse(unhex(z.string().parse(f[2]))) as UntrustedInput)
       if (file !== modulePath || !file.startsWith('/') || file.includes('\0'))
         throw new Error('Native directory context differs from actual loaded suite path')
@@ -1054,7 +1006,6 @@ try {
       const file = z
         .string()
         .min(1)
-        .max(8192)
         .parse(JSON.parse(unhex(z.string().parse(f[2]))) as UntrustedInput)
       if (file !== modulePath || !file.startsWith('/') || file.includes('\0'))
         throw new Error('Native file context differs from actual loaded suite path')
@@ -1114,7 +1065,7 @@ try {
         .parse(f.slice(1))
       const version = fixtureBindings?.version(name)
       const definition = version?.definition ?? fixtureDefinitions[name]
-      if (!definition || leases.has(token) || leases.size >= 64)
+      if (!definition || leases.has(token))
         throw new Error('Invalid native fixture setup admission')
       const constant = version?.constant
       const setup: NativeFixtureDefinition['setup'] = constant
@@ -1309,7 +1260,7 @@ try {
         (suite.projects !== undefined && projectMembership.get(owner) !== activeProjectId)
       )
         throw new Error('Invalid native body/project admission')
-      const retry = z.coerce.number().int().min(0).max(100).parse(retryText),
+      const retry = z.coerce.number().int().min(0).parse(retryText),
         abort = new AbortController()
       const snapshots = snapshotCallbacks.admit(owner, retry)
       const body: Body = {
@@ -1443,13 +1394,12 @@ try {
           z.coerce.number().finite().nonnegative(),
         ])
         .parse(f.slice(1, 11))
-      const callbackIndex = z.coerce.number().int().min(1).max(8192).parse(callbackText) - 1,
-        retry = z.coerce.number().int().min(0).max(100).parse(retryText),
+      const callbackIndex = z.coerce.number().int().min(1).parse(callbackText) - 1,
+        retry = z.coerce.number().int().min(0).parse(retryText),
         timeout = z.coerce.number().int().min(0).max(120000).parse(timeoutText),
         abort = new AbortController()
       const repeatContext = repeatCallbacks.snapshot(testId)
-      if (callbacks.has(token) || callbacks.size + bodies.size >= 64)
-        throw new Error('Native hook physical callback admission failed')
+      if (callbacks.has(token)) throw new Error('Native hook physical callback admission failed')
       const callback: Body = {
         owner,
         generation,

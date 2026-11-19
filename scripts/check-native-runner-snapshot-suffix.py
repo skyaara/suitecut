@@ -39,7 +39,8 @@ export default defineNativeSuite({projects:[{name:'named project',hooks,tests:[{
  info.snapshotSuffix='custom';assert.equal(info.snapshotPath('tree.png'),path.join(directory,'tree-named-project-custom.png'));
  assert.equal(info.snapshotPath('tree.png',{kind:'screenshot'}),info.snapshotPath('tree.png'));
  assert.equal(info.snapshotPath('tree.png',{kind:'aria'}),path.join(directory,'tree.png'));
- for(const invalid of ['.','..','a/b','a\\b','\0','\ud800','x'.repeat(1025),1,null]){assert.throws(()=>Reflect.set(info,'snapshotSuffix',invalid));assert.equal(info.snapshotSuffix,'custom');}
+ info.snapshotSuffix='x'.repeat(1025);assert.equal(info.snapshotSuffix,'x'.repeat(1025));assert.equal(info.snapshotPath('tree.png'),path.join(directory,'tree-named-project-'+'x'.repeat(1025)+'.png'));info.snapshotSuffix='custom';
+ for(const invalid of ['.','..','a/b','a\\b','\0','\ud800',1,null]){assert.throws(()=>Reflect.set(info,'snapshotSuffix',invalid));assert.equal(info.snapshotSuffix,'custom');}
  assert(!fs.existsSync(directory));events('body',info);
 }}]},{name:'explicit',hooks,snapshotPathTemplate:'{snapshotDir}/explicit/{platform}/{-snapshotSuffix}/{arg}{ext}',
 expect:{toMatchAriaSnapshot:{pathTemplate:'{snapshotDir}/aria/{arg}{ext}'}},tests:[{title:'explicit suffix opcode',run:(_,info)=>{

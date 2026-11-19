@@ -15,8 +15,7 @@
 struct Host {
   using SnapshotReferenceDocument=suitecut::SnapshotReferences::Document;
   using Dict=CefRefPtr<CefDictionaryValue>;using Callback=std::function<void(bool,const std::string&)>;
-  struct DevToolsCall{int owner;Callback callback;std::string session;bool retain_after_cancel=false;size_t response_limit=0;bool retained_control=false,selector_group_release=false;};
-  static constexpr size_t kMaxResponseBytes=192*1048576;
+  struct DevToolsCall{int owner;Callback callback;std::string session;bool retain_after_cancel=false;bool retained_control=false,selector_group_release=false;};
   static inline double clock=0;double& now=clock;bool browser_=true;int next=0;
   std::map<int,DevToolsCall>devtools_;std::set<std::string>sessions_;
   SuiteCutOperationRegistry operations_;

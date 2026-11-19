@@ -13,12 +13,12 @@ int main(int argc,char**argv){
  Invalid([&]{ModifierAnnotations::Prepare("guessed","-",false,"-",0,0);});Invalid([&]{ModifierAnnotations::Prepare("skip","6100",false,"-",0,0);});
  Invalid([&]{ModifierAnnotations::Prepare("skip","-",false,"-",7,14);});Invalid([&]{ModifierAnnotations::Prepare("skip","-",false,"2f006100",0,14);});Invalid([&]{ModifierAnnotations::Prepare("skip","-",false,"2f006100",1,2147483648ULL);});
  ModifierAnnotations ledger;assert(ledger.Snapshot()=="0");ledger.Append(actual);assert(ledger.Values().size()==1&&ledger.Snapshot()=="1 fail 1 00d80000 2f006100 7 14");ledger.Clear();assert(ledger.Values().empty()&&ledger.Snapshot()=="0");
- for(size_t n=0;n<ModifierAnnotations::kCount;++n){ledger.Append(missing);}
- assert(!ledger.CanAppend(missing));Invalid([&]{ledger.Append(missing);});ledger.Clear();
- std::string huge;for(size_t n=0;n<8192;++n)huge+="00d8";const auto large=ModifierAnnotations::Prepare("skip",huge,true,"2f006100",1,1);assert(ledger.CanAppend(large));ledger.Append(large);assert(!ledger.CanAppend(large));assert(ledger.Snapshot().size()<65536);Invalid([&]{ModifierAnnotations::Prepare("skip",huge+"00d8",true,"-",0,0);});
+ for(size_t n=0;n<257;++n){ledger.Append(missing);}
+ assert(ledger.CanAppend(missing)&&ledger.Values().size()==257);ledger.Clear();
+ std::string huge;for(size_t n=0;n<8193;++n)huge+="00d8";const auto large=ModifierAnnotations::Prepare("skip",huge,true,"2f006100",1,1);assert(ledger.CanAppend(large));ledger.Append(large);assert(ledger.CanAppend(large));ledger.Append(large);assert(ledger.Values().size()==2);
  RunnerReport r;r.workers.push_back({1,getpid(),false,0,{},{}});ReportAttempt attempt{1,1,0,1,getpid(),"\"actual\"","\"\"","failed",true,1,std::nullopt,"failed"};attempt.annotations.push_back(actual);r.attempts.push_back(attempt);assert(report_detail::Validate(r).expected==1);
  {auto bad=r;bad.attempts[0].annotations[0].reason_json="\"invented\"";Invalid([&]{report_detail::Validate(bad);});}
- {auto bad=r;for(size_t n=0;n<257;++n)bad.attempts[0].annotations.push_back(missing);Invalid([&]{report_detail::Validate(bad);});}
+ {auto many=r;for(size_t n=0;n<257;++n)many.attempts[0].annotations.push_back(missing);(void)report_detail::Validate(many);}
  {
   const auto skip=ModifierAnnotations::Prepare("skip","7200",true,"2f006100",5,14);RunnerReport skipped=r;auto& a=skipped.attempts[0];a.status="skipped";a.expected_status="skipped";a.skip_reason_json=skip.reason_json;a.annotations={skip};
   skipped.skip_causes.push_back({90,1,7,8,1,1,2,1,getpid(),skip.reason_json,"skipped",skip});skipped.runtime_skipped.push_back({2,90,"\"native unadmitted declaration\""});assert(report_detail::Validate(skipped).skipped==2);

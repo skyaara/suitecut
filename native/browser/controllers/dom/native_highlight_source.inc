@@ -22,7 +22,7 @@ bool NativeHighlightSend(const std::string&session,const std::string&method,Dict
   };
   // Actual late ACKs survive caller cancel/retry/expiry; channel teardown below
   // is the only alternative retirement boundary. No author by-value projection.
-  devtools_.emplace(tool,DevToolsCall{0,std::move(callback),session,true,kMaxResponseBytes,true,false});
+  devtools_.emplace(tool,DevToolsCall{0,std::move(callback),session,true,true,false});
   if(!SubmitDevTools(tool,method,params,session)){
     const auto found=devtools_.find(tool);if(found!=devtools_.end()){auto actual=std::exchange(found->second.callback, nullptr);devtools_.erase(found);actual(false,"{\"message\":\"Native highlight submission was not accepted\"}");}
   }
@@ -87,7 +87,7 @@ void NativeHighlightCommand(int owner,Dict message){
         const auto parsed=CefParseJSON(json,JSON_PARSER_RFC);const auto result=parsed?parsed->GetDictionary():nullptr;const auto node=result?result->GetDictionary("node"):nullptr;
         if(!ok||!node||node->GetType("backendNodeId")!=VTYPE_INT||node->GetInt("backendNodeId")<1||node->GetInt("nodeType")!=1){Complete(owner,false,"Native highlight actual Element backend identity unavailable");return;}
         const auto operation=operations_.Get(owner);if(!operation)return;NativeHighlights()->Show(owner,generation,document,node->GetInt("backendNodeId"),operation->deadline_ms,std::move(reply));
-      },document.session,false,kMaxResponseBytes,true);
+      },document.session,false,true);
     });
   },true);
 }

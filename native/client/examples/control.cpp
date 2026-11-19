@@ -16,22 +16,14 @@
 
 namespace {
 using suitecut::Json;
-// Bound allocation before parsing. Discard the rest of a rejected line so the
-// caller can recover with its next JSON request on the same browser session.
+// Reads one request line; a request of any size is accepted.
 bool read_line(std::string& line) {
-  line.clear(); bool overflow = false;
+  line.clear();
   for (;;) {
     const int next = std::cin.get();
-    if (next == std::char_traits<char>::eof()) {
-      if (overflow) throw std::invalid_argument("Request line exceeds 4 MiB");
-      return !line.empty();
-    }
-    if (next == '\n') {
-      if (overflow) throw std::invalid_argument("Request line exceeds 4 MiB");
-      return true;
-    }
-    if (!overflow && line.size() < 4 * 1024 * 1024) line.push_back(static_cast<char>(next));
-    else overflow = true;
+    if (next == std::char_traits<char>::eof()) return !line.empty();
+    if (next == '\n') return true;
+    line.push_back(static_cast<char>(next));
   }
 }
 Json mcp_result(Json result) {
@@ -230,7 +222,7 @@ int main(int argc, char** argv) {
           if (!read_line(line)) break;
           if (line.empty()) continue;
           parsing = true;
-          const auto request = Json::parse(line,{4*1024*1024,64,65536,4*1024*1024});
+          const auto request = Json::parse(line);
           parsing = false;
           if (mcp && request.is_object() && request.contains("id")) id = request.at("id");
           if (mcp && request.is_object() && request.contains("method") && !request.contains("id")) continue;

@@ -53,7 +53,7 @@ void NativeCoverageEnsure(){
     };
     // owner0 denotes an actual controller-owned command. Retained=true keeps it
     // registered across public operation cancellation; only ACK/close retires it.
-    devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,kMaxResponseBytes,true,true});
+    devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,true,true});
     if(!SubmitDevTools(assigned,method,params,session)){
       const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{\"message\":\"Actual native coverage dispatch failed\"}");}
     }

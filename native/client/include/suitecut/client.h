@@ -34,7 +34,7 @@ typedef struct sc_launch_options {
   double frames_per_second;
   int headless;
   uint32_t startup_timeout_ms, shutdown_timeout_ms;
-  size_t max_pending, max_event_bytes, max_payload_bytes;
+  size_t max_pending, max_event_bytes, max_payload_bytes; /* Optional caller limits; 0 (the default) means no limit. */
   const char *const *arguments;
   size_t argument_count;
 } sc_launch_options;

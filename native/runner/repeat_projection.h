@@ -20,7 +20,6 @@ template<class Declaration>class NativeRepeatProjectionIndex {
   explicit NativeRepeatProjectionIndex(const std::vector<Declaration>& tests,
       std::function<void()> stopped={}):stopped_(std::move(stopped)){
     Poll();
-    if(tests.size()>NativeTestGroupTree::kTests)throw std::length_error("Native repeat projection declaration capacity4096 exceeded");
     index_.reserve(tests.size());
     for(const auto& test:tests){Step();index_.push_back(&test);}
     std::sort(index_.begin(),index_.end(),[this](const auto* a,const auto* b){Step();return a->id<b->id;});
@@ -30,14 +29,13 @@ template<class Declaration>class NativeRepeatProjectionIndex {
   NativeRepeatProjection Project(const std::vector<SelectedTestGroup>& groups,
       const std::vector<uint64_t>& selected){
     Poll();
-    if(selected.size()>NativeTestGroupTree::kTests||groups.size()>NativeTestGroupTree::kGroups)throw std::length_error("Native repeat projection group capacity exceeded");
     NativeRepeatProjection result;std::set<uint64_t> ordered,expected;
     for(const auto id:selected){Step();expected.insert(id);}
-    size_t count=0,maximum=0;
+    size_t maximum=0;
     for(const auto& group:groups){
       Step();if(!group.tests.empty())result.group_sizes.push_back(group.tests.size());
       maximum=std::max(maximum,group.tests.size());
-      for(const auto id:group.tests){Step();if(++count>NativeTestGroupTree::kTests)throw std::length_error("Native repeat projection selected declaration capacity exceeded");ordered.insert(id);}
+      for(const auto id:group.tests){Step();ordered.insert(id);}
     }
     if(ordered.size()!=expected.size())throw std::runtime_error("Native repeat groups lost actual selected declarations");
     auto original=expected.begin();for(const auto id:ordered){Step();if(id!=*original++)throw std::runtime_error("Native repeat groups lost actual selected declarations");}

@@ -25,25 +25,15 @@ export class NativeStepFailureOrigins {
   private readonly actual = new Map<string, ActualStep>()
   private readonly observed = new Set<string>()
   private readonly errors = new WeakMap<object, Map<string, Set<string>>>()
-  private reserved = 0
   admit(owner: NativeStepOwner, id: string, parent: string): void {
     const identity = ownerKey(Owner.parse(owner)),
       actualId = UInt.parse(id)
-    if (this.actual.has(actualId) || this.actual.size >= 8192)
-      throw new Error('Native step-origin admission capacity/identity rejected')
+    if (this.actual.has(actualId)) throw new Error('Native step-origin admission identity rejected')
     const prior = parent === '0' ? undefined : this.actual.get(UInt.parse(parent))
     if (parent !== '0' && prior?.owner !== identity)
       throw new Error('Native step-origin parent belongs to a different callback')
     const ancestors = prior ? [...prior.ancestors, parent] : []
-    const reservation =
-      identity.length * 2 +
-      actualId.length * 2 +
-      ancestors.reduce((sum, item) => sum + item.length * 2 + 32, 0) +
-      1024
-    if (ancestors.length >= 64 || reservation > 64 * 1024 * 1024 - this.reserved)
-      throw new Error('Native step-origin metadata capacity exceeded')
     this.actual.set(actualId, { owner: identity, ancestors: Object.freeze(ancestors) })
-    this.reserved += reservation
   }
   // Called only after the actual native STEP_RESULT confirms this raw failure.
   observe(owner: NativeStepOwner, id: string, error: UntrustedInput): void {

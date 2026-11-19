@@ -3,6 +3,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <limits>
 #include "include/cef_api_hash.h"
 #include "network_controls.h"
 using Dict=CefRefPtr<CefDictionaryValue>;
@@ -12,7 +13,7 @@ int main(){
   const auto request=Parse(R"({"url":"https://native.test/a","method":"POST","headers":{"X-Actual":"original"},"postDataBase64":"AP8NCg=="})");
   auto options=Parse(R"({"apiContextId":7})");std::string error;
   auto result=suitecut::NativeRouteFetchRequest(request,options,1,100,200,error);
-  assert(result&&result->GetString("body")=="AP8NCg=="&&result->GetString("method")=="POST"&&result->GetInt("maxRedirects")==20&&result->GetInt("maxRetries")==0&&result->GetInt("timeoutMs")==30000);
+  assert(result&&result->GetString("body")=="AP8NCg=="&&result->GetString("method")=="POST"&&result->GetInt("maxRedirects")==std::numeric_limits<int>::max()&&result->GetInt("maxRetries")==0&&result->GetInt("timeoutMs")==30000);
   assert(result->GetList("headers")->GetDictionary(0)->GetString("value")=="original");
   options=Parse(R"({"apiContextId":7,"url":"https://native.test/b","method":"PUT","headers":[],"postData":"","maxRedirects":0,"maxRetries":2,"timeoutMs":0})");
   result=suitecut::NativeRouteFetchRequest(request,options,1,100,200,error);

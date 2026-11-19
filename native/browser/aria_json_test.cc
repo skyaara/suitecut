@@ -27,7 +27,6 @@ struct Harness {
  std::map<int,std::set<std::string>> evaluation_groups_;
  std::vector<std::string> responses,errors;int retries=0,untracked_releases=0;bool hold_publication=false;std::string held;
  suitecut::SelectorWaitControls selectors{[this]{return now;},[this](const std::string& error){errors.push_back(error);},[this](int,const std::string&,const std::string&,std::function<void()> done){releases.push_back(std::move(done));}};
- static constexpr size_t kMaxResponseBytes=1048576;
  double Now()const{return now;}
  std::optional<SnapshotReferenceDocument> ReferenceDocument(const std::string& frame)const{return frame==document.frame?std::optional(document):std::nullopt;}
  std::string FrameId(Dict config){return config->HasKey("frame")?config->GetString("frame").ToString():"main";}
@@ -45,7 +44,7 @@ struct Harness {
  void ResolveFramePath(int,uint64_t,Dict,size_t,const std::string&,std::function<void(Dict)>){assert(false);}
  void WithFrame(int,const std::string&,std::function<void(int)> done,bool utility){assert(utility);done(document.utility);}
  bool ReferenceTemporaryGroups(int owner){const auto groups=evaluation_groups_.find(owner);if(groups==evaluation_groups_.end())return true;for(const auto& session:groups->second)if(!selectors.Group(owner,"suitecut-automation-"+std::to_string(owner),session))return false;evaluation_groups_.erase(groups);return true;}
- void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback done,const std::string& session="",bool=false,size_t=1048576,bool=false){
+ void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback done,const std::string& session="",bool=false,bool=false){
   const auto found=aria_json_work_.find(owner);if(found!=aria_json_work_.end()&&!AriaJSONCurrent(found->second))return;
   const auto entry=operations_.Get(owner);assert(entry);assert(selectors.Group(owner,"suitecut-automation-"+std::to_string(owner),session));assert(ReferenceTemporaryGroups(owner));auto physical=selectors.Begin(owner);assert(physical);
   calls.push_back({method,params->Copy(false),[this,owner,generation=entry->generation,physical,done=std::move(done)](bool ok,const std::string& json)mutable{physical->Settle();if(operations_.IsCurrent(owner,generation)&&!selectors.Retrying(owner))done(ok,json);}});

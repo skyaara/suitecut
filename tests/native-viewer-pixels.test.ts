@@ -92,6 +92,21 @@ describe('native viewer fitted BGRA pixels', () => {
     expect(() => nativeViewerRGB({ ...frame, width: 3841, height: 2160 })).toThrow()
   })
 
+  it('copies frames past the old 3840x2160 cap', () => {
+    const width = 4097,
+      height = 2161
+    const data = Buffer.alloc(width * height * 4, 255)
+    const offset = ((height - 1) * width + width - 1) * 4
+    data.set([7, 19, 251, 0], offset)
+    const result = nativeViewerRGB({
+      data,
+      width,
+      height,
+      contentRect: { x: width - 1, y: height - 1, width: 1, height: 1 },
+    })
+    expect(result).toEqual({ data: Buffer.from([251, 19, 7]), width: 1, height: 1 })
+  })
+
   it('yields on large crops and cancels between chunks without changing source pixels', async () => {
     const frame = { data: Buffer.alloc(257 * 263 * 4, 19), width: 257, height: 263 }
     let yielded = false

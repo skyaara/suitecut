@@ -94,7 +94,9 @@ int main(){try{
   rejects([&]{suitecut::decode_png(png(1,1,8,6,{0,1,2,3}));});
   rejects([&]{suitecut::decode_png(png(1,1,8,6,{0,1,2,3,4,5}));});
   rejects([&]{suitecut::decode_png(png(0,1,8,6,{0}));});
-  rejects([&]{suitecut::decode_png(png(32769,1,8,6,{0}));});
+  {// Dimensions past the former 16384 default and 32768 bound pass through whole.
+    const auto wide=suitecut::decode_png(png(32769,1,8,6,Bytes(1+32769*4,0)));check(wide.width==32769&&wide.rgba.size()==32769*4,"Wide PNG past the former dimension cap was rejected");
+    suitecut::PngImage strip{40000,1,Bytes(40000*4,9)};check(suitecut::decode_png(suitecut::encode_png(strip)).rgba==strip.rgba,"Wide PNG encode roundtrip failed");}
   rejects([&]{suitecut::decode_png(png(1,1,4,6,{0}));});
   rejects([&]{suitecut::decode_png(png(1,1,8,5,{0}));});
   rejects([&]{suitecut::decode_png(png(1,1,8,6,{0},2));});
@@ -118,7 +120,7 @@ int main(){try{
   limits={};limits.max_decoded_bytes=4;rejects([&]{suitecut::decode_png(one,limits);});
   limits={};limits.max_encoded_bytes=one.size()-1;rejects([&]{suitecut::decode_png(one,limits);});
   limits={};limits.max_encoded_bytes=20;rejects([&]{suitecut::encode_png(original,limits);});
-  limits={};limits.max_dimension=32769;rejects([&]{suitecut::decode_png(one,limits);});
+  limits={};limits.max_dimension=32769;check(suitecut::decode_png(one,limits).width==1,"Caller dimension limit above the former 32768 bound was rejected");
   rejects([&]{suitecut::encode_png(suitecut::PngImage{2,1,{1,2,3,4}});});
   options={};options.limits.max_pixels=3;rejects([&]{suitecut::compare_png(two,tall,options);});
 

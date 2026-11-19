@@ -455,8 +455,8 @@ native API request context for each test and each all-hook scope, and awaits rea
 disposal before scope completion. Exact896 live browser4 and request3 groups pass.
 
 `maxFailures` / `--max-failures N` stops admitting tests after N final unexpected
-test outcomes, following all configured retries. Zero is unlimited; accepted values
-are0–4096. Flaky passes and expected failures do not consume the limit. The native
+test outcomes, following all configured retries. Zero is unlimited; native
+imposes no upper bound beyond the unsigned integer width. Flaky passes and expected failures do not consume the limit. The native
 runner awaits actual worker retirement and reports untouched declarations as
 `unrun`. Optimized and fully sanitized actual-process checks each pass11 groups;
 the private runner suite passes27/27. The feature is compiled in5313fc84 and
@@ -467,8 +467,8 @@ The0920242b build adds ordered literal nested `entries`, with test declarations
 or `{title, hooks, entries}` suite nodes. Use exactly one of legacy root `tests`
 or root `entries`; fixtures remain root declarations. Native C++ owns depth-first
 admission, inherited beforeEach, reverse afterEach, all-hook lifetime and subtree
-exclusion after exhausted beforeAll failure. Bounds are256 suites,64 levels,
-4096 tests and8192 hook declarations. Selected last use determines afterAll;
+exclusion after exhausted beforeAll failure. Native imposes no suite, nesting,
+test or hook declaration count limit. Selected last use determines afterAll;
 retries require a fresh, physically confirmed worker. Twelve actual-process and
 sanitizer groups pass. This does not add a describe DSL, projects or parallel
 workers.
@@ -515,7 +515,7 @@ confirmed worker exit and still runs afterEach and fixture teardown. A caught
 skip followed by another exception, cleanup failure/timeout, global stop or real
 worker kill overrides a clean skipped outcome. Runtime skips retain an actual
 attempt, PID, generation and elapsed duration; they are distinct from unrun static
-declarations. Reasons preserve up to8192 exact UTF16 units in native JSON, with
+declarations. Reasons preserve their exact UTF16 units whole in native JSON, with
 explicit XML sanitization counts in JUnit/HTML. True all-hook/fixture skip and
 dynamic expected-failure amendments remain separate work. The integrated native
 suite passes177 checks, including the authored18 process and genuine ACK2 groups;
@@ -603,7 +603,7 @@ propagation remain unfinished.
 
 FixtureGraph validates named worker/test fixture definitions, duplicate/unknown/cyclic dependencies and invalid worker-to-test dependencies before any host callback. Plan admits automatic worker fixtures, automatic test fixtures and requested dependencies in that order. Limits256 definitions/roots and4096 edges.
 
-FixtureOwners belongs to one actual host worker. Begin(test,generation,roots,realDeadline,now) asks host to start actual fixture factories. Ready(token,test,generation) means the factory has entered its actual use(value) continuation; it does NOT release the physical callback. Settled only retires a lease when the actual factory promise resolves/rejects. Reverse teardown resumes real continuations, preserving worker fixtures across passing tests and test isolation. Failure retires the worker before new admission. Setup/body timeout keeps callback leases and triggers bounded cleanup; if physical callbacks never settle, terminateWorker requests actual worker termination, and only WorkerClosed after OS-confirmed exit releases remaining ownership. Up to64 physical fixture callbacks; stale tokens and owner/generation replies ignored. Diagnostics cap8192 bytes. Explicit synchronous callback-to-hook reentrancy is not supported: the host bridge enqueues real asynchronous IPC events.
+FixtureOwners belongs to one actual host worker. Begin(test,generation,roots,realDeadline,now) asks host to start actual fixture factories. Ready(token,test,generation) means the factory has entered its actual use(value) continuation; it does NOT release the physical callback. Settled only retires a lease when the actual factory promise resolves/rejects. Reverse teardown resumes real continuations, preserving worker fixtures across passing tests and test isolation. Failure retires the worker before new admission. Setup/body timeout keeps callback leases and triggers bounded cleanup; if physical callbacks never settle, terminateWorker requests actual worker termination, and only WorkerClosed after OS-confirmed exit releases remaining ownership. Physical fixture callbacks have no native count limit; stale tokens and owner/generation replies ignored. Diagnostics cap8192 bytes. Explicit synchronous callback-to-hook reentrancy is not supported: the host bridge enqueues real asynchronous IPC events.
 
 RetryPlan serially schedules explicit TestCase declarations. Native state owns original/retry attempt identity, expected-failure results and retry limits. Unexpected outcome creates a physical worker retirement fence; Next cannot admit a retry until WorkerExited(exactPID). Expected failure does not retry; unexpected pass does. Max4096 tests,100 retries per test,64MiB projected attempt metadata/error budget. First slice is serial and has no isolated-retry mode or serial-group/project semantics.
 

@@ -22,13 +22,13 @@ struct Harness {
   std::optional<Metadata>metadata_=Metadata{};
   std::vector<std::string>sent;size_t charge=0;bool reject_send=false;
   static void Size(const std::vector<std::string>&value,size_t size){if(value.size()!=size)throw std::invalid_argument("size");}
-  static uint64_t Integer(const std::string&value,uint64_t max){uint64_t number=0;const auto result=std::from_chars(value.data(),value.data()+value.size(),number);if(result.ec!=std::errc{}||result.ptr!=value.data()+value.size()||number>max)throw std::invalid_argument("integer");return number;}
+  static uint64_t Integer(const std::string&value,uint64_t max=UINT64_MAX){uint64_t number=0;const auto result=std::from_chars(value.data(),value.data()+value.size(),number);if(result.ec!=std::errc{}||result.ptr!=value.data()+value.size()||number>max)throw std::invalid_argument("integer");return number;}
   static std::string Hex(const std::string&value){constexpr char hex[]="0123456789abcdef";std::string result;for(const unsigned char c:value){result+=hex[c>>4];result+=hex[c&15];}return result.empty()?"-":result;}
   void Charge(size_t bytes){charge+=bytes;}
   void Send(const std::string&line){if(reject_send)throw std::runtime_error("actual controlled transport rejection");sent.push_back(line);}
 #include "snapshot_path_binding.inc"
   Harness(){metadata_->titles[1]="\"test\"";metadata_->grep_components[1]={{{u"suite"}},{{u"test"}}};}
-  std::string LastJSON()const{const auto&line=sent.back();const auto offset=line.find(' ',line.find(' ')+1);return sr::DecodeHex(line.substr(offset+1),30000);}
+  std::string LastJSON()const{const auto&line=sent.back();const auto offset=line.find(' ',line.find(' ')+1);return sr::DecodeHex(line.substr(offset+1));}
 };
 template<class F>void Reject(F&&f){bool rejected=false;try{f();}catch(const std::exception&){rejected=true;}assert(rejected);}
 int main(){

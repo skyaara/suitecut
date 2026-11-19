@@ -22,13 +22,12 @@ namespace suitecut::runner {
 // authoritative phase deadlines, and only its own inode-identified artifacts.
 class RunnerAttachments {
  public:
-  static constexpr size_t kRecords=128,kPhysical=4,kBytes=64*1024*1024;
-  struct Budget {uint64_t sequence=0;size_t accepted=0,reserved=0,physical=0;AttachmentDeclarations::Budget declarations{};AttachmentMutations::Budget mutations{};AttachmentViewReceipts::Budget publications{};};
+  struct Budget {uint64_t sequence=0;size_t physical=0;AttachmentDeclarations::Budget declarations{};AttachmentViewReceipts::Budget publications{};};
   struct Hooks {std::function<void(const std::string&)> send;std::function<void(const std::string&)> failure;std::function<const StepRecord*(uint64_t)> step={};std::function<void(const StepOwner&,const std::string&)> close_owner={};std::function<void(const StepOwner&,uint64_t,const AttachmentRetryProvenance&,double,bool)> validate_retry={};std::function<void(const StepOwner&,const AttachmentRetryProvenance&,const std::string&,bool)> retry_failure={};};
-  RunnerAttachments(std::filesystem::path parent,Hooks hooks,Budget* budget=nullptr):parent_(std::move(parent).lexically_normal()),hooks_(std::move(hooks)),budget_(budget),declarations_(budget?&budget->declarations:nullptr){records_.reserve(kRecords);}
+  RunnerAttachments(std::filesystem::path parent,Hooks hooks,Budget* budget=nullptr):parent_(std::move(parent).lexically_normal()),hooks_(std::move(hooks)),budget_(budget),declarations_(budget?&budget->declarations:nullptr){}
   void WorkerStarted(){if(!jobs_.empty()||!callbacks_.empty()||!step_fences_.empty())throw std::runtime_error("Native attachment worker still owns physical jobs/callbacks");nonce_=0;}
   void BeginCallback(const StepOwner& owner,double deadline,double now){
-    if(!Valid(owner)||!std::isfinite(deadline)||!std::isfinite(now)||deadline<=0||callbacks_.size()>=64||callbacks_.contains(Key(owner)))throw std::runtime_error("Native attachment callback admission failed");
+    if(!Valid(owner)||!std::isfinite(deadline)||!std::isfinite(now)||deadline<=0||callbacks_.contains(Key(owner)))throw std::runtime_error("Native attachment callback admission failed");
     declarations_.Open(owner,deadline,now);callbacks_.emplace(Key(owner),Callback{owner,deadline,now});MutationOpen(owner,deadline,now);
     hooks_.send("ATTACH_CONTEXT "+std::to_string(owner.callback_token)+" "+std::to_string(owner.scope)+" "+std::to_string(owner.scope_generation)+" "+std::to_string(owner.test_id)+" "+std::to_string(owner.attempt_generation)+" "+std::to_string(owner.worker_index)+" "+std::to_string(owner.pid));
   }
@@ -100,7 +99,7 @@ class RunnerAttachments {
     return true;
   }
   void AcceptTestSkip(uint64_t token,uint64_t scope,uint64_t generation,uint64_t request,const std::string& reason,double now){
-    if(!JsonString(reason,8192)||!CanAcceptTestSkip(token,scope,generation,request,now))throw std::runtime_error("Native attachment accepted test-skip cause is stale or ineligible");
+    if(!JsonString(reason)||!CanAcceptTestSkip(token,scope,generation,request,now))throw std::runtime_error("Native attachment accepted test-skip cause is stale or ineligible");
     auto& callback=callbacks_.at(Key(token,scope,generation));callback.test_skip=TestSkip{request,reason};declarations_.Close(callback.owner);MutationClose(callback.owner);callback.closed=true;
     for(auto&[id,job]:jobs_){(void)id;if(Match(job.owner,token,scope,generation)){job.test_skip=callback.test_skip;Stop(job,"Native attachment canceled by accepted runtime test skip",now);}}
   }
@@ -152,23 +151,22 @@ class RunnerAttachments {
       try{
       if(rejection){hooks_.send("ATTACH_APPEND_REJECTED "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+std::to_string(declaration)+" "+StepWire(*rejection)+(retry.Empty()?"":" O"));return true;}
       if(source!=AttachmentDeclarations::Source::Body){hooks_.send("ATTACH_REFERENCE_ACCEPTED "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+std::to_string(declaration));return true;}
-      const size_t reservation=expected;
-      if(accepted_>=kRecords||jobs_.size()>=kPhysical||reservation>kBytes-reserved_||id_==UINT64_MAX||(budget_&&(budget_->sequence==UINT64_MAX||budget_->accepted>=kRecords||budget_->physical>=kPhysical||reservation>kBytes-budget_->reserved))){
-        const auto error=MessageJSON("Native append body admission capacity exceeded");RetryFailure(callback->second.owner,retry,error,false);declarations_.Failed(callback->second.owner,declaration,error,now,!retry.Empty());hooks_.send("ATTACH_APPEND_REJECTED "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+std::to_string(declaration)+" "+StepWire(error)+(retry.Empty()?"":" O"));return true;
+      if(id_==UINT64_MAX||(budget_&&budget_->sequence==UINT64_MAX)){
+        const auto error=MessageJSON("Native append body writer sequence exhausted");RetryFailure(callback->second.owner,retry,error,false);declarations_.Failed(callback->second.owner,declaration,error,now,!retry.Empty());hooks_.send("ATTACH_APPEND_REJECTED "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+std::to_string(declaration)+" "+StepWire(error)+(retry.Empty()?"":" O"));return true;
       }
-      Job job;job.id=budget_?++budget_->sequence:++id_;job.declaration_id=declaration;job.callback_retry=retry;job.request=request;job.owner=callback->second.owner;job.started=now;job.job_cap=now+120000;job.reservation=reservation;job.expected=expected;job.kind="B";job.name=name;job.type=type;job.basename=Prefix(name)+"-"+std::to_string(job.id)+Extension(job.type);
+      Job job;job.id=budget_?++budget_->sequence:++id_;job.declaration_id=declaration;job.callback_retry=retry;job.request=request;job.owner=callback->second.owner;job.started=now;job.job_cap=now+120000;job.expected=expected;job.kind="B";job.name=name;job.type=type;job.basename=Prefix(name)+"-"+std::to_string(job.id)+Extension(job.type);
       declarations_.BindArtifact(job.owner,declaration,job.id);
       const auto packet="INIT "+std::to_string(job.id)+" B "+std::to_string(expected)+" "+attachment_files::Hex(parent_.string())+" "+attachment_files::Hex(job.basename)+" - "+std::to_string(job.job_cap)+" 0 0"+(retry.Empty()?"":" R");
-      const auto admission_error=MessageJSON("Native append body writer admission failed");job.error.reserve(8192);
+      const auto admission_error=MessageJSON("Native append body writer admission failed");
       const auto actual_id=job.id;const auto actual_owner=job.owner;
       auto [owned,inserted]=jobs_.emplace(actual_id,std::move(job));if(!inserted)throw std::runtime_error("Native append writer ID is duplicate");
-      reserved_+=reservation;++accepted_;if(budget_){budget_->reserved+=reservation;++budget_->accepted;++budget_->physical;}
+      if(budget_)++budget_->physical;
       try{
         owned->second.process=std::make_unique<DedicatedHostProcess>("/proc/self/exe",std::vector<std::string>{"--native-attachment-worker"});
         if(!owned->second.process->Send(packet))throw std::runtime_error("Native append body writer initialization failed");
       }catch(...){
         if(owned->second.process){Stop(owned->second,"Native append body writer admission failed",now);}
-        else{reserved_-=reservation;if(budget_){budget_->reserved-=reservation;--budget_->physical;}jobs_.erase(owned);declarations_.Failed(actual_owner,declaration,admission_error,now);}
+        else{if(budget_)--budget_->physical;jobs_.erase(owned);declarations_.Failed(actual_owner,declaration,admission_error,now);}
         throw;
       }
       }catch(...){
@@ -182,22 +180,21 @@ class RunnerAttachments {
       const auto request=attachment_files::UInt(f[1]),token=attachment_files::UInt(f[2]),scope=attachment_files::UInt(f[3]),generation=attachment_files::UInt(f[4]),expected=attachment_files::UInt(f[7+extra]),step_id=extra?attachment_files::UInt(f[5]):0;
       if(!request||nonce_==UINT64_MAX||request!=++nonce_)throw std::runtime_error("Native attachment admission nonce is stale");
       const auto name=RuntimeSkipReason(f[5+extra]);const auto type=f[8+extra]=="~"?std::string():RuntimeSkipReason(f[8+extra]);
-      if(!JsonString(name,4096)||(!type.empty()&&!JsonString(type,1024))||(f[6+extra]!="S"&&f[6+extra]!="B"&&f[6+extra]!="P")||expected>attachment_files::kBytes)throw std::runtime_error("Invalid native attachment metadata");
-      const auto path=attachment_files::Unhex(f[9+extra],8192);if(path.find('\0')!=std::string::npos||(f[6+extra]!="P"&&!path.empty())||(f[6+extra]=="P"&&expected))throw std::runtime_error("Invalid native attachment source path");
+      if(!JsonString(name)||(!type.empty()&&!JsonString(type))||(f[6+extra]!="S"&&f[6+extra]!="B"&&f[6+extra]!="P"))throw std::runtime_error("Invalid native attachment metadata");
+      const auto path=attachment_files::Unhex(f[9+extra]);if(path.find('\0')!=std::string::npos||(f[6+extra]!="P"&&!path.empty())||(f[6+extra]=="P"&&expected))throw std::runtime_error("Invalid native attachment source path");
       const auto callback=callbacks_.find(Key(token,scope,generation));
       const auto retry=ReadRetry(f,10+extra,callback==callbacks_.end()?StepOwner{}:callback->second.owner,step_id,now,false);
-      const size_t reservation=f[6+extra]=="P"?attachment_files::kBytes:expected;
       const auto* step=step_id&&hooks_.step?hooks_.step(step_id):nullptr;
-      if(stopped||(extra&&(!step_id||!step||callback==callbacks_.end()||step->owner!=callback->second.owner||step->status!=StepStatus::Running||step->receipt!=StepReceipt::Pending||step->callback_received||now>=step->deadline))||callback==callbacks_.end()||callback->second.closed||now>=callback->second.deadline||accepted_>=kRecords||jobs_.size()>=kPhysical||reservation>kBytes-reserved_||id_==UINT64_MAX||(budget_&&(budget_->sequence==UINT64_MAX||budget_->accepted>=kRecords||budget_->physical>=kPhysical||reservation>kBytes-budget_->reserved))){
-        RetryFailure(callback==callbacks_.end()?StepOwner{}:callback->second.owner,retry,MessageJSON("Native attachment admission rejected: stale, expired, stopped or capacity exceeded"),false);
-        hooks_.send(std::string(extra?"ATTACH_STEP_ADMITTED ":"ATTACH_ADMITTED ")+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" 0 "+(extra?std::to_string(step_id)+" ":"")+"0 "+Wire("Native attachment admission rejected: stale, expired, stopped or capacity exceeded")+(retry.Empty()?"":" O"));return true;
+      if(stopped||(extra&&(!step_id||!step||callback==callbacks_.end()||step->owner!=callback->second.owner||step->status!=StepStatus::Running||step->receipt!=StepReceipt::Pending||step->callback_received||now>=step->deadline))||callback==callbacks_.end()||callback->second.closed||now>=callback->second.deadline||id_==UINT64_MAX||(budget_&&budget_->sequence==UINT64_MAX)){
+        RetryFailure(callback==callbacks_.end()?StepOwner{}:callback->second.owner,retry,MessageJSON("Native attachment admission rejected: stale, expired or stopped"),false);
+        hooks_.send(std::string(extra?"ATTACH_STEP_ADMITTED ":"ATTACH_ADMITTED ")+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" 0 "+(extra?std::to_string(step_id)+" ":"")+"0 "+Wire("Native attachment admission rejected: stale, expired or stopped")+(retry.Empty()?"":" O"));return true;
       }
       if(MutationFind(callback->second.owner))(void)MutationReceipts();
-      Job job;job.id=budget_?++budget_->sequence:++id_;job.callback_retry=retry;job.step_id=step_id;job.request=request;job.owner=callback->second.owner;job.started=now;job.job_cap=now+120000;job.reservation=reservation;job.expected=expected;job.kind=f[6+extra];job.name=name;job.type=type.empty()?DefaultType(f[6+extra],path):type;job.basename=Prefix(name)+"-"+std::to_string(job.id)+Extension(job.type);
+      Job job;job.id=budget_?++budget_->sequence:++id_;job.callback_retry=retry;job.step_id=step_id;job.request=request;job.owner=callback->second.owner;job.started=now;job.job_cap=now+120000;job.expected=expected;job.kind=f[6+extra];job.name=name;job.type=type.empty()?DefaultType(f[6+extra],path):type;job.basename=Prefix(name)+"-"+std::to_string(job.id)+Extension(job.type);
       job.process=std::make_unique<DedicatedHostProcess>("/proc/self/exe",std::vector<std::string>{"--native-attachment-worker"});
       const auto packet="INIT "+std::to_string(job.id)+" "+(job.kind=="P"?"P":"B")+" "+std::to_string(expected)+" "+attachment_files::Hex(parent_.string())+" "+attachment_files::Hex(job.basename)+" "+attachment_files::Hex(path)+" "+std::to_string(job.job_cap)+" "+"0 0"+(retry.Empty()?"":" R");
       if(!job.process->Send(packet))throw std::runtime_error("Native attachment worker initialization failed");
-      reserved_+=reservation;++accepted_;if(budget_){budget_->reserved+=reservation;++budget_->accepted;++budget_->physical;}jobs_.emplace(job.id,std::move(job));
+      if(budget_)++budget_->physical;jobs_.emplace(job.id,std::move(job));
     }else{
       if(f.size()!=(f[0]=="ATTACH_CHUNK"?7:5))throw std::runtime_error("Invalid native attachment byte packet");
       const auto id=attachment_files::UInt(f[1]),token=attachment_files::UInt(f[2]),scope=attachment_files::UInt(f[3]),generation=attachment_files::UInt(f[4]);const auto found=jobs_.find(id);
@@ -212,7 +209,7 @@ class RunnerAttachments {
         if(job.actual_bytes!=job.expected)throw std::runtime_error("Native attachment body finish size mismatch");
         job.finish_sent=true;SendJob(job,"FINISH "+f[1]);
       }else{
-        const auto sequence=attachment_files::UInt(f[5]);const auto bytes=attachment_files::Unhex(f[6],attachment_files::kChunk);
+        const auto sequence=attachment_files::UInt(f[5]);const auto bytes=attachment_files::Unhex(f[6]);
         if(job.sequence==UINT64_MAX||sequence!=job.sequence+1||bytes.empty()||bytes.size()>job.expected-job.actual_bytes)throw std::runtime_error("Native attachment chunk size/sequence invalid");
         job.sequence=sequence;job.chunk_pending=bytes.size();SendJob(job,"CHUNK "+f[1]+" "+f[5]+" "+f[6]);
       }
@@ -269,10 +266,9 @@ class RunnerAttachments {
             view_ticket=MutationReceipts().Issue(actual,AttachmentViewReceipts::OriginalDeadline(actual,callback->second.deadline,original_step),received);
           }
           static_assert(std::is_nothrow_move_constructible_v<AttachmentRecord>);
-          records_.push_back(std::move(actual)); // complete catalog reserved before any file admission
+          records_.push_back(std::move(actual));
           if(job.declaration_id)declarations_.Committed(job.owner,job.declaration_id,records_.back());
           hooks_.send("ATTACH_PUBLISHED "+Identity(job)+" "+StepWire(job.name)+" "+StepWire(job.type)+" "+StepWire(AttachmentPathJSON(job.path))+" "+std::to_string(job.actual_bytes)+(view_enabled?" "+std::to_string(view_ticket):""));
-          reserved_-=job.reservation-job.actual_bytes;if(budget_)budget_->reserved-=job.reservation-job.actual_bytes;
         }else if(!job.directory.empty()){
           // The writer's actual waitpid receipt precedes rollback admission.
           // A separate native child owns every potentially blocking cleanup IO.
@@ -281,7 +277,6 @@ class RunnerAttachments {
           ++it;continue;
         }
       }
-      if(!job.error.empty()){reserved_-=job.reservation;if(budget_)budget_->reserved-=job.reservation;}
       if(job.declaration_id){const auto* declaration=declarations_.Find(job.declaration_id);if(!declaration)throw std::runtime_error("Native append body declaration disappeared");if(declaration->receipt==AttachmentDeclarations::Receipt::Pending){if(job.test_skip&&!job.skip_failed)declarations_.Canceled(job.owner,job.declaration_id,job.test_skip->request,received);else if(job.local_skip&&!job.skip_failed)declarations_.Canceled(job.owner,job.declaration_id,job.local_skip->request,received);else{const auto error=MessageJSON(job.error.empty()?"Native append body lacks successful physical receipt":job.error);const bool disposed=!job.callback_retry.Empty()&&job.typed_error&&!job.retry_infrastructure&&!job.step_canceled&&!job.test_skip&&!job.local_skip;if(disposed)RetryFailure(job.owner,job.callback_retry,error,false);declarations_.Failed(job.owner,job.declaration_id,error,received,disposed);}}}
       callback=callbacks_.find(Key(job.owner));
       if(callback!=callbacks_.end()&&!callback->second.exited){
@@ -304,7 +299,6 @@ class RunnerAttachments {
   }
   size_t Physical()const{return jobs_.size();}
   bool IdleReady()const{return jobs_.empty()&&callbacks_.empty()&&step_fences_.empty()&&(!mutation_receipts_||!mutation_receipts_->PendingCount());}
-  size_t ReservedBytes()const{return reserved_;}
   const std::vector<AttachmentRecord>& Records()const{return records_;}
   const std::vector<AttachmentDeclarations::Record>& Declarations()const{return declarations_.Records();}
   const std::filesystem::path& Directory()const{return directory_;}
@@ -321,7 +315,7 @@ class RunnerAttachments {
   struct TestSkip {uint64_t request;std::string reason_json;};
   struct Callback {StepOwner owner;double deadline,opened;bool closed=false,exited=false;std::function<void(const std::optional<std::string>&)> forward{};std::optional<TestSkip> test_skip=std::nullopt;std::optional<std::string> mutation_error=std::nullopt;};
   struct LocalSkip {uint64_t request=0,source_step=0;};
-  struct Job {uint64_t step_id=0,id=0,request=0,declaration_id=0,expected=0,sequence=0,actual_bytes=0,device=0,inode=0,directory_device=0,directory_inode=0;StepOwner owner;double started=0,job_cap=0,committed_at=0,stopped=0;size_t reservation=0,chunk_pending=0;bool admitted=false,native_open=false,finish_sent=false,ready=false,committed=false,cleaning=false,cleaned=false,skip_failed=false,step_canceled=false;std::optional<TestSkip> test_skip=std::nullopt;std::optional<LocalSkip> local_skip=std::nullopt;std::string kind,name,type,basename,path,error,directory,raw_error;AttachmentRetryProvenance callback_retry{};bool retry_infrastructure=false,typed_error=false;std::unique_ptr<DedicatedHostProcess> process;};
+  struct Job {uint64_t step_id=0,id=0,request=0,declaration_id=0,expected=0,sequence=0,actual_bytes=0,device=0,inode=0,directory_device=0,directory_inode=0;StepOwner owner;double started=0,job_cap=0,committed_at=0,stopped=0;size_t chunk_pending=0;bool admitted=false,native_open=false,finish_sent=false,ready=false,committed=false,cleaning=false,cleaned=false,skip_failed=false,step_canceled=false;std::optional<TestSkip> test_skip=std::nullopt;std::optional<LocalSkip> local_skip=std::nullopt;std::string kind,name,type,basename,path,error,directory,raw_error;AttachmentRetryProvenance callback_retry{};bool retry_infrastructure=false,typed_error=false;std::unique_ptr<DedicatedHostProcess> process;};
   struct StepFence {StepOwner owner;std::function<void(const std::optional<std::string>&)> forward;std::optional<std::string> error=std::nullopt;};
   static bool Valid(const StepOwner& o){return o.test_id&&o.attempt_generation&&o.scope&&o.scope_generation&&o.pid>0&&o.pid<=INT32_MAX&&(o.callback_kind=="body"||o.callback_kind=="beforeEach"||o.callback_kind=="afterEach"||o.callback_kind=="beforeAll"||o.callback_kind=="afterAll")&&(o.callback_kind=="body"||o.callback_token);}
   static std::string Key(uint64_t token,uint64_t scope,uint64_t generation){return std::to_string(token)+":"+std::to_string(scope)+":"+std::to_string(generation);}
@@ -350,7 +344,7 @@ class RunnerAttachments {
     if(!retry.Complete()||!hooks_.retry_failure)throw std::runtime_error("Native attachment callback retry lost native failure controller");
     hooks_.retry_failure(owner,retry,error,infrastructure);
   }
-  bool Within(uint64_t id,uint64_t root)const{for(unsigned depth=0;id&&depth<=TestSteps::kDepth;++depth){if(id==root)return true;const auto* step=hooks_.step?hooks_.step(id):nullptr;if(!step)return false;id=step->parent;}return false;}
+  bool Within(uint64_t id,uint64_t root)const{while(id){if(id==root)return true;const auto* step=hooks_.step?hooks_.step(id):nullptr;if(!step||step->parent>=id)return false;id=step->parent;}return false;}
   bool AuthenticLocalCancellation(const Job& job)const{
     if(!job.local_skip||job.step_canceled||job.skip_failed||!job.raw_error.empty()||!hooks_.step)return false;
     const auto* actual=hooks_.step(SkipStepID(job,job.local_skip->source_step));const auto* source=hooks_.step(job.local_skip->source_step);
@@ -372,7 +366,7 @@ class RunnerAttachments {
     if(f[0]=="ERROR"){
       if(f.size()!=(job.callback_retry.Empty()||job.cleaning?5:6))throw std::runtime_error("Native attachment file error shape invalid");
       if(!job.callback_retry.Empty()&&!job.cleaning){if(job.typed_error||(f[5]!="O"&&f[5]!="I"))throw std::runtime_error("Native attachment typed failure origin invalid");job.typed_error=true;job.retry_infrastructure=f[5]=="I";if(job.retry_infrastructure)hooks_.failure("Native attachment writer reported infrastructure failure");}
-      const auto actual=attachment_files::UInt(f[2]);const auto stage=attachment_files::Unhex(f[3],100),message=attachment_files::Unhex(f[4],8192);if(job.step_id)StepFailure(job,message+" ("+stage+", errno="+std::to_string(actual)+")");if(job.step_id&&job.step_canceled&&!job.test_skip&&!job.local_skip&&!job.cleaning){job.raw_error=message+" ("+stage+", errno="+std::to_string(actual)+")";hooks_.failure(job.raw_error);}if((job.test_skip||job.local_skip)&&!job.cleaning)job.raw_error=message+" ("+stage+", errno="+std::to_string(actual)+")";if(job.error.empty())job.error=message+" ("+stage+", errno="+std::to_string(actual)+")";else if(job.cleaning)job.error+="; actual rollback: "+message+" ("+stage+", errno="+std::to_string(actual)+")";
+      const auto actual=attachment_files::UInt(f[2]);const auto stage=attachment_files::Unhex(f[3]),message=attachment_files::Unhex(f[4]);if(job.step_id)StepFailure(job,message+" ("+stage+", errno="+std::to_string(actual)+")");if(job.step_id&&job.step_canceled&&!job.test_skip&&!job.local_skip&&!job.cleaning){job.raw_error=message+" ("+stage+", errno="+std::to_string(actual)+")";hooks_.failure(job.raw_error);}if((job.test_skip||job.local_skip)&&!job.cleaning)job.raw_error=message+" ("+stage+", errno="+std::to_string(actual)+")";if(job.error.empty())job.error=message+" ("+stage+", errno="+std::to_string(actual)+")";else if(job.cleaning)job.error+="; actual rollback: "+message+" ("+stage+", errno="+std::to_string(actual)+")";
       return;
     }
     if(job.cleaning){
@@ -381,8 +375,8 @@ class RunnerAttachments {
     }
     if(f[0]=="DIRECTORY"){
       if(f.size()!=5||!job.directory.empty())throw std::runtime_error("Native attachment duplicate directory receipt");
-      const auto directory=attachment_files::Unhex(f[2],8192);const auto actual=std::filesystem::path(directory);
-      if(!actual.is_absolute()||actual.parent_path()!=parent_||!actual.filename().string().starts_with("suitecut-attachments-")||!JsonString(AttachmentPathJSON(directory),8192))throw std::runtime_error("Native attachment output directory receipt is invalid");
+      const auto directory=attachment_files::Unhex(f[2]);const auto actual=std::filesystem::path(directory);
+      if(!actual.is_absolute()||actual.parent_path()!=parent_||!actual.filename().string().starts_with("suitecut-attachments-")||!JsonString(AttachmentPathJSON(directory)))throw std::runtime_error("Native attachment output directory receipt is invalid");
       job.directory=directory;job.directory_device=attachment_files::UInt(f[3]);job.directory_inode=attachment_files::UInt(f[4]);job.path=(actual/job.basename).string();directory_=actual;
       const auto callback=callbacks_.find(Key(job.owner));
       if(job.error.empty()&&(callback==callbacks_.end()||now>=callback->second.deadline||StepExpired(job,now)||now>=job.job_cap))Stop(job,"Native attachment deadline expired at real directory receipt",now);
@@ -403,14 +397,14 @@ class RunnerAttachments {
       job.actual_bytes+=job.chunk_pending;job.chunk_pending=0;hooks_.send(Command(job,"CHUNK_OK")+" "+Identity(job)+" "+std::to_string(job.sequence));
     }else if(f[0]=="READY"){
       if(f.size()!=5||job.ready||!job.admitted||job.chunk_pending||attachment_files::UInt(f[3])!=job.device||attachment_files::UInt(f[4])!=job.inode)throw std::runtime_error("Native attachment file ready identity mismatch");
-      const auto bytes=attachment_files::UInt(f[2]);if(bytes>job.reservation||(job.kind!="P"&&(!job.finish_sent||bytes!=job.expected)))throw std::runtime_error("Native attachment real file bytes exceed reservation");job.actual_bytes=bytes;job.ready=true;SendJob(job,"COMMIT "+std::to_string(job.id));
+      const auto bytes=attachment_files::UInt(f[2]);if(job.kind!="P"&&(!job.finish_sent||bytes!=job.expected))throw std::runtime_error("Native attachment real file bytes disagree with admitted body");job.actual_bytes=bytes;job.ready=true;SendJob(job,"COMMIT "+std::to_string(job.id));
     }else if(f[0]=="COMMITTED"){
       if(f.size()!=3||!job.ready||job.committed||attachment_files::UInt(f[2])!=job.actual_bytes)throw std::runtime_error("Native attachment actual commit receipt mismatch");
       job.committed=true;job.committed_at=now;
     }else throw std::runtime_error("Unknown native attachment file receipt");
   }
   void Drain(double){for(auto it=callbacks_.begin();it!=callbacks_.end();){auto& callback=it->second;if((callback.forward||callback.exited)&&!Pending(callback.owner.callback_token,callback.owner.scope,callback.owner.scope_generation)){auto forward=std::move(callback.forward);std::optional<std::string> failure=callback.mutation_error;for(const auto& declaration:declarations_.Records())if(declaration.owner==callback.owner&&declaration.callback_retry.Empty()&&(declaration.receipt==AttachmentDeclarations::Receipt::Failed||declaration.receipt==AttachmentDeclarations::Receipt::Rejected)&&!failure)failure=declaration.error_json;declarations_.RetireContext(callback.owner);MutationRetire(callback.owner);if(!callback.exited)hooks_.send("ATTACH_CONTEXT_RETIRED "+std::to_string(callback.owner.callback_token)+" "+std::to_string(callback.owner.scope)+" "+std::to_string(callback.owner.scope_generation));it=callbacks_.erase(it);if(forward)forward(failure);}else ++it;}}
-  std::filesystem::path parent_,directory_;Hooks hooks_;Budget* budget_;AttachmentDeclarations declarations_;std::map<std::string,Callback> callbacks_;std::map<uint64_t,Job> jobs_;std::map<uint64_t,StepFence> step_fences_;std::map<uint64_t,StepOwner> completed_;std::vector<AttachmentRecord> records_;uint64_t id_=0,nonce_=0;size_t accepted_=0,reserved_=0;
+  std::filesystem::path parent_,directory_;Hooks hooks_;Budget* budget_;AttachmentDeclarations declarations_;std::map<std::string,Callback> callbacks_;std::map<uint64_t,Job> jobs_;std::map<uint64_t,StepFence> step_fences_;std::map<uint64_t,StepOwner> completed_;std::vector<AttachmentRecord> records_;uint64_t id_=0,nonce_=0;
 #include "runner_attachment_mutations.inc"
 };
 } // namespace suitecut::runner

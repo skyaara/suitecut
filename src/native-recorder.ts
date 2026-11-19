@@ -120,7 +120,6 @@ export function createNativeVideoRecorder(options: {
   let work: Promise<void> | undefined
   const audioOutput = options.audio ? createWriteStream(audioOutputPath, { flags: 'w' }) : undefined
   const audioPackets: { data: Buffer; atMs: number }[] = []
-  let audioPacketBytes = 0
   let audioFrame = 0
   let audioWork: Promise<void> | undefined
   let stopping: Promise<void> | undefined
@@ -195,7 +194,6 @@ export function createNativeVideoRecorder(options: {
     while (audioPackets.length > 0) {
       const packet = audioPackets.shift()
       if (!packet) break
-      audioPacketBytes -= packet.data.length
       const packetFrames = packet.data.length / 4
       const packetStartFrame = Math.round((packet.atMs - firstAtMs) * 48)
       const overlapFrames = Math.max(0, audioFrame - packetStartFrame)
@@ -226,11 +224,6 @@ export function createNativeVideoRecorder(options: {
       return
     }
     audioPackets.push({ data, atMs })
-    audioPacketBytes += data.length
-    if (audioPacketBytes > 48_000 * 4 * 30) {
-      fail(new Error('Native recording audio queue exceeded 30 seconds'))
-      return
-    }
     startAudioWork()
   }
   return {

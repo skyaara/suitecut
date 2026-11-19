@@ -23,7 +23,7 @@ class SuitePathMatcher {
   bool Matches(std::u16string_view path,GrepPattern::Work& work)const{return compiled_.Matches(path,work);}
  private:
   static std::u16string Glob(std::u16string_view source){
-    if(source.empty()||source.size()>2048)throw std::invalid_argument("Native discovery glob requires1..2048 UTF16 units");
+    if(source.empty())throw std::invalid_argument("Native discovery glob requires a non-empty pattern");
     std::u16string result=u"^";
     // Relative globs match the absolute path below any directory, as documented
     // for testMatch/testIgnore. A leading slash is already absolute.
@@ -43,7 +43,7 @@ class SuitePathMatcher {
           }else result+=u"[^/]*";
         }else result+=u"[^/]*";
       }else if(c==u'?')result+=u"[^/]";
-      else if(c==u'{'){if(++braces>8)throw std::invalid_argument("Native discovery glob nesting capacity8 exceeded");result+=u'(';}
+      else if(c==u'{'){++braces;result+=u'(';}
       else if(c==u'}'){if(!braces--)throw std::invalid_argument("Native discovery glob unmatched brace");result+=u')';}
       else if(c==u','&&braces)result+=u'|';
       else if(c==u'['){
@@ -53,7 +53,6 @@ class SuitePathMatcher {
         for(size_t i=start;i<end;++i){if(source[i]==u'/'||source[i]==u'\\')throw std::invalid_argument("Native discovery glob class cannot contain slash/escape");result+=source[i];}
         result+=u']';at=end;
       }else Literal(result,c);
-      if(result.size()>GrepPattern::kPatternUnits-1)throw std::invalid_argument("Native discovery compiled glob capacity exceeded");
     }
     if(braces)throw std::invalid_argument("Native discovery glob unmatched brace");
     result+=u'$';return result;
@@ -78,11 +77,10 @@ struct DiscoveredSuite {
 };
 class SuiteDiscovery {
  public:
-  static constexpr size_t kFiles=128,kEntries=32768,kDepth=64,kPathBytes=16384,kTotalPathBytes=2*1024*1024,kPatterns=128;
   // check is the outer coordinator's original deadline/interruption check. It
   // must not create or renew a budget on individual paths or directories.
   static std::vector<DiscoveredSuite> Collect(const SuiteDiscoveryOptions& options,const std::function<void()>& check){
-    SuiteDiscovery discovery(options,check);discovery.Walk(discovery.root_fd_.value,"",0);return std::move(discovery.files_);
+    SuiteDiscovery discovery(options,check);discovery.Walk(discovery.root_fd_.value,"");return std::move(discovery.files_);
   }
   static bool DefaultMatch(std::string_view name){
     const auto dot=name.rfind('.');if(dot==name.npos)return false;
@@ -96,33 +94,27 @@ class SuiteDiscovery {
   SuiteDiscovery(const SuiteDiscoveryOptions& options,const std::function<void()>& check)
       :options_(options),check_(check),root_(Root(options.directory)),root_fd_(::open(root_.c_str(),O_RDONLY|O_CLOEXEC|O_DIRECTORY|O_NOFOLLOW)){
     if(root_fd_.value<0)throw std::system_error(errno,std::generic_category(),"Native discovery root open failed");
-    if(options.ignore.size()>kPatterns||(options.match&&options.match->size()>kPatterns)||options.file_filters.size()>kPatterns)
-      throw std::invalid_argument("Native discovery pattern capacity128 exceeded");
     work_.check_stopped=check_;
     if(options.match)for(const auto& pattern:*options.match){Check();match_.emplace_back(pattern);}
     for(const auto& pattern:options.ignore){Check();ignore_.emplace_back(pattern);}
     for(const auto& pattern:options.file_filters){Check();filters_.push_back(CompileCLIGrep(pattern));}
   }
   static std::string Root(const std::string& path){
-    if(path.empty()||path.front()!='/'||path.size()>kPathBytes||path.find('\0')!=path.npos)throw std::invalid_argument("Native discovery requires a bounded absolute testDir");
+    if(path.empty()||path.front()!='/'||path.find('\0')!=path.npos)throw std::invalid_argument("Native discovery requires an absolute testDir");
     auto canonical=std::filesystem::canonical(path).native();
-    if(canonical.size()>kPathBytes)throw std::invalid_argument("Native discovery canonical testDir exceeds capacity");
     (void)GrepUTF8(canonical);return canonical;
   }
   void Check(){if(check_)check_();}
-  void Walk(int parent,const std::string& relative,size_t depth){
-    Check();if(depth>kDepth)throw std::invalid_argument("Native discovery directory depth64 exceeded");
+  void Walk(int parent,const std::string& relative){
+    Check();
     const int copy=::fcntl(parent,F_DUPFD_CLOEXEC,16);if(copy<0)throw std::system_error(errno,std::generic_category(),"Native discovery directory copy failed");
     Directory directory(copy);std::vector<std::string> names;
     for(;;){Check();errno=0;const auto* entry=::readdir(directory.value);if(!entry){if(errno)throw std::system_error(errno,std::generic_category(),"Native discovery readdir failed");break;}
       const std::string name(entry->d_name);if(name=="."||name=="..")continue;
-      if(++entries_>kEntries)throw std::invalid_argument("Native discovery entry capacity32768 exceeded");
-      if(name.size()>kTotalPathBytes-name_bytes_)throw std::invalid_argument("Native discovery directory-name capacity exceeded");
-      name_bytes_+=name.size();names.push_back(name);
+      names.push_back(name);
     }
     std::sort(names.begin(),names.end());
     for(const auto& name:names){Check();const auto child=relative.empty()?name:relative+"/"+name;const auto absolute=(root_=="/"?root_:root_+"/")+child;
-      if(absolute.size()>kPathBytes)throw std::invalid_argument("Native discovery path capacity16384 exceeded");
       const auto units=GrepUTF8(absolute);struct stat info{};
       if(::fstatat(parent,name.c_str(),&info,AT_SYMLINK_NOFOLLOW)<0)throw std::system_error(errno,std::generic_category(),"Native discovery entry stat failed");
       if(S_ISDIR(info.st_mode)){
@@ -130,15 +122,13 @@ class SuiteDiscovery {
         FD opened(::openat(parent,name.c_str(),O_RDONLY|O_CLOEXEC|O_DIRECTORY|O_NOFOLLOW));
         if(opened.value<0)throw std::system_error(errno,std::generic_category(),"Native discovery child directory open failed");
         struct stat held{};if(::fstat(opened.value,&held)<0||held.st_dev!=info.st_dev||held.st_ino!=info.st_ino)throw std::runtime_error("Native discovery directory identity changed");
-        Walk(opened.value,child,depth+1);
+        Walk(opened.value,child);
         if(::fstatat(parent,name.c_str(),&held,AT_SYMLINK_NOFOLLOW)<0||!S_ISDIR(held.st_mode)||held.st_dev!=info.st_dev||held.st_ino!=info.st_ino)throw std::runtime_error("Native discovery traversed directory was replaced");
       }else if(S_ISREG(info.st_mode)&&Matches(units,name)){
-        if(files_.size()>=kFiles)throw std::invalid_argument("Native discovery selected file capacity128 exceeded");
-        if(absolute.size()>kTotalPathBytes-path_bytes_)throw std::invalid_argument("Native discovery retained path capacity2MiB exceeded");
         auto owner=std::make_unique<SuiteFileOwner>(files_.size()+1,absolute);
         if(owner->Token().device!=static_cast<uint64_t>(info.st_dev)||owner->Token().inode!=static_cast<uint64_t>(info.st_ino)||owner->Path()!=absolute)
           throw std::runtime_error("Native discovery selected file identity changed");
-        path_bytes_+=absolute.size();files_.push_back({child,std::move(owner)});
+        files_.push_back({child,std::move(owner)});
       }
       // Symlinks/special entries never become suite imports in this bounded
       // no-follow slice. There is no claim of symlink traversal parity.
@@ -152,6 +142,6 @@ class SuiteDiscovery {
   }
   const SuiteDiscoveryOptions& options_;const std::function<void()>& check_;std::string root_;FD root_fd_;
   std::vector<SuitePathMatcher> match_,ignore_;std::vector<GrepExpression> filters_;GrepPattern::Work work_;
-  std::vector<DiscoveredSuite> files_;size_t entries_=0,name_bytes_=0,path_bytes_=0;
+  std::vector<DiscoveredSuite> files_;
 };
 }

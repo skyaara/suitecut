@@ -34,10 +34,11 @@ nonASCII titles without lossy conversion.
 Lookaround, backreferences, named groups, legacy octal/identity/control escapes,
 and unsupported syntax fail explicitly before test admission. This is a bounded
 subset, not a claim of complete JavaScript RegExp or public config RegExp-array
-compatibility. Pattern length is bounded at4096 UTF16 units, AST at4096 nodes,
-group depth64, repeats256, automaton2048 states/16384 ranges, title32768 units.
-Each actual NFA operation consumes a shared finite work budget. Exhaustion is a
-selection failure, never a fabricated test result or asynchronous cancellation.
+compatibility. Native imposes no pattern, AST, repeat, automaton or title size
+limit; group nesting is bounded only by the thread's native stack, reported as
+a "maximum call stack size exceeded" selection failure. Matching work has no
+budget; it polls the runner's original deadline/stop check, never a fabricated
+test result or asynchronous cancellation.
 
 `--test-directory` / SDK `testDirectory` optionally supplies the real canonical
 root for this one suite's relative file component. It defaults to the actual

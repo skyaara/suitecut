@@ -85,20 +85,24 @@ describe('raw fixture literal encoding (no native selection or callback receipt)
     const value = Object.assign(Object.create(null) as object, { item: 17 })
     expect(nativeFixtureLiteralWire(value)).toEqual({ kind: 'json', json: '{"item":17}' })
   })
-  it('enforces native JSON byte bounds including escaping and UTF8 expansion', () => {
-    expect(nativeFixtureLiteralWire('x'.repeat(8190)).kind).toBe('json')
-    for (const input of ['x'.repeat(8191), '\0'.repeat(1400), '😀'.repeat(2100)])
-      expect(() => nativeFixtureLiteralWire(input)).toThrow('capacity')
+  it('encodes strings past the former 8192-byte cap whole, including escaping and UTF8', () => {
+    for (const input of ['x'.repeat(100_000), '\0'.repeat(1400), '😀'.repeat(2100)])
+      expect(nativeFixtureLiteralWire(input)).toEqual({
+        kind: 'json',
+        json: JSON.stringify(input),
+      })
   })
-  it('uses the same depth/node limits as native policy', () => {
+  it('imposes no depth or node limit of its own', () => {
     const nested = (depth: number): object => {
       let value: object = []
       while (depth-- > 0) value = [value]
       return value
     }
-    expect(nativeFixtureLiteralWire(nested(16)).kind).toBe('json')
-    expect(() => nativeFixtureLiteralWire(nested(17))).toThrow('capacity')
-    expect(nativeFixtureLiteralWire(Array<number>(2047).fill(0)).kind).toBe('json')
-    expect(() => nativeFixtureLiteralWire(Array<number>(2048).fill(0))).toThrow('capacity')
+    expect(nativeFixtureLiteralWire(nested(100))).toEqual({
+      kind: 'json',
+      json: '['.repeat(101) + ']'.repeat(101),
+    })
+    const wide = Array<number>(10_000).fill(0)
+    expect(nativeFixtureLiteralWire(wide)).toEqual({ kind: 'json', json: JSON.stringify(wide) })
   })
 })

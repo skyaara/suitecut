@@ -74,29 +74,29 @@
         "third_party/blink/renderer/modules/webmidi/midi_access_initializer.cc": "736320e1248e0b8249f9f6f8b77801ab33cae8d61f2d7c49f16b65a0585b7566",
         "third_party/blink/renderer/core/frame/local_frame_view.cc": "1b43bd086a52d499fa020aa1ee9bcdaa1081523da39f4e43edaba21e2dc42fc9",
         "third_party/blink/renderer/core/frame/remote_frame_view.cc": "f1701b70d99d735648087d9ec536dd269d0c653a44b3bee56d8000dac570648d",
-        "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": "ef94a93fe1564f8b8da91fc9aa3a9fdee7f574c6080e126e2c78c0d343ba6790",
-        "third_party/blink/renderer/core/inspector/inspector_css_agent.h": "2e3ce229ffa28b31fd7572475da874b88196ea0e61c8b8a23c795a85e70d9f67",
-        "third_party/blink/public/devtools_protocol/domains/CSS.pdl": "59543cc3792c23d50655ec6c9e7bbe826894f87bc82d94918cce4ffe6d50e572",
-        "v8/src/inspector/v8-profiler-agent-impl.cc": "c05daa7db6d759d3fd34ed6860a093f578a0c6ed24dee01c132676044b2055f5",
-        "v8/src/inspector/v8-profiler-agent-impl.h": "1598dd51873a447ff711226a45fae4552a1a76be52d1bed4eedb51c125937352",
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.cc": null,
+        "third_party/blink/renderer/core/inspector/inspector_css_agent.h": null,
+        "third_party/blink/public/devtools_protocol/domains/CSS.pdl": null,
+        "v8/src/inspector/v8-profiler-agent-impl.cc": null,
+        "v8/src/inspector/v8-profiler-agent-impl.h": null,
         "v8/src/inspector/v8-inspector-impl.cc": "5a739f36a7070620b25eae45e89887cbbc8080ed2c4b321fe7105ca648ae8f6a",
         "v8/src/inspector/v8-inspector-impl.h": "379920e88d14c313c35b86ae96f704f398e3d6e28a678807597eb58ceab3dcb8",
-        "v8/include/js_protocol.pdl": "8018eaa090a2cbfac9d702417aa4fe45cb5773c92fc1f68a814cfb983df53161",
-        "third_party/blink/public/devtools_protocol/domains/Network.pdl": "fc0da158c38ff5f05dd0f544e6a3b3a7afcd512ef385653087c0b541dec2496a",
+        "v8/include/js_protocol.pdl": null,
+        "third_party/blink/public/devtools_protocol/domains/Network.pdl": null,
         "third_party/blink/renderer/core/inspector/build.gni": "ddba7deb414ad41805dd1a8e0fa690afa70477c1af3fae3ad9ce8448ee565425",
-        "third_party/blink/renderer/core/inspector/inspector_network_agent.cc": "28af68b47ac3d33818d5fadf2af8d7e37347fcd2be1c007573da8824c99c08bb",
-        "third_party/blink/renderer/core/inspector/inspector_network_agent.h": "dbabc898baaa928d305494b57827475a8f3b6c880035274d59784d5214c3f729",
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.cc": null,
+        "third_party/blink/renderer/core/inspector/inspector_network_agent.h": null,
         "third_party/blink/renderer/core/inspector/suitecut_websocket_route.h": "0de7f302dcad93b0ddfab803134e9c7d2331dbecf4748e44fb1119b7a29ca1a0",
         "third_party/blink/renderer/core/probe/core_probes.json5": "0ba7a234893fcce81eaa4364489bedcf8c64d377b763399f7cc53e5919c5c8e8",
         "third_party/blink/renderer/core/probe/core_probes.pidl": "7cca7c79dd24c04e08ac4f459595dc52e1edf72089729bb45131029ff11bcde4",
-        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc": "f6df13edec4a7ba069e78f8f2888cd2c9cfb27972b02da30436a1d3d7a007ee8",
-        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h": "6c52d79115f91ff48cfa2aa1203dd2529632a54871a7737bb4c9cf87dda43f28",
-        "content/browser/devtools/protocol/input_handler.h": "cfa4567a6afb9b272f24e083f8f506c1ef0c2646614bb2b54c8fc2b4a33546f3",
-        "content/browser/devtools/protocol/input_handler.cc": "b0004b114a8ac543b03b1a50df10cf32c0cc6f60ef4f3ab208dd0974fb1d0aa4",
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc": null,
+        "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h": null,
+        "content/browser/devtools/protocol/input_handler.h": null,
+        "content/browser/devtools/protocol/input_handler.cc": null,
         "content/browser/renderer_host/render_widget_host_impl.h": "acf979fe61d96255b464cf442c50bd5d5ab766c76ed1c03cb6eb0f7bb7baac04",
         "content/browser/renderer_host/render_widget_host_impl.cc": "b67bdc611bb4a07ed3a616a18bc8594d47ec3b1f7b2a8c886aa2df03227259d5",
         "content/browser/devtools/protocol_config.json": "ba38fdaace7cd9d5441f9ad53c679abd780271a6b54a20df5567af6166b8a56f",
-        "third_party/blink/public/devtools_protocol/domains/Input.pdl": "8914f08b0aa7fad12f5d15d1a66fbd7952726a2ae116745e466da2b9e10a8c93"
+        "third_party/blink/public/devtools_protocol/domains/Input.pdl": null
       }
     }
   },
@@ -135,19 +135,19 @@
       "id": "cef156-css-navigation-retention",
       "component": "chromium",
       "patch": "cef156-css-navigation-retention.patch",
-      "sha256": "21f8c01d1c85209a16d92973775e97b68f37b1351ca853534e959ed8e6fa572e"
+      "sha256": "2c042ab3ec7bb1f0b550edac77393eea9236bbd2780a4af7064efadc361934bc"
     },
     {
       "id": "cef156-js-navigation-retention",
       "component": "chromium",
       "patch": "cef156-js-navigation-retention.patch",
-      "sha256": "4447fd4c0b38f1ea713f6afcfdb7e0491f19e790ddd0687d31595d8847442170"
+      "sha256": "a94363831bc5260acc5d7b5db77c59d09f822ae8fe64c7e1c6cf7eda365a3cf4"
     },
     {
       "id": "chromium156-websocket-routing",
       "component": "chromium",
       "patch": "chromium156-websocket-routing.patch",
-      "sha256": "47109a7d59783433dfbfabab978e88af108769fb924ff35437e3a31d381279d8"
+      "sha256": "e2b4648cb81eaab40ee7d8f7858c4fc11b6120c8e35d2a5cbe3420da776b5623"
     },
     {
       "id": "cef156-content-setting-registry-guard",
@@ -159,13 +159,13 @@
       "id": "chromium156-widget-input-receipts",
       "component": "chromium",
       "patch": "chromium156-widget-input-receipts.patch",
-      "sha256": "c4218ea875cc53d0dc5f7001245e6afc68470799dd28f130be178c473c01fcc7"
+      "sha256": "b15c122bf173977d5efd4842f463d9175365d0e1ed9430d03a312192433eb854"
     },
     {
       "id": "chromium156-widget-input-receipt-probe",
       "component": "chromium",
       "patch": "chromium156-widget-input-receipt-probe.patch",
-      "sha256": "d1b6cd6e10315faa9e9ad4b5014de9c22b456a7d1c4e46b64c8204b157f8a896"
+      "sha256": "b41fdcc927e57925d5c73e5659f70864dae85bd8a4576bff92e930fa34ac593d"
     }
   ],
   "vendorCompilation": "UNRUN",
@@ -178,10 +178,11 @@
   ],
   "limits": [
     "Source applicability does not establish vendor compilation or complete API parity.",
-    "Clock, coverage, raster and widget receipt candidates retain the limits in their adjacent manifests.",
+    "Clock, coverage, raster and widget receipt candidates retain the scope limits in their adjacent manifests; SuiteCut's own size/count caps were removed from every patch.",
     "Native widget mouse controller and SDK are integrated behind the exact runtime probe; stock CEF remains unsupported and custom runtime is unverified.",
     "Production coverage controller requires the final lifecycle contract (JS revision 2/CSS revision 3); the older isolated producers are rejected until that backend contract exists.",
     "Native WebSocket controller/SDK policy integration is being completed separately; vendor compilation and runtime verification remain unrun.",
-    "Native directory and wall-time adapter activation remains manual and requires actual verified backend contracts."
+    "Native directory and wall-time adapter activation remains manual and requires actual verified backend contracts.",
+    "Output hashes are null for files whose patches lost SuiteCut caps after the applicability check (JS/CSS coverage retention, WebSocket routing, widget receipts and probe); recompute them against the pinned sources."
   ]
 }

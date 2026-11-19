@@ -33,7 +33,7 @@ class RunnerSoftAssertions {
   }
   void FenceStep(const StepOwner& owner,uint64_t step,std::function<void()> forward,double now){
     if(!journal_.PendingStep(owner,step)){forward();return;}
-    if(step_fences_.size()>=64||step_fences_.contains(step))throw std::runtime_error("Native soft step fence capacity or duplicate");
+    if(step_fences_.contains(step))throw std::runtime_error("Native soft step fence duplicate");
     step_fences_.emplace(step,StepFence{owner,std::move(forward),now+1000});
   }
   bool Packet(const std::vector<std::string>& f,double now,bool stopped,bool cleanup_admitted=false){

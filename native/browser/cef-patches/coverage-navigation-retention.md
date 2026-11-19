@@ -15,7 +15,9 @@ are still required before retained navigation coverage can succeed.
 
 The [CSS manifest](cef156-css-navigation-retention.json) and
 [JavaScript manifest](cef156-js-navigation-retention.json) record every exact
-base/output source hash, upstream URL, and patch hash. Both patches apply from
+base/output source hash, upstream URL, and patch hash. Output hashes are null
+since SuiteCut's own capture caps were removed from both patches; they must be
+recomputed against the pinned sources. Both patches apply from
 the **Chromium source root**; the JavaScript paths include `v8/`. The patches
 must be applied to the original pinned files, rather than stacking the revised
 CSS candidate on top of its previous revision.
@@ -25,7 +27,7 @@ CSS candidate on top of its previous revision.
 [`cef156-js-navigation-retention.patch`](cef156-js-navigation-retention.patch)
 adds these opt-in Profiler commands, with explicit capability revision 1:
 
-- `getNavigationCoverageCapabilities`: reports revision and capture bounds.
+- `getNavigationCoverageCapabilities`: reports the capability revision.
 - `startPreciseCoverageWithNavigationRetention`: enables accurate counts and
   optional block coverage under one exclusive isolate owner.
 - `stopPreciseCoverageWithNavigationRetention`: samples current counters and
@@ -50,11 +52,10 @@ using the genuine context-group registry. No URL/source heuristic selects the
 owner. Existing precise collectors retain their ordinary behavior when the
 vendor option is disabled.
 
-The disabled destruction path performs a null-owner check. Typed conversion is
-preflighted before allocating new protocol objects. Whole-capture limits are
-2048 chunks, 2048 script occurrences across chunks, 16384 ranges, and 8 Mi UTF-16
-units for source/metadata admission. URL and function-name fields have separate
-8192-unit limits. Repeated snapshots count against these limits. Overflow,
+The disabled destruction path performs a null-owner check. SuiteCut adds no
+chunk, script, range, source or URL/function-name length caps: every collected
+chunk is retained until stop, disable or agent destruction. Only the chunk
+sequence's protocol-integer overflow is guarded. Sequence exhaustion,
 unavailable source or conversion failure records a sticky error; the atomic
 stop fails explicitly and releases capture state. Standard owner stop/disable
 and actual agent destruction also release the retained data and ownership.
@@ -83,11 +84,9 @@ remaining usage and source snapshots, and stops in the same command. It returns
 both `ruleUsage` and `styleSheets`. The earlier ordinary stop returns only usage;
 it does not satisfy this stronger source-retention contract.
 
-Bounds apply to the full retained capture: 8192 usage records, 2048 stylesheet
-snapshots, sheet IDs up to 256 UTF-16 units, and 8 Mi units of source/header
-strings. Each header's variable string metadata is capped at 32768 units.
-Unavailable source, overflow, or mutation of an already tracked source identity
-fails explicitly. Existing-sheet CSSOM/text changes require a future source
+SuiteCut adds no usage-record, stylesheet-snapshot, sheet-ID length,
+source or header-metadata caps on the retained capture. Unavailable source or
+mutation of an already tracked source identity fails explicitly. Existing-sheet CSSOM/text changes require a future source
 version/offset contract; they cannot be silently associated with an old text
 snapshot. Stop/disable releases the tracker, snapshots and sticky state.
 
@@ -97,8 +96,9 @@ Agent replacement and BFCache are outside this candidate's established scope.
 
 ## Checks actually performed
 
-The two patches pass `git apply --check` against all eight exact pinned source
-files. The actual PDL parser from Chromium `156.0.8078.17` accepts both modified
+The two patches passed `git apply --check` against all eight exact pinned source
+files before SuiteCut's capture caps were removed; the revised patches have only
+been checked for hunk consistency, not re-applied to the pinned sources. The actual PDL parser from Chromium `156.0.8078.17` accepts both modified
 protocols, and references to local extension types resolve.
 
 There is **no** generated protocol C++ compile, Chromium/V8 build, rebuilt
@@ -114,7 +114,7 @@ enabling domains. There is no environment override, build flag, or embedder
 attestation hook. Ordinary current-document capture keeps its existing path.
 
 Retention requires `Profiler.getNavigationCoverageCapabilities` revision **2**
-or `CSS.getNavigationCoverageCapabilities` revision **3**, a nonempty bounded
+or `CSS.getNavigationCoverageCapabilities` revision **3**, a nonempty
 `agentId`, and the exact `lifecycleContract` string
 `suitecut.coverage.final-lifecycle.v1`. The isolated vendor candidates above
 currently advertise JS revision1 and CSS revision2 and **do not meet this
@@ -143,7 +143,7 @@ innermost nested deltas across changing block partitions, independently sums
 root call counts, and retains separate actual context/script identities. CSS
 projects genuine nested rule usage against exact immutable source versions.
 Crossing/duplicate ranges, source mutation, unknown source identity, missing or
-stale final receipts, capacity overflow and counter overflow fail explicitly.
+stale final receipts and counter overflow fail explicitly.
 
 The native target coordinator retains old document data across same-agent
 navigation, gates newly attached targets before their existing author-resume
@@ -158,8 +158,8 @@ URLs never merge distinct physical sources or targets.
 Original operation deadlines and the existing physical command ledger remain in
 force. Cancellation does not retire accepted Inspector commands. Domain-disable
 ACKs or genuine channel closure retire cleanup even when a retained stop reports
-a sticky backend error. The shared payload, target, source, range and 2 MiB
-combined output limits apply across each recording. Ordinary script inventory
+a sticky backend error. No payload, target, source, range or combined-output
+cap applies to a recording. Ordinary script inventory
 also passes attested native-owned entries to the controller so old native binding
 scripts cannot become author coverage after their contexts disappear.
 

@@ -126,16 +126,17 @@ Video output uses explicit sample-and-hold resampling. The verified release
 120 FPS run encoded 39 frames using 19 source frames, with 20 repeated output
 samples; 20 source frames were stored. `ffprobe` confirmed 120/1 cadence.
 Sidecars preserve source timestamps and output sample runs. This verifies
-output cadence, not 120 unique renders per second. Video is silent. Source work
-is bounded by an eight-frame/16 MiB queue, a 256 MiB spool budget and 72,000
-output frames. Five repeated recording/page-close cycles verify cleanup without
+output cadence, not 120 unique renders per second. Video is silent. That run
+predates the removal of the SDK's frame-queue, spool and output-frame caps;
+source work is now limited only by the browser and disk. Five repeated recording/page-close cycles verify cleanup without
 publishing partial videos. The media worker is created lazily and blocks while
 idle; ordinary Chromium control retains its four fixed SDK threads.
 
 The recording flood proof configured only 16 KiB for public event retention,
 polled no events during four recordings, and measured 7,037 queued bytes with
 84 counted telemetry drops while recording and evaluation remained usable.
-The lifecycle and raw-wire rings share that single configured byte budget.
+The lifecycle and raw-wire rings share that single caller-configured byte limit
+(by default there is none).
 Recorder-owned frames are consumed/acknowledged before optional public retention;
 raw user-owned screencasts and critical control events retain explicit overflow
 semantics. The fixture drains critical events between later lifecycle scenarios,
@@ -207,8 +208,8 @@ evidence that these new paths passed. Current receipts are retained under
   BiDi; unsupported user-agent platform/Accept-Language options fail explicitly.
   Firefox158 has no per-context contrast override. Its print medium uses light
   color matching; the proof checks print CSS separately from screen/dark CSS.
-* HAR 1.2 capture uses backend-native request/response events and bounded body
-  collectors. `content:"embed"` and `content:"omit"` are the common options.
+* HAR 1.2 capture uses backend-native request/response events and body
+  collectors with no SDK-imposed entry or body caps. `content:"embed"` and `content:"omit"` are the common options.
   Actual body, redirect and timing coverage must be assessed from the new
   workflow and conversion-test receipts, not the older metadata journals.
   `content:"omit"` omits response bodies while retaining available POST data.
@@ -217,8 +218,8 @@ evidence that these new paths passed. Current receipts are retained under
 * Context permission grants use native `permissions.setPermission` scoped to
   the user context and HTTP(S) origin. Firefox's store persists grants, so the
   SDK first snapshots the exact original entry/expiry and restores that entry
-  on clear or close. Descriptor batches are prevalidated, and retained restore
-  data is capped at 32 KiB. An attached browser must permit the privileged
+  on clear or close. Descriptor batches are prevalidated; the SDK does not cap retained
+  restore data. An attached browser must permit the privileged
   snapshot; the SDK does not silently leave profile permission changes behind.
 
 Owned Firefox launches enable `-remote-allow-system-access` for privileged
@@ -434,7 +435,7 @@ context stores without making a network request.
 
 The Chromium adapter uses four fixed SDK background threads: pipe I/O, ordinary
 commands, a narrow DevTools continuation lane, and deadlines. Both command lanes
-share bounded queue and pending-request budgets. The continuation lane handles
+share the caller's optional `max_pending` limit (none by default). The continuation lane handles
 dialog replies, Fetch/Debugger commands, debugger startup and execution
 termination while ordinary evaluation/navigation waits; it adds no per-request
 threads. Applications use manual event polling and raw CDP continuation;
@@ -519,7 +520,7 @@ initial 20,000-iteration attempt timed out and is retained as incomplete.
 The matching native engine adds password-safe AI control discovery and stable
 same-document element references. Six focused native reference checks and three
 live JavaScript SDK reference/frame scripts pass. Large full semantic captures
-still have existing bounds; scoped capture can inspect a selected subtree.
+can be costly; scoped capture can inspect a selected subtree.
 
 Detailed scripted browser, AI web-task, source-hash, and memory evidence lives
 in `.suitecut/agent-improvements-bench/` in the development workspace. These are

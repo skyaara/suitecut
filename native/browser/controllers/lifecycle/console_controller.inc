@@ -140,7 +140,7 @@
         const auto fields=result?result->GetList("result"):nullptr;const auto stored=handles_.find(handle);
         if(ok&&fields&&stored!=handles_.end())for(std::size_t i=0;i<fields->GetSize();++i){const auto field=fields->GetDictionary(i);const auto value=field?field->GetDictionary("value"):nullptr;if(field&&field->GetString("name")=="value"&&value&&value->GetType("objectId")==VTYPE_STRING){stored->second.node_id=value->GetString("objectId");finish();return;}}
         Complete(owner,false,"Native console DOM argument identity was lost");
-      },std::nullopt,false,kMaxResponseBytes,true);
+      },std::nullopt,false,true);
     });
   }
   bool MaterializeConsoleArguments(int owner,Dict message,std::function<void()> done) {

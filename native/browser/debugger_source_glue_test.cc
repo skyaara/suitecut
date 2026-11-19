@@ -16,12 +16,12 @@
 #include "debugger_domains.h"
 #include "network_fatal_teardown.h"
 #include <deque>
-namespace {constexpr size_t kMaxResponseBytes=192*1048576;double clock_value=1;double Now(){return clock_value;}}
+namespace {double clock_value=1;double Now(){return clock_value;}}
 class Source {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
   using DevToolsCallback=std::function<void(bool,const std::string&)>;
-  struct DevToolsCall {int owner;DevToolsCallback callback;std::string session;bool retain_after_cancel;size_t response_limit;bool retained_control,lossless_scalars;};
+  struct DevToolsCall {int owner;DevToolsCallback callback;std::string session;bool retain_after_cancel;bool retained_control,lossless_scalars;};
   struct Host {size_t closed=0;void CloseBrowser(bool force){assert(force);++closed;}};
   struct Browser {Host host;Host* GetHost(){return &host;}};
   struct Command {int id;std::string session,method;Dict params;};

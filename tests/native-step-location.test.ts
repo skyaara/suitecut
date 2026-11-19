@@ -102,17 +102,15 @@ describe('native admitted step location metadata', () => {
     b.callbacks.handle(['STEP_ADMITTED_NOT_INVOKED', '1', '0', '1', '1', '9', '1', '-'])
     await expect(result).resolves.toBeUndefined()
   })
-  it('rejects combined metadata beyond the actual native control line before consuming a request', async () => {
-    const b = bridge()
-    expect(() =>
-      b.step('\0'.repeat(4096), () => undefined, {
-        location: { file: 'x'.repeat(4096), line: 1, column: 1 },
-      }),
-    ).toThrow('control budget')
-    expect(b.sent).toEqual([])
-    expect(b.callbacks.pending).toBe(0)
-    const result = b.step.skip('next valid request', () => undefined)
+  it('sends combined metadata past the former 64 KiB control line whole', async () => {
+    const b = bridge(),
+      file = 'x'.repeat(40000)
+    const result = b.step.skip('\0'.repeat(40000), () => undefined, {
+      location: { file, line: 1, column: 1 },
+    })
     expect(b.sent[0]?.[1]).toBe('1')
+    expect(b.sent[0]?.[8]).toBe(Buffer.from(file, 'utf16le').toString('hex'))
+    expect(Buffer.byteLength(b.sent[0]?.join(' ') ?? '')).toBeGreaterThan(65536)
     b.callbacks.handle(['STEP_ADMITTED_NOT_INVOKED', '1', '0', '1', '1', '7', '1', '-'])
     await expect(result).resolves.toBeUndefined()
   })

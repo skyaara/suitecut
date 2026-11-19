@@ -4,16 +4,9 @@
 #include "resource_lock_declarations.h"
 namespace suitecut::runner {
 inline std::vector<std::vector<std::string>> FileGroupLockNames(const FileWorkGroups& groups,const ResourceLockDeclarations& declarations){
-  std::vector<std::vector<std::string>> names;names.reserve(groups.Groups().size());size_t references=0,bytes=0;
+  std::vector<std::vector<std::string>> names;names.reserve(groups.Groups().size());
   for(const auto& group:groups.Groups()){
-    auto resolved=declarations.Resolve(std::set<uint64_t>(group.tests.begin(),group.tests.end()));
-    if(resolved.size()>ResourceLocks::kReferences-references)throw std::invalid_argument("Native inherited file-group lock reference capacity exceeded");
-    references+=resolved.size();
-    for(const auto& name:resolved){
-      if(name.size()+32>ResourceLocks::kMetadata-bytes)throw std::invalid_argument("Native inherited file-group lock metadata capacity exceeded");
-      bytes+=name.size()+32;
-    }
-    names.push_back(std::move(resolved));
+    names.push_back(declarations.Resolve(std::set<uint64_t>(group.tests.begin(),group.tests.end())));
   }
   return names;
 }
@@ -27,24 +20,20 @@ class FileGroupLocks {
   FileGroupLocks(const FileGroupPool& pool,std::vector<std::vector<std::string>> names)
       :pool_(pool),names_(std::move(names)),records_(names_.size()),indices_(names_.size()){
     if(names_.size()!=pool.Plan().Groups().size())throw std::invalid_argument("Native file lock plan membership mismatch");
-    std::map<std::string,size_t> unique;size_t references=0,bytes=0;
+    std::map<std::string,size_t> unique;
     for(size_t i=0;i<names_.size();++i){auto& group=names_[i];
       std::sort(group.begin(),group.end());group.erase(std::unique(group.begin(),group.end()),group.end());
-      if(group.size()>ResourceLocks::kNames||group.size()>ResourceLocks::kReferences-references)
-        throw std::invalid_argument("Native file-group lock reference capacity exceeded");
-      references+=group.size();indices_[i].reserve(group.size());
+      indices_[i].reserve(group.size());
       for(const auto& name:group){
-        if(name.size()%2||name.size()>kResourceLockUnits*2||name.size()+32>ResourceLocks::kMetadata-bytes)
-          throw std::invalid_argument("Native file-group lock name/metadata capacity exceeded");
-        bytes+=name.size()+32;const auto [found,inserted]=unique.emplace(name,unique.size());
-        if(inserted&&unique.size()>ResourceLocks::kNames)throw std::invalid_argument("Native file lock namespace capacity4096 exceeded");
+        if(name.size()%2)throw std::invalid_argument("Native file-group lock name is not UTF16");
+        const auto found=unique.emplace(name,unique.size()).first;
         indices_[i].push_back(found->second);
       }
     }
     holders_.resize(unique.size());
   }
   bool CanAcquire(size_t group)const noexcept{
-    if(group>=names_.size()||records_[group]||active_>=FileGroupPool::kWorkers)return false;
+    if(group>=names_.size()||records_[group])return false;
     for(const auto id:indices_[group])if(holders_[id])return false;
     return true;
   }

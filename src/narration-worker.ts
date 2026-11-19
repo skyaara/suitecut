@@ -27,7 +27,7 @@ function runSay(request: SuiteCutNarrationWorkerRequest): Promise<void> {
   args.push('-o', request.outputPath, request.text)
 
   return new Promise((resolve, reject) => {
-    execFile(SAY_EXECUTABLE, args, { maxBuffer: 1024 * 1024 }, (error, _stdout, stderr) => {
+    execFile(SAY_EXECUTABLE, args, { maxBuffer: Infinity }, (error, _stdout, stderr) => {
       if (error === null) {
         resolve()
         return

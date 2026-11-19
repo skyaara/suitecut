@@ -130,13 +130,12 @@ function observe(owner) {
     control = owner.runContext?.bind(owner)
   assert(control)
   /**
-   * Require the existing transport frame budget.
+   * Record the actual command envelope size; the engine imposes no frame budget.
    * @param {object} value The actual command envelope.
    */
   const wire = (value) => {
     const count = Buffer.byteLength(JSON.stringify(value)) + 1
     report.maxCommandBytes = Math.max(report.maxCommandBytes, count)
-    assert(count <= 65536, `Actual command exceeds64KiB: ${count}`)
   }
   owner.runAutomation = (command, params = {}, signal) => {
     wire({ ...params, command, pageId: owner.pageId, id: 2147483647, version: 1 })

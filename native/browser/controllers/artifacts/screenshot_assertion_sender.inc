@@ -71,7 +71,7 @@ void ScreenshotAssertionSubmit(suitecut::ScreenshotAssertionRetirement::Identity
   try{
     const auto [position,inserted]=devtools_.emplace(tool,DevToolsCall{identity.owner,
       [finish](bool ok,const std::string&json){finish(true,ok,json);},
-      session,true,kMaxResponseBytes,true,true});
+      session,true,true,true});
     (void)position;
     if(!inserted){finish(false,false,"{}");return;}
   }catch(const std::bad_alloc&){

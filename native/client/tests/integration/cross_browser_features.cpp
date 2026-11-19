@@ -100,12 +100,10 @@ class Fixture {
     for(;;) {
       const auto n=::recv(fd,buffer,sizeof buffer,0);if(n<=0)return;
       request.append(buffer,static_cast<std::size_t>(n));
-      if(request.size()>65536)throw std::runtime_error("Fixture request exceeds 64 KiB");
       const auto end=request.find("\r\n\r\n");
       if(end!=std::string::npos) {
         const auto length=header(request.substr(0,end),"content-length");
         wanted=end+4+(length.empty()?0:static_cast<std::size_t>(std::stoul(length)));
-        if(wanted>65536)throw std::runtime_error("Fixture request body exceeds budget");
         if(request.size()>=wanted)break;
       }
     }
@@ -163,14 +161,14 @@ class Fixture {
 };
 
 std::string read_file(const std::filesystem::path& path) {
-  const auto size=std::filesystem::file_size(path);if(size>32*1024*1024)throw std::runtime_error("Fixture file exceeds read budget");
+  const auto size=std::filesystem::file_size(path);
   std::ifstream in(path,std::ios::binary);std::string data(static_cast<std::size_t>(size),'\0');
   if(!in.read(data.data(),static_cast<std::streamsize>(data.size())))throw std::runtime_error("Cannot read fixture output");
   return data;
 }
 std::string decode64(const std::string& data) {
   const std::string alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  if(data.size()%4||data.size()>32*1024*1024)throw std::runtime_error("Invalid fixture base64 body");
+  if(data.size()%4)throw std::runtime_error("Invalid fixture base64 body");
   std::string out;unsigned bits=0;int count=0;
   for(unsigned char c:data) {
     if(c=='=')break;

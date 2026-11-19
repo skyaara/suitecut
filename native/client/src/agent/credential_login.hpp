@@ -61,16 +61,16 @@ inline std::string ipv6(std::string_view host) {
 }
 inline std::string dns_or_ipv4(std::string_view raw) {
   auto host=lowercase(raw);
-  if(host.empty()||host.size()>254) invalid();
+  if(host.empty()) invalid();
   const bool trailing_dot=host.back()=='.';
   const std::string_view labels_text(host.data(),host.size()-(trailing_dot?1:0));
-  if(labels_text.empty()||labels_text.size()>253) invalid();
+  if(labels_text.empty()) invalid();
   std::vector<std::string_view> labels;
   std::size_t offset=0;
   for(;;) {
     const auto end=labels_text.find('.',offset);
     auto label=labels_text.substr(offset,end==std::string_view::npos?end:end-offset);
-    if(label.empty()||label.size()>63||label.front()=='-'||label.back()=='-') invalid();
+    if(label.empty()||label.front()=='-'||label.back()=='-') invalid();
     for(auto c:label) if(!((c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='-')) invalid();
     labels.push_back(label);
     if(end==std::string_view::npos) break;
@@ -97,7 +97,7 @@ inline std::string dns_or_ipv4(std::string_view raw) {
 // without including the URL or its credential-bearing components in errors.
 inline std::string strict_origin(const std::string& url) {
   using namespace credential_origin_detail;
-  if(url.empty()||url.size()>8192) invalid();
+  if(url.empty()) invalid();
   for(const unsigned char c:url) if(c<=0x20||c==0x7f||c=='\\') invalid();
   const auto colon=url.find(':');
   if(colon==std::string::npos) invalid();

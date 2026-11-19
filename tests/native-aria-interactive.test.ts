@@ -65,7 +65,7 @@ it('keeps controls, headings and named landmarks, with the full snapshot refs', 
   )
 })
 
-it('shortens long names and keeps dialogs without a name', () => {
+it('keeps long names whole and keeps dialogs without a name', () => {
   const forest: NativeAriaJSONNode[] = [
     {
       role: 'dialog',
@@ -74,6 +74,6 @@ it('shortens long names and keeps dialogs without a name', () => {
     },
   ]
   expect(formatNativeAriaInteractive(forest)).toBe(
-    `- dialog [ref=s1e1]\n  - button "${'x'.repeat(99)}…" [ref=s1e2]`,
+    `- dialog [ref=s1e1]\n  - button "${'x'.repeat(150)}" [ref=s1e2]`,
   )
 })

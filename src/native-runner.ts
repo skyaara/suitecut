@@ -39,7 +39,6 @@ const optionsSchema = z.strictObject({
   preserveOutput: z.enum(['always', 'never', 'failures-only']).optional(),
   grep: z
     .string()
-    .max(4096)
     .refine(
       (value) => !value.includes('\0') && Buffer.from(value, 'utf8').toString('utf8') === value,
       'Native grep CLI patterns require scalar UTF8; use \\uXXXX escapes for lone UTF16 units',
@@ -47,7 +46,6 @@ const optionsSchema = z.strictObject({
     .optional(),
   grepInvert: z
     .string()
-    .max(4096)
     .refine(
       (value) => !value.includes('\0') && Buffer.from(value, 'utf8').toString('utf8') === value,
       'Native grep CLI patterns require scalar UTF8; use \\uXXXX escapes for lone UTF16 units',
@@ -55,28 +53,25 @@ const optionsSchema = z.strictObject({
     .optional(),
   outputDirectory: absolutePath
     .refine(
-      (value) =>
-        !value.includes('\0') &&
-        Buffer.byteLength(value) <= 7900 &&
-        Buffer.from(value, 'utf8').toString('utf8') === value,
-      'Native outputDirectory must be bounded filesystem UTF8 without NUL',
+      (value) => !value.includes('\0') && Buffer.from(value, 'utf8').toString('utf8') === value,
+      'Native outputDirectory must be filesystem UTF8 without NUL',
     )
     .optional(),
   junitPath: absolutePath.optional(),
   htmlPath: absolutePath.optional(),
-  testIds: z.array(testId).max(4096).optional(),
-  projects: z.array(z.string().min(1).max(256)).max(128).optional(),
+  testIds: z.array(testId).optional(),
+  projects: z.array(z.string().min(1)).optional(),
   noDeps: z.boolean().optional(),
-  workers: z.int().min(1).max(8).optional(),
+  workers: z.int().min(1).optional(),
   forbidOnly: z.boolean().optional(),
   failOnFlakyTests: z.boolean().optional(),
   repeatEach: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
-  maxFailures: z.int().min(0).max(4096).optional(),
+  maxFailures: z.int().min(0).optional(),
   globalTimeout: z.int().min(0).max(2147483647).optional(),
   shard: z
     .strictObject({
-      current: z.int().min(1).max(65536),
-      total: z.int().min(1).max(65536),
+      current: z.int().min(1),
+      total: z.int().min(1),
     })
     .refine((value) => value.current <= value.total, 'Shard current must not exceed total')
     .optional(),

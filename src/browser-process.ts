@@ -300,9 +300,7 @@ export async function launchProtocolProcess(
     if (endpointSettled) return
     const text = chunk.toString('utf8')
     tail = (tail + text).slice(-OUTPUT_LIMIT)
-    const pending = ((stream === 'stdout' ? stdoutPending : stderrPending) + text).slice(
-      -OUTPUT_LIMIT,
-    )
+    const pending = (stream === 'stdout' ? stdoutPending : stderrPending) + text
     const lines = pending.split('\n')
     const remainder = lines.pop() ?? ''
     if (stream === 'stdout') stdoutPending = remainder

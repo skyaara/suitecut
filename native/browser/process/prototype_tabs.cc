@@ -985,8 +985,8 @@ void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
   recording->audio = message->GetBool("audio");
   if (recording->output.empty() || recording->output.front() != '/')
     return reply(false, Text("The recording path must be absolute"));
-  if (!(recording->fps >= 1 && recording->fps <= 120))
-    return reply(false, Text("fps must be from 1 through 120"));
+  if (!std::isfinite(recording->fps) || recording->fps <= 0)
+    return reply(false, Text("fps must be a finite number above 0"));
   if ((recording->width != 0) != (recording->height != 0) || recording->width < 0 || recording->height < 0)
     return reply(false, Text("Give both width and height, or neither"));
   for (const auto& [id, other] : recordings) {
@@ -1050,10 +1050,9 @@ bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width
   recording->source_height = height;
   int canvas_width = recording->width ? recording->width : width;
   int canvas_height = recording->height ? recording->height : height;
-  // The encoder takes at most 3840x2160; a larger page is scaled to fit.
-  const double scale = std::min({1.0, 3840.0 / canvas_width, 2160.0 / canvas_height});
-  recording->canvas_width = static_cast<int>(canvas_width * scale) & ~1;
-  recording->canvas_height = static_cast<int>(canvas_height * scale) & ~1;
+  // Full size; the encoder applies its own maximum. Even dimensions for 4:2:0.
+  recording->canvas_width = canvas_width & ~1;
+  recording->canvas_height = canvas_height & ~1;
   suitecut::MediaPipelineOptions options;
   options.launcher_path = CefCommandLine::GetGlobalCommandLine()->GetProgram().ToString();
   options.ffmpeg_path = recording->ffmpeg;

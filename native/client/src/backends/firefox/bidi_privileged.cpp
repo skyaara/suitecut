@@ -51,12 +51,11 @@ BidiPrivileged::~BidiPrivileged()=default;
 
 Json BidiPrivileged::evaluate(BidiRuntime& runtime,const BidiPage& page,const std::string& expression,Deadline deadline) {
   bidi_check_active(deadline);
-  if(expression.size()>49152)throw std::invalid_argument("Firefox privileged authored script exceeds 48 KiB");
   Json tree;
   try {tree=runtime.call("browsingContext.getTree",Json{{"moz:scope","chrome"},{"maxDepth",0}},deadline);}
   catch(const std::exception& error) {throw std::runtime_error("Firefox native privileged automation requires -remote-allow-system-access on the caller's browser: "+std::string(error.what()));}
   const auto& contexts=tree.at("contexts").as_array();
-  if(contexts.empty()||contexts.size()>256)throw std::runtime_error("Firefox privileged chrome browsing context is unavailable or exceeds limits");
+  if(contexts.empty())throw std::runtime_error("Firefox privileged chrome browsing context is unavailable");
   auto chrome=page;
   chrome.browsing_context=contexts.front().at("context").as_string();chrome.sandbox.clear();
   if(!runtime.value(chrome,"typeof ChromeUtils!=='undefined'&&typeof ChromeUtils.importESModule==='function'",deadline).as_bool())
@@ -73,8 +72,6 @@ Json BidiPrivileged::command(BidiRuntime& runtime,BidiPage& page,const Json& fie
   if(family=="emulation"&&action=="media") {
     auto properties=media_properties(fields);
     if(properties.as_object().empty())return Json::object{};
-    if(!impl_->originals.contains(page.browsing_context)&&impl_->originals.size()>=256)
-      throw std::runtime_error("Firefox native media context budget exceeded");
     const auto before=evaluate(runtime,page,"(()=>{"+lookup(page.browsing_context)+
       "if(!bc)throw new Error('Firefox target browsing context is closed');const requested="+properties.dump()+";const before={};"
       "for(const key of Object.keys(requested)){if(!(key in bc))throw new Error('Firefox does not expose native per-context media property: '+key);before[key]=bc[key];}return before;})()",deadline);
@@ -93,15 +90,15 @@ Json BidiPrivileged::command(BidiRuntime& runtime,BidiPage& page,const Json& fie
     const auto& record=fields.at("_suitecutDownload");
     const auto id=record.at("downloadId").as_string(),url=record.at("url").as_string();
     const auto context=field(record,"context",page.browsing_context),filename=record.at("suggestedFilename").as_string();
-    if(id.empty()||id.size()>256||url.size()>16384||filename.size()>4096||!record.contains("timestamp")||!record.at("timestamp").is_number())
-      throw std::invalid_argument("Firefox download cancellation requires a bounded native owning record and start timestamp");
+    if(id.empty()||!record.contains("timestamp")||!record.at("timestamp").is_number())
+      throw std::invalid_argument("Firefox download cancellation requires a native owning record and start timestamp");
     Json identity{{"downloadId",id},{"url",url},{"filename",filename},{"timestamp",record.at("timestamp")}};
     if(fields.contains("_suitecutNativePath"))identity["path"]=fields.at("_suitecutNativePath");
     return evaluate(runtime,page,"(async()=>{"+lookup(context)+
       "const owner=NavigableManager.getBrowsingContextById("+Json(page.browsing_context).dump()+");if(!bc||!owner)throw new Error('Firefox download owning context is closed');"
       "let owns=false;for(let n=bc;n;n=n.parent)if(n===owner){owns=true;break;}if(!owns)throw new Error('Firefox download does not belong to the requested page');"
       "const identity="+identity.dump()+";const {Downloads}=ChromeUtils.importESModule('resource://gre/modules/Downloads.sys.mjs');"
-      "const list=await Downloads.getList(Downloads.ALL);const all=await list.getAll();if(all.length>4096)throw new Error('Firefox native download enumeration exceeds limits');"
+      "const list=await Downloads.getList(Downloads.ALL);const all=await list.getAll();"
       "const matches=all.filter(d=>d.source.browsingContextId===bc.id&&d.source.url===identity.url&&d.startTime?.getTime()===identity.timestamp&&"
       "(identity.path?d.target.path===identity.path:PathUtils.filename(d.target.path)===identity.filename));"
       "if(matches.length!==1)throw new Error(matches.length?'Ambiguous Firefox native download identity':'Native Firefox download identity is unavailable');"

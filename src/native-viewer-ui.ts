@@ -69,7 +69,6 @@ export function nativeViewerScript(): string {
   const $ = (id) => document.getElementById(id);
   const ui = { screen: $('screen'), stage: $('stage'), keyboard: $('keyboard'), tabs: $('tabs'), address: $('address'), status: $('status'), dot: $('status-dot'), control: $('control'), notice: $('notice'), empty: $('empty'), title: $('empty-title'), description: $('empty-description'), retry: $('retry'), ownership: $('ownership'), frame: $('frame-status'), resolution: $('resolution'), width: $('resolution-width'), height: $('resolution-height'), apply: $('resolution-apply') };
   const context = ui.screen.getContext('2d', { alpha: false });
-  const MAX_QUEUE = 96;
   let state = null;
   let clientId = '';
   let connection = 'connecting';
@@ -136,17 +135,12 @@ export function nativeViewerScript(): string {
     for (const id of ['address', 'back', 'forward', 'reload', 'go']) $(id).disabled = !controls || !state || !state.pageId;
     for (const field of [ui.resolution, ui.width, ui.height, ui.apply]) field.disabled = !controls || !state || !state.pageId || !!resizeInFlight;
     if (state) {
-      const signature = JSON.stringify([state.pageId, state.width, state.height, state.resolutionMode, state.maxWidth, state.maxHeight]);
+      const signature = JSON.stringify([state.pageId, state.width, state.height, state.resolutionMode]);
       if (signature !== resolutionSignature) {
         resolutionSignature = signature;
         const preset = state.width + 'x' + state.height;
         ui.resolution.value = state.resolutionMode === 'auto' ? 'auto' : Array.from(ui.resolution.options).some((option) => option.value === preset) ? preset : 'fixed';
         ui.width.value = state.width; ui.height.value = state.height;
-        ui.width.max = maxDimension('maxWidth'); ui.height.max = maxDimension('maxHeight');
-        for (const option of ui.resolution.options) {
-          const size = option.value.split('x').map(Number);
-          option.disabled = size.length === 2 && (size[0] > maxDimension('maxWidth') || size[1] > maxDimension('maxHeight'));
-        }
       }
     }
     ui.screen.classList.toggle('interactive', canInput());
@@ -213,17 +207,16 @@ export function nativeViewerScript(): string {
     render();
     if (changed || ownerChanged) scheduleAutoResize();
   }
-  function maxDimension(name) { return state && Number.isSafeInteger(state[name]) && state[name] >= 2 ? state[name] : 16384; }
   function fitSize() {
     const style = getComputedStyle(ui.stage);
     const width = Math.floor(ui.stage.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0));
     const height = Math.floor(ui.stage.clientHeight - (parseFloat(style.paddingTop) || 0) - (parseFloat(style.paddingBottom) || 0));
-    return { width: Math.max(2, Math.min(maxDimension('maxWidth'), width)), height: Math.max(2, Math.min(maxDimension('maxHeight'), height)) };
+    return { width: Math.max(2, width), height: Math.max(2, height) };
   }
   function requestResize(width, height, mode) {
     if (!isOwner() || connection !== 'connected' || transitionPending || stopped) return;
-    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 2 || height < 2 || width > maxDimension('maxWidth') || height > maxDimension('maxHeight')) {
-      showError('Choose a whole-number resolution from 2 × 2 to ' + maxDimension('maxWidth') + ' × ' + maxDimension('maxHeight') + '.'); return;
+    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 2 || height < 2) {
+      showError('Choose a whole-number resolution of at least 2 × 2.'); return;
     }
     desiredResize = { width, height, mode, pageId: state.pageId };
     flushResize();
@@ -278,16 +271,9 @@ export function nativeViewerScript(): string {
     if (previous && previous.revision === item.revision && type === 'pointer' && item.action === 'move' && previous.type === 'pointer' && previous.action === 'move') {
       queue[queue.length - 1] = item;
     } else if (previous && previous.revision === item.revision && type === 'wheel' && previous.type === 'wheel') {
-      previous.deltaX = Math.max(-100000, Math.min(100000, previous.deltaX + item.deltaX));
-      previous.deltaY = Math.max(-100000, Math.min(100000, previous.deltaY + item.deltaY));
-    } else {
-      if (queue.length >= MAX_QUEUE) {
-        queue.length = 0; clearLocalInput(); resetting = true;
-        queue.push({ clientId, revision: state.revision, type: 'resetInput' });
-        showError('Input arrived faster than the browser could process it. Held input was reset; try again.'); render(); pump(); return false;
-      }
-      queue.push(item);
-    }
+      previous.deltaX += item.deltaX;
+      previous.deltaY += item.deltaY;
+    } else queue.push(item);
     pump(); return true;
   }
   async function pump() {
@@ -366,8 +352,8 @@ export function nativeViewerScript(): string {
             const image = await decodeFrame(blob);
             try {
               if (state && revision === state.revision && receivedRevision === revision && sequence > frameSequence) {
-                const width = Math.max(1, Math.min(16384, state.width));
-                const height = Math.max(1, Math.min(16384, state.height));
+                const width = Math.max(1, state.width);
+                const height = Math.max(1, state.height);
                 if (ui.screen.width !== width) ui.screen.width = width;
                 if (ui.screen.height !== height) ui.screen.height = height;
                 context.drawImage(image, 0, 0, width, height);
@@ -474,7 +460,7 @@ export function nativeViewerScript(): string {
     const factor = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? state.height : 1;
     const point = coordinates(event);
     if (!lastPointer || lastPointer.x !== point.x || lastPointer.y !== point.y) pointer('move', 'left', event);
-    enqueue('wheel', { deltaX: Math.max(-100000, Math.min(100000, event.deltaX * factor)), deltaY: Math.max(-100000, Math.min(100000, event.deltaY * factor)) });
+    enqueue('wheel', { deltaX: event.deltaX * factor, deltaY: event.deltaY * factor });
   }, { passive: false });
   ui.screen.addEventListener('focus', focusKeyboard);
 
@@ -487,7 +473,6 @@ export function nativeViewerScript(): string {
   function printable(event) { return Array.from(event.key).length === 1; }
   function insertText(text) {
     if (!canInput() || !text) return;
-    if (text.length > 65536) { showError('Paste up to 65,536 characters at a time.'); return; }
     for (let start = 0; start < text.length;) {
       let end = Math.min(text.length, start + 4096);
       const last = text.charCodeAt(end - 1);
@@ -510,7 +495,7 @@ export function nativeViewerScript(): string {
     event.preventDefault();
     const identity = event.code || event.key;
     const key = physicalKey(event);
-    if (!key || key.length > 128) return;
+    if (!key) return;
     if (!heldKeys.has(identity)) heldKeys.set(identity, key);
     enqueue('key', { action: 'down', key: heldKeys.get(identity) });
   });

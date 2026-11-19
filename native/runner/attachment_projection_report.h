@@ -41,25 +41,19 @@ inline size_t AttachmentProjectionMetadata(const AttachmentProjectionReport& vie
   return bytes;
 }
 inline void UpsertAttachmentProjection(std::vector<AttachmentProjectionReport>& views,const AttachmentMutations& native,const std::vector<AttachmentViewReceipts::Record>& receipts){
-  auto next=CaptureAttachmentProjection(native,receipts);size_t bytes=AttachmentProjectionMetadata(next);
+  auto next=CaptureAttachmentProjection(native,receipts);
   auto replaced=views.end();
-  for(auto it=views.begin();it!=views.end();++it){
+  for(auto it=views.begin();it!=views.end();++it)
     if(SameAttachmentAttempt(it->owner,next.owner)){if(replaced!=views.end())throw std::invalid_argument("Duplicate native attachment projection report");replaced=it;}
-    else bytes+=AttachmentProjectionMetadata(*it);
-  }
-  if(bytes>AttachmentMutations::kMetadata||(replaced==views.end()&&views.size()>=8192))
-    throw std::runtime_error("Native attachment projection report metadata capacity exceeded");
   if(replaced==views.end())views.push_back(std::move(next));
   else *replaced=std::move(next);
 }
 template<class Report>size_t ValidateAttachmentProjections(const Report& report){
-  if(report.attachment_views.size()>8192)throw std::invalid_argument("Native attachment view report count exceeded");
   size_t charge=0;std::set<uint64_t> tickets,publication_artifacts;std::set<std::tuple<uint64_t,uint64_t,unsigned,int64_t>> attempts;
   for(const auto& view:report.attachment_views){
     const auto& owner=view.owner;
-    if(!ValidAttachmentProjectionOwner(owner)||!attempts.emplace(owner.test_id,owner.attempt_generation,owner.worker_index,owner.pid).second||
-       view.publications.size()>AttachmentViewReceipts::kRecords||view.references.size()>AttachmentMutations::kReferences||view.changes.size()+view.rejections.size()>AttachmentMutations::kChanges)
-      throw std::invalid_argument("Invalid native attachment view identity or capacity");
+    if(!ValidAttachmentProjectionOwner(owner)||!attempts.emplace(owner.test_id,owner.attempt_generation,owner.worker_index,owner.pid).second)
+      throw std::invalid_argument("Invalid native attachment view identity");
     if(std::none_of(report.attempts.begin(),report.attempts.end(),[&](const auto& actual){return actual.test_id==owner.test_id&&actual.generation==owner.attempt_generation&&actual.worker_index==owner.worker_index&&actual.pid==owner.pid;}))
       throw std::invalid_argument("Native attachment view has no actual attempt");
     std::set<std::pair<int,uint64_t>> refs;std::set<uint64_t> requests,published;
@@ -82,7 +76,7 @@ template<class Report>size_t ValidateAttachmentProjections(const Report& report)
     for(const auto& change:view.changes){
       if(change.revision!=++revision||!change.request||!requests.insert(change.request).second||
          !ValidAttachmentProjectionOwner(change.owner)||!SameAttachmentAttempt(owner,change.owner)||
-         !std::isfinite(change.accepted)||change.accepted<previous||change.slots.size()>AttachmentMutations::kSlots)
+         !std::isfinite(change.accepted)||change.accepted<previous)
         throw std::invalid_argument("Invalid native attachment mutation report history");
       previous=change.accepted;
       if(change.publication_artifact){
@@ -104,7 +98,7 @@ template<class Report>size_t ValidateAttachmentProjections(const Report& report)
     }
     for(const auto& rejected:view.rejections){
       if(!rejected.request||!requests.insert(rejected.request).second||!ValidAttachmentProjectionOwner(rejected.owner)||
-         !SameAttachmentAttempt(owner,rejected.owner)||!JsonString(rejected.error_json,8192)||
+         !SameAttachmentAttempt(owner,rejected.owner)||!JsonString(rejected.error_json)||
          !std::isfinite(rejected.received)||rejected.received<0||rejected.observed_revision>revision||
          (rejected.observed_revision&&rejected.received<view.changes[rejected.observed_revision-1].accepted)||
          (rejected.observed_revision<revision&&rejected.received>view.changes[rejected.observed_revision].accepted))
@@ -113,7 +107,7 @@ template<class Report>size_t ValidateAttachmentProjections(const Report& report)
     std::set<uint64_t> accepted_publications;
     for(const auto& receipt:view.publications){
       const auto actual=std::find_if(report.attachments.begin(),report.attachments.end(),[&](const auto& artifact){return artifact.id==receipt.artifact;});
-      if(!receipt.ticket||!tickets.insert(receipt.ticket).second||tickets.size()>AttachmentViewReceipts::kRecords||
+      if(!receipt.ticket||!tickets.insert(receipt.ticket).second||
          !publication_artifacts.insert(receipt.artifact).second||actual==report.attachments.end()||actual->owner!=receipt.owner||
          actual->step_id!=receipt.step_id||actual->callback_retry!=receipt.callback_retry||!ValidAttachmentProjectionOwner(receipt.owner)||!SameAttachmentAttempt(owner,receipt.owner)||
          !std::isfinite(receipt.issued)||receipt.issued!=actual->received||!std::isfinite(receipt.deadline)||receipt.deadline<=receipt.issued||
@@ -143,9 +137,7 @@ template<class Report>size_t ValidateAttachmentProjections(const Report& report)
       }else throw std::invalid_argument("Invalid native attachment publication terminal receipt");
     }
     if(accepted_publications!=published)throw std::invalid_argument("Native attachment view publication has no issued accepted ticket");
-    const auto bytes=AttachmentProjectionMetadata(view);
-    if(bytes>AttachmentMutations::kMetadata-charge)throw std::invalid_argument("Native attachment projection report metadata exceeded");
-    charge+=bytes;
+    charge+=AttachmentProjectionMetadata(view);
   }
   return charge;
 }
@@ -190,7 +182,7 @@ template<class Writer>void PutAttachmentProjections(Writer& file,const std::vect
 }
 class AttachmentProjectionJSONWriter {
  public:
-  void Put(std::string_view value){if(value.size()>AttachmentMutations::kMetadata-text_.size())throw std::length_error("Native attachment projection JSON exceeds bound");text_+=value;}
+  void Put(std::string_view value){text_+=value;}
   template<class Number>void NumberValue(Number value){char data[128];const auto result=std::to_chars(data,data+sizeof(data),value);if(result.ec!=std::errc{})throw std::runtime_error("Native attachment projection numeric encoding failed");Put(std::string_view(data,result.ptr));}
   std::string Take(){return std::move(text_);}
  private:std::string text_;
@@ -199,7 +191,6 @@ inline std::string AttachmentProjectionJSON(const std::vector<AttachmentProjecti
 // Quote the bounded serialized projection as a JSON string for the existing
 // lossless JSON-to-XML encoder. It is report content, never a filesystem path.
 inline std::string AttachmentProjectionQuotedJSON(std::string_view original){
-  if(original.size()>AttachmentMutations::kMetadata)throw std::length_error("Native attachment projection JSON exceeds bound");
   static constexpr char hex[]="0123456789abcdef";
   std::string value;value.reserve(original.size()+2);value+='"';
   for(const unsigned char c:original){
@@ -208,7 +199,7 @@ inline std::string AttachmentProjectionQuotedJSON(std::string_view original){
     else value+=static_cast<char>(c);
   }
   value+='"';
-  if(!JsonString(value,AttachmentMutations::kMetadata))throw std::invalid_argument("Native attachment projection JSON is not bounded UTF8");
+  if(!JsonString(value))throw std::invalid_argument("Native attachment projection JSON is not valid UTF8");
   return value;
 }
 } // namespace suitecut::runner

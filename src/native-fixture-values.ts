@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: MIT
-import { Buffer } from 'node:buffer'
-
 import { type NativeFixtureDefinition } from './native-suite.js'
 import { type UntrustedInput } from './untrusted.js'
 
@@ -25,25 +23,18 @@ export type NativeSelectableFixtureDefinition =
 export type NativeFixtureLiteralWire =
   { readonly kind: 'undefined' } | { readonly kind: 'json'; readonly json: string }
 
-/** Bounded declaration encoding only. Native C++ validates and selects values. */
+/** Declaration encoding only. Native C++ validates and selects values. */
 export function nativeFixtureLiteralWire(input: UntrustedInput): NativeFixtureLiteralWire {
   if (input === undefined) return Object.freeze({ kind: 'undefined' })
   const chunks: string[] = [],
     active = new Set<object>()
-  let bytes = 0,
-    nodes = 0
   const add = (text: string): void => {
-    bytes += Buffer.byteLength(text)
-    if (bytes > 8192) throw new RangeError('Native fixture literal JSON byte capacity8192 exceeded')
     chunks.push(text)
   }
   const quote = (value: string): void => {
-    if (value.length > 8192) throw new RangeError('Native fixture literal string capacity exceeded')
     add(JSON.stringify(value))
   }
-  const encode = (value: UntrustedInput, depth: number): void => {
-    if (depth > 16 || ++nodes > 2048)
-      throw new RangeError('Native fixture literal JSON depth/node capacity exceeded')
+  const encode = (value: UntrustedInput): void => {
     if (value === null) return add('null')
     if (typeof value === 'string') return quote(value)
     if (typeof value === 'boolean') return add(value ? 'true' : 'false')
@@ -68,7 +59,7 @@ export function nativeFixtureLiteralWire(input: UntrustedInput): NativeFixtureLi
     active.add(value)
     try {
       if (array) {
-        if (value.length > 2048 || keys.length !== value.length + 1)
+        if (keys.length !== value.length + 1)
           throw new TypeError('Native fixture literal sparse or extended array rejected')
         add('[')
         for (let index = 0; index < value.length; index++) {
@@ -76,7 +67,7 @@ export function nativeFixtureLiteralWire(input: UntrustedInput): NativeFixtureLi
           if (!descriptor?.enumerable || !Object.hasOwn(descriptor, 'value'))
             throw new TypeError('Native fixture literal array accessor or hole rejected')
           if (index) add(',')
-          encode(descriptor.value as UntrustedInput, depth + 1)
+          encode(descriptor.value as UntrustedInput)
         }
         add(']')
       } else {
@@ -90,7 +81,7 @@ export function nativeFixtureLiteralWire(input: UntrustedInput): NativeFixtureLi
           if (index) add(',')
           quote(key)
           add(':')
-          encode(descriptor.value as UntrustedInput, depth + 1)
+          encode(descriptor.value as UntrustedInput)
         }
         add('}')
       }
@@ -98,6 +89,6 @@ export function nativeFixtureLiteralWire(input: UntrustedInput): NativeFixtureLi
       active.delete(value)
     }
   }
-  encode(input, 0)
+  encode(input)
   return Object.freeze({ kind: 'json', json: chunks.join('') })
 }

@@ -33,7 +33,6 @@ export interface LiveStreamDiagnostic {
 
 export const LIVE_RECOVERY_WINDOW_MS = 10_000
 export const LIVE_NO_PROGRESS_MS = 20_000
-export const LIVE_FRAME_BUFFER_BYTES = 64 * 1024 * 1024
 
 /** Bounded incident history with hysteresis; one slow frame is not a new incident. */
 export class LiveCongestion {

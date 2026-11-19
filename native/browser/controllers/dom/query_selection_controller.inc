@@ -34,9 +34,9 @@ bool QueryBuiltinNodesInWorld(int id,Dict message,bool to_utility,const std::fun
       const auto array=remote->GetString("objectId").ToString();
       if(utility==destination){done(array);return;}
       SuiteCutQueryNodeTransfer::Transfer(
-        [this,id,session](const std::string& method,Dict params,SuiteCutQueryNodeTransfer::Result result){const bool metadata=params&&params->HasKey("serializationOptions");DevTools(id,method,params,std::move(result),session,false,metadata?16*1048576:kMaxResponseBytes,metadata||method=="Runtime.getProperties");},
+        [this,id,session](const std::string& method,Dict params,SuiteCutQueryNodeTransfer::Result result){const bool metadata=params&&params->HasKey("serializationOptions");DevTools(id,method,params,std::move(result),session,false,metadata||method=="Runtime.getProperties");},
         current,fail,array,destination,group,done);
-    },session,false,kMaxResponseBytes,true);
+    },session,false,true);
   },true);
   return true;
 }

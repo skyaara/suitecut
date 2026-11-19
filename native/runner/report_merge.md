@@ -44,9 +44,8 @@ The merger revalidates terminal native DTOs and core ownership; it preserves ric
 lifecycle evidence without replaying or claiming a new runtime validation of
 all original physical operations. Optional lifecycle sections are structurally
 checked and remain intact. It cannot establish authenticity of an input report.
-Limits are 128 inputs, 128 MiB combined input, 500,000 JSON values per source,
-64 levels of JSON nesting and the native atomic writer's 128 MiB output limit
-per file. `--expected-inputs N` detects omitted inputs against the supplied count;
+Native imposes no input count, combined input size, JSON value count, JSON
+nesting or output size limit. `--expected-inputs N` detects omitted inputs against the supplied count;
 it does not infer a shard plan or detect a shard that was never declared.
 
 Committed attachments remain their original absolute references; no artifact is

@@ -25,7 +25,7 @@ const Integer = z
 const Token = z.union([z.literal('0'), Integer])
 const Owner = z.strictObject({ token: Token, scope: Integer, generation: Integer })
 const Location = z.strictObject({
-  file: z.string().min(1).max(4096),
+  file: z.string().min(1),
   line: z.number().int().min(1).max(2147483647),
   column: z.number().int().min(1).max(2147483647),
 })
@@ -33,7 +33,6 @@ const encode = (value: string): string => Buffer.from(value, 'utf16le').toString
 const decode = (value: string): string => {
   const actual = z
     .string()
-    .max(32768)
     .regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
     .parse(value)
   return actual === '-' ? '' : Buffer.from(actual, 'hex').toString('utf16le')
@@ -107,8 +106,8 @@ export class NativeSoftAssertionCallbacks {
       throw new Error('Native soft assertions support actual body/beforeEach/afterEach only')
     const step = z.union([z.literal('0'), Integer]).parse(this.currentStep(owner))
     const actualLocation = Location.optional().parse(location)
-    if (this.pending.size >= 64 || this.nonce === 18446744073709551615n) {
-      const failure = new Error('Native soft host request capacity exceeded')
+    if (this.nonce === 18446744073709551615n) {
+      const failure = new Error('Native soft host request nonce exhausted')
       this.fatal(failure)
       throw failure
     }
@@ -153,8 +152,7 @@ export class NativeSoftAssertionCallbacks {
       recognized = getNativeMatcherFailure(value.receipt)
     }
     const error = recognized ?? (value.kind === 'otherFailure' ? value.error : undefined)
-    const text = value.kind === 'passed' ? '' : this.describe(error)
-    const actual = z.string().max(8192).parse(text)
+    const actual = value.kind === 'passed' ? '' : z.string().parse(this.describe(error))
     pending.settled = true
     if (recognized) pending.error = recognized
     return new Promise<void>((resolve, reject) => {
@@ -179,8 +177,8 @@ export class NativeSoftAssertionCallbacks {
   }
   retireCallback(owner: NativeStepOwner, release: () => void): void {
     const identity = key(Owner.parse(owner))
-    if (this.retirements.has(identity) || this.retirements.size >= 64)
-      throw new Error('Native soft callback retirement is duplicate or exceeds capacity')
+    if (this.retirements.has(identity))
+      throw new Error('Native soft callback retirement is duplicate')
     if (this.contexts.has(identity)) this.retirements.set(identity, release)
     else release()
   }
@@ -201,16 +199,11 @@ export class NativeSoftAssertionCallbacks {
       if (
         worker !== this.identity.workerIndex ||
         pid !== this.identity.pid ||
-        this.contexts.size >= 64 ||
         this.contexts.has(key({ token, scope, generation }))
       )
         throw new Error('Native soft context has a foreign or duplicate actual owner')
       const attemptKey = `${test}:${attempt}:${worker}:${pid}`
-      if (!this.attempts.has(attemptKey)) {
-        if (this.attempts.size >= 8192)
-          throw new Error('Native soft attempt catalog capacity exceeded')
-        this.attempts.set(attemptKey, [])
-      }
+      if (!this.attempts.has(attemptKey)) this.attempts.set(attemptKey, [])
       if (kind !== 'body' && token === '0')
         throw new Error('Native soft hook context has no actual callback token')
       this.contexts.set(key({ token, scope, generation }), {
@@ -298,8 +291,7 @@ export class NativeSoftAssertionCallbacks {
         throw new Error('Native soft settlement ACK has no actual raw receipt')
       if (ok === '1' && pending.error) {
         const errors = this.attempts.get(pending.context.attempt)
-        if (!errors || errors.length >= 32)
-          throw new Error('Native soft accepted errors exceed actual attempt bound')
+        if (!errors) throw new Error('Native soft accepted error has no actual attempt')
         errors.push(pending.error)
       }
       this.pending.delete(request)

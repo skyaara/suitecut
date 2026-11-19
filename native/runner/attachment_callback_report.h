@@ -13,7 +13,7 @@ template<class Report>void ValidateAttachmentCallbackRetry(const Report& report,
     // Effective deadline is amended by live owner authority and is not an
     // admission-history timestamp. Keep immutable own caps and actual receipts.
     const auto immutable_admission=[&](uint64_t id){
-      for(size_t depth=0;id&&depth<=TestSteps::kDepth;++depth){
+      for(size_t depth=0;id&&depth<=report.steps.size();++depth){ // Cycle guard for a forged report.
         const auto step=find(id);
         if(step==report.steps.end()||step->owner!=owner||!std::isfinite(step->own_deadline)||admitted>=step->own_deadline)return false;
         if constexpr(requires{step->callback_deadline;})if(step->callback_deadline&&(!std::isfinite(*step->callback_deadline)||admitted>=*step->callback_deadline))return false;

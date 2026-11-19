@@ -66,14 +66,12 @@ const wire = (text: string): string => Buffer.from(text, 'utf16le').toString('he
 const decode = (text: string): string => {
   const value = z
     .string()
-    .max(32768)
     .regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
     .parse(text)
   return value === '-' ? '' : Buffer.from(value, 'hex').toString('utf16le')
 }
 export class NativeAttachmentCallbacks {
   private nonce = 0n
-  private retainedBytes = 0
   private readonly pending = new Map<string, Pending>()
   private readonly mutations = new Map<string, MutationPending>()
   private readonly callbackRetirements = new Map<string, () => void>()
@@ -116,9 +114,8 @@ export class NativeAttachmentCallbacks {
       .strictObject({ token: Token, scope: Integer, generation: Integer })
       .parse(owner)
     const revision = BigInt(Token.parse(expected))
-    if (this.mutations.size >= 512 || this.nonce === 18446744073709551615n || revision >= 512n)
-      throw new Error('Native attachment mutation pending request capacity exceeded')
-    if (slots.length > 256) throw new Error('Native attachment mutation slot capacity exceeded')
+    if (this.nonce === 18446744073709551615n)
+      throw new Error('Native attachment mutation request nonce exhausted')
     const references = slots.map((reference) =>
       reference === null
         ? 'h'
@@ -172,8 +169,8 @@ export class NativeAttachmentCallbacks {
   }
   retireCallback(owner: NativeStepOwner, release: () => void): void {
     const identity = `${owner.token}:${owner.scope}:${owner.generation}`
-    if (this.callbackRetirements.has(identity) || this.callbackRetirements.size >= 64)
-      throw new Error('Native callback retirement is duplicate or exceeds capacity')
+    if (this.callbackRetirements.has(identity))
+      throw new Error('Native callback retirement is duplicate')
     if (!this.views.hasContext(owner)) release()
     else this.callbackRetirements.set(identity, release)
   }
@@ -187,13 +184,8 @@ export class NativeAttachmentCallbacks {
     owner: NativeStepOwner,
     items: readonly NativeTestAttachment[],
   ): readonly string[] {
-    const bytes = items.reduce((sum, item) => sum + (item.body?.byteLength ?? 0), 0)
-    if (
-      this.pending.size + items.length > 128 ||
-      bytes > 64 * 1024 * 1024 - this.retainedBytes ||
-      this.nonce > 18446744073709551615n - BigInt(items.length)
-    )
-      throw new Error('Native append pending byte/request capacity exceeded')
+    if (this.nonce > 18446744073709551615n - BigInt(items.length))
+      throw new Error('Native append request nonce exhausted')
     const retry = currentNativeRetryInvocation(owner)
     const requests: string[] = []
     for (const item of items) {
@@ -265,20 +257,19 @@ export class NativeAttachmentCallbacks {
     const actualOwner = z
       .strictObject({ token: Token, scope: Integer, generation: Integer })
       .parse(owner)
-    if (appendPath !== undefined) z.string().max(8192).parse(appendPath)
+    if (appendPath !== undefined) z.string().parse(appendPath)
     return (name, options = {}) => {
       const retry = currentNativeRetryInvocation(actualOwner)
       if (typeof name !== 'string') throw new TypeError('"name" should be string.')
-      const actualName = z.string().max(4096).parse(name)
+      const actualName = z.string().parse(name)
       const actual = z
         .strictObject({
           body: z.union([z.string(), z.instanceof(Uint8Array)]).optional(),
           path: z
             .string()
-            .max(8192)
             .refine((value) => !value.includes('\0'))
             .optional(),
-          contentType: z.string().max(1024).optional(),
+          contentType: z.string().optional(),
         })
         .parse(options)
       if (actual.path !== undefined && actual.body !== undefined)
@@ -296,17 +287,10 @@ export class NativeAttachmentCallbacks {
           : typeof actual.body === 'string'
             ? Buffer.byteLength(actual.body)
             : (actual.body?.byteLength ?? 0)
-      if (
-        size > 16 * 1024 * 1024 ||
-        this.retainedBytes + size > 64 * 1024 * 1024 ||
-        this.pending.size >= 128 ||
-        this.nonce === 18446744073709551615n
-      )
-        throw new Error('Native attachment host byte/request capacity exceeded')
+      if (this.nonce === 18446744073709551615n)
+        throw new Error('Native attachment host request nonce exhausted')
       const path =
         actual.path === undefined || actual.path === '' ? (actual.path ?? '') : resolve(actual.path)
-      if (Buffer.byteLength(path) > 8192)
-        throw new Error('Native attachment source path exceeds bound')
       // Snapshot the author's actual bytes before returning; later author writes
       // cannot change an admitted attachment's byte sequence.
       const bytes =
@@ -317,7 +301,7 @@ export class NativeAttachmentCallbacks {
             : Buffer.from(actual.body ?? [])
       if (!append) this.views.prepareNormal(actualOwner)
       if (this.nonce === 18446744073709551615n)
-        throw new Error('Native attachment host request capacity exceeded')
+        throw new Error('Native attachment host request nonce exhausted')
       const request = String(this.nonce + 1n)
       if (!append)
         this.views.trackNormal(
@@ -345,7 +329,6 @@ export class NativeAttachmentCallbacks {
           awaitingChunk: false,
           finished: false,
         })
-        this.retainedBytes += size
         void this.send(
           append
             ? 'ATTACH_APPEND_BEGIN'
@@ -407,7 +390,7 @@ export class NativeAttachmentCallbacks {
       .parse(owner)
     const cause = Integer.parse(request),
       root = Integer.parse(source)
-    const ids = z.array(Integer).min(1).max(64).parse(actualStepIds)
+    const ids = z.array(Integer).min(1).parse(actualStepIds)
     if (!ids.includes(root) || new Set(ids).size !== ids.length)
       throw new Error('Native attachment local-skip ACK has invalid actual step IDs')
     for (const pending of this.pending.values()) {
@@ -559,11 +542,7 @@ export class NativeAttachmentCallbacks {
             z.string(),
             z.string(),
             z.string(),
-            z.coerce
-              .number()
-              .int()
-              .min(0)
-              .max(16 * 1024 * 1024),
+            z.coerce.number().int().min(0),
             Token.optional(),
           ])
           .parse(fields.slice(6 + extra))
@@ -645,9 +624,7 @@ export class NativeAttachmentCallbacks {
       this.views.canceled({ token, scope, generation }, request)
       this.finish(request, pending, pending.testSkip.control)
     } else if (command === 'ATTACH_CHUNK_OK') {
-      const [sequence] = z
-        .tuple([z.coerce.number().int().min(1).max(1024)])
-        .parse(fields.slice(6 + extra))
+      const [sequence] = z.tuple([z.coerce.number().int().min(1)]).parse(fields.slice(6 + extra))
       if (
         id === '0' ||
         pending.id === undefined ||
@@ -735,7 +712,6 @@ export class NativeAttachmentCallbacks {
   }
   private finish(request: string, pending: Pending, error?: string | Error): void {
     this.pending.delete(request)
-    this.retainedBytes -= pending.bytes?.length ?? 0
     if (error === undefined) pending.resolve()
     else pending.reject(error instanceof Error ? error : new Error(error))
     this.settled()

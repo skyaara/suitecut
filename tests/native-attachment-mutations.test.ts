@@ -296,9 +296,10 @@ describe('mutable attachment author staging (controlled sender, no native/file r
         }
         expect(proposals).toHaveLength(count)
         expect(view.map((item) => item.name)).toEqual(['b', 'a'])
-        expect(() => {
-          view.length = 257
-        }).toThrow('slot capacity')
+        const before = proposals.length
+        view.length = 300
+        expect(view).toHaveLength(300)
+        expect(proposals).toHaveLength(before + 1)
       },
     )
   })

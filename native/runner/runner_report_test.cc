@@ -35,7 +35,7 @@ int main(int argc,char** argv){
   invalid=report;invalid.attempts[0].duration_ms=std::numeric_limits<double>::quiet_NaN();Rejected([&]{WriteRunnerJson(invalid,json);});
   invalid=report;invalid.attempts[0].status="passed\"}";Rejected([&]{WriteRunnerJson(invalid,json);});
   invalid=report;++invalid.workers[0].pid;Rejected([&]{WriteRunnerJson(invalid,json);});
-  invalid=report;invalid.workers[0].stdout_bytes.assign(kRunnerReportStreamBytes+1,'a');Rejected([&]{WriteRunnerJson(invalid,json);});invalid=RunnerReport{};
+  {auto large=report;large.workers[0].stdout_bytes.assign(16*1024*1024+1,'a');WriteRunnerJson(large,folder/"large-stream.json");}invalid=RunnerReport{};
   auto unrun=report;unrun.unrun={{77,"\"not started \\ud800 <&\"","\"beforeAll failed <&\""}};
   WriteRunnerJson(unrun,folder/"unrun.json");WriteRunnerJUnit(unrun,folder/"unrun.xml");
   invalid=unrun;invalid.unrun[0].test_id=2;Rejected([&]{WriteRunnerJson(invalid,json);});assert(Read(json)==original);

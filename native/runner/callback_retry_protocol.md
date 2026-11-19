@@ -18,8 +18,8 @@ this first slice. Existing other assertion overloads remain unchanged.
 Native default timeout is zero: no independent assertion cap, still intersected
 with the genuine callback, parent step and original suite/cleanup cap. An
 explicit positive timeout is fixed at original assertion admission. Timeout and
-interval values are nonnegative safe integers; an explicit interval list has
-1–64 entries. Native defaults are 100/250/500/1000 milliseconds, repeating the
+interval values are nonnegative safe integers; an explicit interval list is
+non-empty with no native length limit. Native defaults are 100/250/500/1000 milliseconds, repeating the
 last interval. Native compares intervals against remaining time before adding.
 
 An assertion's own timeout is an ordinary catchable assertion failure. Native
@@ -94,8 +94,8 @@ function. Only the private actual producer observer emits it, never error-text
 classification. SourceTicket is from the real native registered Source binding;
 zero denotes no Source use, never a substitute for unregistered Source work.
 Native sourceStep is checked against genuine same-owner failed-step ancestry.
-`operationsPending` is the real captured high-level Source operation count,
-bounded by the existing 128 admission limit. Raw delivery is never delayed to
+`operationsPending` is the real captured high-level Source operation count;
+native imposes no admission count limit. Raw delivery is never delayed to
 hide it. Zero permits the native physical fence to begin; a positive count
 requires exactly one OPERATIONS_RETIRED after the real captured operations
 settle. That packet is only front-end continuation drainage, never native

@@ -48,8 +48,8 @@ const OutputSchema = z
     audioCodec: FfmpegNameSchema.exactOptional(),
     pixelFormat: FfmpegNameSchema.exactOptional(),
     colorRange: ColorRangeSchema.exactOptional(),
-    width: z.number().int().positive().max(7680).multipleOf(2).exactOptional(),
-    height: z.number().int().positive().max(4320).multipleOf(2).exactOptional(),
+    width: z.number().int().positive().multipleOf(2).exactOptional(),
+    height: z.number().int().positive().multipleOf(2).exactOptional(),
     framesPerSecond: OutputFrameRateSchema.exactOptional(),
     quality: RenderQualitySchema.exactOptional(),
   })

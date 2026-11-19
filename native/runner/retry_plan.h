@@ -20,10 +20,7 @@ struct Result {Attempt attempt;Outcome outcome;bool expected;std::string error;}
 class RetryPlan {
  public:
   explicit RetryPlan(std::vector<TestCase> tests,unsigned maxFailures=0,uint64_t generationSeed=0):tests_(std::move(tests)),generation_(generationSeed),max_failures_(maxFailures){
-    if(maxFailures>4096)throw std::invalid_argument("Native maximum failure count must be0..4096");
-    if(tests_.size()>4096)throw std::invalid_argument("Native test capacity4096 exceeded");
-    size_t result_budget=0;for(const auto& test:tests_){size_t bytes=test.title.size()+8448;for(const auto& fixture:test.fixtures)bytes+=fixture.size()+32;if(test.title.size()>4096||test.fixtures.size()>256||bytes>1048576)throw std::invalid_argument("Native test metadata limit exceeded");result_budget+=bytes*(static_cast<size_t>(test.retries)+1);if(result_budget>67108864)throw std::invalid_argument("Native attempt metadata/error budget64MiB exceeded");}
-    for(size_t i=0;i<tests_.size();++i){const auto& t=tests_[i];if(!t.id||t.retries>100)throw std::invalid_argument("Invalid native test ID/retry count");for(size_t j=0;j<i;++j)if(tests_[j].id==t.id)throw std::invalid_argument("Duplicate native test ID");queue_.push_back({t,0,0});}
+    for(size_t i=0;i<tests_.size();++i){const auto& t=tests_[i];if(!t.id)throw std::invalid_argument("Invalid native test ID/retry count");for(size_t j=0;j<i;++j)if(tests_[j].id==t.id)throw std::invalid_argument("Duplicate native test ID");queue_.push_back({t,0,0});}
   }
   std::optional<Attempt> Next(uint64_t worker,uint64_t admittedGeneration=0){
     if(active_||retiring_worker_||queue_.empty()||!worker)return std::nullopt;
@@ -36,7 +33,6 @@ class RetryPlan {
     runtime_expected_failure_=true;return true;
   }
   bool Finish(uint64_t worker,uint64_t generation,Outcome status,std::string error,bool infrastructureFailure=false){
-    if(error.size()>8192)error.resize(8192);
     if(!active_||worker!=worker_||generation!=active_->generation)return false;
     const auto a=*active_;const bool expected=!infrastructureFailure&&(status==Outcome::Skipped||((a.test.expectedFailure||runtime_expected_failure_)?status==Outcome::Failed:status==Outcome::Passed));
     results_.push_back({a,status,expected,std::move(error)});active_.reset();runtime_expected_failure_=false;

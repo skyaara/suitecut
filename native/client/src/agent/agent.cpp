@@ -82,7 +82,7 @@ void validate(const Json& a) {
     }
   } else if (op == "upload") {
     keys(a,{"action","target","files"},true); target(a.at("target"));
-    require(a.at("files").is_array() && a.at("files").as_array().size() <= 1000,"Upload files must be an array with at most 1000 paths");
+    require(a.at("files").is_array(),"Upload files must be an array of paths");
     for (const auto& path : a.at("files").as_array())
       require(path.is_string() && !path.as_string().empty(),"Upload path must be a nonempty string");
   } else if (op == "back" || op == "forward" || op == "reload") {
@@ -98,8 +98,7 @@ void validate(const Json& a) {
     else {
       keys(a, {"action", "target", "values"}, true);
       const auto& choices = a.at("values");
-      require(choices.is_array() && choices.as_array().size() <= 256,
-              "Select values must be an array of at most 256 strings");
+      require(choices.is_array(), "Select values must be an array of strings");
       for (const auto& value : choices.as_array()) require(value.is_string(), "Select value must be a string");
     }
     target(a.at("target"));
@@ -110,9 +109,8 @@ void validate(const Json& a) {
     keys(a, {"action", "x", "y"}, true);
     for (auto name : {"x", "y"}) {
       const auto& number = a.at(name);
-      require(number.is_number() && std::isfinite(number.as_double()) &&
-                  number.as_double() >= 0 && number.as_double() <= 1000000,
-              "Pointer coordinates must be finite numbers in [0, 1000000]");
+      require(number.is_number() && std::isfinite(number.as_double()) && number.as_double() >= 0,
+              "Pointer coordinates must be finite nonnegative numbers");
     }
   } else if (op == "insertText") {
     keys(a, {"action", "text"}, true); string(a, "text", true);
@@ -120,8 +118,8 @@ void validate(const Json& a) {
     keys(a, {"action", "boxes", "depth"}, true); boolean(a, "boxes");
     if (a.contains("depth")) {
       const auto& depth = a.at("depth");
-      require(depth.is_integer() && depth.as_int() >= -1 && depth.as_int() <= 64,
-              "Observation depth must be an integer in [-1, 64]");
+      require(depth.is_integer() && depth.as_int() >= -1 && depth.as_int() <= std::numeric_limits<int>::max(),
+              "Observation depth must be an integer in [-1, INT_MAX]");
     }
   } else throw std::invalid_argument("Unknown action: " + op);
   if (a.contains("expect")) {
@@ -143,10 +141,6 @@ void validate(const Json& a) {
       require(expected.is_string() || expected.is_null(), "Expected text must be a string or null");
     else require(expected.is_string(), "Expected value must be a string");
   }
-  // Target descriptions can appear twice in a wire request; leave ample room
-  // for protocol fields beneath the native transport's 64 KiB command bound.
-  JsonLimits limits; limits.max_bytes = 16 * 1024; limits.max_string_bytes = 16 * 1024;
-  a.dump(limits);
 }
 Locator locator(const Page& page, const Json& target) {
   const auto& kind = target.at("kind").as_string();
@@ -246,7 +240,7 @@ std::string action_budget_message(const std::exception& failure,const Json& acti
   for(const auto* key:{"value","text"})if(action.contains(key)&&action.at(key).is_string()&&!action.at(key).as_string().empty())secrets.push_back(action.at(key).as_string());
   if(action.contains("expect")&&action.at("expect").contains("value")&&action.at("expect").at("value").is_string()&&!action.at("expect").at("value").as_string().empty())secrets.push_back(action.at("expect").at("value").as_string());
   const std::string cause=failure.what();std::string safe;
-  for(std::size_t i=0;i<cause.size()&&safe.size()<4096;){std::size_t matched=0;for(const auto& secret:secrets)if(secret.size()>matched&&cause.compare(i,secret.size(),secret)==0)matched=secret.size();if(matched){safe+="[redacted]";i+=matched;}else safe+=cause[i++];}
+  for(std::size_t i=0;i<cause.size();){std::size_t matched=0;for(const auto& secret:secrets)if(secret.size()>matched&&cause.compare(i,secret.size(),secret)==0)matched=secret.size();if(matched){safe+="[redacted]";i+=matched;}else safe+=cause[i++];}
   return "Batch time budget exhausted: "+safe;
 }
 using Clock = std::chrono::steady_clock;
@@ -264,14 +258,13 @@ AgentBatchResult Agent::run(const Page& page, const Json& actions, AgentBatchOpt
   try {
     require(options.max_duration.count() >= 1 && options.max_duration.count() <= 300000,
             "max_duration must be in [1, 300000] milliseconds");
-    require(options.max_actions >= 1 && options.max_actions <= 256,
-            "max_actions must be in [1, 256]");
-    require(options.max_bytes >= 1 && options.max_bytes <= 4 * 1024 * 1024,
-            "max_bytes must be in [1, 4194304]");
     require(actions.is_array(), "Actions must be an array");
-    require(actions.as_array().size() <= options.max_actions, "Action count exceeds max_actions");
-    JsonLimits limits; limits.max_bytes = options.max_bytes; limits.max_string_bytes = options.max_bytes;
-    actions.dump(limits);
+    // max_actions/max_bytes are optional caller limits; 0 means no limit.
+    require(!options.max_actions || actions.as_array().size() <= options.max_actions, "Action count exceeds max_actions");
+    if (options.max_bytes) {
+      JsonLimits limits; limits.max_bytes = options.max_bytes; limits.max_string_bytes = options.max_bytes;
+      actions.dump(limits);
+    }
     result.actions.resize(actions.as_array().size());
     for (std::size_t i = 0; i < actions.as_array().size(); ++i) {
       result.actions[i].index = i;

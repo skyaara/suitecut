@@ -126,52 +126,46 @@ int main(){
     sr::GrepExpression expression(u"\\P{RGI_Emoji}","v");
   }
   ,"string property");
-  sr::GrepWork decode_budget{1};
-  Reject([&]{sr::GrepExpression(u"(?:)","u").Matches(std::u16string(32768,u'a'),decode_budget);},"work capacity");
-  Check(decode_budget.remaining==0);
+  sr::GrepWork decode_work;
+  Check(sr::GrepExpression(u"(?:)","u").Matches(std::u16string(32769,u'a'),decode_work));
   sr::GrepWork deadline_work;
   const auto original_deadline=std::chrono::steady_clock::now()-std::chrono::milliseconds(1);
   unsigned polls=0;deadline_work.check_stopped=[&]{++polls;if(std::chrono::steady_clock::now()>=original_deadline)throw std::runtime_error("actual original native deadline");};
   bool original_stopped=false;
   try{sr::GrepExpression(u"^(?<x>a+)+b$").Matches(std::u16string(20000,u'a'),deadline_work);}
   catch(const std::runtime_error& error){original_stopped=std::string(error.what())=="actual original native deadline";}
-  Check(original_stopped&&polls>0&&deadline_work.remaining>0);
+  Check(original_stopped&&polls>0);
   sr::GrepWork interrupted_work;interrupted_work.check_stopped=[] {throw std::runtime_error("actual native stop callback");};
   bool stop_preserved=false;
   try{sr::GrepExpression(u"^(a+)\\1+$").Matches(std::u16string(20000,u'a')+u"b",interrupted_work);}
   catch(const std::runtime_error& error){stop_preserved=std::string(error.what())=="actual native stop callback";}
-  Check(stop_preserved&&interrupted_work.remaining>0);
+  Check(stop_preserved);
   sr::GrepWork bursts;unsigned burst_polls=0;
   bursts.check_stopped=[&]{if(++burst_polls==2)throw std::runtime_error("bulk original stop");};
   bursts.Charge(3000);bursts.Charge(2000);bursts.Charge(3191);
   bool bulk_stopped=false;try{bursts.Charge();}catch(const std::runtime_error& error){bulk_stopped=std::string(error.what())=="bulk original stop";}
-  Check(bulk_stopped&&burst_polls==2&&bursts.remaining>0);
+  Check(bulk_stopped&&burst_polls==2);
   sr::GrepExpression regular(u"^(a+)+b$");
   Check(!regular.UsesVM());
   sr::GrepWork linear;
   Check(!regular.Matches(std::u16string(20000,u'a'),linear));
-  Check(linear.remaining>60*1024*1024);
   sr::GrepExpression advanced(u"^(a+)\\1+$");
   Check(advanced.UsesVM());
-  sr::GrepWork tiny{
-    20
-  }
-  ;
-  Reject([&]{
-    advanced.Matches(std::u16string(20000,u'a')+u"b",tiny);
-  }
-  ,"work capacity");
-  Check(tiny.remaining==0);
   std::u16string memory_source=u"^((?:";
   for(unsigned i=0;
   i<128;
   ++i)memory_source+=u"a+";
   memory_source+=u")+)\\1$";
   sr::GrepExpression memory(memory_source);
-  sr::GrepWork memory_work;
-  Reject([&]{
-    memory.Matches(std::u16string(20000,u'a')+u"b",memory_work);
-  }
-  ,"memory capacity");
+  // Retained backtracking state has no native cap; only the runner's original
+  // stop/deadline check ends a catastrophic match.
+  sr::GrepWork memory_work;unsigned memory_polls=0;
+  memory_work.check_stopped=[&]{if(++memory_polls==64)throw std::runtime_error("original memory deadline");};
+  bool memory_stopped=false;
+  try{memory.Matches(std::u16string(20000,u'a')+u"b",memory_work);}
+  catch(const std::runtime_error& error){memory_stopped=std::string(error.what())=="original memory deadline";}
+  Check(memory_stopped);
+  // Group nesting is bounded by the native stack, not a fixed depth.
+  Check(Match(std::u16string(200,u'(')+u"a"+std::u16string(200,u')'),u"a"));
   std::cout<<"Native bounded capture/assertion/Unicode RegExp VM "<<checks<<" controls PASS\n";
 }

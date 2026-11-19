@@ -26,9 +26,9 @@ original tests were read; no external implementation was copied:
 The native adapter must resolve outermost effective serial groups from the
 original declaration tree after native focus/filter/shard selection. Selected
 members keep original catalog IDs and declaration order. The retry allowance is
-the maximum effective member retry count, bounded0..100; a replay uses the same
+the maximum effective member retry count, with no native upper bound; a replay uses the same
 wave index for every member, including members that passed earlier. Full-group
-projected results and omissions are bounded8192 and64MiB before admission.
+projected results and omissions have no native count or size limit.
 
 `Begin` accepts one actual native worker identity `{index,pid,generation}`.
 Worker indices increase and cannot be reused; unchanged PID alone cannot release

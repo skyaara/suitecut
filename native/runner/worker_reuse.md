@@ -52,9 +52,9 @@ Only a genuine known-PID `waitpid` status admits `PrimaryExited`. Physical
 retirement additionally requires raw/step/file/output/fixture/soft owners to
 retire and the actual shared descendant batch to settle. Earlier idle-transfer
 history remains immutable after final physical retirement. Repeated identities
-or stale generations cannot retire another host. All policy vectors are bounded
-and preallocated before actual host admission; post-admission policy transitions
-are allocation-free. The coordinator's existing emergency drain must retain all
+or stale generations cannot retire another host. Host slots are allocated for
+the requested worker count before actual host admission; native imposes no host,
+group or retained fixture count limit. The coordinator's existing emergency drain must retain all
 borrow and host leases until their genuine receipts settle.
 
 The adapter must report explicit borrow-to-live-host transfer chains and record

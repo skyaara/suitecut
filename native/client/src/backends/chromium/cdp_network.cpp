@@ -15,7 +15,6 @@
 namespace suitecut::detail {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr std::size_t count_limit = 1024, cache_limit = 8 * 1024 * 1024;
 std::string text(const Json& v, const char* key, std::string fallback = {}) {
   return v.contains(key) ? v.at(key).as_string() : std::move(fallback);
 }
@@ -42,10 +41,9 @@ std::string header_value(const Json& input,const std::string& wanted) {
   }
   return {};
 }
-bool glob(const std::string& pattern, const std::string& value,std::size_t& budget) {
+bool glob(const std::string& pattern, const std::string& value) {
   std::size_t p=0,v=0,star=std::string::npos,mark=0;
   while(v<value.size()) {
-    if(!budget--)throw std::runtime_error("Route glob matching work budget exceeded");
     if(p<pattern.size()&&(pattern[p]=='?'||pattern[p]==value[v])) { ++p;++v; }
     else if(p<pattern.size()&&pattern[p]=='*') { star=p++;mark=v; }
     else if(star!=std::string::npos) { p=star+1;v=++mark; }
@@ -67,7 +65,7 @@ std::string base64(const std::string& data) {
   return out;
 }
 Json headers(const Json& input) {
-  if(!input.is_object()||input.as_object().size()>256)throw std::invalid_argument("Headers must be an object of at most256 string entries");
+  if(!input.is_object())throw std::invalid_argument("Headers must be an object of string entries");
   for(const auto&[key,value]:input.as_object()) {
     if(key.empty()||key.find_first_of("\r\n\0",0,3)!=std::string::npos||!value.is_string()||
        value.as_string().find_first_of("\r\n\0",0,3)!=std::string::npos)
@@ -81,23 +79,13 @@ Json header_array(const Json& input) {
     out.emplace_back(Json{{"name",name},{"value",value.is_string()?value.as_string():value.dump()}});
   return out;
 }
-Json bounded(const Json& value) {
-  try {value.dump({32768,32,16384,32768});return value;}
-  catch(...) {return Json{{"truncated",true}};}
-}
+// Retained until the caller clears it or the page/session goes away.
 struct Ring {
-  std::deque<std::pair<Json,std::size_t>> values;
-  std::size_t bytes=0,dropped=0;
-  void add(Json value) {
-    value=bounded(value);const auto n=value.dump().size();
-    while(!values.empty()&&(values.size()>=count_limit||bytes+n>cache_limit)) {
-      bytes-=values.front().second;values.pop_front();++dropped;
-    }
-    values.emplace_back(std::move(value),n);bytes+=n;
-  }
+  std::deque<Json> values;
+  void add(Json value) {values.push_back(std::move(value));}
   Json take(bool clear=false) {
-    Json::array out;out.reserve(values.size());for(const auto& v:values)out.push_back(v.first);
-    if(clear){values.clear();bytes=0;dropped=0;}return out;
+    Json::array out;out.reserve(values.size());for(const auto& v:values)out.push_back(v);
+    if(clear)values.clear();return out;
   }
 };
 }
@@ -109,12 +97,10 @@ struct CdpNetwork::Impl {
   struct Page {
     int id=0,context=0;std::set<std::string> inflight,auth;std::map<std::string,int> execution_contexts;
     std::map<std::string,std::string> script_ids;Clock::time_point activity=Clock::now();Ring requests,responses,console,errors,dialogs;
-    bool har=false,har_embed=true,har_truncated=false;
+    bool har=false,har_embed=true;
     std::map<std::string,Json> har_entries;
     std::map<std::string,std::string> har_current;
-    std::map<std::string,std::size_t> har_sizes;
     std::deque<std::string> har_order;
-    std::size_t har_bytes=0,har_dropped=0;
     std::uint64_t har_generation=0,har_serial=0;
   };
   std::map<int,Settings> settings;
@@ -123,40 +109,13 @@ struct CdpNetwork::Impl {
   int next_route=0,next_script=0;
   std::uint64_t event_sequence=0;
   explicit Impl(std::function<void(CdpAutomatic)> value):enqueue(std::move(value)){}
-  static constexpr std::size_t body_limit=2*1024*1024;
   static std::string current(const Page& page,const std::string& id) {
     const auto found=page.har_current.find(id);return found==page.har_current.end()?std::string{}:found->second;
   }
+  // Entries are retained whole until harStart resets the archive or the page goes away.
   static void store(Page& page,const std::string& key,Json entry) {
-    std::size_t bytes;
-    try{bytes=entry.dump({6*1024*1024,48,262144,3*1024*1024}).size();}
-    catch(const std::exception&) {
-      // UTF-8 byte counts and base64 decoded counts are not JSON storage
-      // counts: escaped controls can expand sixfold. Preserve metadata with an
-      // explicit body error when a retained payload exceeds the entry budget.
-      bool removed=false;
-      if(entry.contains("response")&&entry.at("response").contains("content")) {
-        auto& content=entry["response"]["content"];
-        if(content.contains("text")){content.as_object().erase("text");content.as_object().erase("encoding");content["_bodyError"]="Serialized body exceeds HAR entry storage budget";removed=true;}
-      }
-      if(entry.contains("request")&&entry.at("request").contains("postData")) {
-        entry["request"].as_object().erase("postData");entry["request"]["_postDataError"]="Serialized POST data exceeds HAR entry storage budget";removed=true;
-      }
-      if(!removed)throw;
-      page.har_truncated=true;bytes=entry.dump({6*1024*1024,48,262144,3*1024*1024}).size();
-    }
-    const auto old=page.har_sizes.contains(key)?page.har_sizes.at(key):0;
-    while(!page.har_order.empty()&&((page.har_entries.size()>=count_limit&&!page.har_entries.contains(key))||page.har_bytes-old+bytes>cache_limit)) {
-      auto oldest=std::find_if(page.har_order.begin(),page.har_order.end(),[&](const auto& id){return id!=key;});
-      if(oldest==page.har_order.end())break;
-      const auto removed=*oldest;page.har_order.erase(oldest);page.har_bytes-=page.har_sizes.at(removed);
-      page.har_sizes.erase(removed);page.har_entries.erase(removed);
-      std::erase_if(page.har_current,[&](const auto& item){return item.second==removed;});
-      page.har_truncated=true;++page.har_dropped;
-    }
-    if(page.har_bytes-old+bytes>cache_limit)throw std::runtime_error("HAR entry exceeds bounded archive storage");
     if(!page.har_entries.contains(key))page.har_order.push_back(key);
-    page.har_bytes=page.har_bytes-old+bytes;page.har_sizes[key]=bytes;page.har_entries.insert_or_assign(key,std::move(entry));
+    page.har_entries.insert_or_assign(key,std::move(entry));
   }
   static void apply_response(Json& entry,const Json& response) {
     auto& out=entry["response"];
@@ -164,11 +123,7 @@ struct CdpNetwork::Impl {
     if(status<0||status>999||std::trunc(status)!=status)throw std::runtime_error("Invalid HTTP status in native CDP response");
     out["status"]=static_cast<int>(status);out["statusText"]=text(response,"statusText");
     out["httpVersion"]=text(response,"protocol");
-    if(response.contains("headers")) {
-      const auto safe=bounded(response.at("headers"));
-      if(safe.contains("truncated")&&safe.at("truncated").is_bool())entry["_headersTruncated"]=true;
-      else out["headers"]=header_array(safe);
-    }
+    if(response.contains("headers"))out["headers"]=header_array(response.at("headers"));
     out["content"]["mimeType"]=text(response,"mimeType");
     if(response.contains("headersText"))out["headersSize"]=response.at("headersText").as_string().size();
     const auto location=response.contains("headers")?header_value(response.at("headers"),"location"):std::string{};
@@ -203,8 +158,7 @@ struct CdpNetwork::Impl {
   Json har(const Page& page)const {
     Json::array entries;for(const auto& key:page.har_order)if(page.har_entries.contains(key))entries.push_back(page.har_entries.at(key));
     return Json{{"log",Json{{"version","1.2"},{"creator",Json{{"name","SuiteCut native Chromium"},{"version","1"}}},{"pages",Json::array{}},{"entries",std::move(entries)},
-      {"_truncated",page.har_truncated},{"_droppedEntries",page.har_dropped},{"_retainedBytes",page.har_bytes},{"_maxBytes",cache_limit},
-      {"_bodyPolicy",page.har_embed?"embed":"omit"},{"_bodyByteLimit",body_limit}}}};
+      {"_bodyPolicy",page.har_embed?"embed":"omit"}}}};
   }
 };
 CdpNetwork::CdpNetwork(std::function<void(CdpAutomatic)> enqueue):impl_(std::make_unique<Impl>(std::move(enqueue))){}
@@ -225,7 +179,6 @@ void CdpNetwork::observe(const Json& event) {
     if(method=="Runtime.executionContextCreated") {
       const auto& context=params.at("context");
       if(context.contains("auxData")&&flag(context.at("auxData"),"isDefault")&&context.at("auxData").contains("frameId")) {
-        if(page.execution_contexts.size()>=1024)throw std::runtime_error("Frame execution context capacity exceeded");
         page.execution_contexts.insert_or_assign(context.at("auxData").at("frameId").as_string(),static_cast<int>(context.at("id").as_int()));
       }
     } else if(method=="Runtime.executionContextsCleared")page.execution_contexts.clear();
@@ -234,10 +187,8 @@ void CdpNetwork::observe(const Json& event) {
       const auto request_id=text(params,"requestId");
       const auto& url=params.at("request").at("url").as_string();
       CdpAutomatic next{"Fetch.continueRequest",session,Json{{"requestId",request_id}}};
-      if(!settings.routes.empty()&&url.size()>65536)throw std::runtime_error("Routed request URL exceeds65536 bytes");
-      std::size_t budget=1024*1024;
       for(auto it=settings.routes.rbegin();it!=settings.routes.rend();++it) {
-        if(!glob(it->fields.at("pattern").as_string(),url,budget))continue;
+        if(!glob(it->fields.at("pattern").as_string(),url))continue;
         const auto behavior=text(it->fields,"behavior");
         if(behavior=="abort") {next.method="Fetch.failRequest";next.params["errorReason"]=text(it->fields,"errorReason","BlockedByClient");}
         else if(behavior=="mock") {
@@ -252,13 +203,11 @@ void CdpNetwork::observe(const Json& event) {
       const auto request_id=text(params,"requestId");
       Json reply{{"response","CancelAuth"}};
       if(!settings.credentials.is_null()&&!page.auth.contains(request_id)) {
-        if(page.auth.size()>=count_limit)page.auth.erase(page.auth.begin());
         page.auth.insert(request_id);reply=Json{{"response","ProvideCredentials"},{"username",settings.credentials.at("username")},{"password",settings.credentials.at("password")}};
       }
       action=CdpAutomatic{"Fetch.continueWithAuth",session,Json{{"requestId",request_id},{"authChallengeResponse",std::move(reply)}}};
     } else if(method=="Network.requestWillBeSent") {
       const auto request_id=text(params,"requestId");page.activity=Clock::now();
-      if(page.inflight.size()>=4096&&!page.inflight.contains(request_id))throw std::runtime_error("Network inflight tracking capacity exceeded");
       page.inflight.insert(request_id);page.requests.add(params);
       if(page.har) {
         const auto old=Impl::current(page,request_id);
@@ -276,17 +225,14 @@ void CdpNetwork::observe(const Json& event) {
           Impl::store(page,old,std::move(previous));
         }
         const auto& request=params.at("request");
-        const auto safe_headers=bounded(request.contains("headers")?request.at("headers"):Json::object{});
-        const bool truncated=safe_headers.contains("truncated")&&safe_headers.at("truncated").is_bool();
         const auto key=request_id+":"+std::to_string(++page.har_serial);
         Json entry{{"startedDateTime",params.contains("wallTime")?iso_time(params.at("wallTime").as_double()):iso_time(std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count())},{"time",0},
-          {"request",Json{{"method",text(request,"method")},{"url",text(request,"url")},{"httpVersion",""},{"headers",truncated?Json(Json::array{}):header_array(safe_headers)},{"queryString",Json::array{}},{"cookies",Json::array{}},{"headersSize",-1},{"bodySize",-1}}},
+          {"request",Json{{"method",text(request,"method")},{"url",text(request,"url")},{"httpVersion",""},{"headers",header_array(request.contains("headers")?request.at("headers"):Json::object{})},{"queryString",Json::array{}},{"cookies",Json::array{}},{"headersSize",-1},{"bodySize",-1}}},
           {"response",Json{{"status",0},{"statusText",""},{"httpVersion",""},{"headers",Json::array{}},{"cookies",Json::array{}},{"content",Json{{"size",0},{"mimeType",""}}},{"redirectURL",""},{"headersSize",-1},{"bodySize",-1}}},
           {"cache",Json::object{}},{"timings",Json{{"blocked",-1},{"dns",-1},{"connect",-1},{"ssl",-1},{"send",-1},{"wait",-1},{"receive",-1}}},
           {"_requestId",request_id},{"_redirectHop",hop},{"_timestamp",params.contains("timestamp")?params.at("timestamp"):Json(0)},
           {"_finished",false},{"_bodyPending",page.har_embed}};
-        if(truncated)entry["_headersTruncated"]=true;
-        if(request.contains("postData")&&request.at("postData").is_string()&&request.at("postData").as_string().size()<=Impl::body_limit) {
+        if(request.contains("postData")&&request.at("postData").is_string()) {
           entry["request"]["postData"]=Json{{"mimeType",request.contains("headers")?header_value(request.at("headers"),"content-type"):std::string{}},{"text",request.at("postData")}};
           entry["request"]["bodySize"]=request.at("postData").as_string().size();
         }else if(flag(request,"hasPostData"))entry["_postDataPending"]=true;
@@ -327,11 +273,11 @@ void CdpNetwork::setup(CdpRuntime& runtime,CdpPage& page,Deadline deadline) {
   Impl::Settings settings;
   {
     std::lock_guard lock(impl_->mutex);
-    if(!impl_->pages.contains(page.session)&&impl_->pages.size()>=4096)throw std::runtime_error("Network page capacity exceeded");
     auto& state=impl_->pages[page.session];state.id=page.id;state.context=page.context;
     settings=impl_->settings[page.context];
   }
-  runtime.call(page,"Network.enable",Json{{"maxTotalBufferSize",8*1024*1024},{"maxResourceBufferSize",2*1024*1024}},deadline);
+  // INT32 max for each buffer: Chromium's own defaults apply when omitted, and they are smaller.
+  runtime.call(page,"Network.enable",Json{{"maxTotalBufferSize",INT_MAX},{"maxResourceBufferSize",INT_MAX},{"maxPostDataSize",INT_MAX}},deadline);
   if(!settings.extra_headers.as_object().empty())runtime.call(page,"Network.setExtraHTTPHeaders",Json{{"headers",settings.extra_headers}},deadline);
   if(settings.offline)runtime.call(page,"Network.emulateNetworkConditions",Json{{"offline",true},{"latency",0},{"downloadThroughput",-1},{"uploadThroughput",-1}},deadline);
   if(!settings.routes.empty()||!settings.credentials.is_null())runtime.call(page,"Fetch.enable",Json{{"patterns",Json::array{Json{{"urlPattern","*"},{"requestStage","Request"}}}},{"handleAuthRequests",!settings.credentials.is_null()}},deadline);
@@ -348,7 +294,7 @@ bool CdpNetwork::idle(const std::string& session,std::chrono::milliseconds quiet
 }
 Json CdpNetwork::events(const std::string& method,std::uint64_t after)const {
   std::lock_guard lock(impl_->mutex);Json::array out;
-  for(const auto&[event,size]:impl_->browser.values){(void)size;if(text(event,"method")==method&&event.contains("_suitecutEventSequence")&&event.at("_suitecutEventSequence").as_int()>static_cast<std::int64_t>(after))out.push_back(event);}return out;
+  for(const auto& event:impl_->browser.values){if(text(event,"method")==method&&event.contains("_suitecutEventSequence")&&event.at("_suitecutEventSequence").as_int()>static_cast<std::int64_t>(after))out.push_back(event);}return out;
 }
 int CdpNetwork::execution_context(const std::string& session,const std::string& frame)const {
   std::lock_guard lock(impl_->mutex);const auto page=impl_->pages.find(session);
@@ -375,7 +321,7 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
         const auto policy=text(fields,"content","embed");
         if(policy!="embed"&&policy!="omit")throw std::invalid_argument("HAR content must be embed or omit");
         state.har=true;state.har_embed=policy=="embed";state.har_entries.clear();state.har_order.clear();state.har_current.clear();
-        state.har_sizes.clear();state.har_bytes=state.har_dropped=0;state.har_truncated=false;++state.har_generation;
+        ++state.har_generation;
         return Json::object{};
       }
       if(action=="harStop")state.har=false;
@@ -386,9 +332,9 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
         if(response||flag(entry,"_postDataPending"))pending.push_back({key,entry.at("_requestId").as_string(),response,flag(entry,"_postDataPending")});
       }
     }
-    // CDP retains a bounded response cache. Read finished resources on export,
+    // Chromium owns the response cache. Read finished resources on export,
     // without performing I/O on the connection observer or fetching the URL
-    // again. Evicted/oversized/unavailable bodies retain explicit error markers.
+    // again. Bodies Chromium no longer has retain explicit error markers.
     for(const auto& item:pending) {
       cdp_check_active(deadline);Json response,post;std::string response_error,post_error;
       if(item.response)try{response=runtime.call(page,"Network.getResponseBody",Json{{"requestId",item.id}},deadline);}
@@ -405,14 +351,12 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
           const auto value=text(response,"body");const bool encoded=flag(response,"base64Encoded");
           const auto padding=encoded&&!value.empty()?static_cast<std::size_t>(value.back()=='=')+static_cast<std::size_t>(value.size()>1&&value[value.size()-2]=='='):0;
           const auto size=encoded?value.size()/4*3-padding:value.size();
-          if(size>Impl::body_limit)response_error="Response body exceeds 2 MiB HAR resource limit";
-          else {body["text"]=value;body["size"]=size;if(encoded)body["encoding"]="base64";}
+          body["text"]=value;body["size"]=size;if(encoded)body["encoding"]="base64";
         }
         if(!response_error.empty())body["_bodyError"]=response_error;
       }
       if(item.post) {
         entry["_postDataPending"]=false;const auto value=text(post,"postData");
-        if(post_error.empty()&&value.size()>Impl::body_limit)post_error="POST data exceeds 2 MiB HAR resource limit";
         if(post_error.empty()){entry["request"]["postData"]=Json{{"mimeType",""},{"text",value}};entry["request"]["bodySize"]=value.size();}
         else entry["request"]["_postDataError"]=post_error;
       }
@@ -432,7 +376,6 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
   std::vector<std::string> sessions;Json config;int route_id=0;
   {
     std::lock_guard lock(impl_->mutex);
-    if(!impl_->settings.contains(context)&&impl_->settings.size()>=4096)throw std::runtime_error("Network context capacity exceeded");
     auto& settings=impl_->settings[context];
     auto found=impl_->pages.find(page.session);
     if(family=="console"||family=="dialog"||(family=="network"&&(action=="requests"||action=="responses"))) {
@@ -443,14 +386,14 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
           if(text(fields,"filter","all")!="all")throw std::runtime_error("Console list currently supports filter=all");
           return state.console.take(clear);
         }
-        if(action=="messages")return Json{{"messages",state.console.take(clear)},{"dropped",state.console.dropped}};
-        if(action=="errors")return Json{{"errors",state.errors.take(clear)},{"dropped",state.errors.dropped}};
+        if(action=="messages")return Json{{"messages",state.console.take(clear)}};
+        if(action=="errors")return Json{{"errors",state.errors.take(clear)}};
         if(action=="clear"){state.console.take(true);state.errors.take(true);return Json::object{};}
       }
       if(family=="dialog"&&action=="list")return Json{{"dialogs",state.dialogs.take(clear)}};
       if(family=="network") {
-        if(action=="requests")return Json{{"requests",state.requests.take(clear)},{"dropped",state.requests.dropped}};
-        if(action=="responses")return Json{{"responses",state.responses.take(clear)},{"dropped",state.responses.dropped}};
+        if(action=="requests")return Json{{"requests",state.requests.take(clear)}};
+        if(action=="responses")return Json{{"responses",state.responses.take(clear)}};
       }
     }
     if(family=="dialog"&&action=="handle")config=Json{{"accept",fields.at("accept")}};
@@ -459,8 +402,7 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
       if(action=="list"){Json::array scripts;for(const auto&[id,source]:settings.scripts)scripts.emplace_back(Json{{"identifier",id},{"source",source}});return Json{{"scripts",std::move(scripts)}};}
       if(action=="add") {
         const auto source=fields.at("source").as_string();
-        std::size_t total=0;for(const auto&[id,state]:impl_->settings){(void)id;total+=state.scripts.size();}
-        if(source.size()>49152||settings.scripts.size()>=32||total>=128||impl_->next_script==INT_MAX)throw std::runtime_error("Init script storage limit exceeded");
+        if(impl_->next_script==INT_MAX)throw std::runtime_error("Init script ID space exhausted");
         const auto id="script-"+std::to_string(++impl_->next_script);settings.scripts.emplace(id,source);config=Json{{"source",source},{"_identifier",id}};
       } else if(action=="remove") {
         const auto id=fields.at("identifier").as_string();settings.scripts.erase(id);config=Json{{"_identifier",id},{"remove",true}};
@@ -468,10 +410,9 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
       else throw std::invalid_argument("Unsupported initScript action: "+action);
     } else if(family=="network") {
       if(action=="route") {
-        std::size_t total=0;for(const auto&[id,state]:impl_->settings){(void)id;total+=state.routes.size();}
-        if(total>=256||impl_->next_route==INT_MAX)throw std::runtime_error("Route capacity exceeded");
+        if(impl_->next_route==INT_MAX)throw std::runtime_error("Route ID space exhausted");
         const auto pattern=fields.at("pattern").as_string(),behavior=fields.at("behavior").as_string();
-        if(pattern.empty()||pattern.size()>2048||(behavior!="abort"&&behavior!="mock"&&behavior!="continue"))throw std::invalid_argument("Route requires bounded glob pattern and abort/mock/continue behavior");
+        if(pattern.empty()||(behavior!="abort"&&behavior!="mock"&&behavior!="continue"))throw std::invalid_argument("Route requires a non-empty glob pattern and abort/mock/continue behavior");
         if(fields.contains("headers"))headers(fields.at("headers"));
         if(fields.contains("status")&&(fields.at("status").as_int()<100||fields.at("status").as_int()>599))throw std::invalid_argument("Mock status must be100..599");
         route_id=++impl_->next_route;settings.routes.push_back({route_id,fields});
@@ -487,7 +428,7 @@ Json CdpNetwork::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,De
       else if(action=="offline")settings.offline=fields.at("offline").as_bool();
       else if(action=="credentials") {
         const auto& credentials=fields.at("credentials");
-        if(!credentials.is_null()){const auto username=credentials.at("username").as_string(),password=credentials.at("password").as_string();if(username.size()>4096||password.size()>4096)throw std::invalid_argument("Credentials exceed limit");}
+        if(!credentials.is_null()){credentials.at("username").as_string();credentials.at("password").as_string();}
         settings.credentials=credentials;
       } else throw std::invalid_argument("Unsupported network action: "+action);
       config=Json{{"headers",settings.extra_headers},{"offline",settings.offline},{"fetch",!settings.routes.empty()||!settings.credentials.is_null()},{"auth",!settings.credentials.is_null()}};

@@ -106,7 +106,6 @@ function observeWire(owner) {
   const wire = (value) => {
     const bytes = Buffer.byteLength(JSON.stringify(value)) + 1
     report.maxInputCommandBytes = Math.max(report.maxInputCommandBytes, bytes)
-    assert(bytes <= 65536, `Actual SDK input exceeds64KiB: ${bytes}`)
   }
   owner.runAutomation = (command, params = {}, signal) => {
     wire({ ...params, pageId: owner.pageId, command, id: 2147483647, version: 1 })

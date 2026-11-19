@@ -65,10 +65,8 @@ inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativ
             children = [{ role: 'text', text }, ...children];
         if (depth >= (options.depth ?? Infinity))
             children = [];
-        // Keep full names available for matching; bound repeated YAML name previews.
-        // AI snapshots also drop a name its children already spell out.
+        // AI snapshots drop a name its children already spell out.
         const namePreview = node.name &&
-            node.name.length <= 1000 &&
             !(options.mode === 'ai' && children.length && repeatsChildren(node.name, children))
             ? node.name
             : undefined;

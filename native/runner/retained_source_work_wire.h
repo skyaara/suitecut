@@ -52,7 +52,7 @@ class RetainedSourceWorkWire {
   static std::string Resumed(const Resume& value){auto packet=Encode(value);packet.replace(0,18,"SOURCE_WORK_RESUMED");return packet;}
   static std::string Unsupported(uint64_t ticket,uint64_t nonce,uint64_t reason){if(!ticket||!nonce||!reason)throw std::invalid_argument("Native Source unsupported identity invalid");return "SOURCE_WORK_UNSUPPORTED 1 "+N(ticket)+" "+N(nonce)+" "+N(reason)+"\n";}
   static Message Decode(std::string_view packet){
-    if(packet.empty()||packet.size()>1024||packet.back()!='\n')throw std::invalid_argument("Native Source work packet framing invalid");
+    if(packet.empty()||packet.back()!='\n')throw std::invalid_argument("Native Source work packet framing invalid");
     packet.remove_suffix(1);std::array<std::string_view,12> words{};size_t count=0;
     while(!packet.empty()){
       if(count==words.size())throw std::invalid_argument("Native Source work packet arity exceeded");

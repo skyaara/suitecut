@@ -40,7 +40,7 @@ void InputValueInvoke(int id,uint64_t generation,const std::string& node) {
   if(!InputValueCurrent(id,generation))return;
   DevTools(id,"Runtime.callFunctionOn",params,[this,id,generation](bool ok,const std::string& json){
     InputValueResult(id,generation,ok,json);
-  },std::nullopt,false,kMaxResponseBytes,true);
+  },std::nullopt,false,true);
 }
 
 void InputValueFixed(int id,uint64_t generation,Dict config) {

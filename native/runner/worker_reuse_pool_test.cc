@@ -11,7 +11,7 @@ static bool deny_allocation=false;
 using P=suitecut::runner::WorkerReusePool;
 static P::Key Key(){return {{7,11,13},17};}
 static P::Group Group(size_t i){return {Key().file,i,i+1};}
-static P::GroupFence Fence(){P::GroupFence f;f.retained.count=1;f.retained.values[0]={1,100,101};return f;}
+static P::GroupFence Fence(){P::GroupFence f;f.retained.values={{1,100,101}};return f;}
 static P::Borrow Start(P& p,size_t i=0,unsigned worker=1,int pid=101){const auto b=p.Started(Key(),Group(i),worker,pid);assert(b);return *b;}
 static P::IdleRequest Ready(P& p,const P::Borrow& b,const P::GroupFence& f=Fence(),double now=10){
  assert(p.Complete(b,P::Outcome::Passed));const auto r=p.RequestIdle(b,f,now,now+100);assert(r);assert(p.Acknowledge({b,r->request,r->fixtures},now+1));return *r;
@@ -40,8 +40,8 @@ int main(){unsigned controls=0;
  ++controls;
  for(const auto flag:{&P::GroupFence::clean_outcomes,&P::GroupFence::control_open,&P::GroupFence::fixtures_ready}){P p(Key(),1,8);const auto b=Start(p);assert(p.Complete(b,P::Outcome::Passed));auto f=Fence();f.*flag=false;assert(!p.RequestIdle(b,f,10,110)&&p.Physical()==1);}
  ++controls;
- {P p(Key(),1,8);const auto a=Start(p);Ready(p,a);assert(Confirm(p,a));const auto b=*p.Reuse(a.host,Key(),Group(1));assert(p.Complete(b,P::Outcome::Passed));auto missing=Fence();missing.retained.count=0;assert(!p.RequestIdle(b,missing,20,120));auto changed=Fence();++changed.retained.values[0].generation;assert(!p.RequestIdle(b,changed,20,120)&&p.RetainedFixtures()==1);auto extended=Fence();extended.retained.values[1]={2,200,201};extended.retained.count=2;const auto r=*p.RequestIdle(b,extended,20,120);assert(p.Acknowledge({b,r.request,2},21)&&Confirm(p,b,extended,22)&&p.RetainedFixtures()==2&&p.Physical()==1);++controls;}
- {P p(Key(),1,8);const auto b=Start(p);assert(p.Complete(b,P::Outcome::Passed));auto f=Fence();f.retained.count=65;assert(!p.RequestIdle(b,f,10,110));f=Fence();f.retained.values[0].token=0;assert(!p.RequestIdle(b,f,10,110));f=Fence();f.retained.values[1]=f.retained.values[0];f.retained.count=2;assert(!p.RequestIdle(b,f,10,110)&&p.Physical()==1);++controls;}
+ {P p(Key(),1,8);const auto a=Start(p);Ready(p,a);assert(Confirm(p,a));const auto b=*p.Reuse(a.host,Key(),Group(1));assert(p.Complete(b,P::Outcome::Passed));auto missing=Fence();missing.retained.values.clear();assert(!p.RequestIdle(b,missing,20,120));auto changed=Fence();++changed.retained.values[0].generation;assert(!p.RequestIdle(b,changed,20,120)&&p.RetainedFixtures()==1);auto extended=Fence();extended.retained.values.push_back({2,200,201});const auto r=*p.RequestIdle(b,extended,20,120);assert(p.Acknowledge({b,r.request,2},21)&&Confirm(p,b,extended,22)&&p.RetainedFixtures()==2&&p.Physical()==1);++controls;}
+ {P p(Key(),1,8);const auto b=Start(p);assert(p.Complete(b,P::Outcome::Passed));auto f=Fence();f.retained.values[0].token=0;assert(!p.RequestIdle(b,f,10,110));f=Fence();f.retained.values.push_back(f.retained.values[0]);assert(!p.RequestIdle(b,f,10,110)&&p.Physical()==1);++controls;}
  {P p(Key(),1,8);const auto b=Start(p);Ready(p,b);assert(Confirm(p,b));auto key=Key();++key.catalog;assert(!p.Reuse(b.host,key,Group(1)));auto group=Group(1);++group.file.inode;assert(!p.Reuse(b.host,Key(),group)&&!p.Reuse(b.host,Key(),Group(0))&&p.Physical()==1);++controls;}
  {P p(Key(),2,8);const auto a=Start(p),b=Start(p,1,2,102);Ready(p,a);assert(p.Complete(b,P::Outcome::Failed)&&p.Draining()&&p.NeedsRetirement(a.host)&&p.NeedsRetirement(b.host)&&p.Physical()==2&&!p.InventoryProbe()&&!p.Reuse(a.host,Key(),Group(2)));++controls;}
  {P p(Key(),1,8);const auto b=Start(p);Ready(p,b);assert(Confirm(p,b));p.Stop();assert(!p.Idle(b.host)&&p.NeedsRetirement(b.host)&&p.Physical()==1&&p.RetainedFixtures()==1&&!p.Reuse(b.host,Key(),Group(1)));++controls;}
@@ -51,9 +51,9 @@ int main(){unsigned controls=0;
  {P p(Key(),2,8);const auto a=Start(p);assert(!p.Started(Key(),Group(1),1,102)&&!p.Started(Key(),Group(1),2,101)&&!p.Complete(a,static_cast<P::Outcome>(99)));++controls;}
  {P p(Key(),1,8);deny_allocation=true;const auto b=Start(p);Ready(p,b);assert(Confirm(p,b));const auto next=*p.Reuse(b.host,Key(),Group(1));assert(p.Complete(next,P::Outcome::Failed)&&p.PrimaryExited(next.host,{1,false},20));P::RetirementFence f;f.descendants_retired=true;assert(p.Retired(next.host,f,21)&&p.Physical()==0);deny_allocation=false;++controls;}
  Reject([]{P p(Key(),0,8);});++controls;
- Reject([]{P p(Key(),9,8);});++controls;
+ {P p(Key(),9,8);assert(p.Physical()==0);}++controls;
  Reject([]{auto key=Key();key.catalog=0;P p(key,1,8);});++controls;
- Reject([]{P p(Key(),1,8193);});++controls;
+ {P p(Key(),1,8193);assert(p.Physical()==0);}++controls;
  {P p(Key(),1,8);const auto b=Start(p);p.Drain();assert(p.NeedsRetirement(b.host)&&p.Complete(b,P::Outcome::Interrupted));assert(p.PrimaryExited(b.host,{0,false},20));P::RetirementFence f;f.descendants_retired=true;assert(p.Retired(b.host,f,21)&&p.Borrows()[0].outcome==P::Outcome::Interrupted&&!p.Complete(b,P::Outcome::Passed));++controls;}
  {P p(Key(),1,8);const auto b=Start(p);assert(p.PrimaryExited(b.host,{9,true},20));P::RetirementFence f;f.descendants_retired=true;assert(p.Retired(b.host,f,21));const auto next=Start(p,1,2,101);assert(next.host.pid==b.host.pid&&!p.Complete(b,P::Outcome::Passed)&&!p.Borrows()[0].outcome&&p.Complete(next,P::Outcome::Passed));++controls;}
  {P p(Key(),1,8);const auto b=Start(p);assert(p.Complete(b,P::Outcome::Passed));const auto r=*p.RequestIdle(b,Fence(),10,110);p.Stop();const P::IdleACK ack{b,r.request,r.fixtures};assert(!p.Acknowledge(ack,12)&&p.ObserveCanceledIdleACK(ack,12)&&!p.ObserveCanceledIdleACK(ack,13)&&p.NeedsRetirement(b.host)&&!p.Idle(b.host)&&!p.Transferred(b)&&p.Physical()==1&&p.RetainedFixtures()==1&&p.Borrows()[0].canceled_idle_request==r.request&&!p.Borrows()[0].idle_request);assert(p.PrimaryExited(b.host,{0,false},20));P::RetirementFence f;f.descendants_retired=true;assert(p.Retired(b.host,f,21)&&!p.ObserveCanceledIdleACK(ack,22)&&p.Physical()==0);++controls;}

@@ -44,8 +44,7 @@ class Source:public CefBaseRefCounted {
  public:
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Reply=std::function<void(bool,const std::string&)>;
-  static constexpr size_t kMaxResponseBytes=1048576;
-  struct DevToolsCall{int owner;Reply callback;std::string session;bool retain_after_cancel;size_t response_limit;bool retained_control;bool lossless_scalars;};
+  struct DevToolsCall{int owner;Reply callback;std::string session;bool retain_after_cancel;bool retained_control;bool lossless_scalars;};
   struct Host{int closes=0;void CloseBrowser(bool){++closes;}};
   struct Browser{Host host;Host* GetHost(){return &host;}};
   struct Call{int command,owner;std::string method;Dict params;};
@@ -79,7 +78,7 @@ class Source:public CefBaseRefCounted {
     assert(RetainsKeyboardCall(owner,method));
     if(!RetainKeyboardCall(owner,method,params,callback))return;
     const int command=AllocateDevToolsId();
-    devtools_.emplace(command,DevToolsCall{owner,std::move(callback),"",true,kMaxResponseBytes,true,false});
+    devtools_.emplace(command,DevToolsCall{owner,std::move(callback),"",true,true,false});
     assert(SubmitDevTools(command,method,params,""));
   }
   int AllocateDevToolsId(){return ++next_command;}

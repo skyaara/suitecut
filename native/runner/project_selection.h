@@ -16,11 +16,10 @@ inline ProjectTestSelection SelectProjectTests(const ProjectGraph& graph,
     const std::vector<ProjectTestDeclaration>& declarations,const TestSelection& selection={},
     const std::vector<std::string>& patterns={},bool no_dependencies=false,
     const std::vector<uint64_t>& focused={},const std::vector<size_t>& suite_focus_projects={}) {
-  if(declarations.size()>4096)throw std::invalid_argument("Native project test declaration capacity4096 exceeded");
   const auto count=graph.Declarations().size();std::vector<uint64_t> ids;
   std::vector<std::vector<uint64_t>> all(count);std::map<uint64_t,size_t> owners;
   for(const auto& test:declarations){if(test.project>=count)throw std::invalid_argument("Native project test owner rejected");ids.push_back(test.id);if(!selection.catalog_eligible||selection.catalog_eligible->contains(test.id))all[test.project].push_back(test.id);owners.emplace(test.id,test.project);}
-  // Reuse the actual ID/shard/focus capacity and membership validator. Its
+  // Reuse the actual ID/shard/focus membership validator. Its
   // global focus result is deliberately not used to filter required support.
   (void)SelectTestIndices(ids,selection,focused,!suite_focus_projects.empty());
   const auto candidates=graph.Roots(patterns);
@@ -59,15 +58,15 @@ inline std::vector<size_t> ProjectSuiteFocus(size_t count,const std::vector<Suit
     const std::map<uint64_t,SuiteModifiers>& modifiers) {
   std::map<uint64_t,const SuiteDeclaration*> nodes;uint64_t root=0;
   for(const auto& suite:suites){nodes.emplace(suite.id,&suite);if(!suite.parent)root=suite.id;}
-  if(!root||count>128)throw std::invalid_argument("Native project suite root missing");
+  if(!root)throw std::invalid_argument("Native project suite root missing");
   std::set<size_t> projects,focused;
   for(const auto& suite:suites)if(suite.parent==root){if(suite.position>=count||!projects.insert(suite.position).second)throw std::invalid_argument("Native project suite identity rejected");}
   if(projects.size()!=count)throw std::invalid_argument("Native project suite membership incomplete");
   for(const auto& [id,modifier]:modifiers)if(modifier.only){
     if(id==root){for(size_t project=0;project<count;++project)focused.insert(project);continue;}
-    auto current=nodes.find(id);size_t depth=0;
-    while(current!=nodes.end()&&current->second->parent!=root&&++depth<=64)current=nodes.find(current->second->parent);
-    if(current==nodes.end()||depth>64||current->second->position>=count)throw std::invalid_argument("Native focused suite project rejected");
+    auto current=nodes.find(id);std::set<uint64_t> visited;
+    while(current!=nodes.end()&&current->second->parent!=root&&visited.insert(current->first).second)current=nodes.find(current->second->parent);
+    if(current==nodes.end()||current->second->parent!=root||current->second->position>=count)throw std::invalid_argument("Native focused suite project rejected");
     focused.insert(current->second->position);
   }
   return {focused.begin(),focused.end()};

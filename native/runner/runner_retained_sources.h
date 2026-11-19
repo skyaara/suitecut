@@ -6,6 +6,7 @@
 #include "retained_source_receiver.h"
 #include "test_steps.h"
 #include "source_callback_iteration_receipt.h"
+#include <deque>
 #include <exception>
 #include <functional>
 #include <string>
@@ -41,16 +42,13 @@ class RunnerRetainedSources {
     if(!enabled_||selection.origin!=FixtureOptionCatalog::Origin::Callback||selection.scope!=Scope::Worker)return std::nullopt;
     if(selection.callback_scope!=Policy::SetupScope::Test&&bridge_version_<2)return std::nullopt;
     if((selection.callback_scope==Policy::SetupScope::Test)!=static_cast<bool>(selection.test))return std::nullopt;
-    if(!selection.catalog||!selection.declaration||!selection.token||!selection.owner||!selection.generation||selection.key.empty()||selection.key.size()>256||!std::isfinite(selection.deadline)||selection.deadline<=now)throw std::runtime_error("Native Source selected callback identity/deadline invalid");
-    for(size_t i=0;i<setups_;++i)if(contexts_[i].selection.token==selection.token)throw std::runtime_error("Native Source callback token reused");
-    // Optional registration instrumentation cannot reject otherwise valid
-    // fixture admission. Retain prior ticket contexts; choose fresh-only when
-    // the fixed history is full, rather than replacing a live continuation.
-    if(setups_==contexts_.size())return std::nullopt;
-    contexts_[setups_++]={selection,true};
+    if(!selection.catalog||!selection.declaration||!selection.token||!selection.owner||!selection.generation||selection.key.empty()||!std::isfinite(selection.deadline)||selection.deadline<=now)throw std::runtime_error("Native Source selected callback identity/deadline invalid");
+    for(size_t i=0;i<contexts_.size();++i)if(contexts_[i].selection.token==selection.token)throw std::runtime_error("Native Source callback token reused");
+    // Retain prior ticket contexts rather than replacing a live continuation.
+    contexts_.push_back({selection,true});
     return "SOURCE_SETUP "+Number(selection.catalog)+" "+Number(selection.declaration)+" "+Number(selection.token)+" "+Number(selection.owner)+" "+Number(selection.test)+" "+Number(selection.generation)+" "+selection.key+(bridge_version_>=2?" "+std::string(CallbackScopeName(selection.callback_scope)):"");
   }
-  void SetupClosed(uint64_t token,uint64_t owner,uint64_t generation)noexcept{for(size_t i=0;i<setups_;++i){auto& context=contexts_[i];if(context.selection.token==token&&context.selection.owner==owner&&context.selection.generation==generation)context.open=false;}}
+  void SetupClosed(uint64_t token,uint64_t owner,uint64_t generation)noexcept{for(size_t i=0;i<contexts_.size();++i){auto& context=contexts_[i];if(context.selection.token==token&&context.selection.owner==owner&&context.selection.generation==generation)context.open=false;}}
   bool Packet(std::span<const std::string> fields,double now,bool stopped){
     if(!fields.empty()&&(fields[0]=="SOURCE_WORK_READY"||fields[0]=="SOURCE_WORK_HOST_RESUMED")){
       if(bridge_version_<2||!callback_fence_||fields.size()!=(fields[0]=="SOURCE_WORK_READY"?3:4))throw std::runtime_error("Native callback Source receipt has no exact pending fence");
@@ -111,7 +109,7 @@ class RunnerRetainedSources {
   bool BeginCallbackIterationFence(const CallbackIterationOwner& owner,double end,double now){
     if(bridge_version_<2||!receiver_.AdmissionActive()||idle_borrow_||callback_fence_||receiver_.Work()||
        !ValidCallbackIteration(owner)||!std::isfinite(now)||!std::isfinite(end)||now>=end||
-       completed_callback_fences_>=64||callback_generation_>UINT64_MAX-2)return false;
+       callback_generation_>UINT64_MAX-2)return false;
     // Store ownership before INSTALL/BEGIN/host writes: uncertain delivery may
     // only select real cleanup, never erase the live iteration or Source lease.
     callback_fence_.emplace(CallbackFence{owner,end,callback_generation_+1,callback_generation_+2});
@@ -143,7 +141,7 @@ class RunnerRetainedSources {
   bool FinishCallbackIterationFence(const CallbackIterationOwner& owner,double now){
     if(!CallbackIterationFenceReady(owner,now))return false;
     if(!receiver_.FinishAcceptedResume(callback_fence_->resume_generation))throw std::runtime_error("Native callback Source resume lost its actual receipts");
-    callback_fence_.reset();work_expect_sent_=work_ack_sent_=work_refusal_sent_=false;++completed_callback_fences_;return true;
+    callback_fence_.reset();work_expect_sent_=work_ack_sent_=work_refusal_sent_=false;return true;
   }
   bool AcceptedIdleReady(double now)const noexcept{return idle_borrow_&&receiver_.AcceptedWorkReady(now);}
   bool AcceptedIdleRefused()const noexcept{return receiver_.Work()&&receiver_.Work()->refusal;}
@@ -186,7 +184,7 @@ class RunnerRetainedSources {
       }
     }
   }
-  void Cancel(double now){if(callback_fence_)callback_fence_->canceled=true;receiver_.CancelAcceptedWork();for(size_t i=0;i<setups_;++i)contexts_[i].open=false;if(receiver_.Registration())policy_.CancelStartup(*receiver_.Registration(),now);}
+  void Cancel(double now){if(callback_fence_)callback_fence_->canceled=true;receiver_.CancelAcceptedWork();for(size_t i=0;i<contexts_.size();++i)contexts_[i].open=false;if(receiver_.Registration())policy_.CancelStartup(*receiver_.Registration(),now);}
   // An actor that already failed still owns its real channel and child. Drain
   // one bounded receiver tick without allowing a malformed queued receipt to
   // bypass the original host/domain cleanup. Retain the first error for native
@@ -227,16 +225,16 @@ class RunnerRetainedSources {
   }
   static std::string Number(uint64_t value){return std::to_string(value);}
   static uint64_t UInt(std::string_view text){uint64_t value=0;const auto result=std::from_chars(text.data(),text.data()+text.size(),value);if(text.empty()||(text.size()>1&&text.front()=='0')||result.ec!=std::errc{}||result.ptr!=text.data()+text.size())throw std::runtime_error("Native Source request integer invalid");return value;}
-  static std::string ExecutablePath(const std::string& encoded){const auto path=DecodeHex(encoded,4096);if(path.empty()||path.front()!='/'||path.find('\0')!=path.npos)throw std::runtime_error("Native Source executable path must be absolute");return path;}
+  static std::string ExecutablePath(const std::string& encoded){const auto path=DecodeHex(encoded);if(path.empty()||path.front()!='/'||path.find('\0')!=path.npos)throw std::runtime_error("Native Source executable path must be absolute");return path;}
   const Context& Match(const std::string& catalog,const std::string& declaration,const std::string& token,const std::string& owner,const std::string& test,const std::string& generation,const std::string& key)const{
     const std::array<uint64_t,6> values{UInt(catalog),UInt(declaration),UInt(token),UInt(owner),UInt(test),UInt(generation)};
-    for(size_t i=0;i<setups_;++i){const auto& selection=contexts_[i].selection;if(std::array<uint64_t,6>{selection.catalog,selection.declaration,selection.token,selection.owner,selection.test,selection.generation}==values&&selection.key==key)return contexts_[i];}
+    for(size_t i=0;i<contexts_.size();++i){const auto& selection=contexts_[i].selection;if(std::array<uint64_t,6>{selection.catalog,selection.declaration,selection.token,selection.owner,selection.test,selection.generation}==values&&selection.key==key)return contexts_[i];}
     throw std::runtime_error("Native Source registration has no actual selected callback");
   }
-  bool HasOwner(uint64_t token,uint64_t owner,uint64_t generation)const noexcept{for(size_t i=0;i<setups_;++i){const auto& selection=contexts_[i].selection;if(selection.token==token&&selection.owner==owner&&selection.generation==generation)return true;}return false;}
-  std::optional<CallbackFence> callback_fence_;uint64_t callback_generation_=0;size_t completed_callback_fences_=0;
+  bool HasOwner(uint64_t token,uint64_t owner,uint64_t generation)const noexcept{for(size_t i=0;i<contexts_.size();++i){const auto& selection=contexts_[i].selection;if(selection.token==token&&selection.owner==owner&&selection.generation==generation)return true;}return false;}
+  std::optional<CallbackFence> callback_fence_;uint64_t callback_generation_=0;
   std::optional<RetainedSourceWorkWire::Borrow> idle_borrow_;double idle_end_=0;uint64_t work_sequence_=0;
   bool work_expect_sent_=false,work_ack_sent_=false,work_refusal_sent_=false;
-  Policy& policy_;RetainedSourceReceiver receiver_;Hooks hooks_;Policy::Host host_{};DedicatedHostProcess* actual_host_=nullptr;ProjectDescendants* domain_=nullptr;uint64_t generation_=0;bool host_exited_=false,enabled_=false;unsigned bridge_version_=1;uint64_t nonce_=0;std::array<Context,64> contexts_{};size_t setups_=0;std::optional<Wait> wait_;std::exception_ptr drain_error_;
+  Policy& policy_;RetainedSourceReceiver receiver_;Hooks hooks_;Policy::Host host_{};DedicatedHostProcess* actual_host_=nullptr;ProjectDescendants* domain_=nullptr;uint64_t generation_=0;bool host_exited_=false,enabled_=false;unsigned bridge_version_=1;uint64_t nonce_=0;std::deque<Context> contexts_;std::optional<Wait> wait_;std::exception_ptr drain_error_;
 };
 } // namespace suitecut::runner

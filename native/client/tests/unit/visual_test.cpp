@@ -25,8 +25,9 @@ int main() {
     check(visual_png_dimensions(header(2048, 1000)) == std::pair{2048U, 1000U},
           "PNG encoded dimensions were not retained");
     rejects([] { visual_png_dimensions(header(0, 1)); });
-    rejects([] { visual_png_dimensions(header(32769, 1)); });
-    rejects([] { visual_png_dimensions(header(16384, 16384)); });
+    check(visual_png_dimensions(header(32769, 1)) == std::pair{32769U, 1U} &&
+              visual_png_dimensions(header(16384, 16384)) == std::pair{16384U, 16384U},
+          "Large PNG dimensions were rejected");
     auto bytes = header(1, 1); bytes.resize(23);
     rejects([&] { visual_png_dimensions(bytes); });
     bytes = header(1, 1); bytes[12] = 'J';

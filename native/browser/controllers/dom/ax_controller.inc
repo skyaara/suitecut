@@ -46,7 +46,7 @@ void AXRequest(const std::shared_ptr<AXCapture>& work,const std::string& method,
       ax_capture_bytes_+=json.size();work->charged_bytes+=json.size();
     }
     done(result);
-  },work->session,true,kMaxResponseBytes,true);
+  },work->session,true,true);
 }
 void AXFinish(const std::shared_ptr<AXCapture>& work){
   if(!AXCurrent(work))return;

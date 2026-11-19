@@ -8,7 +8,7 @@ namespace af=attachment_files;
 inline int Worker(int control=3){uint64_t id=0;try{
  af::Input input(control);const auto f=input.Next(af::Now()+30000);
  if(f.size()!=5||f[0]!="CREATE")throw af::Error("protocol",0,"Invalid native output directory initialization");
- id=af::UInt(f[1]);const auto parent=af::Unhex(f[2],8192),name=af::Unhex(f[3],256);const auto deadline=af::Number(f[4]);
+ id=af::UInt(f[1]);const auto parent=af::Unhex(f[2]),name=af::Unhex(f[3]);const auto deadline=af::Number(f[4]);
  if(!id||parent.empty()||parent.front()!='/'||parent.find('\0')!=std::string::npos||name.empty()||name=="."||name==".."||name.find('/')!=std::string::npos||name.find('\0')!=std::string::npos)throw af::Error("protocol",0,"Invalid native output directory admission");
  af::Live(deadline);std::filesystem::create_directories(parent);af::Live(deadline);
  af::FD directory(::open(parent.c_str(),O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC));if(directory.value<0)af::System("output-parent-open");
@@ -28,7 +28,7 @@ inline int Worker(int control=3){uint64_t id=0;try{
 inline int Cleanup(int control=3){uint64_t id=0;try{
  af::Input input(control);const auto f=input.Next(af::Now()+30000);
  if(f.size()!=9||f[0]!="ROLLBACK")throw af::Error("protocol",0,"Invalid native output directory rollback initialization");
- id=af::UInt(f[1]);const auto parent=af::Unhex(f[2],8192),name=af::Unhex(f[3],256);const auto device=af::UInt(f[4]),inode=af::UInt(f[5]);const auto parent_device=af::UInt(f[6]),parent_inode=af::UInt(f[7]);const auto deadline=af::Number(f[8]);
+ id=af::UInt(f[1]);const auto parent=af::Unhex(f[2]),name=af::Unhex(f[3]);const auto device=af::UInt(f[4]),inode=af::UInt(f[5]);const auto parent_device=af::UInt(f[6]),parent_inode=af::UInt(f[7]);const auto deadline=af::Number(f[8]);
  if(!id||!inode||parent.empty()||parent.front()!='/'||parent.find('\0')!=std::string::npos||name.empty()||name=="."||name==".."||name.find('/')!=std::string::npos||name.find('\0')!=std::string::npos)throw af::Error("protocol",0,"Invalid native output directory rollback identity");
  af::Live(deadline);af::FD directory(::open(parent.c_str(),O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC));if(directory.value<0)af::System("output-cleanup-parent-open");
  struct stat parent_info{};if(::fstat(directory.value,&parent_info))af::System("output-cleanup-parent-stat");if(static_cast<uint64_t>(parent_info.st_dev)!=parent_device||static_cast<uint64_t>(parent_info.st_ino)!=parent_inode)throw af::Error("output-cleanup-parent-identity",0,"Native output directory rollback parent identity changed");

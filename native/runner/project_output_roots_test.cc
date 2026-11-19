@@ -20,8 +20,8 @@ int main(){
  sr::NativeProjectOutputRoots invalid;
  Reject([&]{invalid.Declare(1,1,"/unknown","/actual/config/suite.mjs");});Reject([&]{invalid.Declare(0,0,"/unknown","/actual/config/suite.mjs");});
  Reject([&]{invalid.Declare(0,1,"/root","relative/suite.mjs");});Reject([&]{invalid.Declare(0,1,std::string("/nul\0path",9),"/actual/config/suite.mjs");});
- Reject([&]{invalid.Declare(0,1,std::string("/bad\xc0\x80"),"/actual/config/suite.mjs");});Reject([&]{invalid.Declare(0,1,std::string(7901,'x'),"/actual/config/suite.mjs");});
- invalid.Declare(0,1,"/declared","/actual/config/suite.mjs");Reject([&]{invalid.Freeze(0);});invalid.Freeze(1);Check(invalid.Select(0,"relative fallback")=="/declared");Check(invalid.RetainedBytes()<sr::NativeProjectOutputRoots::kBytes);
+ Reject([&]{invalid.Declare(0,1,std::string("/bad\xc0\x80"),"/actual/config/suite.mjs");});{sr::NativeProjectOutputRoots long_path;const std::string path="/"+std::string(7901,'x');long_path.Declare(0,1,path,"/actual/config/suite.mjs");long_path.Freeze(1);Check(long_path.Select(0,"/fallback")==path);}
+ invalid.Declare(0,1,"/declared","/actual/config/suite.mjs");Reject([&]{invalid.Freeze(0);});invalid.Freeze(1);Check(invalid.Select(0,"relative fallback")=="/declared");
  sr::NativeProjectOutputRoots empty;empty.Declare(0,1,"","/actual/config/suite.mjs");empty.Freeze(1);Check(empty.Select(0,"/fallback").lexically_normal().parent_path()=="/actual/config");
  std::cout<<"Native actual-project output root policy "<<checks<<" controls PASS\n";
 }

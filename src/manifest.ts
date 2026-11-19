@@ -186,7 +186,7 @@ const CapturedArtifactSchema = z.discriminatedUnion('role', [
 const NativeRecordingTimingSchema = z.strictObject({
   durationMs: NonNegativeNumberSchema,
   encodedDurationMs: NonNegativeNumberSchema,
-  framesPerSecond: PositiveNumberSchema.max(120),
+  framesPerSecond: PositiveNumberSchema,
   inputFrames: NonNegativeIntegerSchema,
   outputFrames: NonNegativeIntegerSchema,
   heldFrames: NonNegativeIntegerSchema,

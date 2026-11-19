@@ -68,7 +68,7 @@ int main(int argc,char**argv){
   const auto emit=[&](std::string_view phase){if(const auto path=std::getenv("SOURCE_FENCE_EVIDENCE")){std::ofstream file(path,std::ios::app);file<<"{\"phase\":\""<<phase<<"\",\"scenario\":"<<scenario<<",\"nativeOwner\":"<<getpid()<<",\"hostPid\":"<<host.Pid()<<",\"hostStart\":"<<identity.start<<",\"sourcePid\":"<<child<<",\"sourceStart\":"<<source_identity.start<<"}\n";assert(file.good());}};emit("actual-admission");assert(sources.Physical()==1&&!sources.Receiver().BrowserReuseSupported());++controls;
   auto foreign=owner;++foreign.callback.pid;assert(!sources.BeginCallbackIterationFence(foreign,DedicatedRealMilliseconds()+1000,DedicatedRealMilliseconds()));++controls;
   valid=false;assert(!sources.BeginCallbackIterationFence(owner,DedicatedRealMilliseconds()+1000,DedicatedRealMilliseconds()));valid=true;++controls;
-  const size_t rounds=scenario==0?64:1;uint64_t last_nonce=0,last_generation=0;
+  const size_t rounds=scenario==0?65:1;uint64_t last_nonce=0,last_generation=0;
   for(size_t round=0;round<rounds;++round){
    ++owner.invocation;++owner.iteration_step;events.clear();const auto deadline=DedicatedRealMilliseconds()+(scenario==1?100:5000);
    throws=scenario==3||scenario==4;partial=scenario==4;
@@ -93,8 +93,8 @@ int main(int argc,char**argv){
    assert(receipt->observed_at>0&&receipt->observed_at<=receipt->acknowledged_at&&receipt->acknowledged_at<=receipt->host_ready_at&&receipt->host_ready_at<=receipt->resumed_at&&receipt->resumed_at<=receipt->host_resumed_at);
    assert(!sources.CallbackIterationFenceReceipt(foreign,DedicatedRealMilliseconds()));assert(!sources.FinishCallbackIterationFence(foreign,DedicatedRealMilliseconds()));assert(sources.FinishCallbackIterationFence(owner,DedicatedRealMilliseconds()));assert(!sources.CallbackIterationFenceReceipt(owner,DedicatedRealMilliseconds()));assert(!sources.Receiver().Work()&&sources.Physical()==1&&!sources.Receiver().BrowserReuseSupported());++controls;
   }
-  if(scenario==0){assert(!sources.BeginCallbackIterationFence(owner,DedicatedRealMilliseconds()+1000,DedicatedRealMilliseconds()));assert(!sources.BeginAcceptedIdle({1,1,1,host.Pid(),identity.start},DedicatedRealMilliseconds()+1000,DedicatedRealMilliseconds()));++controls;}
+  if(scenario==0){assert(!sources.BeginAcceptedIdle({1,1,1,host.Pid(),identity.start},DedicatedRealMilliseconds()+1000,DedicatedRealMilliseconds()));++controls;}
   sources.Cancel(DedicatedRealMilliseconds());assert(host.Send("EXIT_HOST"));pump([&]{return host.Exited().has_value();});assert(!host.Exited()->signaled&&host.Exited()->code==0&&sources.Physical()==1);assert(descendants.Arrive(batch,1,host,true,DedicatedRealMilliseconds(),0));sources.DomainArrived(descendants,batch);pump([&]{return !descendants.Pending(batch)&&sources.ChannelDrained()&&sources.Receiver().ExitObserved();});assert(descendants.TakeErrors().empty());assert(sources.Retire({identity,batch,true,true,true},DedicatedRealMilliseconds())&&sources.Physical()==0&&policy.Outstanding()==0);assert(host.Stderr().empty()&&host.Stdout().empty());assert(kill(child,0)==-1&&errno==ESRCH);assert(std::find(events.begin(),events.end(),"SOURCE_REAPED "+std::to_string(child)+" 0")!=events.end());emit("actual-waitpid-and-domain-retirement");++controls;
  }
- std::cout<<"Actual Source callback-iteration adapter: "<<controls<<" ordered-ready/resume/foreign/expiry/cancel/64-history/send-failure and actual host-child retirement controls passed; no CEF/reuse claim\n";
+ std::cout<<"Actual Source callback-iteration adapter: "<<controls<<" ordered-ready/resume/foreign/expiry/cancel/65-round/send-failure and actual host-child retirement controls passed; no CEF/reuse claim\n";
 }

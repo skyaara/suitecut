@@ -20,8 +20,8 @@ std::size_t window_size(std::string_view text) {
   std::size_t value = 0;
   const auto parsed = std::from_chars(text.data(), text.data() + text.size(), value);
   if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
-      value < 1 || value > 16)
-    throw std::invalid_argument("max-in-flight must be an integer from 1 to 16");
+      value < 1)
+    throw std::invalid_argument("max-in-flight must be a positive integer");
   return value;
 }
 

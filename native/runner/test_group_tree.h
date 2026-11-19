@@ -12,11 +12,9 @@ struct SelectedTestGroup {
 // caller. Selection must already reflect focus, explicit IDs and native shard.
 class NativeTestGroupTree {
  public:
-  static constexpr size_t kTests=4096,kGroups=8192;
   NativeTestGroupTree(std::vector<uint64_t> tests,const std::vector<SuiteDeclaration>& suites,
       const std::vector<SuiteTestDeclaration>& members,std::map<uint64_t,WorkGroupMode> modes)
       :order_(std::move(tests)),modes_(std::move(modes)){
-    if(order_.size()>kTests)throw std::invalid_argument("Native work-group test capacity4096 exceeded");
     for(const auto id:order_)if(!id||!tests_.insert(id).second)
       throw std::invalid_argument("Native work-group test identity rejected");
     if(suites.empty()){
@@ -63,10 +61,7 @@ class NativeTestGroupTree {
         else{if(mode==WorkGroupMode::Parallel)boundary=suite;mode=WorkGroupMode::Default;}
       }
       const auto [position,inserted]=groups.emplace(std::make_pair(mode,mode==WorkGroupMode::Parallel?id:boundary),result.size());
-      if(inserted){
-        if(result.size()>=kGroups)throw std::invalid_argument("Native work-group capacity8192 exceeded");
-        result.push_back({mode,boundary,{}});
-      }
+      if(inserted)result.push_back({mode,boundary,{}});
       result[position->second].tests.push_back(id);
     }
     // Empty selected owners retain genuine worker admission/cleanup semantics;

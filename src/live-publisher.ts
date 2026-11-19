@@ -201,7 +201,7 @@ export function createPersistentLiveStream(
         )
         let progress = ''
         publisher.stdio[3]?.on('data', (chunk: Buffer) => {
-          progress = (progress + chunk.toString()).slice(-16384)
+          progress += chunk.toString()
           const lines = progress.split('\n')
           progress = lines.pop() ?? ''
           for (const line of lines) {
@@ -311,8 +311,6 @@ export function createPersistentLiveStream(
               health: delivery,
               frame: (index, at) => {
                 times.set(index, Math.max(0, Math.round(at - origin)))
-                if (times.size > 610)
-                  throw Error('Live encoded video timestamp queue exceeded its bound')
               },
               data: (chunk) =>
                 parser.push(chunk, async (tag) => {
@@ -337,8 +335,6 @@ export function createPersistentLiveStream(
                       }
                     }
                     queued.push({ tag, timestamp })
-                    if (queued.length > 610)
-                      throw Error('Live video handoff queue exceeded its bound')
                     pendingHandoffReady?.()
                     if (!handoffReady) return
                     const previous = video

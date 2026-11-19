@@ -36,11 +36,27 @@ int main(int argc,char**argv){
    check(Json::parse(reply.header).at("ok").as_bool(),"Closed pages or contexts leaked partial-body reservations");
    transport->close();
   }
-  for(const char* mode:{"body-gap","body-oversize","body-identity","body-duplicate","body-size-change"}){
+  {
+   // No suitecut body or chunk size cap: a body past the old 2 MiB limit,
+   // sent in a chunk past the old 24 KiB limit, passes through whole.
+   options.arguments={"--transport-test-mode=body-large"};auto transport=suitecut::Transport::launch(options);
+   auto reply=transport->call_json(Json{{"command","network-body"}},5s);
+   check(Json::parse(reply.header).at("ok").as_bool(),"Large body publication did not progress");
+   std::map<std::string,std::size_t> sizes;
+   for(int i=0;i<6;++i){
+    auto packet=transport->poll(1s);check(packet.has_value(),"Large body chunk lost");auto h=Json::parse(packet->header);
+    auto key=h.at("type")==Json("networkbody")?"page:"+std::to_string(h.at("pageId").as_int()):"worker:"+h.at("owner").as_string();
+    sizes[key]+=packet->payload.size();
+   }
+   check(sizes.size()==3,"Large page and worker body IDs collided");
+   for(auto&[key,size]:sizes){(void)key;check(size==2097153,"Body past the old 2 MiB cap was clipped or rejected");}
+   transport->close();options.arguments={};
+  }
+  for(const char* mode:{"body-gap","body-identity","body-duplicate","body-size-change"}){
    options.arguments={std::string("--transport-test-mode=")+mode};auto transport=suitecut::Transport::launch(options);bool rejected=false;
    try{transport->call_json(Json{{"command","network-body"}},2s);}catch(const std::exception& error){rejected=std::string(error.what()).find("timed out")==std::string::npos;}
    check(rejected,"Invalid body did not fail closed before the request deadline");transport->close();
   }
-  std::cout<<"Bounded automatic page/worker body receipts, binary ownership and malformed packets passed\n";return 0;
+  std::cout<<"Automatic page/worker body receipts, uncapped bodies, binary ownership and malformed packets passed\n";return 0;
  }catch(const std::exception& error){std::cerr<<error.what()<<'\n';return 1;}
 }

@@ -66,8 +66,8 @@ class HookWorker {
       [this](uint64_t scope,uint64_t generation){return CleanupReady(scope,generation);}});
   }
   bool Begin(Context context, std::vector<HookCall> calls, double now) {
-    if (terminating_ || contexts_.contains(context.scope) || contexts_.size() >= 16 ||
-        context.timeout > 120000 || context.retry > 100 || calls.empty() ||
+    if (terminating_ || contexts_.contains(context.scope) ||
+        context.timeout > 120000 || calls.empty() ||
         (context.kind != FixtureScopeKind::Test && context.budget_elapsed != 0) ||
         (context.kind == FixtureScopeKind::Test && context.associated_test_id && context.associated_test_id != context.test_id) ||
         (context.kind != FixtureScopeKind::Test && context.kind != FixtureScopeKind::BeforeAll &&

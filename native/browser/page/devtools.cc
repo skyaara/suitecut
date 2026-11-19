@@ -742,9 +742,9 @@ auto Source::EnableSession(const std::string& session) -> void {
   life->SetBool("enabled", true);
   SendDevTools("Page.setLifecycleEventsEnabled", life, session);
   auto network = CefDictionaryValue::Create();
-  network->SetInt("maxTotalBufferSize", 128 * 1048576);
-  network->SetInt("maxResourceBufferSize", 128 * 1048576);
-  network->SetInt("maxPostDataSize", 192 * 1048576);
+  network->SetInt("maxTotalBufferSize", kDevToolsBufferBytes);
+  network->SetInt("maxResourceBufferSize", kDevToolsBufferBytes);
+  network->SetInt("maxPostDataSize", kDevToolsBufferBytes);
   if (session.empty())
     NativeHARPrimaryEnable(network);
   else
@@ -770,7 +770,7 @@ auto Source::AutoAttach(const std::string& session) -> void {
 
 auto Source::DevTools(int owner, const std::string& method, Dict params, DevToolsCallback callback,
                       std::optional<std::string> target_session, bool retained_control,
-                      size_t response_limit, bool lossless_scalars) -> void {
+                      bool lossless_scalars) -> void {
   const auto handler_owner = operations_.Get(owner);
   auto handler_native_origin = engine_.LocatorHandlerCommandOrigin(
       owner, page_id_, handler_owner ? handler_owner->generation : 0);
@@ -894,7 +894,6 @@ auto Source::DevTools(int owner, const std::string& method, Dict params, DevTool
   // CEF may deliver a same-document result synchronously during submission.
   // Register ownership before calling into it, including nested callbacks.
   devtools_.emplace(assigned, DevToolsCall{owner, std::move(callback), session, physical,
-                                           response_limit,
                                            retained_control, lossless_scalars, artifact_generation,
                                            artifact_physical && artifact_generation != 0});
   if (!SubmitDevTools(assigned, method, params, session)) {

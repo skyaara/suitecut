@@ -16,16 +16,13 @@ export interface NativeWorkerReadyReceipt {
 export interface NativeWorkerRetirementSnapshot {
   records: NativeWorkerRetirement[]
   ready?: NativeWorkerReadyReceipt[] | undefined
-  truncated: boolean
 }
 /** Real owner-scoped lifecycle receipts; readiness never overrides target death. */
 export class NativeWorkerRetirements {
   private readonly records = new Map<string, { scope: string; record: NativeWorkerRetirement }>()
   private readonly ready = new Map<string, { scope: string; record: NativeWorkerReadyReceipt }>()
-  private lostHistory = false
   restore(snapshot: NativeWorkerRetirementSnapshot | undefined): void {
     if (!snapshot) return
-    this.lostHistory ||= snapshot.truncated
     for (const record of snapshot.records) this.store('', record)
     for (const record of snapshot.ready ?? []) this.storeReady('', record)
   }
@@ -80,9 +77,6 @@ export class NativeWorkerRetirements {
   latestSequence(id: string): number | undefined {
     return this.get(id)?.sequence ?? this.readySequence(id)
   }
-  get truncated(): boolean {
-    return this.lostHistory
-  }
   snapshot(scope: string): NativeWorkerRetirementSnapshot {
     return {
       records: [...this.records.values()]
@@ -91,12 +85,10 @@ export class NativeWorkerRetirements {
       ready: [...this.ready.values()]
         .filter((item) => item.scope === scope)
         .map((item) => ({ ...item.record })),
-      truncated: this.lostHistory,
     }
   }
   clear(): void {
     this.records.clear()
     this.ready.clear()
-    this.lostHistory = false
   }
 }

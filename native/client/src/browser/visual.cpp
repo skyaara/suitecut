@@ -12,16 +12,12 @@
 namespace suitecut {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr std::uint32_t max_axis = 32768;
-constexpr std::uint64_t max_pixels = 64 * 1024 * 1024;
 void require(bool valid, const char* message) {
   if (!valid) throw std::runtime_error(message);
 }
 bool positive(double value) { return std::isfinite(value) && value > 0; }
 void image_bounds(std::uint32_t width, std::uint32_t height) {
-  require(width && height && width <= max_axis && height <= max_axis &&
-              std::uint64_t{width} * height <= max_pixels,
-          "Visual capture exceeds native image dimension bounds");
+  require(width && height, "Visual capture has empty image dimensions");
 }
 void rectangle(const VisualRect& value) {
   require(std::isfinite(value.x) && std::isfinite(value.y) && positive(value.width) &&

@@ -66,11 +66,9 @@ class DescendantOwner {
       do { result = waitpid(pid, &status, WNOHANG); } while (result < 0 && errno == EINTR);
       if (result == pid) {
         if (!WIFEXITED(status) && !WIFSIGNALED(status)) throw std::runtime_error("Unexpected native descendant status");
-        if (exits_.size() >= 4096) throw std::runtime_error("Native descendant exit capacity4096 exceeded");
         exits_.push_back({pid, WIFSIGNALED(status), WIFSIGNALED(status) ? WTERMSIG(status) : WEXITSTATUS(status), killed_.contains(pid)});
       } else if (result < 0) throw std::runtime_error("Native descendant waitpid failed");
       else if (now >= deadline_ && !killed_.contains(pid)) {
-        if (killed_.size() >= 4096) throw std::runtime_error("Native descendant kill capacity4096 exceeded");
         if (kill(pid, SIGKILL)) throw std::runtime_error("Native descendant SIGKILL failed");
         killed_.insert(pid);
       }

@@ -78,7 +78,7 @@ describe('native browser value boundary', () => {
     expect(codec.decode(codec.encode(spoof))).toEqual({ name: 'shared', toJSON: {} })
   })
 
-  it('rejects malicious references, invalid typed-array names and deeply nested data', () => {
+  it('rejects malicious references and invalid typed-array names, and passes deep data whole', () => {
     const codec = createNativeValueCodec()
     expect(() => codec.decode(['reference', 7])).toThrow('Invalid native')
     expect(() => codec.decode(['bytes', 'constructor', [1]])).toThrow('Invalid native')
@@ -90,7 +90,7 @@ describe('native browser value boundary', () => {
       cursor.child = child
       cursor = child
     }
-    expect(() => codec.encode(deep)).toThrow('reference chain is too long')
+    expect(codec.decode(codec.encode(deep) as UntrustedInput)).toEqual(deep)
     expect(() => codec.encode({ callback: () => 1 }, 'argument')).toThrow('unexpected value')
   })
 

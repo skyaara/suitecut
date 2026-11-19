@@ -27,11 +27,9 @@ class NativeWidgetMouse : public std::enable_shared_from_this<NativeWidgetMouse>
     hooks_.send("","Input.getMouseWidgetReceiptCapabilities",CefDictionaryValue::Create(),
       [self=shared_from_this(),done=std::move(done)](bool ok,const std::string&json){
         self->pending_=false;self->probed_=true;const auto value=Parse(json);
-        self->available_=!self->closed_&&ok&&Keys(value,{"schemaVersion","protocol","maxLeases","maxPending"})&&
+        self->available_=!self->closed_&&ok&&Keys(value,{"schemaVersion","protocol"})&&
           value->GetType("schemaVersion")==VTYPE_INT&&value->GetInt("schemaVersion")==1&&
-          value->GetType("protocol")==VTYPE_STRING&&value->GetString("protocol")=="suitecut-widget-mouse-v1"&&
-          value->GetType("maxLeases")==VTYPE_INT&&value->GetInt("maxLeases")==64&&
-          value->GetType("maxPending")==VTYPE_INT&&value->GetInt("maxPending")==64;
+          value->GetType("protocol")==VTYPE_STRING&&value->GetString("protocol")=="suitecut-widget-mouse-v1";
         done(self->available_,self->available_?"":"Original-widget receipts require the custom CEF backend");
       },hooks_.now()+30000);
   }

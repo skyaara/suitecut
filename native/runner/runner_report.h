@@ -71,9 +71,7 @@ struct RunnerReport {
   std::vector<ReportSkipped> skipped;
   std::vector<ReportSkipCause> skip_causes;std::vector<ReportRuntimeSkipped> runtime_skipped;std::vector<StepRecord> steps{};std::vector<AttachmentDeclarations::Record> attachment_declarations;std::vector<AttachmentRecord> attachments{};std::vector<AttachmentProjectionReport> attachment_views{};std::vector<ReportProject> projects{};std::vector<ReportSerialGroup> serial_groups{};std::vector<ReportResourceLockGroup> resource_locks{};std::vector<OutputDirectoryRecord> outputs{};std::optional<PreserveOutput> output_preservation;std::vector<OutputRetentionRecord> output_retentions{};std::vector<ReportWorkGroup> work_groups{};std::vector<ReportSuiteFile> files{};std::vector<ReportFileWorkGroup> file_work_groups{};std::vector<ReportFileResourceLocks> file_resource_locks{};ReportWorkerReuse worker_reuse{};std::vector<ReportRetainedSource> retained_sources{};std::optional<RepeatConfigurationReport> repeat_configuration;FailOnFlakyTestsPolicy run_policy;std::vector<CallbackAssertionRecord> callback_assertions;
 };
-inline constexpr size_t kRunnerReportStreamBytes=16*1024*1024;
 namespace report_detail {
-inline constexpr size_t kMetadata=64*1024*1024,kOutput=128*1024*1024,kRecords=8192;
 struct Summary {
   std::map<uint64_t,std::vector<const ReportAttempt*>> tests;
   std::map<uint64_t,bool> final_expected,final_skipped,final_flaky;
@@ -82,33 +80,26 @@ struct Summary {
 };
 inline bool Status(std::string_view status){return status=="passed"||status=="failed"||status=="timedOut"||status=="interrupted"||status=="skipped";}
 inline Summary Validate(const RunnerReport& report){
-  if(report.attempts.size()>kRecords||report.workers.size()>kRecords||report.global_errors_json.size()>256||report.unrun.size()>kRecords||report.skipped.size()>kRecords||report.skip_causes.size()>kRecords||report.runtime_skipped.size()>kRecords)throw std::invalid_argument("Native runner report record capacity exceeded");
   ValidateProjectReports(report.projects);
-  Summary summary;size_t metadata=0,streams=0;std::set<uint64_t> generations;std::map<unsigned,int64_t> workers;
-  const auto charge=[&](size_t bytes){if(bytes>kMetadata-metadata)throw std::invalid_argument("Native runner report metadata capacity exceeded");metadata+=bytes;};
-  if(report.run_policy.enabled)charge(128);
-  charge(ValidateRetainedSourceReports(report));
-  if(report.repeat_configuration)charge(report.repeat_configuration->MetadataBytes());
+  Summary summary;std::set<uint64_t> generations;std::map<unsigned,int64_t> workers;
+  (void)ValidateRetainedSourceReports(report);
+  if(report.repeat_configuration)(void)report.repeat_configuration->MetadataBytes();
   for(const auto& worker:report.workers){
     if(worker.pid<=0||worker.pid>std::numeric_limits<int32_t>::max()||worker.exit_code < -1||worker.exit_code>255||(worker.signaled&&worker.exit_code<1)||!workers.emplace(worker.worker_index,worker.pid).second)throw std::invalid_argument("Invalid native runner report worker identity or exit status");
-    for(const auto* bytes:{&worker.stdout_bytes,&worker.stderr_bytes}){if(bytes->size()>kRunnerReportStreamBytes-streams)throw std::invalid_argument("Native runner report raw stream capacity exceeded");streams+=bytes->size();}
   }
   for(const auto& project:report.projects){
-    charge(project.name_json.size()+project.metadata_json.size()+project.test_ids.size()*16+project.dependencies.size()*16+project.workers.size()*8+256);
+    
     for(const auto worker:project.workers)if(!workers.contains(worker))throw std::invalid_argument("Native project references an unreported actual worker");
   }
   for(const auto& attempt:report.attempts){
-    charge(attempt.title_json.size());charge(attempt.error_json.size());charge(288);
-    ModifierAnnotations annotation_bounds;
-    for(const auto& annotation:attempt.annotations){annotation_bounds.Append(annotation);charge(ModifierAnnotationJSON(annotation).size()+128);}
+    for(const auto& annotation:attempt.annotations){ValidateModifierAnnotation(annotation);(void)ModifierAnnotationJSON(annotation);}
     if(!attempt.expected_status.empty()&&attempt.expected_status!="passed"&&attempt.expected_status!="failed"&&attempt.expected_status!="skipped")throw std::invalid_argument("Invalid native expected status");
-    if(attempt.expected_failure_reason_json){if(!JsonString(*attempt.expected_failure_reason_json,8192))throw std::invalid_argument("Invalid native expected failure reason");charge(attempt.expected_failure_reason_json->size());}
-    if(attempt.skip_reason_json){if(!JsonString(*attempt.skip_reason_json,8192))throw std::invalid_argument("Invalid native runtime skip reason");charge(attempt.skip_reason_json->size());}
-    if(!attempt.test_id||!attempt.generation||!generations.insert(attempt.generation).second||attempt.retry>100||attempt.pid<=0||attempt.pid>std::numeric_limits<int32_t>::max()||!Status(attempt.status)||!std::isfinite(attempt.duration_ms)||attempt.duration_ms<0||!JsonString(attempt.title_json,4096)||!JsonString(attempt.error_json,8192))throw std::invalid_argument("Invalid native runner report attempt");
-    if(attempt.secondary_errors.size()>256)throw std::length_error("Native attempt secondary error capacity exceeded");
+    if(attempt.expected_failure_reason_json){if(!JsonString(*attempt.expected_failure_reason_json))throw std::invalid_argument("Invalid native expected failure reason");}
+    if(attempt.skip_reason_json){if(!JsonString(*attempt.skip_reason_json))throw std::invalid_argument("Invalid native runtime skip reason");}
+    if(!attempt.test_id||!attempt.generation||!generations.insert(attempt.generation).second||attempt.pid<=0||attempt.pid>std::numeric_limits<int32_t>::max()||!Status(attempt.status)||!std::isfinite(attempt.duration_ms)||attempt.duration_ms<0||!JsonString(attempt.title_json)||!JsonString(attempt.error_json))throw std::invalid_argument("Invalid native runner report attempt");
     for(const auto& secondary:attempt.secondary_errors){const auto& owner=secondary.source.attempt;
-      if(owner!=AttemptErrorOwner{attempt.test_id,attempt.generation,attempt.worker_index,attempt.pid}||!secondary.source.scope||!secondary.source.generation||!JsonString(secondary.error_json,8192)||(secondary.fixture_raw&&secondary.originating_step))throw std::invalid_argument("Native secondary error lacks actual attempt/phase ownership");
-      charge(secondary.error_json.size()+128);
+      if(owner!=AttemptErrorOwner{attempt.test_id,attempt.generation,attempt.worker_index,attempt.pid}||!secondary.source.scope||!secondary.source.generation||!JsonString(secondary.error_json)||(secondary.fixture_raw&&secondary.originating_step))throw std::invalid_argument("Native secondary error lacks actual attempt/phase ownership");
+      
     }
     if(attempt.wall_duration_ms&&(!std::isfinite(*attempt.wall_duration_ms)||*attempt.wall_duration_ms<attempt.duration_ms))throw std::invalid_argument("Invalid native attempt wall duration");
     if(!report.projects.empty()){
@@ -119,50 +110,46 @@ inline Summary Validate(const RunnerReport& report){
     auto& attempts=summary.tests[attempt.test_id];if(!attempts.empty()&&attempt.retry<=attempts.back()->retry)throw std::invalid_argument("Native runner report retry order is not increasing");attempts.push_back(&attempt);
     summary.duration_ms+=attempt.duration_ms;if(!std::isfinite(summary.duration_ms))throw std::invalid_argument("Native runner report duration exceeds finite capacity");
   }
-  if(report.unrun.size()>kRecords-summary.tests.size())throw std::invalid_argument("Native runner report declaration capacity exceeded");
   std::set<uint64_t> unrun_ids;
   for(const auto& declaration:report.unrun){
-    charge(declaration.title_json.size());charge(declaration.reason_json.size());charge(128);
-    if(!declaration.test_id||summary.tests.contains(declaration.test_id)||!unrun_ids.insert(declaration.test_id).second||!JsonString(declaration.title_json,4096)||!JsonString(declaration.reason_json,8192))throw std::invalid_argument("Invalid native runner unrun declaration");
+    
+    if(!declaration.test_id||summary.tests.contains(declaration.test_id)||!unrun_ids.insert(declaration.test_id).second||!JsonString(declaration.title_json)||!JsonString(declaration.reason_json))throw std::invalid_argument("Invalid native runner unrun declaration");
   }
   summary.did_not_run=report.unrun.size();
-  if(report.skipped.size()>kRecords-summary.tests.size()-report.unrun.size())throw std::invalid_argument("Native runner skipped declaration capacity exceeded");
   for(const auto& declaration:report.skipped){
-    charge(declaration.title_json.size());charge(declaration.reason_json.size());charge(128);
-    if(!declaration.test_id||summary.tests.contains(declaration.test_id)||!unrun_ids.insert(declaration.test_id).second||!JsonString(declaration.title_json,4096)||!JsonString(declaration.reason_json,8192))throw std::invalid_argument("Invalid native runner skipped declaration");
+    
+    if(!declaration.test_id||summary.tests.contains(declaration.test_id)||!unrun_ids.insert(declaration.test_id).second||!JsonString(declaration.title_json)||!JsonString(declaration.reason_json))throw std::invalid_argument("Invalid native runner skipped declaration");
   }
   std::map<uint64_t,const ReportSkipCause*> causes;
   for(const auto& cause:report.skip_causes){
-    charge(cause.reason_json.size());charge(256);
-    if(!cause.scope_id||!cause.scope_generation||!cause.callback_id||!cause.callback_token||!cause.test_id||!cause.generation||!JsonString(cause.reason_json,8192)||!Status(cause.status)||cause.status=="passed"||!causes.emplace(cause.scope_id,&cause).second)throw std::invalid_argument("Invalid native beforeAll skip cause");
-    if(cause.annotation){ValidateModifierAnnotation(*cause.annotation);charge(ModifierAnnotationJSON(*cause.annotation).size()+128);if(cause.annotation->type!="skip"||cause.annotation->reason_json!=cause.reason_json)throw std::invalid_argument("Native beforeAll cause annotation mismatch");}
+    
+    if(!cause.scope_id||!cause.scope_generation||!cause.callback_id||!cause.callback_token||!cause.test_id||!cause.generation||!JsonString(cause.reason_json)||!Status(cause.status)||cause.status=="passed"||!causes.emplace(cause.scope_id,&cause).second)throw std::invalid_argument("Invalid native beforeAll skip cause");
+    if(cause.annotation){ValidateModifierAnnotation(*cause.annotation);(void)ModifierAnnotationJSON(*cause.annotation);if(cause.annotation->type!="skip"||cause.annotation->reason_json!=cause.reason_json)throw std::invalid_argument("Native beforeAll cause annotation mismatch");}
     const auto worker=workers.find(cause.worker_index);
     if(worker==workers.end()||worker->second!=cause.pid)throw std::invalid_argument("Native beforeAll skip cause has no actual worker");
     const auto associated=summary.tests.find(cause.test_id);
     if(associated==summary.tests.end()||std::none_of(associated->second.begin(),associated->second.end(),[&](const auto* attempt){return attempt->generation==cause.generation&&attempt->pid==cause.pid&&attempt->worker_index==cause.worker_index&&attempt->skip_reason_json&&*attempt->skip_reason_json==cause.reason_json&&(!cause.annotation||std::find(attempt->annotations.begin(),attempt->annotations.end(),*cause.annotation)!=attempt->annotations.end());}))throw std::invalid_argument("Native beforeAll skip cause has no actual associated attempt");
   }
-  if(report.runtime_skipped.size()>kRecords-summary.tests.size()-report.unrun.size()-report.skipped.size())throw std::invalid_argument("Native runtime skipped declaration capacity exceeded");
   for(const auto& declaration:report.runtime_skipped){
-    charge(declaration.title_json.size());charge(128);
+    
     const auto cause=causes.find(declaration.cause_id);
-    if(!declaration.test_id||summary.tests.contains(declaration.test_id)||!unrun_ids.insert(declaration.test_id).second||!JsonString(declaration.title_json,4096)||cause==causes.end()||cause->second->status!="skipped")throw std::invalid_argument("Invalid native runtime skipped declaration");
+    if(!declaration.test_id||summary.tests.contains(declaration.test_id)||!unrun_ids.insert(declaration.test_id).second||!JsonString(declaration.title_json)||cause==causes.end()||cause->second->status!="skipped")throw std::invalid_argument("Invalid native runtime skipped declaration");
     const auto& attempts=summary.tests.at(cause->second->test_id);
     if(std::none_of(attempts.begin(),attempts.end(),[&](const auto* attempt){return attempt->generation==cause->second->generation&&attempt->status=="skipped"&&attempt->expected;}))throw std::invalid_argument("Native runtime skip propagation lacks a clean actual associated attempt");
   }
-  charge(ValidateAttachmentDeclarationReports(report));
-  charge(ValidateAttachmentProjections(report));
-  if(report.steps.size()>TestSteps::kRecords)throw std::invalid_argument("Native step report capacity exceeded");
+  (void)ValidateAttachmentDeclarationReports(report);
+  (void)ValidateAttachmentProjections(report);
   std::map<uint64_t,const StepRecord*> step_ids;
   std::set<std::pair<unsigned,uint64_t>> declared_skip_requests;
   std::map<std::pair<unsigned,uint64_t>,LocalStepSkipCause> local_skip_causes;
   for(const auto& step:report.steps){
     if(!ValidStepBoxLocation(step.box,step.location))throw std::invalid_argument("Invalid native boxed-step report metadata");
     if(step.location&&!ValidStepLocation(*step.location))throw std::invalid_argument("Invalid native step report location");
-    charge(StepBoxMetadata(step.box)+(step.location?step.location->file_json.size()+64:0)+step.title_json.size()+step.error_json.size()+step.soft_error_json.size()+step.receipt_error_json.size()+(step.attachment_error_json?step.attachment_error_json->size():0)+(step.test_skip?step.test_skip->reason_json.size():0)+(step.step_skip?step.step_skip->reason_json.size():0)+800);
-    if(!step.id||(step.status!=StepStatus::Passed&&step.status!=StepStatus::Failed&&step.status!=StepStatus::TimedOut&&step.status!=StepStatus::Interrupted&&step.status!=StepStatus::Skipped)||(step.receipt!=StepReceipt::Settled&&step.receipt!=StepReceipt::WorkerExited&&step.receipt!=StepReceipt::NotInvoked)||!step.ended||!step.received||!std::isfinite(step.started)||!std::isfinite(step.deadline)||!std::isfinite(*step.ended)||!std::isfinite(*step.received)||step.started<0||step.started>*step.ended||*step.ended>*step.received||step.deadline<0||step.timeout_ms>120000||!std::isfinite(step.own_deadline)||step.own_deadline!=(step.timeout_ms?step.started+static_cast<double>(step.timeout_ms):std::numeric_limits<double>::max())||step.deadline>step.own_deadline||!JsonString(step.title_json,4096)||!JsonString(step.error_json,8192)||!JsonString(step.receipt_error_json,8192)||!step.depth||step.depth>TestSteps::kDepth||!step_ids.emplace(step.id,&step).second)throw std::invalid_argument("Invalid native step report record");
+    
+    if(!step.id||(step.status!=StepStatus::Passed&&step.status!=StepStatus::Failed&&step.status!=StepStatus::TimedOut&&step.status!=StepStatus::Interrupted&&step.status!=StepStatus::Skipped)||(step.receipt!=StepReceipt::Settled&&step.receipt!=StepReceipt::WorkerExited&&step.receipt!=StepReceipt::NotInvoked)||!step.ended||!step.received||!std::isfinite(step.started)||!std::isfinite(step.deadline)||!std::isfinite(*step.ended)||!std::isfinite(*step.received)||step.started<0||step.started>*step.ended||*step.ended>*step.received||step.deadline<0||step.timeout_ms>120000||!std::isfinite(step.own_deadline)||step.own_deadline!=(step.timeout_ms?step.started+static_cast<double>(step.timeout_ms):std::numeric_limits<double>::max())||step.deadline>step.own_deadline||!JsonString(step.title_json)||!JsonString(step.error_json)||!JsonString(step.receipt_error_json)||!step.depth||!step_ids.emplace(step.id,&step).second)throw std::invalid_argument("Invalid native step report record");
     if(!step.callback_received&&step.callback_ok)throw std::invalid_argument("Native step successful raw callback has no actual receipt");
     if(step.callback_received&&(!std::isfinite(*step.callback_received)||*step.callback_received<step.started||*step.callback_received>*step.received||step.receipt==StepReceipt::NotInvoked||(step.callback_ok&&step.receipt_error_json!="\"\"")))throw std::invalid_argument("Native step actual raw callback receipt mismatch");
-    if(step.attachment_error_json&&(!JsonString(*step.attachment_error_json,8192)||step.status==StepStatus::Passed||step.receipt==StepReceipt::NotInvoked))throw std::invalid_argument("Native step attachment error provenance mismatch");
+    if(step.attachment_error_json&&(!JsonString(*step.attachment_error_json)||step.status==StepStatus::Passed||step.receipt==StepReceipt::NotInvoked))throw std::invalid_argument("Native step attachment error provenance mismatch");
     const auto actual=summary.tests.find(step.owner.test_id);
     if(actual==summary.tests.end()||std::none_of(actual->second.begin(),actual->second.end(),[&](const auto* attempt){return attempt->generation==step.owner.attempt_generation&&attempt->worker_index==step.owner.worker_index&&attempt->pid==step.owner.pid;}))throw std::invalid_argument("Native step has no actual associated attempt");
     const auto process=workers.find(step.owner.worker_index);if(process==workers.end()||process->second!=step.owner.pid||!step.owner.scope||!step.owner.scope_generation)throw std::invalid_argument("Native step has no actual worker/callback owner");
@@ -170,12 +157,12 @@ inline Summary Validate(const RunnerReport& report){
     if(step.receipt==StepReceipt::WorkerExited&&step.receipt_ok)throw std::invalid_argument("Native step worker exit cannot fabricate successful raw settlement");
     if(step.receipt_ok&&step.receipt_error_json!="\"\"")throw std::invalid_argument("Native successful step receipt has an error");
     if(step.status==StepStatus::Passed&&(step.receipt!=StepReceipt::Settled||!step.receipt_ok||step.error_json!="\"\""))throw std::invalid_argument("Native passed step has no actual successful receipt");
-    if((step.status==StepStatus::Skipped&&!step.test_skip&&!step.step_skip&&!step.declared_skip_request)||(step.test_skip&&(!step.test_skip->request||!JsonString(step.test_skip->reason_json,8192)||(step.status==StepStatus::Skipped&&step.error_json!="\"\"")))||(step.receipt_test_skip&&(!step.test_skip||step.receipt_test_skip!=step.test_skip->request||step.receipt!=StepReceipt::Settled||!step.receipt_ok)))throw std::invalid_argument("Native skipped step cause/receipt mismatch");
+    if((step.status==StepStatus::Skipped&&!step.test_skip&&!step.step_skip&&!step.declared_skip_request)||(step.test_skip&&(!step.test_skip->request||!JsonString(step.test_skip->reason_json)||(step.status==StepStatus::Skipped&&step.error_json!="\"\"")))||(step.receipt_test_skip&&(!step.test_skip||step.receipt_test_skip!=step.test_skip->request||step.receipt!=StepReceipt::Settled||!step.receipt_ok)))throw std::invalid_argument("Native skipped step cause/receipt mismatch");
     if((step.receipt==StepReceipt::NotInvoked)!=(step.declared_skip_request!=0))throw std::invalid_argument("Native non-invoked step lacks its actual skipped declaration request");
     if(step.declared_skip_request&&(step.status!=StepStatus::Skipped||step.receipt_ok||step.test_skip||step.step_skip||step.receipt_test_skip||step.receipt_step_skip||step.error_json!="\"\""||step.receipt_error_json!="\"\""||step.started!=*step.ended||step.started!=*step.received||!declared_skip_requests.emplace(step.owner.worker_index,step.declared_skip_request).second))throw std::invalid_argument("Native non-invoked step fabricated callback receipt/cause/timing");
     if((step.test_skip||step.step_skip)&&(step.status==StepStatus::Passed||step.status==StepStatus::Failed))throw std::invalid_argument("Native settled ordinary step cannot acquire a later skip cause");
     if(step.receipt_step_skip&&(!step.step_skip||step.receipt_step_skip!=step.step_skip->request||step.receipt!=StepReceipt::Settled||!step.receipt_ok||step.receipt_test_skip))throw std::invalid_argument("Native local-step control receipt cause mismatch");
-    if(step.step_skip){if(step.status==StepStatus::Skipped&&step.error_json!="\"\"")throw std::invalid_argument("Native local skipped step has an invented logical error");const auto& cause=*step.step_skip;const auto [cause_record,inserted]=local_skip_causes.emplace(std::pair(step.owner.worker_index,cause.request),cause);if(!inserted&&cause_record->second!=cause)throw std::invalid_argument("Native local-step skip request changed source/cause");const auto source=step_ids.find(cause.source_step);if(!cause.request||!JsonString(cause.reason_json,8192)||(!cause.description_present&&cause.reason_json!="\"\"")||source==step_ids.end()||source->second->owner!=step.owner||!source->second->step_skip||*source->second->step_skip!=cause)throw std::invalid_argument("Native local-step skip source cause mismatch");const auto* ancestor=&step;while(ancestor->id!=cause.source_step&&ancestor->parent){const auto found=step_ids.find(ancestor->parent);if(found==step_ids.end())break;ancestor=found->second;}if(ancestor->id!=cause.source_step)throw std::invalid_argument("Native local-step skip source is not an actual ancestor");}
+    if(step.step_skip){if(step.status==StepStatus::Skipped&&step.error_json!="\"\"")throw std::invalid_argument("Native local skipped step has an invented logical error");const auto& cause=*step.step_skip;const auto [cause_record,inserted]=local_skip_causes.emplace(std::pair(step.owner.worker_index,cause.request),cause);if(!inserted&&cause_record->second!=cause)throw std::invalid_argument("Native local-step skip request changed source/cause");const auto source=step_ids.find(cause.source_step);if(!cause.request||!JsonString(cause.reason_json)||(!cause.description_present&&cause.reason_json!="\"\"")||source==step_ids.end()||source->second->owner!=step.owner||!source->second->step_skip||*source->second->step_skip!=cause)throw std::invalid_argument("Native local-step skip source cause mismatch");const auto* ancestor=&step;while(ancestor->id!=cause.source_step&&ancestor->parent){const auto found=step_ids.find(ancestor->parent);if(found==step_ids.end())break;ancestor=found->second;}if(ancestor->id!=cause.source_step)throw std::invalid_argument("Native local-step skip source is not an actual ancestor");}
     if(step.parent){const auto parent=step_ids.find(step.parent);if(parent==step_ids.end()||parent->second->owner!=step.owner||parent->second->receipt==StepReceipt::NotInvoked||parent->second->depth+1!=step.depth||parent->second->started>step.started||*parent->second->ended<step.started)throw std::invalid_argument("Native step actual parent mismatch");}
     else if(step.depth!=1)throw std::invalid_argument("Native root step depth mismatch");
   }
@@ -194,20 +181,18 @@ inline Summary Validate(const RunnerReport& report){
     const auto found=step_ids.find(secondary.originating_step);
     if(found==step_ids.end()||found->second->owner.test_id!=attempt.test_id||found->second->owner.attempt_generation!=attempt.generation||found->second->owner.worker_index!=attempt.worker_index||found->second->owner.pid!=attempt.pid||found->second->owner.scope!=secondary.source.scope||found->second->owner.scope_generation!=secondary.source.generation||found->second->status!=StepStatus::Failed||!found->second->callback_received||found->second->callback_ok)throw std::invalid_argument("Native secondary error originating-step receipt has foreign, stale or absent raw source");
   }
-  if(report.attachments.size()>128)throw std::invalid_argument("Native attachment report capacity exceeded");
-  size_t artifact_bytes=0;std::set<uint64_t> artifact_ids;std::set<std::pair<unsigned,uint64_t>> artifact_requests;std::set<std::string> artifact_paths;
+  std::set<uint64_t> artifact_ids;std::set<std::pair<unsigned,uint64_t>> artifact_requests;std::set<std::string> artifact_paths;
   for(const auto& artifact:report.attachments){
     ValidateAttachmentCallbackRetry(report,artifact.owner,artifact.callback_retry,artifact.step_id,artifact.started,artifact.received);
-    ValidateNativeAttachment(artifact);charge(artifact.name_json.size()+artifact.content_type_json.size()+artifact.path.size()+512);
-    if(!artifact_ids.insert(artifact.id).second||!artifact_requests.emplace(artifact.owner.worker_index,artifact.request).second||!artifact_paths.insert(artifact.path).second||artifact.bytes>64*1024*1024-artifact_bytes)throw std::invalid_argument("Native attachment report duplicate/quota violation");
+    ValidateNativeAttachment(artifact);
+    if(!artifact_ids.insert(artifact.id).second||!artifact_requests.emplace(artifact.owner.worker_index,artifact.request).second||!artifact_paths.insert(artifact.path).second)throw std::invalid_argument("Native attachment report duplicate violation");
     if(artifact.step_id){const auto step=step_ids.find(artifact.step_id);if(step==step_ids.end()||step->second->owner!=artifact.owner||step->second->receipt==StepReceipt::NotInvoked||artifact.started<step->second->started||artifact.received>*step->second->received)throw std::invalid_argument("Native attachment has no actual step/fenced writer provenance");}
-    artifact_bytes+=artifact.bytes;const auto actual=summary.tests.find(artifact.owner.test_id);const auto worker=workers.find(artifact.owner.worker_index);
+    const auto actual=summary.tests.find(artifact.owner.test_id);const auto worker=workers.find(artifact.owner.worker_index);
     if(worker==workers.end()||worker->second!=artifact.owner.pid||actual==summary.tests.end()||std::none_of(actual->second.begin(),actual->second.end(),[&](const auto* attempt){return attempt->generation==artifact.owner.attempt_generation&&attempt->pid==artifact.owner.pid&&attempt->worker_index==artifact.owner.worker_index;}))throw std::invalid_argument("Native attachment has no actual associated attempt/worker");
   }
-  if(report.outputs.size()>kRecords)throw std::invalid_argument("Native output directory report capacity exceeded");
   std::set<uint64_t> output_ids;std::set<uint64_t> output_generations;std::set<std::string> output_paths;
   for(const auto& output:report.outputs){
-    const auto& owner=output.owner;charge(output.path.size()*6+output.error.size()*6+output.cleanup_error.size()*6+768);
+    const auto& owner=output.owner;
     (void)AttachmentPathJSON(output.path);(void)AttachmentPathJSON(output.error);(void)AttachmentPathJSON(output.cleanup_error);
     const auto actual=summary.tests.find(owner.test_id);const auto worker=workers.find(owner.worker_index);
     if(!output.id||!owner.test_id||!owner.generation||!owner.worker_index||owner.pid<=0||!output_ids.insert(output.id).second||!output_generations.insert(owner.generation).second||!output_paths.insert(output.path).second||!std::filesystem::path(output.path).is_absolute()||output.path.find('\0')!=std::string::npos||worker==workers.end()||worker->second!=owner.pid||actual==summary.tests.end()||std::none_of(actual->second.begin(),actual->second.end(),[&](const auto* attempt){return attempt->generation==owner.generation&&attempt->pid==owner.pid&&attempt->worker_index==owner.worker_index;}))throw std::invalid_argument("Native output directory has no unique actual attempt/worker owner");
@@ -221,12 +206,12 @@ inline Summary Validate(const RunnerReport& report){
     if(output.foreign_preserved&&!output.rollback_receipt)throw std::invalid_argument("Native output foreign preservation lacks actual rollback receipt");
     if(output.rollback_receipt&&(!output.rollback_pid||output.rollback_signaled||output.rollback_exit))throw std::invalid_argument("Native output rollback receipt contradicts actual helper exit");
   }
-  charge(ValidateOutputRetentionReports(report));
-  charge(ValidateSoftAssertions(report));
-  charge(ValidateCallbackAssertions(report,step_ids));
+  (void)ValidateOutputRetentionReports(report);
+  (void)ValidateSoftAssertions(report);
+  (void)ValidateCallbackAssertions(report,step_ids);
   summary.runtime_skipped=report.runtime_skipped.size();
   summary.declared_skipped=report.skipped.size();summary.skipped=report.skipped.size()+report.runtime_skipped.size();
-  for(const auto& error:report.global_errors_json){charge(error.size());if(!JsonString(error,8192))throw std::invalid_argument("Invalid native runner report global error");}
+  for(const auto& error:report.global_errors_json){if(!JsonString(error))throw std::invalid_argument("Invalid native runner report global error");}
   const auto serial_members=ValidateSerialGroupReports(report);
   for(const auto& [id,attempts]:summary.tests){
     const auto& last=*attempts.back();
@@ -252,20 +237,14 @@ inline Summary Validate(const RunnerReport& report){
   ValidateWorkGroupReports(report);
   ValidateWorkerReuseReports(report);
   ValidateFileGroupReports(report);
-  for(const auto& file:report.files)charge(256+file.path.size()+file.tests.size()*16+file.selected.size()*16);
-  charge(report.worker_reuse.hosts.size()*256+report.worker_reuse.borrows.size()*320);
-  for(const auto& group:report.file_work_groups)charge(256+group.tests.size()*16+group.workers.size()*8);
-  for(const auto& lock:report.file_resource_locks){charge(256);for(const auto& name:lock.names)charge(name.size()+32);}
-  for(const auto& group:report.work_groups)charge(256+group.tests.size()*16+group.workers.size()*8);
   ValidateResourceLockReports(report);
-  for(const auto& group:report.resource_locks){charge(128);for(const auto& name:group.names)charge(name.size()*3+32);}
   summary.errors+=report.global_errors_json.size();return summary;
 }
 class AtomicFile {
  public:
   explicit AtomicFile(const std::filesystem::path& path,NativeReportPublication* publication=nullptr):path_(path),publication_(publication){
     if(publication_&&publication_->Ready())throw std::invalid_argument("Native report publication handle is already occupied");
-    const auto text=path.string();if(text.empty()||text.size()>4096||text.find('\0')!=std::string::npos||path.filename().empty())throw std::invalid_argument("Invalid native runner report path");
+    const auto text=path.string();if(text.empty()||text.find('\0')!=std::string::npos||path.filename().empty())throw std::invalid_argument("Invalid native runner report path");
     const auto parent=path.parent_path().empty()?std::filesystem::path("."):path.parent_path();std::filesystem::create_directories(parent);
     for(unsigned retry=0;retry<64;++retry){
       static std::atomic<uint64_t> sequence{0};auto token=sequence.load(std::memory_order_relaxed);
@@ -280,7 +259,7 @@ class AtomicFile {
   AtomicFile(const AtomicFile&)=delete;AtomicFile& operator=(const AtomicFile&)=delete;
   ~AtomicFile(){if(fd_>=0)::close(fd_);if(!committed_&&!temporary_.empty())::unlink(temporary_.c_str());}
   void Put(std::string_view value){
-    if(value.size()>kOutput-written_)throw std::length_error("Native runner report output capacity exceeded");
+    if(value.size()>std::numeric_limits<size_t>::max()-written_)throw std::overflow_error("Native runner report output size overflow");
     written_+=value.size();
     while(!value.empty()){const auto count=::write(fd_,value.data(),value.size());if(count<0){if(errno==EINTR)continue;throw std::system_error(errno,std::generic_category(),"Native runner report write");}if(!count)throw std::runtime_error("Native runner report write made no progress");value.remove_prefix(static_cast<size_t>(count));}
   }
@@ -362,7 +341,7 @@ inline StepIndex IndexSteps(const std::vector<StepRecord>& steps){StepIndex inde
 inline const StepRecord* AttemptBoxedSource(const ReportAttempt& attempt,const StepIndex& index){
   if(attempt.status!="failed")return nullptr;
   auto id=attempt.originating_step;
-  for(size_t depth=0;id&&depth<TestSteps::kDepth;++depth){const auto found=index.find(id);if(found==index.end())return nullptr;const auto* step=found->second;if(StepErrorAttribution(*step))return step;id=step->originating_step;}
+  for(size_t depth=0;id&&depth<=index.size();++depth){const auto found=index.find(id);if(found==index.end())return nullptr;const auto* step=found->second;if(StepErrorAttribution(*step))return step;id=step->originating_step;}
   return nullptr;
 }
 // JUnit presentation is separate from the exact raw attempt error property.

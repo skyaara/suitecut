@@ -12,10 +12,9 @@
 #include <set>
 struct Harness {
   using Dict=CefRefPtr<CefDictionaryValue>;
-  static constexpr size_t kMaxResponseBytes=192*1048576;
   using SnapshotReferenceDocument=suitecut::SnapshotReferences::Document;
   using Callback=std::function<void(bool,const std::string&)>;
-  struct DevToolsCall {int owner;Callback callback;std::string session;bool retain_after_cancel=false;size_t response_limit=0;bool retained_control=false,lossless_scalars=false;};
+  struct DevToolsCall {int owner;Callback callback;std::string session;bool retain_after_cancel=false;bool retained_control=false,lossless_scalars=false;};
   SuiteCutOperationRegistry operations_;bool browser_=true;double now=0;int next=1,submissions=0,receipts=0;
   bool submit_ok=true,synchronous=false,synchronous_ok=true;std::string main_frame_id_="main";
   std::map<int,DevToolsCall>devtools_;std::set<std::string>sessions_{"session"};std::vector<std::string>errors,released;
@@ -32,7 +31,7 @@ struct Harness {
   void WakeDeadlines(){}
   bool SubmitDevTools(int id,const std::string&,Dict params,const std::string&){
     ++submissions;assert(params);assert(devtools_.contains(id));
-    const auto& call=devtools_.at(id);assert(call.retain_after_cancel&&call.retained_control&&call.lossless_scalars&&call.response_limit==kMaxResponseBytes);
+    const auto& call=devtools_.at(id);assert(call.retain_after_cancel&&call.retained_control&&call.lossless_scalars);
     if(synchronous)Ack(id,synchronous_ok);
     return submit_ok;
   }

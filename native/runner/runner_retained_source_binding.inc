@@ -45,7 +45,7 @@
     sr::ReportRetainedSource row{ticket,record.executable,receiver.ProcessIdentity(),std::nullopt,receiver.ExitObserved(),receiver.ChannelDrained(),record.retired_batch};
     if(receiver.Boundary())row.shutdown=sr::ReportSourceShutdown{receiver.Boundary()->current_parent,receiver.Boundary()->planned_code};
     if(receiver.Work()){const auto& work=*receiver.Work();row.accepted_work=sr::ReportSourceAcceptedWork{work.challenge,work.cuts,work.observed,work.acknowledged,work.canceled,work.late_acknowledged,work.refusal,work.observed_at,work.acknowledged_at};if(const auto* iteration=sources_->PendingCallbackIterationOwner())row.accepted_work->callback_iteration=sr::ReportSourceCallbackIteration{iteration->callback,iteration->request,iteration->outer_step,iteration->iteration_step,iteration->assertion,iteration->invocation};}
-    sr::ValidateRetainedSource(row);Charge(row.accepted_work?(row.accepted_work->callback_iteration?1024:768):384);report_.retained_sources.push_back(row);source_reported_=true;
+    sr::ValidateRetainedSource(row);report_.retained_sources.push_back(row);source_reported_=true;
   }
   sr::NativeTask<> RetireSources(){
     if(!sources_)co_return;

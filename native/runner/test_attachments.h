@@ -30,7 +30,7 @@ inline std::string AttachmentPathJSON(std::string_view path){
     else value+=static_cast<char>(c);
   }
   value+='"';
-  if(!JsonString(value,8192))throw std::invalid_argument("Native attachment filesystem path is not bounded UTF8");
+  if(!JsonString(value))throw std::invalid_argument("Native attachment filesystem path is not valid UTF8");
   return value;
 }
 // Used only for native default filename extensions, never to reconstruct names.
@@ -50,7 +50,7 @@ inline std::string AttachmentASCII(std::string_view checked){
 inline void ValidateNativeAttachment(const AttachmentRecord& record){
   const auto& o=record.owner;
   if(!record.callback_retry.Empty()&&!record.callback_retry.Complete())throw std::invalid_argument("Invalid native attachment callback retry identity");
-  if(!record.id||!record.request||!o.test_id||!o.attempt_generation||!o.scope||!o.scope_generation||o.pid<=0||o.pid>INT32_MAX||record.writer_pid<=0||record.writer_pid>INT32_MAX||record.writer_signaled||record.writer_exit!=0||record.writer_pid==o.pid||!JsonString(record.name_json,4096)||!JsonString(record.content_type_json,1024)||record.bytes>16*1024*1024||!record.inode||record.path.empty()||record.path.front()!='/'||record.path.find('\0')!=std::string::npos||(record.source_kind!="path"&&record.source_kind!="string"&&record.source_kind!="bytes")||!std::isfinite(record.started)||!std::isfinite(record.committed)||!std::isfinite(record.received)||record.started<0||record.committed<record.started||record.received<record.committed||(o.callback_kind!="body"&&o.callback_kind!="beforeEach"&&o.callback_kind!="afterEach"&&o.callback_kind!="beforeAll"&&o.callback_kind!="afterAll")||(o.callback_kind!="body"&&!o.callback_token))throw std::invalid_argument("Invalid native attachment record/provenance");
+  if(!record.id||!record.request||!o.test_id||!o.attempt_generation||!o.scope||!o.scope_generation||o.pid<=0||o.pid>INT32_MAX||record.writer_pid<=0||record.writer_pid>INT32_MAX||record.writer_signaled||record.writer_exit!=0||record.writer_pid==o.pid||!JsonString(record.name_json)||!JsonString(record.content_type_json)||!record.inode||record.path.empty()||record.path.front()!='/'||record.path.find('\0')!=std::string::npos||(record.source_kind!="path"&&record.source_kind!="string"&&record.source_kind!="bytes")||!std::isfinite(record.started)||!std::isfinite(record.committed)||!std::isfinite(record.received)||record.started<0||record.committed<record.started||record.received<record.committed||(o.callback_kind!="body"&&o.callback_kind!="beforeEach"&&o.callback_kind!="afterEach"&&o.callback_kind!="beforeAll"&&o.callback_kind!="afterAll")||(o.callback_kind!="body"&&!o.callback_token))throw std::invalid_argument("Invalid native attachment record/provenance");
   (void)AttachmentPathJSON(record.path);
 
 }

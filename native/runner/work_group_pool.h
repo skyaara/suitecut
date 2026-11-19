@@ -10,14 +10,13 @@ class WorkGroupPool {
  public:
   using State=SerialProjectPlan::State;using Outcome=SerialProjectPlan::Outcome;using Result=SerialProjectPlan::Result;
   struct Admission {size_t index,project;uint64_t generation;bool teardown;};
-  static constexpr size_t kWorkers=8;
   WorkGroupPool(ProjectGraph graph,ProjectPlanSelection selection,TestWorkGroups groups,size_t limit)
       :graph_(std::move(graph)),groups_(std::move(groups)),projects_(graph_.Declarations().size()),
        states_(groups_.Groups().size(),State::Pending),started_(projects_.size(),false),
        retired_(states_.size()),canceled_(states_.size()),limit_(limit),no_dependencies_(selection.no_dependencies){
-    if(!limit||limit>kWorkers||selection.selected.size()!=projects_.size()||groups_.ByProject().size()!=projects_.size()||
+    if(!limit||selection.selected.size()!=projects_.size()||groups_.ByProject().size()!=projects_.size()||
        (!no_dependencies_&&graph_.Closure(selection.selected)!=selection.selected))
-      throw std::invalid_argument("Native work-group pool capacity or project selection rejected");
+      throw std::invalid_argument("Native work-group pool workers or project selection rejected");
     for(size_t project=0;project<projects_.size();++project){
       if(selection.selected[project]!=!groups_.ByProject()[project].empty())throw std::invalid_argument("Native work-group plan disagrees with selected projects");
       if(selection.selected[project])projects_[project].state=State::Pending;
@@ -70,7 +69,6 @@ class WorkGroupPool {
     found->second.outcome=outcome;Retire(found);return true;
   }
   void Stop(const std::string& reason){
-    if(reason.size()>8192)throw std::invalid_argument("Native work-group stop reason capacity exceeded");
     if(stopped_)return;
     stopped_=true;
     for(auto it=active_.begin();it!=active_.end();)if(!it->second.started){

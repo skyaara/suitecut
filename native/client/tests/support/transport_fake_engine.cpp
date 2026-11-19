@@ -78,15 +78,17 @@ int main(int argc, char** argv) {
     }
     if (command == "network-body") {
       held_body_command = id;
+      // body-large: one body past the old 2 MiB body / 24 KiB chunk caps.
+      const bool large = mode=="body-large";
+      const std::size_t head = large ? 2097150 : 2;
       for (int scope = 0; scope < 3; ++scope) {
-        Json h{{"type",scope==2?"contextnetworkbody":"networkbody"},{"bodyId","1"},{"offset",0},{"totalBytes",5}};
+        Json h{{"type",scope==2?"contextnetworkbody":"networkbody"},{"bodyId","1"},{"offset",0},{"totalBytes",head+3}};
         if (scope==2) { h["contextId"]=3;h["owner"]="broker:7"; }
         else h["pageId"]=scope+1;
         if (mode=="body-gap") h["offset"]=1;
-        if (mode=="body-oversize") h["totalBytes"]=2097153;
         if (mode=="body-identity") h["bodyId"]="0";
-        packet(h,std::string("\0\xff",2),true);
-        h["offset"]=mode=="body-duplicate"?0:2;
+        packet(h,large?std::string(head,'b'):std::string("\0\xff",2),true);
+        h["offset"]=mode=="body-duplicate"?0:head;
         if(mode=="body-size-change")h["totalBytes"]=6;
         packet(h,"x\r\n",true);
       }

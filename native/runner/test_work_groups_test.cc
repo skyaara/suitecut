@@ -35,6 +35,6 @@ int main(){unsigned controls=0;
  Reject([]{TestWorkGroups p({{1,0},{1,0}},{},{},{},{true},{{1}},{true});});++controls;
  Reject([]{TestWorkGroups p({{1,0}},{},{},{{1,WorkGroupMode::Parallel}},{true},{{1}},{true});});++controls;
  Reject([]{auto m=Members();m.pop_back();TestWorkGroups p(Tests(),Suites(),m,{},{true},{{1}},{true});});++controls;
- Reject([]{std::vector<WorkGroupTest> tests;for(size_t i=0;i<=TestWorkGroups::kTests;++i)tests.push_back({i+1,0});TestWorkGroups p(tests,{},{},{},{true},{{}},{true});});++controls;
+ {std::vector<WorkGroupTest> tests;for(size_t i=0;i<=4096;++i)tests.push_back({i+1,0});const TestWorkGroups p(tests,{},{},{},{true},{{}},{true});assert(p.ByProject().size()==1);}++controls;
  assert(controls==25);std::cout<<"Native selected test work groups: "<<controls<<" controls passed\n";
 }

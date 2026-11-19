@@ -17,8 +17,7 @@ struct Harness {
   using Stage=SuiteCutArtifactController::ResponseStage;
   using SnapshotReferenceDocument=suitecut::SnapshotReferences::Document;
   using Callback=std::function<void(bool,const std::string&)>;
-  struct DevToolsCall {int owner;Callback callback;std::string session;bool retain_after_cancel=false;size_t response_limit=0;bool retained_control=false,lossless_scalars=false;};
-  static constexpr size_t kMaxResponseBytes=4*1024*1024;
+  struct DevToolsCall {int owner;Callback callback;std::string session;bool retain_after_cancel=false;bool retained_control=false,lossless_scalars=false;};
   int page_id_=3,next=1,submissions=0,consumers=0,deadlines=0,receipts=0;
   uint64_t renderer_views_=4;double now=0;double scale_=1;int width_=200,height_=120,artifact_view_owner_=0,view_releases=0;bool synchronous_paint=false;bool browser_=true,submit_ok=true,synchronous=false,expire_at_selector=false;
   std::string main_frame_id_="main",synchronous_json="{\"result\":{\"type\":\"boolean\",\"value\":true}}";
@@ -44,7 +43,7 @@ struct Harness {
   suitecut::SelectorWaitControls&SelectorWaits(){return selectors;}
   bool ReferenceTemporaryGroups(int){if(expire_at_selector)now=50;return true;}
   bool SubmitDevTools(int id,const std::string&,Dict,const std::string&){
-    ++submissions;const auto&call=devtools_.at(id);assert(call.retain_after_cancel&&call.retained_control&&call.lossless_scalars&&call.response_limit==kMaxResponseBytes);
+    ++submissions;const auto&call=devtools_.at(id);assert(call.retain_after_cancel&&call.retained_control&&call.lossless_scalars);
     if(synchronous){Ack(id,true,synchronous_json);}return submit_ok;
   }
   void Ack(int id=1,bool ok=true,const std::string&json="{\"result\":{\"type\":\"boolean\",\"value\":true}}"){

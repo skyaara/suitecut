@@ -29,7 +29,7 @@ struct ReportRetainedSource {
 };
 inline void ValidateRetainedSource(const ReportRetainedSource& row){
   const auto& ticket=row.ticket;const auto& host=ticket.owner.host;const auto& fixture=ticket.owner.fixture;
-  if(!ticket.id||ticket.id>RetainedSourceLeases::kHistory||!host.lease||!host.worker||host.pid<=0||host.pid>INT32_MAX||!host.start||!fixture.catalog||!fixture.declaration||!fixture.token||!fixture.generation||
+  if(!ticket.id||!host.lease||!host.worker||host.pid<=0||host.pid>INT32_MAX||!host.start||!fixture.catalog||!fixture.declaration||!fixture.token||!fixture.generation||
      (fixture.setup_scope==RetainedSourceLeases::SetupScope::Test?!fixture.test:fixture.test||!fixture.callback_owner||
        (fixture.setup_scope!=RetainedSourceLeases::SetupScope::BeforeAll&&fixture.setup_scope!=RetainedSourceLeases::SetupScope::AfterAll))||!row.executable.inode||!row.channel_drained||!row.retired_batch||row.pidfd_exit!=row.startup.has_value())throw std::invalid_argument("Native Source report lacks exact final physical/fixture receipts");
   if(row.startup){const auto& process=*row.startup;if(process.pid<=0||process.pid>INT32_MAX||process.pid==host.pid||process.parent!=host.pid||process.start<host.start||process.executable!=row.executable)throw std::invalid_argument("Native Source report startup has foreign kernel identity");}
@@ -54,7 +54,6 @@ inline void ValidateRetainedSource(const ReportRetainedSource& row){
 // Attempt generation and fixture-scope generation are distinct native domains.
 // Associate by the genuine host/test, never flatten a hook scope into attemptID.
 template<class Report>size_t ValidateRetainedSourceReports(const Report& report){
-  if(report.retained_sources.size()>RetainedSourceLeases::kHistory)throw std::invalid_argument("Native Source report capacity exceeded");
   std::set<uint64_t> tickets;std::set<std::pair<int64_t,uint64_t>> sources;std::set<unsigned> hosts;size_t bytes=0;
   for(const auto& row:report.retained_sources){ValidateRetainedSource(row);bytes+=row.accepted_work?(row.accepted_work->callback_iteration?1024:768):384;const auto& owner=row.ticket.owner;
     if(!tickets.insert(row.ticket.id).second||!hosts.insert(owner.host.worker).second||(row.startup&&!sources.emplace(row.startup->pid,row.startup->start).second))throw std::invalid_argument("Native Source report duplicate ticket/host/process incarnation");

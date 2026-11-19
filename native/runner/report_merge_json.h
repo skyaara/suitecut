@@ -49,28 +49,45 @@ inline std::string Text(const JSON& value){
 class JSONParser {
  public:
   explicit JSONParser(std::string_view text):text_(text){}
-  JSON Parse(){auto value=Value(0);Space();if(at_!=text_.size())Invalid("trailing JSON bytes");return value;}
+  JSON Parse(){auto value=Value();Space();if(at_!=text_.size())Invalid("trailing JSON bytes");return value;}
  private:
-  std::string_view text_;size_t at_=0,nodes_=0;
+  struct Frame {JSON value;size_t begin;std::u16string key;};
+  std::string_view text_;size_t at_=0;
   void Space(){while(at_<text_.size()&&(text_[at_]==' '||text_[at_]=='\t'||text_[at_]=='\r'||text_[at_]=='\n'))++at_;}
   bool Take(char value){if(at_<text_.size()&&text_[at_]==value){++at_;return true;}return false;}
   void Need(char value){if(!Take(value))Invalid("invalid JSON punctuation");}
   std::string_view String(){const size_t begin=at_;Need('"');bool escaped=false;
-    while(at_<text_.size()){const char value=text_[at_++];if(value=='"'&&!escaped){const auto raw=text_.substr(begin,at_-begin);if(!JsonString(raw,128*1024*1024))Invalid("invalid JSON string/UTF8");return raw;}if(value=='\\'&&!escaped)escaped=true;else escaped=false;}
+    while(at_<text_.size()){const char value=text_[at_++];if(value=='"'&&!escaped){const auto raw=text_.substr(begin,at_-begin);if(!JsonString(raw))Invalid("invalid JSON string/UTF8");return raw;}if(value=='\\'&&!escaped)escaped=true;else escaped=false;}
     Invalid("unterminated JSON string");
   }
   void Literal(std::string_view value){if(text_.substr(at_,value.size())!=value)Invalid("invalid JSON literal");at_+=value.size();}
   void Digits(){const auto begin=at_;while(at_<text_.size()&&text_[at_]>='0'&&text_[at_]<='9')++at_;if(begin==at_)Invalid("invalid JSON number");}
-  JSON Value(unsigned depth){
-    Space();if(depth>64||++nodes_>500000||at_==text_.size())Invalid("JSON depth/node capacity or truncated value");
-    const size_t begin=at_;JSON value;
-    if(Take('{')){value.kind=JSON::Object;Space();if(!Take('}'))for(;;){Space();const auto key=Units(String());Space();Need(':');auto child=Value(depth+1);if(!value.fields.emplace(key,std::move(child)).second)Invalid("duplicate JSON object key");Space();if(Take('}'))break;Need(',');}}
-    else if(Take('[')){value.kind=JSON::Array;Space();if(!Take(']'))for(;;){value.items.push_back(Value(depth+1));Space();if(Take(']'))break;Need(',');}}
-    else if(text_[at_]=='"'){value.kind=JSON::String;String();}
-    else if(text_[at_]=='t'||text_[at_]=='f'){value.kind=JSON::Boolean;Literal(text_[at_]=='t'?"true":"false");}
-    else if(text_[at_]=='n'){value.kind=JSON::Null;Literal("null");}
-    else{value.kind=JSON::Number;Take('-');if(!Take('0'))Digits();if(Take('.'))Digits();if(Take('e')||Take('E')){if(!Take('+'))Take('-');Digits();}}
-    value.raw=text_.substr(begin,at_-begin);return value;
+  void Key(Frame& frame){Space();frame.key=Units(String());Space();Need(':');}
+  // Iterative: nesting depth and node count are bounded only by memory.
+  JSON Value(){
+    std::vector<Frame> open;
+    for(;;){
+      Space();if(at_==text_.size())Invalid("truncated JSON value");
+      const size_t begin=at_;JSON value;
+      if(Take('{')||Take('[')){
+        value.kind=text_[begin]=='{'?JSON::Object:JSON::Array;Space();
+        if(!Take(value.kind==JSON::Object?'}':']')){open.push_back({std::move(value),begin,{}});if(open.back().value.kind==JSON::Object)Key(open.back());continue;}
+      }
+      else if(text_[at_]=='"'){value.kind=JSON::String;String();}
+      else if(text_[at_]=='t'||text_[at_]=='f'){value.kind=JSON::Boolean;Literal(text_[at_]=='t'?"true":"false");}
+      else if(text_[at_]=='n'){value.kind=JSON::Null;Literal("null");}
+      else{value.kind=JSON::Number;Take('-');if(!Take('0'))Digits();if(Take('.'))Digits();if(Take('e')||Take('E')){if(!Take('+'))Take('-');Digits();}}
+      value.raw=text_.substr(begin,at_-begin);
+      for(;;){
+        if(open.empty())return value;
+        auto& parent=open.back();const bool object=parent.value.kind==JSON::Object;
+        if(object){if(!parent.value.fields.emplace(std::move(parent.key),std::move(value)).second)Invalid("duplicate JSON object key");}
+        else parent.value.items.push_back(std::move(value));
+        Space();
+        if(Take(object?'}':']')){value=std::move(parent.value);value.raw=text_.substr(parent.begin,at_-parent.begin);open.pop_back();continue;}
+        Need(',');if(object)Key(parent);break;
+      }
+    }
   }
 };
 inline const JSON* Find(const JSON& object,std::string_view key){
@@ -98,5 +115,5 @@ inline double Number(const JSON& value){
   return result;
 }
 inline bool Bool(const JSON& value){if(value.kind!=JSON::Boolean)Invalid("expected boolean");return value.raw=="true";}
-inline std::string CheckedString(const JSON& object,std::string_view name,size_t units){const auto& value=Get(object,name);if(value.kind!=JSON::String||!JsonString(value.raw,units))Invalid("invalid bounded string "+std::string(name));return std::string(value.raw);}
+inline std::string CheckedString(const JSON& object,std::string_view name){const auto& value=Get(object,name);if(value.kind!=JSON::String||!JsonString(value.raw))Invalid("invalid string "+std::string(name));return std::string(value.raw);}
 } // namespace suitecut::runner::merge_detail

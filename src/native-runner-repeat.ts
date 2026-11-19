@@ -11,7 +11,7 @@ export interface NativeRepeatContext {
   readonly iterations: number
   readonly logicalTestId: string
 }
-const localId = z.string().regex(/^[1-9][0-9]{0,3}$/u)
+const localId = z.string().regex(/^[1-9][0-9]*$/u)
 const ownerId = z.string().regex(/^[1-9][0-9]{0,19}$/u)
 const integer = z.coerce.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)
 
@@ -73,14 +73,7 @@ export class NativeRepeatCallbacks {
   }
   packet(fields: readonly string[], testCount: number): void {
     const [, id, hexId] = z
-      .tuple([
-        z.literal('TEST_REPEAT_CONTEXT'),
-        localId,
-        z
-          .string()
-          .max(512)
-          .regex(/^(?:[a-f\d]{2})+$/u),
-      ])
+      .tuple([z.literal('TEST_REPEAT_CONTEXT'), localId, z.string().regex(/^(?:[a-f\d]{2})+$/u)])
       .parse(fields)
     const actor = this.actor
     if (!actor || Number(id) > testCount || this.contexts.has(id))

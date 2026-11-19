@@ -1,20 +1,19 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstdint>
 #include <optional>
 #include <span>
 #include <stdexcept>
+#include <vector>
 
 namespace suitecut::runner {
-// Bounded receipt policy only. The native adapter supplies verified kernel and
+// Receipt policy only. The native adapter supplies verified kernel and
 // Source-channel receipts. This controller never kills/reaps, guesses process
 // completion, resets a global deadline, or makes a living PID physically zero.
 class RetainedSourceLeases {
  public:
-  static constexpr size_t kLive=8,kHistory=256,kAccepted=64;
   struct Host {uint64_t lease=0;unsigned worker=0;int64_t pid=0;uint64_t start=0;bool operator==(const Host&)const=default;};
   enum class SetupScope {Test,BeforeAll,AfterAll};
   struct Fixture {uint64_t catalog=0,declaration=0,token=0,test=0,generation=0;SetupScope setup_scope=SetupScope::Test;uint64_t callback_owner=0;bool operator==(const Fixture&)const=default;};
@@ -35,37 +34,36 @@ class RetainedSourceLeases {
   struct Record {
     Ticket ticket;Executable executable;State state=State::Reserved;
     std::optional<Process> process;double startup_deadline=0,last_observed=0;
-    uint64_t emission=0,accepted=0;std::array<uint64_t,kAccepted> work{};size_t pending=0;
+    uint64_t emission=0,accepted=0;std::vector<uint64_t> work{};size_t pending=0;
     std::optional<Request> idle,close;bool idle_ack=false,canceled_idle_ack=false,close_ack=false,exit_observed=false;
     uint64_t retired_batch=0;
   };
   explicit RetainedSourceLeases(std::optional<double> original_global_deadline=std::nullopt):global_(original_global_deadline){
     if(global_&&(!std::isfinite(*global_)||*global_<=0))throw std::invalid_argument("Invalid retained Source original global deadline");
   }
-  std::optional<Ticket> Reserve(const Owner& owner,Executable executable,double deadline,double now)noexcept{
-    if(stopped_||count_==kHistory||outstanding_==kLive||!Valid(owner)||!executable.inode||!Time(now)||!Time(deadline)||deadline<=now||(global_&&deadline>*global_))return std::nullopt;
-    for(size_t i=0;i<count_;++i){const auto& row=records_[i];if((row.retired_batch&&row.ticket.owner.host==owner.host)||(row.state!=State::Retired&&row.ticket.owner.host.pid==owner.host.pid&&row.ticket.owner.host!=owner.host))return std::nullopt;}
-    const Ticket ticket{count_+1,owner};auto& row=records_[count_++];row.ticket=ticket;row.executable=executable;row.startup_deadline=deadline;row.last_observed=now;++outstanding_;return ticket;
+  std::optional<Ticket> Reserve(const Owner& owner,Executable executable,double deadline,double now){
+    if(stopped_||!Valid(owner)||!executable.inode||!Time(now)||!Time(deadline)||deadline<=now||(global_&&deadline>*global_))return std::nullopt;
+    for(const auto& row:records_){if((row.retired_batch&&row.ticket.owner.host==owner.host)||(row.state!=State::Retired&&row.ticket.owner.host.pid==owner.host.pid&&row.ticket.owner.host!=owner.host))return std::nullopt;}
+    const Ticket ticket{records_.size()+1,owner};auto& row=records_.emplace_back();row.ticket=ticket;row.executable=executable;row.startup_deadline=deadline;row.last_observed=now;++outstanding_;return ticket;
   }
   bool Started(const Startup& receipt,double now)noexcept{
     auto* row=Find(receipt.ticket);if(!row||row->process||row->state==State::Retired||!At(*row,now)||receipt.emission!=1||
       receipt.observed_parent!=row->ticket.owner.host||receipt.credential_pid!=receipt.process.pid||!Valid(receipt.process)||
       receipt.process.parent!=row->ticket.owner.host.pid||receipt.process.start<row->ticket.owner.host.start||receipt.process.executable!=row->executable)return false;
-    for(size_t i=0;i<count_;++i)if(records_[i].state!=State::Retired&&records_[i].process&&records_[i].process->pid==receipt.process.pid)return false;
+    for(const auto& other:records_)if(other.state!=State::Retired&&other.process&&other.process->pid==receipt.process.pid)return false;
     row->process=receipt.process;row->emission=1;row->last_observed=now;++live_;
     row->state=stopped_||row->state==State::Closing||now>=row->startup_deadline?State::Closing:State::Active;return true;
   }
-  // Every actual Source accepted operation must enter this bounded ledger
-  // before its backend admission. A timeout/request cancellation never retires it.
-  bool Accepted(const Ticket& ticket,uint64_t emission,uint64_t operation,double now)noexcept{
-    auto* row=Next(ticket,emission,now);if(!row||row->accepted==UINT64_MAX||operation!=row->accepted+1||row->pending==kAccepted)return false;
-    const auto slot=std::find(row->work.begin(),row->work.end(),0);if(slot==row->work.end())return false;
-    *slot=operation;++row->pending;row->accepted=operation;Commit(*row,emission,now);if(row->state==State::Idle)row->state=State::Active;return true;
+  // Every actual Source accepted operation must enter this ledger before its
+  // backend admission. A timeout/request cancellation never retires it.
+  bool Accepted(const Ticket& ticket,uint64_t emission,uint64_t operation,double now){
+    auto* row=Next(ticket,emission,now);if(!row||row->accepted==UINT64_MAX||operation!=row->accepted+1)return false;
+    row->work.push_back(operation);++row->pending;row->accepted=operation;Commit(*row,emission,now);if(row->state==State::Idle)row->state=State::Active;return true;
   }
   bool OperationRetired(const Ticket& ticket,uint64_t emission,uint64_t operation,double now)noexcept{
     auto* row=Next(ticket,emission,now);if(!row||!operation)return false;const auto found=std::find(row->work.begin(),row->work.end(),operation);
     if(found==row->work.end())return false;
-    *found=0;--row->pending;Commit(*row,emission,now);return true;
+    row->work.erase(found);--row->pending;Commit(*row,emission,now);return true;
   }
   std::optional<Request> RequestIdle(const Ticket& ticket,double deadline,double now)noexcept{
     auto* row=Find(ticket);if(stopped_||!row||row->state!=State::Active||!At(*row,now)||row->pending||!Bounded(deadline,now)||nonce_==UINT64_MAX)return std::nullopt;
@@ -103,15 +101,15 @@ class RetainedSourceLeases {
     auto* row=Find(ticket);if(!row||row->state==State::Retired||row->state==State::Exited||!At(*row,now))return false;
     row->state=State::Closing;row->last_observed=now;return true;
   }
-  void Stop(double now)noexcept{if(!Time(now))return;stopped_=true;for(size_t i=0;i<count_;++i)if(records_[i].state!=State::Retired&&records_[i].state!=State::Exited&&now>=records_[i].last_observed){records_[i].state=State::Closing;records_[i].last_observed=now;}}
+  void Stop(double now)noexcept{if(!Time(now))return;stopped_=true;for(auto& row:records_)if(row.state!=State::Retired&&row.state!=State::Exited&&now>=row.last_observed){row.state=State::Closing;row.last_observed=now;}}
   void Expire(double now)noexcept{
     if(!Time(now))return;
-    for(size_t i=0;i<count_;++i){auto& row=records_[i];if(now<row.last_observed)continue;
+    for(auto& row:records_){if(now<row.last_observed)continue;
       if((row.state==State::Reserved&&now>=row.startup_deadline)||(row.state==State::AwaitingIdle&&now>=row.idle->deadline)||(global_&&now>=*global_&&row.state!=State::Retired&&row.state!=State::Exited)){row.state=State::Closing;row.last_observed=now;}}
   }
   bool IdleReady(const Ticket& ticket)const noexcept{const auto* row=Find(ticket);return !stopped_&&row&&row->state==State::Idle&&row->idle_ack&&!row->pending&&row->process&&!row->exit_observed;}
   size_t Outstanding()const noexcept{return outstanding_;}size_t LiveChildren()const noexcept{return live_;}
-  std::span<const Record> Records()const noexcept{return {records_.data(),count_};}
+  std::span<const Record> Records()const noexcept{return {records_.data(),records_.size()};}
  private:
   static bool Time(double now)noexcept{return std::isfinite(now)&&now>=0;}
   static bool Valid(const Owner& o)noexcept{return o.host.lease&&o.host.worker&&o.host.pid>0&&o.host.pid<=INT32_MAX&&o.host.start&&o.fixture.catalog&&o.fixture.declaration&&o.fixture.token&&o.fixture.generation&&
@@ -120,10 +118,10 @@ class RetainedSourceLeases {
   static bool At(const Record& row,double now)noexcept{return Time(now)&&now>=row.last_observed;}
   static bool CleanupBounded(double end,double now)noexcept{return Time(end)&&end>now&&end<=now+1000;}
   bool Bounded(double end,double now)const noexcept{return CleanupBounded(end,now)&&(!global_||end<=*global_);}
-  Record* Find(const Ticket& ticket)noexcept{return ticket.id&&ticket.id<=count_&&records_[ticket.id-1].ticket==ticket?&records_[ticket.id-1]:nullptr;}
-  const Record* Find(const Ticket& ticket)const noexcept{return ticket.id&&ticket.id<=count_&&records_[ticket.id-1].ticket==ticket?&records_[ticket.id-1]:nullptr;}
+  Record* Find(const Ticket& ticket)noexcept{return ticket.id&&ticket.id<=records_.size()&&records_[ticket.id-1].ticket==ticket?&records_[ticket.id-1]:nullptr;}
+  const Record* Find(const Ticket& ticket)const noexcept{return ticket.id&&ticket.id<=records_.size()&&records_[ticket.id-1].ticket==ticket?&records_[ticket.id-1]:nullptr;}
   Record* Next(const Ticket& ticket,uint64_t emission,double now)noexcept{auto* row=Find(ticket);return row&&row->process&&!row->exit_observed&&row->state!=State::Retired&&At(*row,now)&&row->emission!=UINT64_MAX&&emission==row->emission+1?row:nullptr;}
   static void Commit(Record& row,uint64_t emission,double now)noexcept{row.emission=emission;row.last_observed=now;}
-  std::array<Record,kHistory> records_{};size_t count_=0,outstanding_=0,live_=0;uint64_t nonce_=0;std::optional<double> global_;bool stopped_=false;
+  std::vector<Record> records_;size_t outstanding_=0,live_=0;uint64_t nonce_=0;std::optional<double> global_;bool stopped_=false;
 };
 } // namespace suitecut::runner

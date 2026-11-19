@@ -28,7 +28,7 @@ struct Harness {
  void Complete(int owner,bool ok,const std::string& error,const std::string& json=""){if(ok)responses.push_back(json);else errors.push_back(error);operations_.Finish(owner);}
  bool ReferenceTemporaryGroups(int){return transfer;}
  std::string Json(Dict value){auto item=CefValue::Create();item->SetDictionary(value);return CefWriteJSON(item,JSON_WRITER_DEFAULT).ToString();}
- void DevTools(int,const std::string& method,Dict params,Callback callback,const std::string& session,bool retained,size_t limit,bool lossless){assert(method=="Runtime.callFunctionOn"&&retained&&limit==262144&&lossless&&session.empty());assert(params->GetString("objectId")=="actualSelectedObject");assert(params->GetDictionary("serializationOptions")->GetString("serialization")=="deep");submitted.push_back(params->Copy(false));callbacks.push_back(std::move(callback));}
+ void DevTools(int,const std::string& method,Dict params,Callback callback,const std::string& session,bool retained,bool lossless){assert(method=="Runtime.callFunctionOn"&&retained&&lossless&&session.empty());assert(params->GetString("objectId")=="actualSelectedObject");assert(params->GetDictionary("serializationOptions")->GetString("serialization")=="deep");submitted.push_back(params->Copy(false));callbacks.push_back(std::move(callback));}
  std::string FrameId(Dict message){return message->HasKey("frame")?message->GetString("frame").ToString():"main";}
  suitecut::SelectorWaitControls& SelectorWaits(){return selectors;}
  void ResolveFramePath(int,uint64_t,Dict,size_t,const std::string&,std::function<void(Dict)>){assert(false);}

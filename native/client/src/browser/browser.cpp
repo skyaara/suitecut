@@ -83,9 +83,8 @@ Json scoped(std::string engine, const std::string& text, bool exact) {
                      Json{{"engine", std::move(engine)}, {"text", text}, {"exact", exact}}};
 }
 std::vector<std::uint8_t> decode_base64(const std::string& text) {
-  constexpr std::size_t maximum = 128 * 1024 * 1024;
-  if (text.empty() || text.size() % 4 || text.size() > ((maximum + 2) / 3) * 4)
-    throw std::runtime_error("Invalid or oversized native artifact encoding");
+  if (text.empty() || text.size() % 4)
+    throw std::runtime_error("Invalid native artifact encoding");
   const auto digit = [](unsigned char c) -> int {
     if (c >= 'A' && c <= 'Z') return c - 'A';
     if (c >= 'a' && c <= 'z') return c - 'a' + 26;
@@ -96,7 +95,6 @@ std::vector<std::uint8_t> decode_base64(const std::string& text) {
   };
   const std::size_t padding = (text.back() == '=') + (text[text.size() - 2] == '=');
   const auto length = text.size() / 4 * 3 - padding;
-  if (length > maximum) throw std::runtime_error("Native artifact exceeds 128 MiB");
   std::vector<std::uint8_t> bytes(length);
   std::size_t output = 0;
   for (std::size_t i = 0; i < text.size(); i += 4) {
@@ -130,8 +128,8 @@ Json download_info(Json info) {
   }
   return info;
 }
-void emulation_text(const std::string& text, std::size_t maximum, const char* name) {
-  if (text.size() > maximum || std::any_of(text.begin(),text.end(),[](unsigned char c){return c<0x20||c==0x7f;}))
+void emulation_text(const std::string& text, const char* name) {
+  if (std::any_of(text.begin(),text.end(),[](unsigned char c){return c<0x20||c==0x7f;}))
     throw std::invalid_argument(std::string("Invalid emulated ") + name);
 }
 }  // namespace
@@ -177,7 +175,6 @@ Locator Locator::nth(int index) const {
 }
 Locator Locator::locator(const std::string& css) const {
   auto query = query_;
-  if (query.as_array().size() >= 64) throw std::invalid_argument("Native locator exceeds 64 steps");
   query.as_array().emplace_back(Json{{"engine", "css"}, {"selector", css}});
   return Locator(transport_, page_, std::move(query), description_ + " >> " + css, timeout_, frame_, frame_path_);
 }
@@ -279,7 +276,6 @@ bool Locator::is_disabled() const { return state("disabled"); }
 bool Locator::is_checked() const { return state("checked"); }
 bool Locator::is_editable() const { return state("editable"); }
 void Locator::set_input_files(const std::vector<std::string>& paths) const {
-  if (paths.size() > 1000) throw std::invalid_argument("Native upload exceeds 1000 files");
   Json::array files;
   for (const auto& path : paths) {
     if (path.empty() || path.find('\0') != std::string::npos || !std::filesystem::path(path).is_absolute())
@@ -436,7 +432,7 @@ void Page::mouse_click(double x, double y, Json options) const {
   command("input", std::move(options));
 }
 void Page::mouse_move(double x, double y, int steps) const {
-  if (steps < 1 || steps > 10000) throw std::invalid_argument("Native mouse steps must be 1 to 10000");
+  if (steps < 1) throw std::invalid_argument("Native mouse steps must be at least 1");
   command("input", Json{{"kind", "mouse"}, {"action", "move"}, {"x", x}, {"y", y}, {"steps", steps}});
 }
 void Page::mouse_down(const std::string& button) const {
@@ -456,7 +452,6 @@ Frame Page::frame(const std::string& id) const {
 Frame Page::frame_locator(const std::string& css) const {
   live(transport_, page_);
   auto path = frame_path_;
-  if (path.as_array().size() >= 64) throw std::invalid_argument("Native frame path exceeds 64 steps");
   path.as_array().emplace_back(Json::array{Json{{"engine", "css"}, {"selector", css}}});
   return Frame(transport_, page_, frame_, std::move(path), timeout_);
 }
@@ -466,8 +461,8 @@ Locator Page::locator(const std::string& css) const {
 }
 Locator Page::locator_query(Json query, std::string description) const {
   live(transport_, page_);
-  if (!query.is_array() || query.as_array().size() > 64)
-    throw std::invalid_argument("Locator query must be an array of at most64 steps");
+  if (!query.is_array())
+    throw std::invalid_argument("Locator query must be an array of steps");
   return Locator(transport_, page_, std::move(query), std::move(description), timeout_, frame_, frame_path_);
 }
 Locator Page::get_by_role(const std::string& role, const std::string& name, bool exact) const {
@@ -677,11 +672,11 @@ void Page::emulate_geolocation(double latitude, double longitude, double accurac
 }
 void Page::clear_geolocation() const { command("emulation", Json{{"action", "clearGeolocation"}}); }
 void Page::emulate_timezone(const std::string& zone) const {
-  emulation_text(zone,256,"timezone");
+  emulation_text(zone,"timezone");
   command("emulation", Json{{"action", "timezone"}, {"timezoneId", zone}});
 }
 void Page::emulate_user_agent(const std::string& user_agent, const std::string& language, const std::string& platform) const {
-  emulation_text(user_agent,4096,"user agent"); emulation_text(language,4096,"accept language"); emulation_text(platform,256,"platform");
+  emulation_text(user_agent,"user agent"); emulation_text(language,"accept language"); emulation_text(platform,"platform");
   Json options{{"action", "userAgent"}, {"userAgent", user_agent}};
   if (!language.empty()) options["acceptLanguage"] = language;
   if (!platform.empty()) options["platform"] = platform;

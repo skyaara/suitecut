@@ -54,7 +54,7 @@ void ArtifactMaskTarget(std::shared_ptr<ArtifactMaskWork> work) {
             work->nodes.push_back(node->GetString("objectId"));
           }
           ArtifactMaskNode(work);
-        },std::nullopt,false,kMaxResponseBytes,true);
+        },std::nullopt,false,true);
       };
       if(QueryUsesMultipleWorlds(resolved))QueryInspect(work->owner,resolved,"return nodes;",true,false,std::move(callback));
       else DevTools(work->owner,"Runtime.evaluate",params,std::move(callback));

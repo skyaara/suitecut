@@ -4,9 +4,9 @@ Native declared-project output roots
 `NativeProjectDefinition.outputDir` overrides the launch `outputDirectory`
 fallback for that actual project. Relative declarations resolve against the
 canonical suite module's parent, including each genuine file of a directory
-run. Native C++ validates scalar filesystem UTF8, the 7900-byte path bound,
-actual local project membership, immutable retry catalog, and the 128-project /
-2 MiB per-catalog declaration bounds. The SDK emits metadata and receives native context.
+run. Native C++ validates scalar filesystem UTF8, actual local project
+membership and the immutable retry catalog; path length is left to the
+filesystem and native imposes no project or declaration count limit. The SDK emits metadata and receives native context.
 
 An explicitly configured root is exposed as `info.project.outputDir`; existing
 unconfigured project objects keep their original shape. `info.outputDir` and

@@ -19,12 +19,12 @@ export interface SuiteCutProcessOptions {
   cwd?: string
   signal?: AbortSignal
   timeoutMs?: number
+  /** Ends the process once its combined output passes this many bytes. Defaults to no limit. */
   maxBufferBytes?: number
   forceKillAfterMs?: number
 }
 
 const commandProbeCache = new Map<string, Promise<boolean>>()
-const DEFAULT_MAX_BUFFER_BYTES = 20 * 1024 * 1024
 const DEFAULT_FORCE_KILL_AFTER_MS = 5_000
 const COMMAND_PROBE_TIMEOUT_MS = 10_000
 
@@ -122,7 +122,7 @@ export function runProcess(
     })
     const stdout: Buffer[] = []
     const stderr: Buffer[] = []
-    const maxBufferBytes = options.maxBufferBytes ?? DEFAULT_MAX_BUFFER_BYTES
+    const maxBufferBytes = options.maxBufferBytes ?? Infinity
     const forceKillAfterMs = options.forceKillAfterMs ?? DEFAULT_FORCE_KILL_AFTER_MS
     let bufferedBytes = 0
     let terminationError: Error | undefined

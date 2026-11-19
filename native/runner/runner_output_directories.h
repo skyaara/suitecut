@@ -14,29 +14,22 @@ namespace suitecut::runner {
 // The shared artifact physical counter is also used by RunnerAttachments.
 class RunnerOutputDirectories {
  public:
-  static constexpr size_t kRecords=8192,kMetadata=64*1024*1024;
-  struct Budget {uint64_t sequence=0;size_t records=0,reserved=0;};
-  struct PhysicalBudget {size_t* count=nullptr;size_t maximum=0;};
+  struct Budget {uint64_t sequence=0;};
+  // Shared live helper-process count; there is no suitecut maximum.
+  struct PhysicalBudget {size_t* count=nullptr;};
   struct Hooks {std::function<void(const std::string&)> failure;std::function<void(int64_t)> after_spawn{};};
   RunnerOutputDirectories(std::string executable,Hooks hooks,Budget& budget,PhysicalBudget physical)
       :executable_(std::move(executable)),hooks_(std::move(hooks)),budget_(budget),physical_(physical){
-    if(executable_.empty()||!physical_.count||!physical_.maximum||physical_.maximum>64)throw std::invalid_argument("Invalid native output directory actor composition");
+    if(executable_.empty()||!physical_.count)throw std::invalid_argument("Invalid native output directory actor composition");
   }
   bool Begin(const OutputDirectoryOwner& owner,const std::filesystem::path& parent,double deadline,double now){
     Time(now);if(!owner.test_id||!owner.generation||!owner.worker_index||owner.pid<=0||!std::isfinite(deadline)||deadline<=now||records_.contains(owner.Key())||jobs_.contains(owner.Key()))return false;
     const auto normalized=parent.lexically_normal();const auto bytes=normalized.string();
-    if(!normalized.is_absolute()||bytes.empty()||bytes.size()>7900||bytes.find('\0')!=std::string::npos)throw std::invalid_argument("Invalid native output directory parent");
-    if(*physical_.count>=physical_.maximum)return false;
-    if(budget_.sequence==UINT64_MAX||budget_.records>=kRecords)throw std::length_error("Native output directory identity/history capacity exhausted");
+    if(!normalized.is_absolute()||bytes.empty()||bytes.find('\0')!=std::string::npos)throw std::invalid_argument("Invalid native output directory parent");
+    if(budget_.sequence==UINT64_MAX)throw std::length_error("Native output directory identity sequence exhausted");
     const auto id=budget_.sequence+1;const auto name="suitecut-output-"+std::to_string(getpid())+"-"+std::to_string(id)+"-"+std::to_string(owner.test_id)+"-"+std::to_string(owner.generation);
-    const auto path=(normalized/name).string();if(path.size()>8192)return false;
-    // Pin known path storage plus two bounded raw native UTF8 error buffers
-    // before IO. Errors are at most4096 stored bytes each, not UTF16 units.
-    // Physical retirement never depends on later metadata admission.
-    const auto reservation=bytes.size()+name.size()+path.size()*6+2*4096+768;
-    if(reservation>kMetadata-budget_.reserved)throw std::length_error("Native output directory metadata capacity exhausted");
+    const auto path=(normalized/name).string();
     Job job;job.record.id=id;job.record.owner=owner;job.record.path=path;job.record.started=now;job.record.deadline=deadline;job.parent=bytes;job.name=name;
-    job.record.error.reserve(4096);job.record.cleanup_error.reserve(4096);
     const auto initialize="CREATE "+std::to_string(id)+" "+attachment_files::Hex(bytes)+" "+attachment_files::Hex(name)+" "+std::to_string(deadline);
     // Allocate BOTH owning nodes before any actual fork. Final retirement only
     // move-assigns into this reserved node, and cannot lose a waitpid receipt to
@@ -45,7 +38,7 @@ class RunnerOutputDirectories {
     std::map<Key,Job>::iterator admitted;
     try{admitted=jobs_.emplace(owner.Key(),std::move(job)).first;}
     catch(...){records_.erase(owner.Key());throw;}
-    ++budget_.sequence;++budget_.records;budget_.reserved+=reservation;++*physical_.count;
+    ++budget_.sequence;++*physical_.count;
     auto& actual=admitted->second;
     try{
       actual.process=std::make_unique<DedicatedHostProcess>(executable_,std::vector<std::string>{"--native-output-directory-worker"});
@@ -106,7 +99,7 @@ class RunnerOutputDirectories {
       if(!job.cleaning&&fields[0]=="CREATED"&&fields.size()==6&&!job.record.created){job.record.device=attachment_files::UInt(fields[2]);job.record.inode=attachment_files::UInt(fields[3]);if(!job.record.inode)throw std::runtime_error("Native output directory actual inode is zero");job.record.parent_device=attachment_files::UInt(fields[4]);job.record.parent_inode=attachment_files::UInt(fields[5]);if(!job.record.parent_inode)throw std::runtime_error("Native output directory actual parent inode is zero");job.record.created=now;}
       else if(!job.cleaning&&fields[0]=="READY"&&fields.size()==2&&job.record.created&&!job.record.ready_receipt)job.record.ready_receipt=true;
       else if(job.cleaning&&fields[0]=="CLEANED"&&fields.size()==3&&!job.record.rollback_receipt&&(fields[2]=="removed"||fields[2]=="alreadyAbsent"||fields[2]=="foreignPreserved")){job.record.rollback_receipt=true;job.record.foreign_preserved=fields[2]=="foreignPreserved";}
-      else if(fields[0]=="ERROR"&&fields.size()==5){const auto error="Native output directory "+attachment_files::Unhex(fields[3],4096)+" errno="+fields[2]+": "+attachment_files::Unhex(fields[4],4096);if(job.cleaning){if(job.record.cleanup_error.empty())job.record.cleanup_error=attachment_files::Message(error);}else Stop(job,OutputDirectoryStatus::Failed,error,now);}
+      else if(fields[0]=="ERROR"&&fields.size()==5){const auto error="Native output directory "+attachment_files::Unhex(fields[3])+" errno="+fields[2]+": "+attachment_files::Unhex(fields[4]);if(job.cleaning){if(job.record.cleanup_error.empty())job.record.cleanup_error=attachment_files::Message(error);}else Stop(job,OutputDirectoryStatus::Failed,error,now);}
       else throw std::runtime_error("Invalid native output directory physical receipt");
     }}catch(const std::exception& error){if(job.cleaning){if(job.record.cleanup_error.empty())job.record.cleanup_error=attachment_files::Message(error.what());job.process->Kill();}else Stop(job,OutputDirectoryStatus::Failed,error.what(),now);}
   }

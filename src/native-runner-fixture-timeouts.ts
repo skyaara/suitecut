@@ -46,7 +46,6 @@ const same = (left: NativeFixtureTimeoutOwner, right: NativeFixtureTimeoutOwner)
 const decode = (input: string): string => {
   const value = z
     .string()
-    .max(32768)
     .regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
     .parse(input)
   return value === '-' ? '' : Buffer.from(value, 'hex').toString('utf16le')
@@ -103,8 +102,7 @@ export class NativeFixtureTimeoutCallbacks {
       const actual = timeout
       const previous = this.contexts.get(token)
       if (phase === 'setup') {
-        if (previous || this.contexts.size >= 64)
-          throw new Error('Invalid native fixture clock setup sidecar')
+        if (previous) throw new Error('Invalid native fixture clock setup sidecar')
         this.contexts.set(token, {
           owner,
           timeout: actual,
@@ -215,8 +213,8 @@ export class NativeFixtureTimeoutCallbacks {
     )
       throw new Error('Native fixture timeout context is no longer active')
     const timeout = Timeout.parse(input)
-    if (this.requests.size >= 128 || this.nonce === 18446744073709551615n) {
-      const error = new Error('Native fixture timeout host request capacity exceeded')
+    if (this.nonce === 18446744073709551615n) {
+      const error = new Error('Native fixture timeout host request nonce exhausted')
       context.failure ??= error
       this.fatal(error)
       throw error

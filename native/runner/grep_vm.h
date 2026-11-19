@@ -16,16 +16,15 @@
 namespace suitecut::runner {
   // Authored RegExp VM. Ordered alternatives retain captures; lookarounds are
   // atomic subprograms and lookbehind executes its sequence backwards. Every VM
-  // instruction, character/range comparison and capture snapshot is budgeted.
-  // Explicit retained-state payload and instruction bounds cover backreferences/catastrophic
-  // patterns without threads, elapsed-time guesses or unowned matcher processes.
+  // instruction, character/range comparison and capture snapshot polls the
+  // runner's original deadline/stop check, so backreferences/catastrophic
+  // patterns stop without threads, elapsed-time guesses or unowned processes.
   class GrepVM {
     public: struct Flags {
       bool insensitive=false,multiline=false,dot_all=false,sticky=false,unicode=false,unicode_sets=false;
     }
     ;
     explicit GrepVM(std::u16string source,Flags flags):source_(std::move(source)),flags_(flags){
-      if(source_.size()>4096)Fail("pattern capacity4096 exceeded");
       total_captures_=CountCaptures();
       const auto root=Disjunction();
       root_=root;
@@ -37,7 +36,6 @@ namespace suitecut::runner {
       ));
     }
     bool Matches(std::u16string_view title,GrepWork& work)const{
-      if(title.size()>32768)Fail("title capacity32768 exceeded");
       std::vector<uint32_t> input;
       input.reserve(title.size());
       for(size_t i=0;
@@ -48,7 +46,6 @@ namespace suitecut::runner {
         if(Unicode()&&point>=0xd800&&point<=0xdbff&&i+1<title.size()&&title[i+1]>=0xdc00&&title[i+1]<=0xdfff)point=0x10000+((point-0xd800)<<10)+(title[++i]-0xdc00);
         input.push_back(point);
       }
-      Memory memory;
       for(size_t origin=0;
       origin<=input.size();
       ++origin){
@@ -58,7 +55,7 @@ namespace suitecut::runner {
         state.captures.resize(total_captures_+1);
         state.loops.resize(loop_count_);
         work.Charge(state.captures.size()+state.loops.size());
-        if(Run(std::move(state),input,work,memory,0))return true;
+        if(Run(std::move(state),input,work))return true;
         if(flags_.sticky)return false;
       }
       return false;
@@ -139,25 +136,6 @@ namespace suitecut::runner {
       size_t pc=0,position=0;
       std::vector<Capture> captures;
       std::vector<Loop> loops;
-    }
-    ;
-    // Account live State/capture/loop snapshot payload. Allocator overhead,
-    // vector spare capacity and bounded input/AST buffers are additional; this
-    // counter is not an RSS/total-heap measurement.
-    struct Memory {
-      size_t bytes=0;
-    }
-    ;
-    class Retained {
-      public:Retained(Memory& owner,size_t bytes):owner_(owner),bytes_(bytes){
-        if(bytes>32*1024*1024-owner_.bytes)Fail("retained matcher memory capacity32MiB payload exceeded");
-        owner_.bytes+=bytes;
-      }
-      ~Retained(){
-        owner_.bytes-=bytes_;
-      }
-      private:Memory& owner_;
-      size_t bytes_;
     }
     ;
     [[noreturn]]static void Fail(const char* message){
@@ -246,10 +224,6 @@ namespace suitecut::runner {
       return Normalize(std::move(result));
     }
     size_t Add(Node node){
-      if(nodes_.size()>=4096)Fail("AST capacity4096 exceeded");
-      ast_payload_+=node.ranges.size();
-      for(const auto& string:node.strings)ast_payload_+=string.size()+1;
-      if(ast_payload_>262144)Fail("AST range/string payload capacity262144 exceeded");
       node.flags=flags_;
       nodes_.push_back(std::move(node));
       return nodes_.size()-1;
@@ -291,13 +265,13 @@ namespace suitecut::runner {
         else if(c==']'&&class_depth)--class_depth;
         else if(c=='('&&!class_depth&&(i+1==source_.size()||source_[i+1]!='?'||(i+2<source_.size()&&source_[i+2]=='<'&&i+3<source_.size()&&source_[i+3]!='='&&source_[i+3]!='!'))){
           if(i+2<source_.size()&&source_[i+1]=='?'&&source_[i+2]=='<')has_named_=true;
-          if(++count>128)Fail("capture capacity128 exceeded");
+          ++count;
         }
       }
       return count;
     }
     size_t Disjunction(){
-      if(++depth_>64)Fail("group depth64 exceeded");
+      GrepStackCheck();
       const auto branch=disjunction_count_++;
       branch_path_.emplace_back(branch,0);
       Node node{
@@ -310,7 +284,6 @@ namespace suitecut::runner {
         node.children.push_back(Sequence());
       }
       branch_path_.pop_back();
-      --depth_;
       return node.children.size()==1?node.children.front():Add(std::move(node));
     }
     size_t Sequence(){
@@ -689,12 +662,6 @@ namespace suitecut::runner {
       value.case_ready=true;
       std::sort(value.strings.begin(),value.strings.end());
       value.strings.erase(std::unique(value.strings.begin(),value.strings.end()),value.strings.end());
-      size_t points=0;
-      for(const auto& string:value.strings){
-        points+=string.size();
-        if(points>262144)Fail("class string point capacity262144 exceeded");
-      }
-      if(value.ranges.size()>262144||value.strings.size()>8192)Fail("class set capacity exceeded");
       return value;
     }
     Set Union(Set left,Set right){
@@ -828,7 +795,7 @@ namespace suitecut::runner {
     }
     Set UnicodeClass(){
       advanced_=true;
-      if(++class_depth_>64)Fail("Unicode class depth64 exceeded");
+      GrepStackCheck();
       const bool negative=Take('^');
       Set result;
       bool have=false,union_only=false,range_operand=false;
@@ -876,7 +843,6 @@ namespace suitecut::runner {
         }
       }
       if(!Take(']'))Fail("unterminated Unicode class");
-      --class_depth_;
       if(negative){
         if(result.may_strings)Fail("Unicode class strings cannot be complemented");
         result.ranges=ComplementCanonical(result.ranges);
@@ -1131,6 +1097,7 @@ namespace suitecut::runner {
       );
     }
     std::pair<uint64_t,uint64_t> Estimate(size_t id)const{
+      GrepStackCheck();
       const auto& node=nodes_[id];
       uint64_t states=0,ranges=0;
       if(node.kind==Kind::Character)return{
@@ -1178,16 +1145,17 @@ namespace suitecut::runner {
       }
     }
     void CollectCaptures(size_t id,std::vector<size_t>& captures)const{
+      GrepStackCheck();
       const auto& node=nodes_[id];
       if(node.kind==Kind::Capture)captures.push_back(node.capture);
       for(const auto child:node.children)CollectCaptures(child,captures);
     }
     size_t Emit(Instruction instruction){
-      if(code_.size()>=32768)Fail("instruction capacity32768 exceeded");
       code_.push_back(instruction);
       return code_.size()-1;
     }
     size_t Compile(size_t id,int direction,size_t next){
+      GrepStackCheck();
       const auto& node=nodes_[id];
       switch(node.kind){
         case Kind::Empty:return next;
@@ -1257,7 +1225,6 @@ namespace suitecut::runner {
         }
         case Kind::Character:range_count_+=node.ranges.size();
         for(const auto& string:node.strings)range_count_+=string.size()+1;
-        if(range_count_>262144)Fail("range capacity262144 exceeded");
         return Emit({
           Op::Character,next,none,id,0,direction
         }
@@ -1296,28 +1263,11 @@ namespace suitecut::runner {
       }
       return false;
     }
-    std::optional<State> Run(State state,const std::vector<uint32_t>& input,GrepWork& work,Memory& memory,unsigned depth)const{
-      if(depth>64)Fail("assertion depth64 exceeded");
-      const size_t snapshot=sizeof(State)+state.captures.size()*sizeof(Capture)+state.loops.size()*sizeof(Loop);
-      Retained active(memory,snapshot);
+    std::optional<State> Run(State state,const std::vector<uint32_t>& input,GrepWork& work)const{
+      GrepStackCheck();
       std::vector<State> alternatives;
-      size_t retained=0;
-      struct Release {
-        Memory& memory;
-        size_t& bytes;
-        ~Release(){
-          memory.bytes-=bytes;
-        }
-      }
-      release{
-        memory,retained
-      }
-      ;
       const auto push=[&](size_t pc,size_t position=none){
         work.Charge(state.captures.size()+state.loops.size()+1);
-        if(snapshot>32*1024*1024-memory.bytes)Fail("retained matcher memory capacity32MiB payload exceeded");
-        memory.bytes+=snapshot;
-        retained+=snapshot;
         alternatives.push_back(state);
         alternatives.back().pc=pc;
         if(position!=none)alternatives.back().position=position;
@@ -1386,7 +1336,7 @@ namespace suitecut::runner {
             work.Charge(state.captures.size()+state.loops.size());
             State child=state;
             child.pc=instruction.other;
-            auto found=Run(std::move(child),input,work,memory,depth+1);
+            auto found=Run(std::move(child),input,work);
             if(found.has_value()!=node->positive)failed=true;
             else{
               if(found)state.captures=std::move(found->captures);
@@ -1477,15 +1427,13 @@ namespace suitecut::runner {
           if(alternatives.empty())return std::nullopt;
           state=std::move(alternatives.back());
           alternatives.pop_back();
-          memory.bytes-=snapshot;
-          retained-=snapshot;
         }
       }
     }
     std::u16string source_;
     Flags flags_;
     bool advanced_=false,has_named_=false;
-    size_t at_=0,depth_=0,total_captures_=0,capture_count_=0,loop_count_=0,start_=0,root_=0,range_count_=0,class_depth_=0,ast_payload_=0;
+    size_t at_=0,total_captures_=0,capture_count_=0,loop_count_=0,start_=0,root_=0,range_count_=0;
     struct NamedCapture {
       size_t group;
       std::vector<std::pair<size_t,size_t>> branches;

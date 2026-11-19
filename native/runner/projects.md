@@ -1,7 +1,7 @@
 # Native serial project planning
 
-`ProjectGraph` validates up to128 uniquely named declarations and4096 dependency
-edges before callbacks run. Selection uses bounded whole-name `*` patterns with ASCII case-insensitive
+`ProjectGraph` validates uniquely named declarations and their dependency
+edges before callbacks run; native imposes no count limit. Selection uses bounded whole-name `*` patterns with ASCII case-insensitive
 matching; other UTF8 bytes match literally. Without selectors, only
 `default_enabled` ordinary projects are roots; dependencies and associated
 teardown projects are included even when their default flag is false. Cycles,
@@ -88,10 +88,8 @@ states. A blocked or otherwise unadmitted test has an `unrun` declaration, never
 fabricated attempt, generation or PID. Test title paths keep their actual declared
 suite ancestry; the project identity is separate.
 
-Bounds are128 projects,4096 total test declarations/dependency edges,256 UTF8
-bytes per project name and16KiB JSON object metadata (native nesting depth16,
-up to4096 metadata values). Project selectors are bounded to128 patterns of256
-UTF8 bytes. A bitset automaton owns wildcard matching in C++; regex punctuation
+Native imposes no project, test declaration, dependency edge, project name,
+metadata size, metadata nesting or project selector limit. A bitset automaton owns wildcard matching in C++; regex punctuation
 other than `*` is literal. Non-ASCII case folding, duplicate configured names,
 per-project fixture overrides, browser/device presets and parallel tests within one project
 remain unsupported.

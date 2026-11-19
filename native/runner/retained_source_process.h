@@ -41,7 +41,7 @@ class RetainedSourceProcess {
   static Stat ReadStat(int64_t pid){
     if(pid<=0||pid>INT32_MAX)throw std::invalid_argument("Native Source observed PID invalid");
     std::ifstream stream("/proc/"+std::to_string(pid)+"/stat");std::string text;
-    if(!stream||!std::getline(stream,text)||text.size()>8192)throw std::runtime_error("Native Source process observation unavailable");
+    if(!stream||!std::getline(stream,text))throw std::runtime_error("Native Source process observation unavailable");
     const auto result=ParseStat(text);if(result.pid!=pid)throw std::runtime_error("Native Source process PID changed");return result;
   }
   static Policy::Process Observe(int64_t pid){

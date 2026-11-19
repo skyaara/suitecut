@@ -761,27 +761,11 @@ export class NativeWorkerEvents {
     if (!this.detachWorker && !this.physicallyClosed)
       this.retirements.restore(this.owner.source.workerRetirements?.())
     if (record.event === 'close' || record.event === 'channelclosed') {
-      if (
-        !retained &&
-        this.retirements.truncated &&
-        this.retirements.latestSequence(info.id) === undefined
-      )
-        throw new Error(
-          'Native worker retirement history capacity exceeded; late target identity is unavailable',
-        )
       this.receiveWorker?.(record)
       return this.fromObservedInfo(info)
     }
     if (this.physicallyClosed) return this.fromObservedInfo(info)
     if (record.event === 'worker') {
-      if (
-        !retained &&
-        this.retirements.truncated &&
-        this.retirements.latestSequence(info.id) === undefined
-      )
-        throw new Error(
-          'Native worker retirement history capacity exceeded; late target identity is unavailable',
-        )
       if (!this.retirements.observe('', record)) return this.fromObservedInfo(info)
       return this.adopt(info, record.sequence)
     }
@@ -829,10 +813,6 @@ export class NativeWorkerEvents {
       this.rememberClosed(worker)
       return worker
     }
-    if (this.retirements.truncated)
-      throw new Error(
-        'Native worker retirement history capacity exceeded; late target identity is unavailable',
-      )
     for (const [id, reference] of this.observedWorkers)
       if (!reference.deref()) this.observedWorkers.delete(id)
     // A retained observation must keep receiving genuine lifecycle events.

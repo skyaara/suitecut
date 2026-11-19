@@ -9,7 +9,7 @@ AttachmentMutations* MutationFind(const StepOwner& owner)const{
 }
 AttachmentMutations& MutationJournal(const StepOwner& owner,double now){
   if(auto* journal=MutationFind(owner))return *journal;
-  auto next=std::make_unique<AttachmentMutations>(owner,budget_?&budget_->mutations:&mutation_budget_);
+  auto next=std::make_unique<AttachmentMutations>(owner);
   for(const auto& [key,callback]:callbacks_){(void)key;
     if(next->SameAttempt(callback.owner)&&!callback.exited){
       next->Open(callback.owner,callback.deadline,callback.opened);
@@ -45,10 +45,8 @@ bool MutationPendingStep(const StepOwner& owner,uint64_t id)const{
 }
 std::vector<AttachmentMutations::Slot> MutationSlots(AttachmentMutations& journal,const std::string& wire){
   std::vector<AttachmentMutations::Slot> slots;if(wire=="-")return slots;
-  if(wire.size()>8192)throw std::runtime_error("Native attachment mutation slot packet exceeds capacity");
   size_t start=0;
   for(;;){
-    if(slots.size()>=AttachmentMutations::kSlots)throw std::runtime_error("Native attachment mutation slot count exceeds capacity");
     const auto end=wire.find(',',start);const auto part=wire.substr(start,end==std::string::npos?end:end-start);
     if(part=="h")slots.push_back(std::nullopt);
     else{
@@ -113,9 +111,7 @@ bool MutationPacket(const std::vector<std::string>& fields,double now,bool stopp
   hooks_.send("ATTACH_MUTATION_RESULT "+fields[1]+" "+fields[2]+" "+fields[3]+" "+fields[4]+" "+std::to_string(observed)+" "+(error?"0 "+StepWire(*error)+(retry.Empty()?"":" I"):"1 -"));
   DrainSteps();Drain(now);return true;
 }
-// Fallback budgets outlive the journals whose destructors debit metadata.
-// Production Runner supplies the separately owned shared run budgets.
-AttachmentMutations::Budget mutation_budget_;
+// Fallback budget for publication sequence/pending counts when no shared run budget is supplied.
 AttachmentViewReceipts::Budget mutation_publication_budget_;
 std::map<MutationKey,std::unique_ptr<AttachmentMutations>> mutation_journals_;
 std::unique_ptr<AttachmentViewReceipts> mutation_receipts_;

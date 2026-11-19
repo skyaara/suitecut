@@ -14,7 +14,6 @@ class RunnerRetryPlan {
       :generation_(seed),max_failures_(max_failures) {
     if(groups.empty()){legacy_=std::make_unique<RetryPlan>(std::move(tests),max_failures,seed);return;}
     RetryPlan validate(tests,max_failures,seed);
-    if(groups.size()>256)throw std::invalid_argument("Native serial group capacity256 exceeded");
     for(const auto& test:tests)known_.emplace(test.id,test);
     std::map<uint64_t,Group> declarations;std::map<uint64_t,uint64_t> membership;
     for(auto& group:groups){
@@ -23,23 +22,22 @@ class RunnerRetryPlan {
       for(const auto id:group.tests)if(!known_.contains(id)||!membership.emplace(id,group.id).second)
         throw std::invalid_argument("Unknown, duplicate or overlapping native serial group test");
     }
-    std::set<uint64_t> admitted_groups;size_t projected=0;
+    std::set<uint64_t> admitted_groups;
     for(size_t index=0;index<tests.size();){
       Unit unit;
       if(const auto member=membership.find(tests[index].id);member!=membership.end()){
         unit.id=member->second;if(!admitted_groups.insert(unit.id).second)throw std::invalid_argument("Noncontiguous native serial group members");
         const auto& group=declarations.at(unit.id);unit.tests=group.tests;
-        std::vector<TestCase> members;unsigned retries=0;
+        std::vector<TestCase> members;
         for(const auto id:group.tests){
           if(index>=tests.size()||tests[index].id!=id)throw std::invalid_argument("Native serial group order disagrees with declaration order");
-          retries=std::max(retries,tests[index].retries);members.push_back(tests[index++]);
+          members.push_back(tests[index++]);
         }
-        for(const auto& test:members)Charge(projected,test,retries);
         unit.serial=std::make_unique<SerialGroup>(std::move(members));
       }else{
         std::vector<TestCase> ordinary;
         while(index<tests.size()&&!membership.contains(tests[index].id)){
-          unit.tests.push_back(tests[index].id);Charge(projected,tests[index],tests[index].retries);ordinary.push_back(tests[index++]);
+          unit.tests.push_back(tests[index].id);ordinary.push_back(tests[index++]);
         }
         unit.ordinary=std::make_unique<RetryPlan>(std::move(ordinary));
       }
@@ -154,10 +152,6 @@ class RunnerRetryPlan {
   void Stop(){if(legacy_)return;stop_=true;for(auto& unit:units_)if(unit.serial)unit.serial->Stop();}
  private:
   struct Unit {uint64_t id=0;std::vector<uint64_t> tests;std::unique_ptr<SerialGroup> serial;std::unique_ptr<RetryPlan> ordinary;std::optional<SerialGroup::Worker> worker;unsigned accounted=0;};
-  static void Charge(size_t& total,const TestCase& test,unsigned retries){
-    size_t bytes=test.title.size()+8448;for(const auto& fixture:test.fixtures)bytes+=fixture.size()+32;
-    const auto projected=bytes*(static_cast<size_t>(retries)+1);if(projected>67108864-total)throw std::invalid_argument("Native retry/group projected metadata64MiB exceeded");total+=projected;
-  }
   static bool UnitDone(const Unit& unit){return unit.serial?unit.serial->Done():unit.ordinary->Done();}
   void Advance(){while(current_<units_.size()&&UnitDone(units_[current_]))++current_;}
   bool Stopped()const{return stop_||FailureLimitReached();}

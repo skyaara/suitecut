@@ -29,7 +29,7 @@ inline NativeRepeatPrimarySelection SelectNativeRepeatPrimary(
     uint32_t shard_current,uint32_t shard_total,const NativeRepeatSelectionLimits& limit,
     const NativeRepeatSelectionUsage& usage,const std::function<void()>& stopped={}){
   if(native_group_sizes.size()!=catalog.Units().size()||!shard_current||!shard_total||
-      shard_current>shard_total||shard_total>65536)
+      shard_current>shard_total)
     throw std::invalid_argument("Native repeat shard/group declaration is invalid");
   repeat_detail::Within(usage,limit);NativeRepeatPrimarySelection result;
   for(size_t unit=0;unit<catalog.Units().size();++unit){

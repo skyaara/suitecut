@@ -31,14 +31,14 @@ class NativeSuiteTree {
   };
   NativeSuiteTree(std::vector<SuiteDeclaration> suites,
                   std::vector<SuiteTestDeclaration> tests) {
-    if (suites.empty() || suites.size()>256 || tests.size()>8192)
-      throw std::runtime_error("Native suite declaration capacity exceeded");
+    if (suites.empty())
+      throw std::runtime_error("Native suite declaration requires a root");
     std::set<uint64_t> callbacks;
     for (auto& suite:suites) {
       if (!suite.id || nodes_.contains(suite.id)) throw std::runtime_error("Duplicate or zero native suite ID");
       for (const auto& hook:suite.hooks) {
-        if (!hook.callback || !callbacks.insert(hook.callback).second || callbacks.size()>8192)
-          throw std::runtime_error("Duplicate or excessive native hook declaration");
+        if (!hook.callback || !callbacks.insert(hook.callback).second)
+          throw std::runtime_error("Duplicate native hook declaration");
         if (hook.kind!=SuiteHookKind::BeforeAll && hook.kind!=SuiteHookKind::BeforeEach &&
             hook.kind!=SuiteHookKind::AfterEach && hook.kind!=SuiteHookKind::AfterAll)
           throw std::runtime_error("Unknown native suite hook kind");
@@ -59,8 +59,8 @@ class NativeSuiteTree {
       auto parent=id;
       while(parent) {
         if(!nodes_.contains(parent)) throw std::runtime_error("Unknown native suite ancestor");
-        if (!seen.insert(parent).second || seen.size()>64)
-          throw std::runtime_error("Native suite cycle or depth limit exceeded");
+        if (!seen.insert(parent).second)
+          throw std::runtime_error("Native suite cycle");
         parent=nodes_.at(parent).parent;
       }
     }
@@ -133,37 +133,28 @@ class NativeSuiteTree {
     return result;
   }
   std::vector<Route> Plan(const std::set<uint64_t>& selected) const {
-    if(selected.size()>8192)throw std::runtime_error("Native suite selection capacity exceeded");
     for(auto test:selected)if(!tests_.contains(test))throw std::runtime_error("Unknown selected native suite test ID");
     std::vector<Route> routes;
     std::map<uint64_t,size_t> last;
-    size_t references=0;
-    const auto charge=[&](size_t count){
-      if(count>1048576-references)throw std::runtime_error("Native suite route reference budget exceeded");
-      references+=count;
-    };
     for(const auto id:order_)if(selected.contains(id)) {
       Route route{id,{},{},{},{}};
       auto suite=tests_.at(id).suite;
       while(suite){route.ancestors.push_back(suite);suite=nodes_.at(suite).parent;}
-      charge(route.ancestors.size()+1);
       std::reverse(route.ancestors.begin(),route.ancestors.end());
       for(auto owner:route.ancestors){
         const auto hooks=Hooks(owner,SuiteHookKind::BeforeEach);
-        charge(hooks.size());
         route.before_each.insert(route.before_each.end(),hooks.begin(),hooks.end());
         last[owner]=routes.size();
       }
       for(auto it=route.ancestors.rbegin();it!=route.ancestors.rend();++it){
         const auto hooks=Hooks(*it,SuiteHookKind::AfterEach);
-        charge(hooks.size());
         route.after_each.insert(route.after_each.end(),hooks.begin(),hooks.end());
       }
       routes.push_back(std::move(route));
     }
     for(size_t index=0;index<routes.size();++index)
       for(auto it=routes[index].ancestors.rbegin();it!=routes[index].ancestors.rend();++it)
-        if(last.at(*it)==index){charge(1);routes[index].finish_suites.push_back(*it);}
+        if(last.at(*it)==index)routes[index].finish_suites.push_back(*it);
     return routes;
   }
  private:

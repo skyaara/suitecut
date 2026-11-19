@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
   CHECK(options.struct_size == sizeof(options));
   CHECK(options.abi_version == SC_ABI_VERSION);
   CHECK(options.width == 1280 && options.height == 720);
+  CHECK(options.max_pending == 0 && options.max_event_bytes == 0 && options.max_payload_bytes == 0); /* 0 = no limit */
   sc_error error;
   sc_client *client = (sc_client *)1;
   CHECK(sc_client_launch(&options, &client, &error) == SC_INVALID_ARGUMENT);

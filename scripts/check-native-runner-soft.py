@@ -41,7 +41,7 @@ cases = {
 'hard-primary': """export default defineNativeSuite({tests:[{title:'native distinct raw primary',run:async(_,info)=>{await mismatch(new Error('EXACT_EQUAL_MESSAGE'));throw new Error('EXACT_EQUAL_MESSAGE')}}]});""",
 'cleanup': """export default defineNativeSuite({hooks:{afterEach:[{run:async()=>{await mismatch();emit('CLEANUP_CONTINUED')}}]},tests:[{title:'native unexpected cleanup',expectedFailure:true,run:()=>{throw new Error('ACTUAL_BODY_PRIMARY')}}]});""",
 'ignored': """export default defineNativeSuite({hooks:{afterEach:[{run:(_,info)=>{assert.equal(info.errors.length,1);emit('AFTER_ACTUAL_SOFT_ACK')}}]},tests:[{title:'actual ignored raw lease',run:()=>{void mismatch().then(()=>emit('IGNORED_SOFT_CONTINUED'));emit('BODY_RAW_RETURN')}}]});""",
-'overflow': """export default defineNativeSuite({tests:[{title:'native bounded failure admission',expectedFailure:true,run:async(_,info)=>{const outcomes=await Promise.allSettled(Array.from({length:33},()=>mismatch()));assert.equal(outcomes.filter(r=>r.status==='rejected').length,1);assert.equal(info.errors.length,32);emit('OVERFLOW_HARD_RETAINED')}}]});""",
+'past-former-cap': """export default defineNativeSuite({tests:[{title:'native unbounded failure admission',run:async(_,info)=>{const outcomes=await Promise.allSettled(Array.from({length:33},()=>mismatch()));assert.equal(outcomes.filter(r=>r.status==='rejected').length,0);assert.equal(info.errors.length,33);emit('PAST_FORMER_CAP_RETAINED')}}]});""",
 'actual-host-exit': """export default defineNativeSuite({tests:[{title:'actual host exit no fake raw receipt',run:async()=>{await runNativeSoftAssertion(async()=>{emit('ACTUAL_HOST_EXIT');process.exit(0)})}}]});""",
 'original-deadline': """export default defineNativeSuite({tests:[{title:'actual admitted soft original deadline',timeout:1000,run:async(_,info)=>{let enter;const entered=new Promise(resolve=>enter=resolve);const operation=runNativeSoftAssertion(async()=>{const {signal}=nativeSoftOperationOptions(0);const raw=new Promise((_,reject)=>{signal.addEventListener('abort',()=>{emit('ACTUAL_SOFT_ABORT');reject(signal.reason)},{once:true})});emit('ACTUAL_SOFT_READY');enter();await raw});const observed=operation.catch(()=>emit('ACTUAL_RAW_REJECTION'));await entered;await info.setTimeout(25);await observed;}}]});""",
 'other-failure': """export default defineNativeSuite({tests:[{title:'raw other remains hard',run:async()=>{try{await runNativeSoftAssertion(async()=>{throw new Error('ACTUAL_OTHER_HARD')})}catch{emit('AUTHOR_CAUGHT_RAW_OTHER')}}}]});""",
@@ -74,7 +74,7 @@ try:
             assert not accepted and 'softErrorId' not in attempt
             assert rows and rows[0]['receipt']=={'actual-host-exit':'workerExited','original-deadline':'late','other-failure':'otherFailure'}[name],(name,rows)
         else:
-            assert len(accepted)==(32 if name=='overflow' else 1),(name,rows)
+            assert len(accepted)==(33 if name=='past-former-cap' else 1),(name,rows)
         if name=='body':assert 'BODY_CONTINUED' in stdout and attempt['softErrorId']==rows[0]['id']
         if name=='before-each':assert stdout.index('BEFORE_CONTINUED')<stdout.index('BODY_ADMITTED')<stdout.index('AFTER_CONTINUED')
         if name=='steps':
@@ -84,7 +84,7 @@ try:
         if name=='hard-primary':assert 'softErrorId' not in attempt and 'EXACT_EQUAL_MESSAGE' in attempt['error']
         if name=='cleanup':assert 'softErrorId' not in attempt and 'ACTUAL_BODY_PRIMARY' in attempt['error'] and rows[0]['cleanup']
         if name=='ignored':assert stdout.index('BODY_RAW_RETURN')<stdout.index('IGNORED_SOFT_CONTINUED')<stdout.index('AFTER_ACTUAL_SOFT_ACK')
-        if name=='overflow':assert 'capacity exceeded' in attempt['error'] and 'softErrorId' not in attempt
+        if name=='past-former-cap':assert 'PAST_FORMER_CAP_RETAINED' in stdout and 'capacity' not in attempt.get('error','') and attempt['softErrorId'] in {r['id'] for r in accepted}
         if name=='original-deadline':assert attempt['status']=='timedOut' and attempt['durationMs']>=25 and 'ACTUAL_SOFT_READY' in stdout and 'ACTUAL_SOFT_ABORT' in stdout
         else:assert attempt['status']=='failed', (name,attempt)
         results.append({'scope':name,'report':str(report),'exit':actual.returncode})

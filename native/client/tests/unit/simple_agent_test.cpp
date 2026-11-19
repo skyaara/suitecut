@@ -171,8 +171,12 @@ int main(int argc,char** argv) {
     auto short_failure=simple.call("act",Json{{"actions",Json::array{Json{{"action","press"},{"key","FAIL"}}}},{"response","compact"}});
     check(short_failure.at("error").contains("cause")&&!short_failure.at("results").at(0).at("error").contains("cause"),"Batch duplicates the original error cause");
     driver.call("evaluate",Json{{"expression","many"}});
-    const auto capped=simple.call("observe");
-    check(capped.at("truncated").as_bool()&&capped.at("controls").as_array().size()<=256,"Reference and control output bounds");
+    const auto whole=simple.call("observe");
+    check(!whole.contains("truncated")&&whole.at("controls").as_array().size()>=4199,"Large snapshot refs or controls were limited");
+    const auto compact_whole=simple.call("observe",Json{{"format","compact"}});
+    check(!compact_whole.at("truncated").as_bool()&&compact_whole.at("controls").as_array().size()>=4199,"Default compact observation was limited");
+    const auto compact_capped=simple.call("observe",Json{{"format","compact"},{"maxControls",5}});
+    check(compact_capped.at("truncated").as_bool()&&compact_capped.at("controls").as_array().size()==5,"Caller maxControls was ignored");
     std::cout<<"PASS simple aliases, validation, UI evidence, sequence, frame context and bounded deadline\n";
     return 0;
   } catch(const std::exception& error) {std::cerr<<error.what()<<'\n';return 1;}

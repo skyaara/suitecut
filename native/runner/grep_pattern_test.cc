@@ -40,26 +40,22 @@ int main(){
   Check(Match(u"/^a$|^b$/",u"b"));Check(!Match(u"/^a$|^b$/",u"ab"));
   Check(Match(u"/^(a?)*$/",u"aaaa"));Check(Match(u"/(?:)*x/",u"x"));
   for(const auto* pattern:{u"/(?i)a/",u"/a/ii",u"/[z-a]/"})Reject(pattern);
-  Reject(std::u16string(4097,u'a'));
-  // The ambiguous nested repetition is linear in actual automaton operations;
-  // a depleted budget fails concretely, without a detached matcher or timeout.
-  auto hostile=CompileCLIGrep(u"/^(a+)+b$/");GrepPattern::Work sufficient;Check(!hostile.Matches(std::u16string(20000,u'a'),sufficient));Check(sufficient.remaining>60*1024*1024);
-  GrepPattern::Work tiny{20};bool exhausted=false;try{(void)hostile.Matches(std::u16string(20000,u'a'),tiny);}catch(const std::invalid_argument&){exhausted=true;}Check(exhausted&&tiny.remaining==0);
-  GrepPattern::Work title_work;bool too_long=false;try{(void)hostile.Matches(std::u16string(32769,u'a'),title_work);}catch(const std::invalid_argument&){too_long=true;}Check(too_long);
-  // Reusing a budget across different immutable patterns/titles must preserve
-  // exact charged work, including after early acceptance and budget failure.
+  {GrepPattern::Work long_work;Check(CompileCLIGrep(std::u16string(4097,u'a')).Matches(std::u16string(4097,u'a'),long_work));}
+  // The ambiguous nested repetition is linear in actual automaton operations,
+  // without a detached matcher or timeout; titles have no native length cap.
+  auto hostile=CompileCLIGrep(u"/^(a+)+b$/");GrepPattern::Work sufficient;Check(!hostile.Matches(std::u16string(20000,u'a'),sufficient));
+  GrepPattern::Work title_work;Check(!hostile.Matches(std::u16string(32769,u'a'),title_work));
+  // Reusing work state across different immutable patterns/titles must not
+  // change any result, including after early acceptance.
   GrepPattern simple(u"^ab+$"),other(u"(?:invoice|payment|checkout).*done$");
   GrepPattern::Work reused;
   for(const auto& title:{u"abbb",u"missing",u"invoice done",u"a",u"payment done",u"ab"}){
     for(const auto* pattern:{&simple,&other}){
-      GrepPattern::Work fresh;const auto before=reused.remaining;
+      GrepPattern::Work fresh;
       Check(pattern->Matches(title,reused)==pattern->Matches(title,fresh));
-      Check(before-reused.remaining==64*1024*1024-fresh.remaining);
     }
   }
-  reused.remaining=1;bool reuse_exhausted=false;
-  try{(void)other.Matches(u"payment done",reused);}catch(const std::invalid_argument&){reuse_exhausted=true;}
-  Check(reuse_exhausted);reused.remaining=64*1024*1024;Check(simple.Matches(u"abbb",reused));
+  Check(simple.Matches(u"abbb",reused));
   // Original native stop callbacks may throw or synchronously perform another
   // match. Neither path may leave scratch leased or corrupt the outer closure.
   GrepPattern::Work stopped;stopped.until_poll=1;

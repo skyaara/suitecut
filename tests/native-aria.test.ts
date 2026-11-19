@@ -237,7 +237,7 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
     )
   })
 
-  it('bounds YAML name previews while preserving complete names for matching and child text', () => {
+  it('renders long YAML names whole and preserves complete names for matching and child text', () => {
     const name = 'a'.repeat(10000)
     const nodes: NativeAriaNode[] = [
       {
@@ -248,14 +248,18 @@ describe('authored ARIA declarative grammar and semantic comparison', () => {
       },
     ]
     const before = JSON.stringify(nodes)
-    expect(formatNativeAriaTree(nodes)).toBe(`- link:\n  - /url: about:blank\n  - region: ${name}`)
+    expect(formatNativeAriaTree(nodes)).toBe(
+      `- link ${JSON.stringify(name)}:\n  - /url: about:blank\n  - region: ${name}`,
+    )
     expect(
       matchNativeAriaTree(nodes, parseNativeAriaTemplate(`- link ${JSON.stringify(name)}`)),
     ).toBe(true)
     expect(formatNativeAriaTree([{ role: 'button', name: 'b'.repeat(1000) }])).toContain(
       'b'.repeat(1000),
     )
-    expect(formatNativeAriaTree([{ role: 'button', name: 'b'.repeat(1001) }])).toBe('- button')
+    expect(formatNativeAriaTree([{ role: 'button', name: 'b'.repeat(1001) }])).toBe(
+      `- button "${'b'.repeat(1001)}"`,
+    )
     expect(JSON.stringify(nodes)).toBe(before)
   })
 

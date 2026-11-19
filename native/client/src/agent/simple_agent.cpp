@@ -44,13 +44,7 @@ Json strip_refs(Json value) {
   return value;
 }
 Json failure(const std::string& code, const std::string& message) {
-  auto prefix=[](const std::string& value,std::size_t limit) {
-    auto n=std::min(value.size(),limit);
-    while(n<value.size()&&n&&(static_cast<unsigned char>(value[n])&0xc0)==0x80)--n;
-    return value.substr(0,n);
-  };
-  return Json{{"code",code},{"message",prefix(message.substr(0,message.find('\n')),240)},
-    {"cause",prefix(message,4096)},{"causeTruncated",message.size()>4096},
+  return Json{{"code",code},{"message",message.substr(0,message.find('\n'))},{"cause",message},
     {"recovery","Inspect the fresh observation; use its current refs. Dispatched mutations are never automatically retried."}};
 }
 bool flag(const Json& node,const char* name) {
@@ -107,7 +101,7 @@ void pointer_options(const Json& options) {
     require(button=="left"||button=="middle"||button=="right","Unsupported pointer button");
   }
   if(options.contains("clickCount")) {
-    const auto count=options.at("clickCount").as_int();require(count>=1&&count<=3,"clickCount must be in [1,3]");
+    const auto count=options.at("clickCount").as_int();require(count>=1&&count<=std::numeric_limits<int>::max(),"clickCount must be a positive int");
   }
   if(options.contains("delay")) {
     const auto delay=options.at("delay").as_int();require(delay>=0&&delay<=30000,"Pointer delay must be in [0,30000]");
@@ -118,7 +112,7 @@ void pointer_options(const Json& options) {
     for(const auto* name:{"x","y"}) require(p.at(name).is_number()&&std::isfinite(p.at(name).as_double()),"Pointer position must be finite");
   }
   if(options.contains("modifiers")) {
-    const auto& modifiers=options.at("modifiers").as_array();require(modifiers.size()<=4,"At most four pointer modifiers are supported");
+    const auto& modifiers=options.at("modifiers").as_array();
     for(const auto& item:modifiers) {
       const auto& value=item.as_string();
       require(value=="Alt"||value=="Control"||value=="Meta"||value=="Shift"||value=="ControlOrMeta","Unsupported pointer modifier");
@@ -136,12 +130,12 @@ Json SimpleAgent::tools() {
       {"format",Json{{"type","string"},{"enum",Json::array{"full","compact"}}}},
       {"query",str},{"scope",str},{"delta",boolean},{"maxControls",integer},{"maxTextBytes",integer}}));
   const Json action_schema{{"type","string"},{"enum",Json::array{"click","doubleclick","fill","type","clear","hover","focus","check","uncheck","select","press","scrollIntoView","insertText","mouse","keyboard","drag","dialog","navigate"}}};
-  result.push_back(tool("act","Perform one UI action or a known sequence in actions[] (maximum 64); stop on error and observe once. Text uses value; mouse/keyboard use event. Drag uses source/target refs. Completed input is not task completion. Use refs from the latest observation; never automatically repeat uncertain mutations.",
+  result.push_back(tool("act","Perform one UI action or a known sequence in actions[]; stop on error and observe once. Text uses value; mouse/keyboard use event. Drag uses source/target refs. Completed input is not task completion. Use refs from the latest observation; never automatically repeat uncertain mutations.",
     Json{{"action",action_schema},{"ref",str},{"value",str},{"key",str},{"values",Json{{"type","array"},{"items",str}}},
       {"x",number},{"y",number},{"event",Json{{"type","string"},{"enum",Json::array{"move","down","up","click","doubleclick","wheel","press","type","insertText"}}}},{"button",str},{"deltaX",number},{"deltaY",number},
       {"steps",integer},{"source",str},{"target",str},{"from",object},{"to",object},{"options",object},{"expect",object},
       {"accept",boolean},{"promptText",str},{"url",str},{"waitUntil",str},{"timeoutMs",integer},
-      {"actions",Json{{"type","array"},{"items",object},{"minItems",1},{"maxItems",64}}},
+      {"actions",Json{{"type","array"},{"items",object},{"minItems",1}}},
       {"response",Json{{"type","string"},{"enum",Json::array{"full","compact","delta","none"}}}}}));
   result.push_back(tool("wait","Wait for a visible UI condition within one bounded deadline, then return a fresh observation. Conditions are UI evidence, not a task grade.",
     Json{{"ref",str},{"state",str},{"text",str},{"url",str},{"changed",boolean},{"timeoutMs",integer},
@@ -180,7 +174,7 @@ Json SimpleAgent::observe(const Json& args,Deadline deadline) {
   if(args.contains("scope"))fields["selector"]=args.at("scope").as_string();
   if(args.contains("boxes")) {args.at("boxes").as_bool();fields["boxes"]=args.at("boxes");}
   if(args.contains("depth")) {
-    const auto d=args.at("depth").as_int(); require(d>=-1&&d<=64,"depth must be in [-1,64]"); fields["depth"]=d;
+    const auto d=args.at("depth").as_int(); require(d>=-1,"depth must be at least -1"); fields["depth"]=d;
   }
   const bool frame=args.contains("frame")||args.contains("framePath");
   for(const auto* name:{"frame","framePath"}) if(args.contains(name)) fields[name]=args.at(name);
@@ -189,38 +183,33 @@ Json SimpleAgent::observe(const Json& args,Deadline deadline) {
   baseline_scope_=fields;
   refs_.clear();
   Json::array controls;
-  std::size_t nodes=0; bool truncated=false;
-  std::function<Json(Json,int)> rewrite=[&](Json node,int depth)->Json {
-    if(++nodes>16384||depth>64) {truncated=true;return Json{};}
+  std::function<Json(Json)> rewrite=[&](Json node)->Json {
     if(node.is_array()) {
-      for(auto& child:node.as_array()) child=rewrite(std::move(child),depth+1);
+      for(auto& child:node.as_array()) child=rewrite(std::move(child));
     } else if(node.is_object()) {
       if(node.contains("ref")&&node.at("ref").is_string()) {
-        if(refs_.size()>=4096) {node.as_object().erase("ref");truncated=true;}
-        else {
-          if(next_alias_==std::numeric_limits<std::uint64_t>::max()) throw std::runtime_error("Short-ref counter exhausted");
-          const auto alias="e"+std::to_string(next_alias_++);
-          Json target{{"kind","ref"},{"value",node.at("ref")}};
-          for(const auto* name:{"frame","framePath"}) if(args.contains(name)) target[name]=args.at(name);
-          refs_.emplace(alias,std::move(target)); node["ref"]=alias;
-          auto actions=actions_for(node,true);
-          const bool candidate=!actions.as_array().empty();
-          if(flag(node,"disabled"))actions=Json::array{};
-          if(controls.size()<256 && candidate && !flag(node,"hidden")) {
-            Json control{{"ref",alias}};
-            for(const auto* name:{"role","name","checked","disabled","editable","inputType","readOnly","box","bounds","cursor"})
-              if(node.contains(name)) control[name]=node.at(name);
-            control["actions"]=actions;
-            controls.push_back(std::move(control));
-          }
+        if(next_alias_==std::numeric_limits<std::uint64_t>::max()) throw std::runtime_error("Short-ref counter exhausted");
+        const auto alias="e"+std::to_string(next_alias_++);
+        Json target{{"kind","ref"},{"value",node.at("ref")}};
+        for(const auto* name:{"frame","framePath"}) if(args.contains(name)) target[name]=args.at(name);
+        refs_.emplace(alias,std::move(target)); node["ref"]=alias;
+        auto actions=actions_for(node,true);
+        const bool candidate=!actions.as_array().empty();
+        if(flag(node,"disabled"))actions=Json::array{};
+        if(candidate && !flag(node,"hidden")) {
+          Json control{{"ref",alias}};
+          for(const auto* name:{"role","name","checked","disabled","editable","inputType","readOnly","box","bounds","cursor"})
+            if(node.contains(name)) control[name]=node.at(name);
+          control["actions"]=actions;
+          controls.push_back(std::move(control));
         }
       }
-      for(auto& [key,child]:node.as_object()) if(key!="ref") child=rewrite(std::move(child),depth+1);
+      for(auto& [key,child]:node.as_object()) if(key!="ref") child=rewrite(std::move(child));
     }
     return node;
   };
-  tree=rewrite(std::move(tree),0);
-  Json out{{"ok",true},{"snapshot",std::move(tree)},{"controls",std::move(controls)},{"truncated",truncated}};
+  tree=rewrite(std::move(tree));
+  Json out{{"ok",true},{"snapshot",std::move(tree)},{"controls",std::move(controls)}};
   // Public document metadata only; no hidden task state or grader inspection.
   out["url"]=invoke("get",Json{{"kind","url"}},deadline);
   out["title"]=invoke("get",Json{{"kind","title"}},deadline);
@@ -238,7 +227,7 @@ void SimpleAgent::fresh(Json& out,Deadline deadline) {
         const auto wanted=text(out,"action");
         const auto& supported=control.at("actions").as_array();
         if(!wanted.empty()&&std::find(supported.begin(),supported.end(),Json(wanted))==supported.end())continue;
-        alternatives.push_back(control);if(alternatives.size()==5)break;
+        alternatives.push_back(control);
       }
       out["error"]["alternatives"]=std::move(alternatives);
     }
@@ -306,7 +295,7 @@ Json SimpleAgent::action(const Json& args,Deadline deadline,bool observation,boo
       require(!prepare_only,"Nested action sequences are not supported");
       keys(args,{"actions","timeoutMs"});
       const auto& sequence=args.at("actions").as_array();
-      require(!sequence.empty()&&sequence.size()<=64,"Action sequences require 1..64 UI actions");
+      require(!sequence.empty(),"Action sequences require at least one UI action");
       Json::array results(sequence.size(),Json{{"ok",false},{"status","skipped"},{"delivered",false},{"execution","notSent"}});
       for(std::size_t i=0;i<sequence.size();++i) {
         require(sequence[i].is_object()&&!sequence[i].contains("actions")&&!sequence[i].contains("timeoutMs"),
@@ -365,7 +354,7 @@ Json SimpleAgent::action(const Json& args,Deadline deadline,bool observation,boo
       if(op=="scrollIntoView")tool="scroll_into_view";
       if(op=="fill"||op=="type")fields["text"]=args.at("value").as_string();
       if(op=="select") {
-        const auto& values=args.at("values").as_array();require(values.size()<=256,"Select accepts at most 256 values");
+        const auto& values=args.at("values").as_array();
         for(const auto& value:values)value.as_string();
         fields["values"]=args.at("values");
       }
@@ -383,7 +372,7 @@ Json SimpleAgent::action(const Json& args,Deadline deadline,bool observation,boo
         if(event=="move"||event=="click")require(args.contains("x")&&args.contains("y"),"Mouse move/click requires x,y");
         for(const auto* key:{"x","y","deltaX","deltaY"})if(args.contains(key))
           require(args.at(key).is_number()&&std::isfinite(args.at(key).as_double()),"Pointer coordinates/deltas must be finite numbers");
-        if(args.contains("steps"))require(args.at("steps").is_integer()&&args.at("steps").as_int()>=1&&args.at("steps").as_int()<=1000,"Mouse steps must be in [1,1000]");
+        if(args.contains("steps"))require(args.at("steps").is_integer()&&args.at("steps").as_int()>=1&&args.at("steps").as_int()<=std::numeric_limits<int>::max(),"Mouse steps must be a positive int");
         if(args.contains("button"))require(text(args,"button")=="left"||text(args,"button")=="right"||text(args,"button")=="middle","Unsupported pointer button");
       } else {
         require(event=="press"||event=="down"||event=="up"||event=="type"||event=="insertText","Unsupported keyboard event");
@@ -399,7 +388,7 @@ Json SimpleAgent::action(const Json& args,Deadline deadline,bool observation,boo
           for(const auto* axis:{"x","y"})require(point.at(axis).is_number()&&std::isfinite(point.at(axis).as_double()),"Drag coordinates must be finite");
         }
         const auto steps=args.contains("steps")?args.at("steps").as_int():20;
-        require(steps>=1&&steps<=1000,"Drag steps must be in [1,1000]");
+        require(steps>=1&&steps<=std::numeric_limits<int>::max(),"Drag steps must be a positive int");
         fields=Json{{"from",args.at("from")},{"to",args.at("to")},{"steps",steps}};
         tool="coordinate_drag";
       } else {
@@ -456,25 +445,25 @@ Json SimpleAgent::present(Json result,const Json& args) {
   if(format=="full")return result;
   ObservationOptions options;
   options.interactive_only=true;
-  options.max_nodes=args.contains("maxControls")?static_cast<std::size_t>(args.at("maxControls").as_int()):100;
-  options.max_text_bytes=args.contains("maxTextBytes")?static_cast<std::size_t>(args.at("maxTextBytes").as_int()):8192;
+  // maxControls/maxTextBytes are optional caller limits; absent or 0 means no limit.
+  options.max_nodes=args.contains("maxControls")?static_cast<std::size_t>(args.at("maxControls").as_int()):0;
+  options.max_text_bytes=args.contains("maxTextBytes")?static_cast<std::size_t>(args.at("maxTextBytes").as_int()):0;
   const auto lower=[](std::string s){for(auto& c:s)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));return s;};
   const auto query=lower(text(args,"query"));
   auto scan_options=options;
-  if(!query.empty()){scan_options.max_nodes=4096;scan_options.max_text_bytes=65536;}
+  if(!query.empty()){scan_options.max_nodes=0;scan_options.max_text_bytes=0;}
   auto compact=compact_observation(result.at("snapshot"),scan_options);
-  compact["truncated"]=compact.at("truncated").as_bool()||result.at("truncated").as_bool();
   Json::array controls;
   std::size_t query_budget=options.max_text_bytes;
   for(auto node:compact.at("nodes").as_array()) {
     if(!node.contains("ref")||!node.contains("role"))continue;
     auto actions=actions_for(node);
     if(!query.empty()&&lower(text(node,"name")+" "+text(node,"role")+" "+text(node,"placeholder")).find(query)==std::string::npos)continue;
-    if(controls.size()==options.max_nodes){compact["truncated"]=true;break;}
+    if(options.max_nodes&&controls.size()==options.max_nodes){compact["truncated"]=true;break;}
     // Input values are unnecessary for control selection; passwords are also
     // redacted by the native snapshot and compact projection themselves.
     for(const auto* key:{"value","text","valueText"})node.as_object().erase(key);
-    if(!query.empty()) {
+    if(!query.empty()&&options.max_text_bytes) {
       const auto identity_bytes=text(node,"role").size()+text(node,"ref").size();
       if(identity_bytes>query_budget){compact["truncated"]=true;break;}
       query_budget-=identity_bytes;
@@ -493,7 +482,7 @@ Json SimpleAgent::present(Json result,const Json& args) {
     controls.push_back(std::move(node));
   }
   compact["nodes"]=controls;
-  ObservationOptions context_options;context_options.max_nodes=128;context_options.max_text_bytes=4096;
+  ObservationOptions context_options;
   auto context_nodes=compact_observation(result.at("snapshot"),context_options);
   Json::array context;
   for(const auto& node:context_nodes.at("nodes").as_array()) {
@@ -505,7 +494,7 @@ Json SimpleAgent::present(Json result,const Json& args) {
   }
   Json out{{"ok",true},{"format","compact"},{"revision",++revision_},{"url",result.at("url")},{"title",result.at("title")},
     {"untrustedWebsiteData",true},{"context",std::move(context)},
-    {"truncated",result.at("truncated").as_bool()||compact.at("truncated").as_bool()||context_nodes.at("truncated").as_bool()}};
+    {"truncated",compact.at("truncated").as_bool()||context_nodes.at("truncated").as_bool()}};
   const Json scope{{"page",observed_page_},{"scope",baseline_scope_},{"query",query},
     {"maxControls",options.max_nodes},{"maxTextBytes",options.max_text_bytes}};
   const bool delta=args.contains("delta")&&args.at("delta").as_bool();
@@ -523,7 +512,6 @@ Json SimpleAgent::present(Json result,const Json& args) {
 Json SimpleAgent::call(const std::string& tool,const Json& args) {
   try {
     require(args.is_object(),"Arguments must be an object");
-    args.dump({256*1024,32,16384,128*1024});
     const auto timeout=args.contains("timeoutMs")?args.at("timeoutMs").as_int():5000;
     require(timeout>=1&&timeout<=30000,"timeoutMs must be in [1,30000]");
     auto prepared=args;
@@ -535,7 +523,7 @@ Json SimpleAgent::call(const std::string& tool,const Json& args) {
       presentation=prepared;
       require(text(presentation,"format","full")=="full"||text(presentation,"format")=="compact","Unknown observation format");
       for(const auto* key:{"maxControls","maxTextBytes"})if(presentation.contains(key)) {
-        const auto n=presentation.at(key).as_int();require(n>=1&&n<=(std::string(key)=="maxControls"?256:65536),"Observation budget out of range");
+        const auto n=presentation.at(key).as_int();require(n>=0,"Observation limits must be nonnegative (0 means no limit)");
       }
       if(presentation.contains("delta"))require(!presentation.at("delta").as_bool()||text(presentation,"format")=="compact","Delta requires compact format");
       if(presentation.contains("query")){presentation.at("query").as_string();require(text(presentation,"format")=="compact","Query requires compact format");}

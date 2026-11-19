@@ -61,6 +61,7 @@
 #include <charconv>
 #include <cstdlib>
 #include <exception>
+#include <limits>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -74,18 +75,15 @@ namespace {
 std::string Quote(std::string_view input) {
   static constexpr char h[]="0123456789abcdef";
   std::string out="\"";
-  size_t units=0;
-  for (size_t i=0;i<input.size()&&units<8192;++i) {
+  for (size_t i=0;i<input.size();++i) {
     const auto c=static_cast<unsigned char>(input[i]);
-    ++units;
     if(c=='"'||c=='\\'){out+='\\';out+=static_cast<char>(c);}
     else if(c<32){out+="\\u00";out+=h[c>>4];out+=h[c&15];}
     else if(c<128)out+=static_cast<char>(c);
     else {
       size_t length=0;if((c&0xe0)==0xc0)length=2;else if((c&0xf0)==0xe0)length=3;else if((c&0xf8)==0xf0)length=4;
       const auto part=input.substr(i,length);
-      if(length&&i+length<=input.size()&&sr::JsonString(std::string("\"")+std::string(part)+"\"",2)){
-        if(length==4&&++units>8192)break;
+      if(length&&i+length<=input.size()&&sr::JsonString(std::string("\"")+std::string(part)+"\"")){
         out.append(part);i+=length-1;
       }else {out+="\\u00";out+=h[c>>4];out+=h[c&15];}
     }
@@ -96,13 +94,13 @@ std::string Hex(std::string_view input){static constexpr char h[]="0123456789abc
 uint64_t Integer(const std::string& value,uint64_t max=UINT64_MAX){uint64_t n=0;const auto result=std::from_chars(value.data(),value.data()+value.size(),n);if(value.empty()||result.ec!=std::errc{}||result.ptr!=value.data()+value.size()||n>max)throw std::runtime_error("Invalid native runner integer");return n;}
 std::vector<std::string> Fields(const std::string& line){std::istringstream in(line);std::vector<std::string> fields;std::string word;while(in>>word)fields.push_back(word);return fields;}
 void Size(const std::vector<std::string>& fields,size_t n){if(fields.size()!=n)throw std::runtime_error("Invalid native runner control shape");}
-bool Name(std::string_view value){if(value.empty()||value.size()>256)return false;for(size_t i=0;i<value.size();++i){const char c=value[i];if(!((c>='A'&&c<='Z')||(c>='a'&&c<='z')||c=='_'||(i&&c>='0'&&c<='9')))return false;}return true;}
-std::vector<std::string> Names(const std::string& value){std::vector<std::string> out;if(value=="-")return out;size_t start=0;for(;;){const auto next=value.find(',',start);const auto word=value.substr(start,next==std::string::npos?next:next-start);if(!Name(word)||out.size()>=256)throw std::runtime_error("Invalid native fixture dependency list");out.push_back(word);if(next==std::string::npos)break;start=next+1;}return out;}
-std::string Scalar(const std::string& hex,size_t units){const auto text=sr::DecodeHex(hex,units*6+2);if(!sr::JsonString(text,units))throw std::runtime_error("Invalid native host JSON scalar");return text;}
+bool Name(std::string_view value){if(value.empty())return false;for(size_t i=0;i<value.size();++i){const char c=value[i];if(!((c>='A'&&c<='Z')||(c>='a'&&c<='z')||c=='_'||(i&&c>='0'&&c<='9')))return false;}return true;}
+std::vector<std::string> Names(const std::string& value){std::vector<std::string> out;if(value=="-")return out;size_t start=0;for(;;){const auto next=value.find(',',start);const auto word=value.substr(start,next==std::string::npos?next:next-start);if(!Name(word))throw std::runtime_error("Invalid native fixture dependency list");out.push_back(word);if(next==std::string::npos)break;start=next+1;}return out;}
+std::string Scalar(const std::string& hex){const auto text=sr::DecodeHex(hex);if(!sr::JsonString(text))throw std::runtime_error("Invalid native host JSON scalar");return text;}
 sr::FixtureLiteral FixtureValue(const std::string& kind,const std::string& encoded){
   if(kind=="U"&&encoded=="-")return {};
   if(kind!="J")throw std::runtime_error("Invalid native fixture value wire kind");
-  sr::FixtureLiteral value{sr::FixtureLiteral::Kind::JSON,sr::DecodeHex(encoded,sr::FixtureLiteral::kBytes)};
+  sr::FixtureLiteral value{sr::FixtureLiteral::Kind::JSON,sr::DecodeHex(encoded)};
   if(!value.Valid())throw std::runtime_error("Invalid native fixture JSON literal");
   return value;
 }
@@ -119,14 +117,12 @@ struct RunState {
   // one original suite clock. That setup inventories real /proc ownership.
   sr::ProjectDescendants descendants;sr::NativeInterruptLatch interrupt;double directory_start=0;sr::NativeSuiteDeadline deadline;sr::RetainedSourceLeases source_leases;sr::RunnerReport report;
   sr::SoftAssertions::Budget soft_budget;sr::TestSteps::Budget step_budget;sr::RunnerAttachments::Budget file_budget;sr::RunnerOutputDirectories::Budget output_budget;
-  static constexpr size_t kEmergencyActors=sr::ProjectPool::kWorkers+2,kEmergencyFDs=5*(sr::ProjectPool::kWorkers+sr::RunnerAttachments::kPhysical);
-  std::array<Runner*,kEmergencyActors> emergency_actors{};std::array<pollfd,kEmergencyFDs> emergency_fds{};
+  std::vector<Runner*> emergency_actors;std::vector<pollfd> emergency_fds;
   std::exception_ptr callback_publication_failure;
   const std::string emergency_reason="Native coordinator exception stopped author work";std::optional<double> emergency_time;
   std::unique_ptr<sr::SuiteFileOwner> suite_file;uint64_t suite_file_sequence=0;
   uint64_t attempt_sequence=0;unsigned worker_sequence=0,active_workers=0,failures=0,max_failures;
-  size_t directory_declarations=0,directory_protocol_bytes=0,directory_worker_bytes=0;
-  size_t metadata_charge=0;std::optional<double> failure_time;std::string policy_reason="Native maximum failure count reached";bool stop_recorded=false;
+  std::optional<double> failure_time;std::string policy_reason="Native maximum failure count reached";bool stop_recorded=false;
   uint64_t Attempt(){if(attempt_sequence==UINT64_MAX)throw std::overflow_error("Native shared attempt generation exhausted");return ++attempt_sequence;}
   void Stop(const std::string& reason){if(!failure_time){failure_time=sr::DedicatedRealMilliseconds();policy_reason=reason;}}
   void Failure(unsigned count){failures+=count;if(max_failures&&failures>=max_failures&&!failure_time)failure_time=sr::DedicatedRealMilliseconds();}
@@ -138,14 +134,14 @@ class Runner {
       [this](const auto& record,double now){if(record.step)steps_.NoteSoftFailure(record.owner,record.step,record.id,record.error_json,now);if(record.owner.callback_token&&(!hook_worker_||!hook_worker_->NoteSoftFailure(record.owner.callback_token,record.owner.scope,record.owner.scope_generation,record.owner.test_id,now)))throw std::runtime_error("Native accepted soft failure has no actual associated phase");soft_cleanup_failed_|=record.cleanup;},
       [this](const auto& owner,const auto& error,bool infrastructure){soft_infrastructure_failed_|=infrastructure;soft_hard_failure_=true;soft_cleanup_failed_|=owner.callback_kind=="afterEach";if(soft_hard_error_.empty())soft_hard_error_=error;},
       [this](const auto& error){artifact_cleanup_failed_=true;finish_ok_=false;Global(Quote(error));KillHost();},
-      [this](uint64_t id){return steps_.Find(id);}},&shared_->soft_budget),callback_retries_(CallbackRetryHooks(),shared_->step_budget),attachments_(std::filesystem::path(options_.report).parent_path(),sr::RunnerAttachments::Hooks{[this](const auto& packet){if(host_&&!host_->Exited()&&!host_->ControlClosed())Send(packet);},[this](const auto& error){if(actual_error_.empty())actual_error_=Quote(error);finish_ok_=false;finish_error_=error;artifact_cleanup_failed_=true;Global(Quote(error));KillHost();},[this](uint64_t id){return steps_.Find(id);},[this](const auto& owner,const auto& error){
+      [this](uint64_t id){return steps_.Find(id);}},&shared_->soft_budget),callback_retries_(CallbackRetryHooks()),attachments_(std::filesystem::path(options_.report).parent_path(),sr::RunnerAttachments::Hooks{[this](const auto& packet){if(host_&&!host_->Exited()&&!host_->ControlClosed())Send(packet);},[this](const auto& error){if(actual_error_.empty())actual_error_=Quote(error);finish_ok_=false;finish_error_=error;artifact_cleanup_failed_=true;Global(Quote(error));KillHost();},[this](uint64_t id){return steps_.Find(id);},[this](const auto& owner,const auto& error){
         if(!attachments_.OwnsPendingView(owner))throw std::runtime_error("Native attachment publication cleanup lost its exact pending callback");
         if(actual_error_.empty())actual_error_=Quote(error);
         finish_ok_=false;finish_error_=error;artifact_cleanup_failed_=true;Global(Quote(error));
         if(host_&&host_->Pid()==owner.pid&&worker_index_==owner.worker_index){if(!host_->Exited())KillHost();}
         else Global(Quote("Native attachment publication cleanup has no matching live host; unrelated host preserved"));
-      },[this](const auto& owner,uint64_t public_step,const auto& retry,double now,bool continuation){if(!callback_retries_.ValidateRetry(owner,public_step,retry,now,continuation))throw std::runtime_error("Native attachment retry provenance has no actual invocation");},[this](const auto& owner,const auto& retry,const auto& error,bool infrastructure){callback_retries_.FileFailure(owner,retry,error,infrastructure,FixtureNow());}},&shared_->file_budget),outputs_("/proc/self/exe",{[this](const auto& error){artifact_cleanup_failed_=true;finish_ok_=false;if(actual_error_.empty())actual_error_=Quote(error);Global(Quote(error));KillHost();}},shared_->output_budget,{&shared_->file_budget.physical,sr::RunnerAttachments::kPhysical}){
-    if(options_.workers>1||options_.list||options_.directory_admission){emergency_close_.emplace(CloseWorker(true));auto found=std::find(shared_->emergency_actors.begin(),shared_->emergency_actors.end(),nullptr);if(found==shared_->emergency_actors.end())throw std::runtime_error("Native emergency actor registry capacity exceeded");*found=this;}
+      },[this](const auto& owner,uint64_t public_step,const auto& retry,double now,bool continuation){if(!callback_retries_.ValidateRetry(owner,public_step,retry,now,continuation))throw std::runtime_error("Native attachment retry provenance has no actual invocation");},[this](const auto& owner,const auto& retry,const auto& error,bool infrastructure){callback_retries_.FileFailure(owner,retry,error,infrastructure,FixtureNow());}},&shared_->file_budget),outputs_("/proc/self/exe",{[this](const auto& error){artifact_cleanup_failed_=true;finish_ok_=false;if(actual_error_.empty())actual_error_=Quote(error);Global(Quote(error));KillHost();}},shared_->output_budget,{&shared_->file_budget.physical}){
+    if(options_.workers>1||options_.list||options_.directory_admission){emergency_close_.emplace(CloseWorker(true));auto found=std::find(shared_->emergency_actors.begin(),shared_->emergency_actors.end(),nullptr);if(found==shared_->emergency_actors.end())shared_->emergency_actors.push_back(this);else *found=this;}
   }
   ~Runner(){if(shared_)for(auto& actor:shared_->emergency_actors)if(actor==this)actor=nullptr;}
   sr::NativeTask<int> RunSerial(){
@@ -175,7 +171,7 @@ class Runner {
     if(caught){
       try{co_await CloseWorker(true);}catch(const std::exception& cleanup){Global(Quote(cleanup.what()));}
       if(active_&&std::none_of(report_.attempts.begin(),report_.attempts.end(),[this](const auto& attempt){return attempt.generation==active_->generation;})){
-        const auto title=metadata_->titles.at(active_->test.id);const auto error_json=Quote(*caught);Charge(title.size()+error_json.size()+288);
+        const auto title=metadata_->titles.at(active_->test.id);const auto error_json=Quote(*caught);
         report_.attempts.push_back(sr::ReportAttempt{active_->test.id,active_->generation,active_->retry,worker_index_,last_pid_,title,error_json,"interrupted",false,AttemptChargedDuration(sr::DedicatedRealMilliseconds()),skip_reason_json_,ExpectedStatus(),expected_failure_reason_json_,annotations_.Values()});report_.attempts.back().secondary_errors=attempt_secondary_errors_;RecordAttemptWall();
       }
     }
@@ -298,7 +294,7 @@ class Runner {
     if(caught){
       try{co_await CloseWorker(true);}catch(const std::exception& error){Global(Quote(error.what()));}
       if(active_&&std::none_of(report_.attempts.begin(),report_.attempts.end(),[this](const auto& attempt){return attempt.generation==active_->generation;})){
-        const auto title=metadata_->titles.at(active_->test.id),error=Quote(*caught);Charge(title.size()+error.size()+256);report_.attempts.push_back({active_->test.id,active_->generation,active_->retry,worker_index_,last_pid_,title,error,"interrupted",false,AttemptChargedDuration(sr::DedicatedRealMilliseconds()),skip_reason_json_,ExpectedStatus(),expected_failure_reason_json_,annotations_.Values()});report_.attempts.back().secondary_errors=attempt_secondary_errors_;RecordAttemptWall();
+        const auto title=metadata_->titles.at(active_->test.id),error=Quote(*caught);report_.attempts.push_back({active_->test.id,active_->generation,active_->retry,worker_index_,last_pid_,title,error,"interrupted",false,AttemptChargedDuration(sr::DedicatedRealMilliseconds()),skip_reason_json_,ExpectedStatus(),expected_failure_reason_json_,annotations_.Values()});report_.attempts.back().secondary_errors=attempt_secondary_errors_;RecordAttemptWall();
       }
     }
     if(host_||DescendantsPhysical()||attachments_.Physical()||outputs_.Physical()||soft_.Physical()||callback_retries_.Physical()||SourcesPhysical()||project_worker_pid_)throw std::runtime_error("Native parallel project lacks actual physical worker/file/descendant retirement");
@@ -364,11 +360,12 @@ class Runner {
         return;
       }
       const auto now=sr::DedicatedRealMilliseconds();if(now>=end)throw std::runtime_error("Native coordinator emergency six-second physical cleanup grace expired; publication refused");
-      size_t count=0;const auto add=[&](pollfd fd){if(count>=shared_->emergency_fds.size())throw std::logic_error("Native emergency descriptor bound exceeded");shared_->emergency_fds[count++]=fd;};
+      shared_->emergency_fds.clear();const auto add=[&](pollfd fd){shared_->emergency_fds.push_back(fd);};
       for(auto* actor:shared_->emergency_actors)if(actor){if(actor->host_)for(const auto& fd:actor->host_->PollDescriptors())add(fd);actor->attachments_.ForEachPollDescriptor(add);actor->outputs_.ForEachPollDescriptor(add);if(actor->sources_)actor->sources_->ForEachPollDescriptor(add);}
-      // No dynamic descriptor vector, formatting, Global(), fresh suite clock,
-      // new author callback or synthetic process/rollback acknowledgement.
-      const auto timeout=static_cast<int>(std::ceil(std::clamp(end-now,0.0,10.0)));(void)::poll(shared_->emergency_fds.data(),count,timeout);
+      // The descriptor vector is reused across polls; no formatting, Global(),
+      // fresh suite clock, new author callback or synthetic process/rollback
+      // acknowledgement.
+      const auto timeout=static_cast<int>(std::ceil(std::clamp(end-now,0.0,10.0)));(void)::poll(shared_->emergency_fds.data(),static_cast<nfds_t>(shared_->emergency_fds.size()),timeout);
     }
   }
   int RunTestGroups(sr::ProjectGraph graph,const sr::ProjectTestSelection& selected){
@@ -509,7 +506,7 @@ class Runner {
         group.id=i+1;group.file_id=pool.Plan().File().id;group.suite=definition.suite;group.mode=definition.mode;group.tests=definition.tests;group.workers=std::move(completed_workers[i]);
         if(admitted[i]){group.generation=admitted[i]->generation;if(pool.Retired(*admitted[i]))group.receipt="physicalRetired";else if(pool.CanceledBeforeStart(*admitted[i]))group.receipt="neverStarted";else throw std::runtime_error("Native file-group has no exact terminal admission receipt");}else group.receipt="notAdmitted";
         using State=sr::FileGroupPool::State;switch(pool.Group(i)){case State::Passed:group.status="passed";break;case State::Failed:group.status="failed";failed=true;break;case State::Interrupted:group.status="interrupted";interrupted=true;break;case State::NotRun:group.status="notRun";not_run=true;break;default:throw std::runtime_error("Native file-group has no terminal outcome");}
-        for(const auto id:group.tests)if(reported.insert(id).second){if(group.status=="passed")throw std::runtime_error("Native passed file-group omitted a selected declaration");const auto reason=Quote(StopRequested()?StopReason():"Native file-group stopped before this selected declaration was admitted");Charge(catalog_->titles.at(id).size()+reason.size()+128);report_.unrun.push_back({id,catalog_->titles.at(id),reason});}
+        for(const auto id:group.tests)if(reported.insert(id).second){if(group.status=="passed")throw std::runtime_error("Native passed file-group omitted a selected declaration");const auto reason=Quote(StopRequested()?StopReason():"Native file-group stopped before this selected declaration was admitted");report_.unrun.push_back({id,catalog_->titles.at(id),reason});}
         report_.file_work_groups.push_back(std::move(group));
       }
       if(locks)for(const auto& record:locks->Records())if(record&&!locks->Names(record->owner.index).empty()){
@@ -528,7 +525,6 @@ class Runner {
 #include "worker_reuse_runner.inc"
   int RunParallel(){try{return RunParallelImpl();}catch(...){if(!shared_->emergency_time)EmergencyDrain();throw;}}
   int RunParallelImpl(){
-    report_.workers.reserve(8192);report_.projects.reserve(128);
     std::optional<sr::ProjectGraph> graph;std::optional<sr::ProjectTestSelection> selection;
     std::vector<std::vector<std::string>> lock_names;
     try{if(shared_->suite_file_sequence==UINT64_MAX)throw std::overflow_error("Native suite file identity exhausted");FileOwner()=std::make_unique<sr::SuiteFileOwner>(++shared_->suite_file_sequence,options_.suite);options_.suite=FileOwner()->Path();Drive(PrepareParallel());if(!catalog_->projects.empty()){graph.emplace(catalog_->projects);std::vector<sr::ProjectTestDeclaration> declarations;for(const auto& test:catalog_->tests)declarations.push_back({test.id,catalog_->project_tests.at(test.id)});selection=sr::SelectProjectTests(*graph,declarations,options_.selection,options_.projects,options_.no_dependencies,catalog_->focused,sr::ProjectSuiteFocus(catalog_->projects.size(),catalog_->suites,catalog_->suite_modifiers));if(HasResourceLocks(*catalog_)&&!HasTestParallel(*catalog_)){const auto declarations=ResourceDeclarations(*catalog_);for(const auto& ids:selection->tests)lock_names.push_back(declarations.Resolve(std::set<uint64_t>(ids.begin(),ids.end())));}}}
@@ -626,9 +622,7 @@ class Runner {
         if(!plan_->Finish(worker_id,next->generation,status,finish_error_,(runtime_skip_&&status!=sr::Outcome::Skipped)||skip_callback_failed_||owners_->InfrastructureFailure()||artifact_cleanup_failed_||fixture_mutation_failed_||soft_cleanup_failed_||soft_infrastructure_failed_||callback_infrastructure_failed_||host_control_failed_))throw std::runtime_error("Native result admission rejected");
         AccountFailures();const auto& result=plan_->Results().back();
         if(status==sr::Outcome::Passed&&!result.expected&&std::string_view(ExpectedStatus())=="failed"){actual_error_=Quote("Expected to fail, but passed.");}
-        if(report_.attempts.size()>=8192)throw std::runtime_error("Native attempt report capacity8192 exceeded");
         const auto error=actual_error_.empty()?Quote(finish_error_):actual_error_;
-        Charge(metadata_->titles.at(next->test.id).size()+error.size()+288);
         report_.attempts.push_back(sr::ReportAttempt{next->test.id,next->generation,next->retry,worker_index_,static_cast<int64_t>(worker_id),metadata_->titles.at(next->test.id),error,AttemptStatus(),result.expected,AttemptChargedDuration(sr::DedicatedRealMilliseconds()),skip_reason_json_,ExpectedStatus(),expected_failure_reason_json_,annotations_.Values(),originating_step_,PrimarySoftError()});report_.attempts.back().secondary_errors=attempt_secondary_errors_;RecordAttemptWall();
         if(!finish_ok_||plan_->NeedsWorkerRetirement()) {
           if(reuse_pool_)CompleteReusableGroup();
@@ -687,12 +681,12 @@ class Runner {
       if(result.state!=State::NotSelected)for(const auto id:project_selected_tests_.at(index))if(reported.insert(id).second){
         if(result.state==State::Passed)throw std::runtime_error("Native passed project has an unaccounted selected declaration");
         const auto reason=Quote(result.reason.empty()?"Native project stopped before this selected declaration was admitted":result.reason);
-        Charge(catalog_->titles.at(id).size()+reason.size()+128);report_.unrun.push_back({id,catalog_->titles.at(id),reason});
+        report_.unrun.push_back({id,catalog_->titles.at(id),reason});
       }
     }
   }
   uint64_t HookScope(){if(hook_scope_nonce_==UINT64_MAX)throw std::runtime_error("Native hook scope identity exhausted");return ++hook_scope_nonce_;}
-  std::string HookError(const std::string& error){return sr::JsonString(error,8192)?error:Quote(error);}
+  std::string HookError(const std::string& error){return sr::JsonString(error)?error:Quote(error);}
   void RememberHookErrors(const sr::HookPhases::Result& result){
     if(!result.error_sources.empty()&&result.error_sources.size()!=result.errors.size())throw std::runtime_error("Native hook error/source ledger mismatch");
     const auto current=active_?std::optional<sr::AttemptErrorOwner>(sr::AttemptErrorOwner{active_->test.id,active_->generation,worker_index_,host_?host_->Pid():last_pid_}):std::nullopt;
@@ -700,12 +694,11 @@ class Runner {
     for(size_t i=0;i<result.errors.size();++i){const auto scalar=HookError(result.errors[i]);const auto step=result.error_sources.empty()?0:result.error_sources[i];
       if(!source){Global(scalar);continue;}
       if(actual_error_.empty()){actual_error_=scalar;originating_step_=step;}
-      else{if(attempt_secondary_errors_.size()>=256)throw std::length_error("Native attempt secondary error capacity256 exceeded");Charge(scalar.size()+128);attempt_secondary_errors_.push_back({*source,scalar,step});}
+      else{attempt_secondary_errors_.push_back({*source,scalar,step});}
     }
   }
   sr::NativeTask<sr::HookPhases::Result> RunHookGroup(sr::HookWorker::Context context,std::vector<sr::HookCall> calls,uint64_t suite=0){
     const auto count=hook_results_.size();
-    if(count>=8192)throw std::runtime_error("Native hook result capacity8192 exceeded");
     {const auto now=FixtureNow();sr::FixtureTransitionTime::Scope event(fixture_event_time_,now);
     context.observation={interrupted_?sr::PhaseStatus::Interrupted:timeout_?sr::PhaseStatus::TimedOut:!actual_error_.empty()?sr::PhaseStatus::Failed:runtime_skip_?sr::PhaseStatus::Skipped:sr::PhaseStatus::Passed,std::max(0.0,now-attempt_started_)};
     active_hook_suite_=suite;
@@ -722,8 +715,7 @@ class Runner {
   }
   void RecordBeforeAllSkip(const sr::HookPhases::Result& result,uint64_t suite){
     if(!result.skipped)return;
-    if(!active_||result.skip_kind!=sr::HookKind::BeforeAll||!result.skip_token||!result.skip_callback||!result.scope||result.generation!=worker_index_||before_all_skip_cause_||report_.skip_causes.size()>=8192)throw std::runtime_error("Native beforeAll skip cause identity/capacity rejected");
-    Charge(result.skip_reason_json.size()+256);
+    if(!active_||result.skip_kind!=sr::HookKind::BeforeAll||!result.skip_token||!result.skip_callback||!result.scope||result.generation!=worker_index_||before_all_skip_cause_)throw std::runtime_error("Native beforeAll skip cause identity rejected");
     report_.skip_causes.push_back({result.scope,result.generation,result.skip_callback,result.skip_token,active_->test.id,active_->generation,suite,worker_index_,static_cast<int64_t>(host_->Pid()),result.skip_reason_json,sr::PhaseStatusName(result.observation.status),annotations_.Values().empty()?std::nullopt:std::optional<sr::ModifierAnnotation>(annotations_.Values().back())});
     before_all_skip_cause_=result.scope;runtime_skip_=true;skip_reason_json_=result.skip_reason_json;
   }
@@ -731,7 +723,7 @@ class Runner {
     if(!before_all_skip_cause_||!active_||AttemptOutcome()!=sr::Outcome::Skipped||!plan_->Results().back().expected)throw std::runtime_error("Native beforeAll skip propagation lacks clean actual attempt");
     plan_->ExcludeQueued(omitted);
     for(const auto id:omitted){if(id==active_->test.id)throw std::runtime_error("Actual beforeAll associated attempt cannot become an unadmitted declaration");
-      const auto& title=metadata_->titles.at(id);Charge(title.size()+128);report_.runtime_skipped.push_back({id,before_all_skip_cause_,title});
+      const auto& title=metadata_->titles.at(id);report_.runtime_skipped.push_back({id,before_all_skip_cause_,title});
     }
   }
   sr::NativeTask<bool> RunAllHooks(sr::HookKind kind){
@@ -753,7 +745,6 @@ class Runner {
     for(const auto& entry:report_.unrun)attempted.insert(entry.test_id);
     for(const auto& entry:report_.runtime_skipped)attempted.insert(entry.test_id);
     for(const auto& test:metadata_->tests)if(!attempted.contains(test.id)){
-      Charge(metadata_->titles.at(test.id).size()+reason.size()+64);
       report_.unrun.push_back(sr::ReportUnrun{test.id,metadata_->titles.at(test.id),Quote(reason)});
     }
   }
@@ -790,8 +781,6 @@ class Runner {
       AccountFailures();const auto& result=plan_->Results().back();
         if(status==sr::Outcome::Passed&&!result.expected&&std::string_view(ExpectedStatus())=="failed"){actual_error_=Quote("Expected to fail, but passed.");}
       const auto error=actual_error_.empty()?Quote(finish_error_):actual_error_;
-      if(report_.attempts.size()>=8192)throw std::runtime_error("Native attempt report capacity8192 exceeded");
-      Charge(metadata_->titles.at(next->test.id).size()+error.size()+288);
       report_.attempts.push_back(sr::ReportAttempt{next->test.id,next->generation,next->retry,worker_index_,static_cast<int64_t>(pid),metadata_->titles.at(next->test.id),error,AttemptStatus(),result.expected,AttemptChargedDuration(sr::DedicatedRealMilliseconds()),skip_reason_json_,ExpectedStatus(),expected_failure_reason_json_,annotations_.Values(),originating_step_,PrimarySoftError()});report_.attempts.back().secondary_errors=attempt_secondary_errors_;RecordAttemptWall();
       finished_=true;
       const bool clean_before_skip=before_all_skip_cause_&&status==sr::Outcome::Skipped&&result.expected;
@@ -904,8 +893,6 @@ class Runner {
       if(!plan_->Finish(pid,next->generation,status,finish_error_,infrastructure_failure||(runtime_skip_&&status!=sr::Outcome::Skipped)||skip_callback_failed_||artifact_cleanup_failed_||fixture_mutation_failed_||soft_cleanup_failed_||soft_infrastructure_failed_||callback_infrastructure_failed_||host_control_failed_))throw std::runtime_error("Native nested result admission rejected");
       AccountFailures();const auto& result=plan_->Results().back();
         if(status==sr::Outcome::Passed&&!result.expected&&std::string_view(ExpectedStatus())=="failed"){actual_error_=Quote("Expected to fail, but passed.");}const auto error=actual_error_.empty()?Quote(finish_error_):actual_error_;
-      if(report_.attempts.size()>=8192)throw std::runtime_error("Native attempt report capacity8192 exceeded");
-      Charge(metadata_->titles.at(next->test.id).size()+error.size()+288);
       report_.attempts.push_back(sr::ReportAttempt{next->test.id,next->generation,next->retry,worker_index_,static_cast<int64_t>(pid),metadata_->titles.at(next->test.id),error,AttemptStatus(),result.expected,AttemptChargedDuration(sr::DedicatedRealMilliseconds()),skip_reason_json_,ExpectedStatus(),expected_failure_reason_json_,annotations_.Values(),originating_step_,PrimarySoftError()});report_.attempts.back().secondary_errors=attempt_secondary_errors_;RecordAttemptWall();
       finished_=true;
       if(!plan_->InSerialGroup(next->test.id)&&(result.expected||next->retry>=next->test.retries||interrupted_))finalized.insert(next->test.id);
@@ -917,7 +904,7 @@ class Runner {
       if(failed_before_suite&&next->retry>=next->test.retries){
         std::set<uint64_t> blocked;const auto subtree=tree.SuiteTests(failed_before_suite);for(const auto& test:metadata_->tests)if(subtree.contains(test.id))blocked.insert(test.id);plan_->ExcludeQueued(blocked);
         for(const auto id:blocked)if(!finalized.contains(id)){
-          finalized.insert(id);const auto title=metadata_->titles.at(id),reason=Quote("Ancestor beforeAll failed before this declared test was admitted");Charge(title.size()+reason.size()+64);report_.unrun.push_back({id,title,reason});
+          finalized.insert(id);const auto title=metadata_->titles.at(id),reason=Quote("Ancestor beforeAll failed before this declared test was admitted");report_.unrun.push_back({id,title,reason});
         }
       }
       const bool retire=(!plan_->InSerialGroup(next->test.id)&&(!finish_ok_||next->test.expectedFailure))||suite_plan_->NeedsRetirement()||plan_->NeedsWorkerRetirement()||plan_->Done();
@@ -951,9 +938,8 @@ class Runner {
     ok=ok&&steps_.AdmitsCallback(token,owner,generation)&&active_&&!StopRequested()&&!closing_worker_&&!physical_kill_requested_&&!runtime_skip_&&annotations_.CanAppend(annotation);
     if(ok&&hooks)ok=hook_worker_->CanExpectFailure(token,owner,generation,active_->test.id,now);
     else if(ok)ok=!token&&active_->test.id==owner&&active_->generation==generation&&body_physical_&&!finished_&&!timeout_&&!interrupted_&&now<deadline_&&owners_->CanExpectFailure(owner,generation,now);
-    if(ok)Charge(sr::ModifierAnnotationJSON(annotation).size()+128);
     if(ok)ok=plan_->ExpectFailure(static_cast<uint64_t>(host_->Pid()),active_->generation);
-    if(ok){if(!runtime_expected_failure_){expected_failure_reason_json_=reason;Charge(reason.size()+32);}runtime_expected_failure_=true;annotations_.Append(annotation);}
+    if(ok){if(!runtime_expected_failure_){expected_failure_reason_json_=reason;}runtime_expected_failure_=true;annotations_.Append(annotation);}
     Send("FAIL_RESULT "+std::to_string(request)+" "+std::to_string(token)+" "+std::to_string(owner)+" "+std::to_string(generation)+" "+(ok?"1 failed "+sr::ModifierAnnotationWire(annotation):"0 "+Hex("Native expected failure rejected: unsupported phase, stale, expired or stopped")));
   }
   void SkipPacket(const std::vector<std::string>& fields,double now,bool hooks){
@@ -962,13 +948,12 @@ class Runner {
     if(ok)++mutation_nonce_;
     ok=ok&&steps_.AdmitsCallback(token,owner,generation)&&(!steps_.CallbackOwner(token,owner,generation)||callback_retries_.CanSkip(*steps_.CallbackOwner(token,owner,generation)))&&soft_.CanSkip(token,owner,generation)&&(!attachments_.Pending(token,owner,generation)||attachments_.CanAcceptTestSkip(token,owner,generation,request,now))&&!host_control_failed_&&!StopRequested()&&!closing_worker_&&!physical_kill_requested_&&annotations_.CanAppend(annotation);
     const bool pending_attachment=ok&&attachments_.Pending(token,owner,generation);
-    if(ok)Charge(sr::ModifierAnnotationJSON(annotation).size()+128);
     if(ok&&hooks){ok=hook_worker_->RequestSkip(token,owner,generation,reason,now,[&]{if(attachments_.Pending(token,owner,generation))attachments_.AcceptTestSkip(token,owner,generation,request,reason,now);steps_.AcceptTestSkip(token,owner,generation,request,reason,now);},pending_attachment);if(ok)hook_group_deadline_=hook_worker_->ActiveDeadline().value_or(hook_group_deadline_);}
     else if(ok){
       ok=!token&&active_&&active_->test.id==owner&&active_->generation==generation&&body_physical_&&!finished_&&!timeout_&&!interrupted_&&!runtime_skip_&&now<deadline_;
       if(ok){ok=owners_->Skip(owner,generation,now,pending_attachment);if(ok){runtime_skip_=true;skip_reason_json_=reason;if(attachments_.Pending(token,owner,generation))attachments_.AcceptTestSkip(token,owner,generation,request,reason,now);steps_.AcceptTestSkip(token,owner,generation,request,reason,now);AbortBody("Native runtime skip requested");}}
     }
-    if(ok){Charge(reason.size()+32);annotations_.Append(annotation);}
+    if(ok){annotations_.Append(annotation);}
     Send("SKIP_RESULT "+std::to_string(request)+" "+std::to_string(token)+" "+std::to_string(owner)+" "+std::to_string(generation)+" "+(ok?"1 skipped "+sr::ModifierAnnotationWire(annotation):"0 "+Hex("Native runtime skip rejected: unsupported phase, stale, expired or stopped")));
   }
   void AmendTimeoutPacket(const std::vector<std::string>& fields,double now,bool hooks){
@@ -982,7 +967,7 @@ class Runner {
       if(ok){const auto deadline=attempt_started_+(timeout?static_cast<double>(timeout):3153600000000.0);ok=owners_->AmendTimeout(owner,generation,timeout,now);if(ok)deadline_=owners_->ActiveDeadline(now).value_or(deadline);}
     }
     if(ok){const auto deadline=hooks?hook_worker_->ActiveDeadline().value_or(hook_group_deadline_):deadline_;steps_.Amend(token,owner,generation,deadline,FixtureNow());soft_.Amend(token,owner,generation,deadline,FixtureNow(),suite_deadline_.OriginalDeadline(),hook_stop_cleanup_deadline_?std::make_optional(hook_stop_cleanup_deadline_):std::nullopt);attachments_.Amend(token,owner,generation,deadline,FixtureNow());CallbackRetryAmend(token,owner,generation,deadline,FixtureNow());}
-    Send("TIMEOUT_RESULT "+std::to_string(request)+" "+std::to_string(token)+" "+std::to_string(owner)+" "+std::to_string(generation)+" "+(ok?"1 "+std::to_string(timeout):"0 "+Hex("Native live timeout amendment rejected: stale, expired, stopped or capacity exceeded")));
+    Send("TIMEOUT_RESULT "+std::to_string(request)+" "+std::to_string(token)+" "+std::to_string(owner)+" "+std::to_string(generation)+" "+(ok?"1 "+std::to_string(timeout):"0 "+Hex("Native live timeout amendment rejected: stale, expired or stopped")));
   }
   void SettledWithAttachments(uint64_t token,uint64_t scope,uint64_t generation,std::function<void(const std::optional<std::string>&,uint64_t)> forward,double now,const std::string& error={},uint64_t source=0){
     steps_.ObserveRawResult(token,scope,generation,error,source);
@@ -1016,17 +1001,17 @@ class Runner {
       else if(fields[0]=="READY"||fields[0]=="STARTED"){Size(fields,4);if(fields[0]=="READY"){SourceSetupClosed(fields);if(FixtureReadyClock(Integer(fields[1]),Integer(fields[2]),Integer(fields[3]),now))hook_worker_->FixtureReady(Integer(fields[1]),Integer(fields[2]),Integer(fields[3]),now);}}
       else if(fields[0]=="SETTLED"||fields[0]=="CALL_RESULT"||fields[0]=="CALL_RESULT_UTF16"||fields[0]=="CALL_RESULT_FROM_STEP_UTF16"){
         const bool from_step=fields[0]=="CALL_RESULT_FROM_STEP_UTF16";Size(fields,from_step?7:6);const bool ok=Integer(fields[4],1)!=0;
-        const auto error=ok?"":(fields[0]=="CALL_RESULT_UTF16"||from_step)?sr::RuntimeSkipReason(fields[5]):Scalar(fields[5],8192);
+        const auto error=ok?"":(fields[0]=="CALL_RESULT_UTF16"||from_step)?sr::RuntimeSkipReason(fields[5]):Scalar(fields[5]);
         if(fields[0]=="SETTLED"){SourceSetupClosed(fields);if(!ok&&hook_worker_->OwnsFixture(Integer(fields[1]),Integer(fields[2]),Integer(fields[3]))){
           if(actual_error_.empty()&&!hook_worker_->HasPhaseErrors(Integer(fields[2]),Integer(fields[3]))){actual_error_=error;originating_step_=0;}
-          else if(active_&&phase_error_attribution_.Pending(Integer(fields[2]),Integer(fields[3]))){const auto source=phase_error_attribution_.Current(Integer(fields[2]),Integer(fields[3]),sr::AttemptErrorOwner{active_->test.id,active_->generation,worker_index_,host_->Pid()});if(source){if(attempt_secondary_errors_.size()>=256)throw std::length_error("Native attempt secondary error capacity256 exceeded");Charge(error.size()+128);attempt_secondary_errors_.push_back({*source,error,0,true});}}
+          else if(active_&&phase_error_attribution_.Pending(Integer(fields[2]),Integer(fields[3]))){const auto source=phase_error_attribution_.Current(Integer(fields[2]),Integer(fields[3]),sr::AttemptErrorOwner{active_->test.id,active_->generation,worker_index_,host_->Pid()});if(source){attempt_secondary_errors_.push_back({*source,error,0,true});}}
         }FixtureSettledClock(Integer(fields[1]),Integer(fields[2]),Integer(fields[3]),now);hook_worker_->FixtureSettled(Integer(fields[1]),Integer(fields[2]),Integer(fields[3]),ok,error,now);}
         else{const auto token=Integer(fields[1]),scope=Integer(fields[2]),generation=Integer(fields[3]);const auto source=from_step?Integer(fields[6]):0;
           if(from_step){if(ok||!source)throw std::runtime_error("Invalid native callback originating-step failure receipt");steps_.FailureSource(token,scope,generation,source);}
           SettledWithAttachments(token,scope,generation,[this,token,scope,generation,ok,error](const auto& failure,uint64_t actual_source){FixtureTransition([&](double now){hook_worker_->CallbackSettled(token,scope,generation,ok&&!failure,failure.value_or(error),now,false,actual_source);});},now,error,source);
         }
       }
-      else if(fields[0]=="HOST_ERROR"){Size(fields,2);throw std::runtime_error("Actual hook host failed: "+Scalar(fields[1],8192));}
+      else if(fields[0]=="HOST_ERROR"){Size(fields,2);throw std::runtime_error("Actual hook host failed: "+Scalar(fields[1]));}
       else throw std::runtime_error("Unknown native hook host packet");
     }
     {const auto now=FixtureNow();sr::FixtureTransitionTime::Scope event(fixture_event_time_,now);
@@ -1078,8 +1063,7 @@ class Runner {
   }
   void ObserveStop(double now){sr::FixtureTransitionTime::Scope event(fixture_event_time_,now);const auto at=StopTime();if(active_&&StopRequested()&&(!finished_||(runtime_skip_&&body_physical_))&&!timeout_&&!interrupted_&&((runtime_skip_&&body_physical_)||(at?*at<deadline_:now<deadline_))){interrupted_=true;AbortBody(StopReason());if(runtime_skip_){finish_ok_=false;finish_error_=StopReason();}owners_->Cancel(StopReason(),now);}}
   void ThrowIfStopped(){if(StopRequested()){if(plan_)plan_->Stop();stop_recorded_=true;throw std::runtime_error(StopReason());}}
-  void Charge(size_t bytes){if(bytes>67108864-shared_->metadata_charge)throw std::runtime_error("Native runner report metadata budget64MiB exceeded");shared_->metadata_charge+=bytes;}
-  void Global(const std::string& error,bool project_error=true){if(report_.global_errors_json.size()>=256)throw std::runtime_error("Native runner global error capacity256 exceeded");Charge(error.size());if(project_error)++local_errors_;report_.global_errors_json.push_back(error);}
+  void Global(const std::string& error,bool project_error=true){if(project_error)++local_errors_;report_.global_errors_json.push_back(error);}
   void KillHost(){physical_kill_requested_=true;callback_retries_.CancelAll(FixtureNow());if(sources_)sources_->Cancel(FixtureNow());soft_.CancelAll(Quote("Native test worker retirement requested"),FixtureNow());if(shared_->emergency_time){attachments_.CancelAll(shared_->emergency_reason,FixtureNow());outputs_.CancelAll(shared_->emergency_reason,FixtureNow());}else{attachments_.CancelAll("Native test worker retirement requested",FixtureNow());outputs_.CancelAll("Native test worker retirement requested",FixtureNow());}if(host_)host_->Kill();}
   void Send(const std::string& line){
     const auto now=FixtureNow();sr::FixtureTransitionTime::Scope event(fixture_event_time_,now);
@@ -1098,9 +1082,9 @@ class Runner {
       // it returns. Synchronize that genuine phase cap before its abort event.
       steps_.Amend(token,scope,generation,hooks?hook_worker_->ActiveDeadline().value_or(hook_group_deadline_):deadline_,now);
       attachments_.Amend(token,scope,generation,hooks?hook_worker_->ActiveDeadline().value_or(hook_group_deadline_):deadline_,now);
-      soft_.Cancel(token,scope,generation,Quote(sr::DecodeHex(fields[hooks?4:3],8192)),now);CallbackRetryCancel(token,scope,generation,now);
-      steps_.Cancel(token,scope,generation,Quote(sr::DecodeHex(fields[hooks?4:3],8192)),FixtureNow());
-      attachments_.Cancel(token,scope,generation,sr::DecodeHex(fields[hooks?4:3],8192),FixtureNow());
+      soft_.Cancel(token,scope,generation,Quote(sr::DecodeHex(fields[hooks?4:3])),now);CallbackRetryCancel(token,scope,generation,now);
+      steps_.Cancel(token,scope,generation,Quote(sr::DecodeHex(fields[hooks?4:3])),FixtureNow());
+      attachments_.Cancel(token,scope,generation,sr::DecodeHex(fields[hooks?4:3]),FixtureNow());
     }
     if(line.starts_with("SETUP ")||line.starts_with("TEARDOWN ")||line.starts_with("CANCEL "))FixtureCommandClock(Fields(line),now);
     if(line.starts_with("SETUP "))SourceSetup(line,now);
@@ -1112,8 +1096,6 @@ class Runner {
     if(!options_.directory_admission&&!parallel_actor_&&!catalog_&&!metadata_&&!repeat_collection_timing_)repeat_collection_timing_=std::make_shared<sr::DirectoryActorTiming>(sr::DedicatedRealMilliseconds());
     while(!shared_->descendants.CanEnroll()){co_await continuation_.Yield(sr::DedicatedRealMilliseconds()+5);ThrowIfStopped();}
     if(shared_->worker_sequence==UINT32_MAX)throw std::runtime_error("Native worker index exhausted");
-    size_t bytes=shared_->directory_worker_bytes;for(const auto& worker:report_.workers)if(!options_.directory_admission)bytes+=worker.stdout_bytes.size()+worker.stderr_bytes.size();
-    if(shared_->worker_sequence>=8192||bytes>sr::kRunnerReportStreamBytes-(shared_->active_workers+1)*2*1048576)throw std::runtime_error("Native worker report byte reservation exhausted");
     worker_index_=++shared_->worker_sequence;mutation_nonce_=0;host_control_failed_=false;host_control_error_.clear();steps_.WorkerStarted();soft_.WorkerStarted();callback_retries_.WorkerStarted();callback_source_owner_.reset();attachments_.WorkerStarted();
     if(FileOwner()&&FileOwner()->Open()&&!provisional_serial_file_)FileOwner()->Validate();
     if(sources_&&(SourcesPhysical()||!sources_->ChannelDrained()))throw std::runtime_error("Native Source channel still owned at fresh worker admission");
@@ -1145,105 +1127,104 @@ class Runner {
       for(const auto& line:host_->Poll(0)){
         const auto f=Fields(line);if(f.empty())throw std::runtime_error("Empty native host packet");
         if(f[0]=="SOURCE_CAP"){Size(f,2);if((f[1]!="1"&&f[1]!="2")||value.source_capability||!sources_||!source_bound_)throw std::runtime_error("Native Source capability has no unique actual host endpoint");sources_->Enable(static_cast<unsigned>(Integer(f[1],2)));value.source_capability=true;}
-        else if(f[0]=="FIXTURE") {Size(f,5);if(!value.fixture_layers.empty()||!Name(f[1])||(f[2]!="test"&&f[2]!="worker")||value.fixtures.size()>=256)throw std::runtime_error("Invalid fixture metadata");value.fixtures.push_back({f[1],f[2]=="worker"?sr::Scope::Worker:sr::Scope::Test,Names(f[4]),Integer(f[3],1)!=0});}
+        else if(f[0]=="FIXTURE") {Size(f,5);if(!value.fixture_layers.empty()||!Name(f[1])||(f[2]!="test"&&f[2]!="worker"))throw std::runtime_error("Invalid fixture metadata");value.fixtures.push_back({f[1],f[2]=="worker"?sr::Scope::Worker:sr::Scope::Test,Names(f[4]),Integer(f[3],1)!=0});}
         else if(f[0]=="FLAYER"){
-          Size(f,2);if(!value.fixtures.empty()||value.fixture_layers.size()>=sr::FixtureCatalog::kLayers||Integer(f[1],32)!=value.fixture_layers.size()+1)throw std::runtime_error("Invalid native fixture layer metadata");value.fixture_layers.emplace_back();
+          Size(f,2);if(!value.fixtures.empty()||Integer(f[1])!=value.fixture_layers.size()+1)throw std::runtime_error("Invalid native fixture layer metadata");value.fixture_layers.emplace_back();
         }
         else if(f[0]=="FDECL"){
-          Size(f,6);if(value.fixture_layers.empty()||++value.fixture_declaration_count>sr::FixtureCatalog::kDeclarations||Integer(f[1],256)!=value.fixture_declaration_count||!Name(f[2])||(f[3]!="-"&&f[3]!="test"&&f[3]!="worker")||(f[4]!="-"&&f[4]!="0"&&f[4]!="1"))throw std::runtime_error("Invalid native raw fixture declaration");
+          Size(f,6);if(value.fixture_layers.empty()||++value.fixture_declaration_count==0||Integer(f[1])!=value.fixture_declaration_count||!Name(f[2])||(f[3]!="-"&&f[3]!="test"&&f[3]!="worker")||(f[4]!="-"&&f[4]!="0"&&f[4]!="1"))throw std::runtime_error("Invalid native raw fixture declaration");
           value.fixture_layers.back().push_back({value.fixture_declaration_count,f[2],Names(f[5]),f[3]=="-"?std::nullopt:std::optional<sr::Scope>(f[3]=="worker"?sr::Scope::Worker:sr::Scope::Test),f[4]=="-"?std::nullopt:std::optional<bool>(f[4]=="1")});
         }
         else if(f[0]=="FTITLE"||f[0]=="FLOCATION"){
-          Size(f,f[0]=="FTITLE"?3:5);const auto id=Integer(f[1],256);
+          Size(f,f[0]=="FTITLE"?3:5);const auto id=Integer(f[1]);
           if(!id||id>(value.fixture_layers.empty()?value.fixtures.size():value.fixture_declaration_count))throw std::runtime_error("Native fixture diagnostic metadata has no actual declaration");
-          if(f[0]=="FTITLE"){const auto title=sr::RuntimeSkipReason(f[2]);if(!sr::JsonString(title,4096)||!value.fixture_titles.emplace(id,title).second)throw std::runtime_error("Invalid or duplicate native fixture display title");}
-          else value.fixture_sources.Capture({id,sr::DecodeHex(f[2],16384),static_cast<uint32_t>(Integer(f[3],2147483647)),static_cast<uint32_t>(Integer(f[4],2147483647))});
+          if(f[0]=="FTITLE"){const auto title=sr::RuntimeSkipReason(f[2]);if(!sr::JsonString(title)||!value.fixture_titles.emplace(id,title).second)throw std::runtime_error("Invalid or duplicate native fixture display title");}
+          else value.fixture_sources.Capture({id,sr::DecodeHex(f[2]),static_cast<uint32_t>(Integer(f[3],2147483647)),static_cast<uint32_t>(Integer(f[4],2147483647))});
         }
         else if(f[0]=="FTIMEOUT"){
-          Size(f,3);const auto id=Integer(f[1],256),timeout=Integer(f[2],120000);
-          if(!id||id>(value.fixture_layers.empty()?value.fixtures.size():value.fixture_declaration_count)||value.fixture_timeout_declarations.size()>=256)throw std::runtime_error("Native fixture timeout has no actual declaration");
+          Size(f,3);const auto id=Integer(f[1]),timeout=Integer(f[2],120000);
+          if(!id||id>(value.fixture_layers.empty()?value.fixtures.size():value.fixture_declaration_count))throw std::runtime_error("Native fixture timeout has no actual declaration");
           value.fixture_timeout_declarations.push_back({id,timeout});
         }
         else if(f[0]=="FOPTION"||f[0]=="FLITERAL"){
-          Size(f,f[0]=="FOPTION"?3:4);const auto id=Integer(f[1],256);if(!id||id>value.fixture_declaration_count)throw std::runtime_error("Native fixture value metadata has no actual declaration");
+          Size(f,f[0]=="FOPTION"?3:4);const auto id=Integer(f[1]);if(!id||id>value.fixture_declaration_count)throw std::runtime_error("Native fixture value metadata has no actual declaration");
           auto& record=value.fixture_value_declarations[id];record.declaration=id;
           if(f[0]=="FOPTION"){if(record.option)throw std::runtime_error("Duplicate native fixture option flag");record.option=Integer(f[2],1)!=0;}
           else{if(record.literal)throw std::runtime_error("Duplicate native fixture literal declaration");record.literal=FixtureValue(f[2],f[3]);}
         }
         else if(f[0]=="FCONFIG"){
-          Size(f,4);if(value.fixture_layers.empty()||value.fixture_option_overrides.size()>=256||!Name(f[1]))throw std::runtime_error("Native fixture configuration metadata rejected");value.fixture_option_overrides.push_back({f[1],FixtureValue(f[2],f[3])});
+          Size(f,4);if(value.fixture_layers.empty()||!Name(f[1]))throw std::runtime_error("Native fixture configuration metadata rejected");value.fixture_option_overrides.push_back({f[1],FixtureValue(f[2],f[3])});
         }
         else if(f[0]=="PROJECT"){
-          Size(f,5);const auto id=Integer(f[1],128);if(id!=value.projects.size()+1)throw std::runtime_error("Native project declaration order rejected");
-          const auto name=sr::DecodeHex(f[2],256),metadata=sr::DecodeHex(f[4],16384);
-          if(!sr::JsonString(Quote(name),256)||!sr::ProjectMetadataJSON(metadata))throw std::runtime_error("Native project name or metadata JSON rejected");
+          Size(f,5);const auto id=Integer(f[1]);if(id!=value.projects.size()+1)throw std::runtime_error("Native project declaration order rejected");
+          const auto name=sr::DecodeHex(f[2]),metadata=sr::DecodeHex(f[4]);
+          if(!sr::JsonString(Quote(name))||!sr::ProjectMetadataJSON(metadata))throw std::runtime_error("Native project name or metadata JSON rejected");
           value.projects.push_back({name,{},std::nullopt,Integer(f[3],1)!=0});value.project_metadata.push_back(metadata);
         }
-        else if(f[0]=="PROJECT_OUTPUT_DIR"){Size(f,3);const auto id=Integer(f[1],128);if(!id)throw std::runtime_error("Native project output root has no actual declaration");value.project_output_roots.Declare(id-1,value.projects.size(),sr::DecodeHex(f[2],7900),options_.suite);}
-        else if(f[0]=="REPEAT_EACH"){Size(f,3);value.repeat_declarations.Declare(Integer(f[1],128),value.projects.size(),sr::ParseNativeRepeatCount(f[2],0));}
+        else if(f[0]=="PROJECT_OUTPUT_DIR"){Size(f,3);const auto id=Integer(f[1]);if(!id)throw std::runtime_error("Native project output root has no actual declaration");value.project_output_roots.Declare(id-1,value.projects.size(),sr::DecodeHex(f[2]),options_.suite);}
+        else if(f[0]=="REPEAT_EACH"){Size(f,3);value.repeat_declarations.Declare(Integer(f[1]),value.projects.size(),sr::ParseNativeRepeatCount(f[2],0));}
         else if(SnapshotDeclaration(value,f)){}
         else if(f[0]=="ROOT_TIMEOUT"){Size(f,2);value.default_timeouts.Root(Integer(f[1],120000));}
-        else if(f[0]=="PROJECT_TIMEOUT"){Size(f,3);const auto id=Integer(f[1],128);if(!id||id>value.projects.size())throw std::runtime_error("Native project timeout has no actual declaration");value.default_timeouts.Project(id-1,Integer(f[2],120000));}
+        else if(f[0]=="PROJECT_TIMEOUT"){Size(f,3);const auto id=Integer(f[1]);if(!id||id>value.projects.size())throw std::runtime_error("Native project timeout has no actual declaration");value.default_timeouts.Project(id-1,Integer(f[2],120000));}
         else if(f[0]=="FULLY_PARALLEL"){
           Size(f,2);if(value.fully_parallel.has_value())throw std::runtime_error("Duplicate native fully-parallel declaration");value.fully_parallel=Integer(f[1],1)!=0;
         }
         else if(f[0]=="PROJECT_PARALLEL"){
-          Size(f,3);const auto id=Integer(f[1],128);if(!id||id>value.projects.size()||!value.project_parallel.emplace(id-1,Integer(f[2],1)!=0).second)throw std::runtime_error("Invalid native project fully-parallel declaration");
+          Size(f,3);const auto id=Integer(f[1]);if(!id||id>value.projects.size()||!value.project_parallel.emplace(id-1,Integer(f[2],1)!=0).second)throw std::runtime_error("Invalid native project fully-parallel declaration");
         }
         else if(f[0]=="PROJECT_DEP"){
-          Size(f,3);const auto id=Integer(f[1],128);if(!id||id>value.projects.size()||value.projects[id-1].dependencies.size()>=128)throw std::runtime_error("Native project dependency owner/capacity rejected");value.projects[id-1].dependencies.push_back(sr::DecodeHex(f[2],256));
+          Size(f,3);const auto id=Integer(f[1]);if(!id||id>value.projects.size())throw std::runtime_error("Native project dependency owner rejected");value.projects[id-1].dependencies.push_back(sr::DecodeHex(f[2]));
         }
         else if(f[0]=="PROJECT_TEARDOWN"){
-          Size(f,3);const auto id=Integer(f[1],128);if(!id||id>value.projects.size()||value.projects[id-1].teardown)throw std::runtime_error("Native project teardown owner rejected");value.projects[id-1].teardown=sr::DecodeHex(f[2],256);
+          Size(f,3);const auto id=Integer(f[1]);if(!id||id>value.projects.size()||value.projects[id-1].teardown)throw std::runtime_error("Native project teardown owner rejected");value.projects[id-1].teardown=sr::DecodeHex(f[2]);
         }
         else if(f[0]=="PROJECT_TEST"){
-          Size(f,3);const auto project=Integer(f[1],128),test=Integer(f[2]);if(!project||project>value.projects.size()||!value.titles.contains(test)||!value.project_tests.emplace(test,project-1).second)throw std::runtime_error("Native project test membership rejected");
+          Size(f,3);const auto project=Integer(f[1]),test=Integer(f[2]);if(!project||project>value.projects.size()||!value.titles.contains(test)||!value.project_tests.emplace(test,project-1).second)throw std::runtime_error("Native project test membership rejected");
         }
         else if(f[0]=="GREP_GLOBAL_TAGS"){
-          Size(f,2);if(value.grep_global_tag_count)throw std::runtime_error("Duplicate native global grep tag declaration");value.grep_global_tag_count=Integer(f[1],64);
+          Size(f,2);if(value.grep_global_tag_count)throw std::runtime_error("Duplicate native global grep tag declaration");value.grep_global_tag_count=Integer(f[1]);
         }
         else if(f[0]=="GREP_GLOBAL_TAG"){
-          Size(f,3);const auto index=Integer(f[1],64);const auto tag=sr::GrepUnits(Scalar(f[2],256),256);
-          if(!value.grep_global_tag_count||index!=value.grep_global_tags.size()||index>=*value.grep_global_tag_count||tag.empty()||tag.front()!='@')throw std::runtime_error("Native global grep tag owner/order/capacity rejected");
+          Size(f,3);const auto index=Integer(f[1]);const auto tag=sr::GrepUnits(Scalar(f[2]));
+          if(!value.grep_global_tag_count||index!=value.grep_global_tags.size()||index>=*value.grep_global_tag_count||tag.empty()||tag.front()!='@')throw std::runtime_error("Native global grep tag owner/order rejected");
           value.grep_global_tags.push_back(tag);
         }
         else if(f[0]=="GREP_CONFIG"||f[0]=="GREP_REGEXP"){
-          const bool declaration=f[0]=="GREP_CONFIG";Size(f,declaration?4:5);const auto owner=Integer(f[1],128);
+          const bool declaration=f[0]=="GREP_CONFIG";Size(f,declaration?4:5);const auto owner=Integer(f[1]);
           if(owner>value.projects.size()||(f[2]!="include"&&f[2]!="exclude"))throw std::runtime_error("Native grep config owner/kind rejected");
           const bool include=f[2]=="include";auto& layer=owner?value.grep_config.projects[owner-1]:value.grep_config.root;
           auto& patterns=include?layer.include:layer.exclude;const auto key=std::pair(static_cast<size_t>(owner),include);
           if(declaration){
-            if(patterns||!value.grep_expected.emplace(key,Integer(f[3],128)).second)throw std::runtime_error("Duplicate native grep config field");
+            if(patterns||!value.grep_expected.emplace(key,Integer(f[3])).second)throw std::runtime_error("Duplicate native grep config field");
             patterns.emplace();
           }else{
             const auto expected=value.grep_expected.find(key);
             if(!patterns||expected==value.grep_expected.end()||patterns->size()>=expected->second)throw std::runtime_error("Native grep RegExp lacks actual config declaration");
-            const auto flags=f[4]=="-"?std::string{}:f[4];if(flags.size()>8)throw std::runtime_error("Native grep RegExp flag capacity exceeded");
-            patterns->push_back({sr::GrepUnits(Scalar(f[3],4096)),flags});
+            const auto flags=f[4]=="-"?std::string{}:f[4];
+            patterns->push_back({sr::GrepUnits(Scalar(f[3])),flags});
           }
         }
         else if(f[0]=="GREP_COMPONENT"){
-          Size(f,5);const auto id=Integer(f[1]),position=Integer(f[2],64);
+          Size(f,5);const auto id=Integer(f[1]),position=Integer(f[2]);
           if(!value.titles.contains(id))throw std::runtime_error("Native grep component lacks actual test declaration");
           auto& components=value.grep_components[id];
-          if(position!=components.size()||components.size()>=65)throw std::runtime_error("Native grep component order/capacity rejected");
-          components.push_back({sr::GrepUnits(Scalar(f[3],4096)),static_cast<size_t>(Integer(f[4],64)),{}});
+          if(position!=components.size())throw std::runtime_error("Native grep component order rejected");
+          components.push_back({sr::GrepUnits(Scalar(f[3])),static_cast<size_t>(Integer(f[4])),{}});
         }
         else if(f[0]=="GREP_TAG"){
-          Size(f,4);const auto id=Integer(f[1]),position=Integer(f[2],64);const auto found=value.grep_components.find(id);
+          Size(f,4);const auto id=Integer(f[1]),position=Integer(f[2]);const auto found=value.grep_components.find(id);
           if(found==value.grep_components.end()||position>=found->second.size())throw std::runtime_error("Native grep tag lacks actual declaring component");
-          auto& part=found->second[position];const auto tag=sr::GrepUnits(Scalar(f[3],256),256);
+          auto& part=found->second[position];const auto tag=sr::GrepUnits(Scalar(f[3]));
           if(tag.empty()||tag.front()!='@'||part.tags.size()>=part.expected_tags)throw std::runtime_error("Native grep declared tag rejected");
           part.tags.push_back(tag);
         }
-        else if(f[0]=="TEST") {if(options_.directory_admission&&options_.directory_admission->collection&&shared_->directory_declarations>=4096)throw std::runtime_error("Native global directory declaration capacity4096 exceeded");Size(f,7);const auto id=Integer(f[1]);if(!id||value.tests.size()>=4096||value.titles.contains(id))throw std::runtime_error("Invalid test metadata");value.titles[id]=Scalar(f[5],4096);value.declared_timeouts[id]=f[3]=="-"?std::nullopt:std::optional<uint64_t>(Integer(f[3],120000));value.tests.push_back({id,std::to_string(id),Names(f[6]),static_cast<unsigned>(Integer(f[2],100)),Integer(f[4],1)!=0});if(options_.directory_admission&&options_.directory_admission->collection)++shared_->directory_declarations;}
+        else if(f[0]=="TEST") {Size(f,7);const auto id=Integer(f[1]);if(!id||value.titles.contains(id))throw std::runtime_error("Invalid test metadata");value.titles[id]=Scalar(f[5]);value.declared_timeouts[id]=f[3]=="-"?std::nullopt:std::optional<uint64_t>(Integer(f[3],120000));value.tests.push_back({id,std::to_string(id),Names(f[6]),static_cast<unsigned>(Integer(f[2],std::numeric_limits<unsigned>::max())),Integer(f[4],1)!=0});}
         else if(f[0]=="ONLY"){Size(f,2);const auto id=Integer(f[1]);if(!value.titles.contains(id)||std::find(value.focused.begin(),value.focused.end(),id)!=value.focused.end())throw std::runtime_error("Invalid native focused declaration metadata");value.focused.push_back(id);}
-        else if(f[0]=="SKIP"){Size(f,3);const auto id=Integer(f[1]);if(!value.titles.contains(id)||!value.skipped.emplace(id,Scalar(f[2],8192)).second)throw std::runtime_error("Invalid native static skip metadata");}
-        else if(f[0]=="SUITE"){Size(f,5);const auto titleId=Integer(f[1]);if(!titleId||!value.suite_titles.emplace(titleId,Scalar(f[4],4096)).second)throw std::runtime_error("Invalid native suite title metadata");if(value.suites.size()>=256)throw std::runtime_error("Native suite declaration capacity exceeded");value.suites.push_back({Integer(f[1]),Integer(f[2]),static_cast<uint32_t>(Integer(f[3],4096)),{}});}
+        else if(f[0]=="SKIP"){Size(f,3);const auto id=Integer(f[1]);if(!value.titles.contains(id)||!value.skipped.emplace(id,Scalar(f[2])).second)throw std::runtime_error("Invalid native static skip metadata");}
+        else if(f[0]=="SUITE"){Size(f,5);const auto titleId=Integer(f[1]);if(!titleId||!value.suite_titles.emplace(titleId,Scalar(f[4])).second)throw std::runtime_error("Invalid native suite title metadata");value.suites.push_back({Integer(f[1]),Integer(f[2]),static_cast<uint32_t>(Integer(f[3],UINT32_MAX)),{}});}
         else if(f[0]=="FLOCK"||f[0]=="TLOCK"||f[0]=="SLOCK"){
           Size(f,f[0]=="FLOCK"?2:3);auto* names=&value.file_locks;
           if(f[0]!="FLOCK"){const auto owner=Integer(f[1]);if(f[0]=="TLOCK"){if(!value.titles.contains(owner))throw std::runtime_error("Unknown native test lock declaration owner");names=&value.test_locks[owner];}else{if(!value.suite_titles.contains(owner))throw std::runtime_error("Unknown native suite lock declaration owner");names=&value.suite_locks[owner];}}
-          if(names->size()>=64)throw std::runtime_error("Native resource-lock declaration capacity64 exceeded");
           names->push_back(sr::ResourceLockName(f.back()));
         }
         else if(f[0]=="SMODE"){
@@ -1256,22 +1237,20 @@ class Runner {
           if(!value.suite_titles.contains(id))throw std::runtime_error("Unknown native suite modifier owner");
           auto& modifiers=value.suite_modifiers[id];
           if(f[0]=="SONLY"){if(modifiers.only)throw std::runtime_error("Duplicate native focused suite modifier");modifiers.only=true;}
-          else{if(modifiers.skip)throw std::runtime_error("Duplicate native skipped suite modifier");modifiers.skip=Scalar(f[2],8192);}
+          else{if(modifiers.skip)throw std::runtime_error("Duplicate native skipped suite modifier");modifiers.skip=Scalar(f[2]);}
         }
-        else if(f[0]=="MEMBER"){Size(f,4);if(value.members.size()>=4096)throw std::runtime_error("Native suite member capacity exceeded");value.members.push_back({Integer(f[1]),Integer(f[2]),static_cast<uint32_t>(Integer(f[3],4096))});}
+        else if(f[0]=="MEMBER"){Size(f,4);value.members.push_back({Integer(f[1]),Integer(f[2]),static_cast<uint32_t>(Integer(f[3],UINT32_MAX))});}
         else if(f[0]=="SHOOK"){
-          Size(f,6);const auto owner=Integer(f[1]),callback=Integer(f[3],8192);const auto kind=HookKind(f[2]);
-          if(!callback||value.nested_hooks.size()>=8192||!value.nested_hooks.emplace(callback,NestedHookSpec{kind,{callback,f[4]=="-"?std::nullopt:std::optional<uint64_t>(Integer(f[4],120000)),Names(f[5])}}).second)throw std::runtime_error("Invalid native nested hook metadata");
+          Size(f,6);const auto owner=Integer(f[1]),callback=Integer(f[3]);const auto kind=HookKind(f[2]);
+          if(!callback||!value.nested_hooks.emplace(callback,NestedHookSpec{kind,{callback,f[4]=="-"?std::nullopt:std::optional<uint64_t>(Integer(f[4],120000)),Names(f[5])}}).second)throw std::runtime_error("Invalid native nested hook metadata");
           const auto suite=std::find_if(value.suites.begin(),value.suites.end(),[&](const auto& entry){return entry.id==owner;});
           if(suite==value.suites.end())throw std::runtime_error("Unknown native nested hook owner");
           suite->hooks.push_back({kind==sr::HookKind::BeforeAll?sr::SuiteHookKind::BeforeAll:kind==sr::HookKind::BeforeEach?sr::SuiteHookKind::BeforeEach:kind==sr::HookKind::AfterEach?sr::SuiteHookKind::AfterEach:sr::SuiteHookKind::AfterAll,callback});
         }
-        else if(f[0]=="HOOK"){Size(f,5);auto& hooks=value.hooks[HookKind(f[1])];const auto callback=Integer(f[2],256);if(callback!=hooks.size()+1)throw std::runtime_error("Invalid native hook callback order");hooks.push_back({callback,f[3]=="-"?std::nullopt:std::optional<uint64_t>(Integer(f[3],120000)),Names(f[4])});}
+        else if(f[0]=="HOOK"){Size(f,5);auto& hooks=value.hooks[HookKind(f[1])];const auto callback=Integer(f[2]);if(callback!=hooks.size()+1)throw std::runtime_error("Invalid native hook callback order");hooks.push_back({callback,f[3]=="-"?std::nullopt:std::optional<uint64_t>(Integer(f[3],120000)),Names(f[4])});}
         else if(f[0]=="LOADED"){Size(f,1);loaded=true;}
-        else if(f[0]=="HOST_ERROR"){Size(f,2);throw std::runtime_error("Native suite module failed: "+Scalar(f[1],8192));}
+        else if(f[0]=="HOST_ERROR"){Size(f,2);throw std::runtime_error("Native suite module failed: "+Scalar(f[1]));}
         else throw std::runtime_error("Unexpected native metadata packet");
-        if(value.signature.size()+line.size()+1>16777216)throw std::runtime_error("Native metadata capacity16MiB exceeded");
-        if(options_.directory_admission&&options_.directory_admission->collection){if(line.size()+1>16777216-shared_->directory_protocol_bytes)throw std::runtime_error("Native global directory protocol capacity16MiB exceeded");shared_->directory_protocol_bytes+=line.size()+1;}
         value.signature+=line+'\n';
       }
       if(host_->Exited())throw std::runtime_error("Actual host exited during module loading");
@@ -1300,7 +1279,7 @@ class Runner {
     }
     for(const auto& test:value.tests){const auto member=value.project_tests.find(test.id);if(!value.projects.empty()&&member==value.project_tests.end())throw std::runtime_error("Native test timeout lacks actual project membership");value.timeouts.emplace(test.id,value.default_timeouts.Test(value.declared_timeouts.at(test.id),member==value.project_tests.end()?std::nullopt:std::optional<size_t>(member->second)));}
     sr::FixtureGraph graph(value.fixtures);for(const auto& test:value.tests)graph.Plan(test.fixtures);
-    size_t hook_count=0;for(const auto&[kind,hooks]:value.hooks){(void)kind;hook_count+=hooks.size();for(const auto& hook:hooks)graph.Plan(hook.fixtures);}if(hook_count>256)throw std::runtime_error("Native hook declaration capacity256 exceeded");
+    for(const auto&[kind,hooks]:value.hooks){(void)kind;for(const auto& hook:hooks)graph.Plan(hook.fixtures);}
     if(!value.suites.empty()){
       if(!value.hooks.empty()||value.members.size()!=value.tests.size())throw std::runtime_error("Native nested declarations cannot mix flat hooks or omit memberships");
       sr::NativeSuiteTree tree(value.suites,value.members);
@@ -1325,15 +1304,12 @@ class Runner {
     if(!value.grep_components.empty()||options_.grep.Active()||value.grep_config.Active()){
       std::vector<uint64_t> ids;for(const auto& test:value.tests)ids.push_back(test.id);sr::ValidateGrepComponents(value.grep_components,ids);
       const auto file=sr::GrepUTF8(sr::GrepFileComponent(options_.suite,options_.test_directory));
-      size_t grep_title_bytes=0;
       for(const auto id:ids){std::u16string project;
         if(!value.projects.empty()){
           const auto member=value.project_tests.find(id);if(member==value.project_tests.end()||member->second>=value.projects.size())throw std::runtime_error("Native grep project membership incomplete");
           project=sr::GrepUTF8(value.projects[member->second].name);
         }
         auto composed=sr::GrepJSON(sr::ComposeGrepTitle(project,file,value.grep_components.at(id),value.grep_global_tags));
-        if(composed.size()>16777216-grep_title_bytes)throw std::runtime_error("Native composed grep metadata capacity16MiB exceeded");
-        grep_title_bytes+=composed.size();
         value.grep_titles.emplace(id,std::move(composed));
       }
       if(!previous&&(options_.grep.Active()||value.grep_config.Active())){
@@ -1342,7 +1318,7 @@ class Runner {
         if(options_.grep.Active())options_.selection.eligible.emplace();
         sr::GrepPattern::Work work;work.check_stopped=[this]{ThrowIfStopped();};
         for(const auto id:ids){
-          ThrowIfStopped();const auto title=sr::GrepUnits(value.grep_titles.at(id),32768);
+          ThrowIfStopped();const auto title=sr::GrepUnits(value.grep_titles.at(id));
           const auto project=value.projects.empty()?std::nullopt:std::optional<size_t>(value.project_tests.at(id));
           if(config&&!config->Matches(title,project,work))continue;
           if(config)options_.selection.catalog_eligible->insert(id);
@@ -1422,7 +1398,7 @@ class Runner {
         if(project_plan_&&(!current_project_||value.project_tests.at(test.id)!=current_project_->index))continue;
         const auto skipped=value.skipped.find(test.id);
         if(skipped==value.skipped.end())selected.push_back(test);
-        else{Charge(value.titles.at(test.id).size()+skipped->second.size()+128);report_.skipped.push_back({test.id,value.titles.at(test.id),skipped->second});}
+        else{report_.skipped.push_back({test.id,value.titles.at(test.id),skipped->second});}
       }
       value.tests=std::move(selected);metadata_=std::move(value);
     }
@@ -1465,13 +1441,13 @@ class Runner {
       else if(f[0]=="BODY_SKIPPED"){Size(f,3);const auto id=Integer(f[1]),generation=Integer(f[2]);if(!active_||active_->test.id!=id||active_->generation!=generation||!body_physical_||!runtime_skip_)throw std::runtime_error("Runtime skip settlement has no accepted native request");SettledWithAttachments(0,id,generation,[this](const auto& failure,uint64_t){body_physical_=false;FixtureTransition([&](double now){owners_->Finish(!failure,failure.value_or(""),now);});},now);}
       else if(f[0]=="SET_TIMEOUT"){AmendTimeoutPacket(f,now,false);}
       else if(f[0]=="READY"||f[0]=="STARTED"){Size(f,4);const auto token=Integer(f[1]),id=Integer(f[2]),generation=Integer(f[3]);if(f[0]=="READY"){SourceSetupClosed(f);if(FixtureReadyClock(token,id,generation,now))owners_->Ready(token,id,generation,now);}}
-      else if(f[0]=="SETTLED"){Size(f,6);SourceSetupClosed(f);const bool ok=Integer(f[4],1)!=0;const std::string error=ok?"":Scalar(f[5],8192);if(!ok)RememberFlatFixtureError(Integer(f[1]),Integer(f[2]),Integer(f[3]),error);FixtureSettledClock(Integer(f[1]),Integer(f[2]),Integer(f[3]),now);owners_->Settled(Integer(f[1]),Integer(f[2]),Integer(f[3]),ok,error,now);}
+      else if(f[0]=="SETTLED"){Size(f,6);SourceSetupClosed(f);const bool ok=Integer(f[4],1)!=0;const std::string error=ok?"":Scalar(f[5]);if(!ok)RememberFlatFixtureError(Integer(f[1]),Integer(f[2]),Integer(f[3]),error);FixtureSettledClock(Integer(f[1]),Integer(f[2]),Integer(f[3]),now);owners_->Settled(Integer(f[1]),Integer(f[2]),Integer(f[3]),ok,error,now);}
       else if(f[0]=="BODY_RESULT"||f[0]=="BODY_RESULT_UTF16"||f[0]=="BODY_RESULT_FROM_STEP_UTF16"){
-        const bool from_step=f[0]=="BODY_RESULT_FROM_STEP_UTF16";Size(f,from_step?6:5);const auto id=Integer(f[1]),generation=Integer(f[2]);const bool ok=Integer(f[3],1)!=0;const auto error=ok?"":(f[0]=="BODY_RESULT_UTF16"||from_step)?sr::RuntimeSkipReason(f[4]):Scalar(f[4],8192);const auto source=from_step?Integer(f[5]):0;
+        const bool from_step=f[0]=="BODY_RESULT_FROM_STEP_UTF16";Size(f,from_step?6:5);const auto id=Integer(f[1]),generation=Integer(f[2]);const bool ok=Integer(f[3],1)!=0;const auto error=ok?"":(f[0]=="BODY_RESULT_UTF16"||from_step)?sr::RuntimeSkipReason(f[4]):Scalar(f[4]);const auto source=from_step?Integer(f[5]):0;
         if(from_step){if(ok||!source||!active_||active_->test.id!=id||active_->generation!=generation||!body_physical_)throw std::runtime_error("Invalid native body originating-step failure receipt");steps_.FailureSource(0,id,generation,source);}
         if(active_&&active_->test.id==id&&active_->generation==generation&&body_physical_){if(!ok){actual_error_=error;originating_step_=source;if(runtime_skip_){skip_callback_failed_=true;finish_ok_=false;finish_error_="Actual callback failed after runtime skip";}}SettledWithAttachments(0,id,generation,[this,ok](const auto& failure,uint64_t actual_source){if(failure&&actual_error_.empty()){actual_error_=*failure;originating_step_=actual_source;}body_physical_=false;FixtureTransition([&](double now){owners_->Finish(ok&&!failure,failure.value_or(ok?"":"Actual test callback failed"),now);});},now,error,source);}
       }
-      else if(f[0]=="HOST_ERROR"){Size(f,2);throw std::runtime_error("Native host callback protocol failed: "+Scalar(f[1],8192));}
+      else if(f[0]=="HOST_ERROR"){Size(f,2);throw std::runtime_error("Native host callback protocol failed: "+Scalar(f[1]));}
       else throw std::runtime_error("Unknown native host control packet");
     }
     FixtureTransition([&](double now){if(sources_)sources_->Tick(now);soft_.Tick(now);steps_.Tick(now);});
@@ -1593,9 +1569,7 @@ class Runner {
     co_await RetireAttachments();co_await RetireOutputs();
     if(closing_worker_&&(!active_||finish_ok_)&&!close_failure_&&(exit->signaled||exit->code!=0)){Global(Quote("Actual host worker failed during final teardown"));close_failure_=true;}
     if(!shared_->active_workers)throw std::logic_error("Native active worker reservation underflow");
-    if(options_.directory_admission)shared_->directory_worker_bytes+=host_->Stdout().size()+host_->Stderr().size();
     --shared_->active_workers;report_.workers.push_back(sr::ReportWorker{worker_index_,host_->Pid(),exit->signaled,exit->code,host_->Stdout(),host_->Stderr()});worker_captured_=true;last_pid_=host_->Pid();DirectoryHostCaptured();
-    size_t bytes=shared_->directory_worker_bytes;for(const auto& worker:report_.workers)if(!options_.directory_admission)bytes+=worker.stdout_bytes.size()+worker.stderr_bytes.size();if(bytes>16777216)throw std::runtime_error("Native worker captured byte budget16MiB exceeded");
   }
   sr::NativeTask<> HandleExit(){if((runtime_skip_||steps_.HasLocalSkipPhysical())&&(body_physical_||steps_.Physical())){skip_callback_failed_=true;finish_ok_=false;if(finish_error_.empty())finish_error_="Actual worker exited before runtime-skip raw callback cleanup receipt";if(actual_error_.empty())actual_error_=Quote(finish_error_);}if(body_physical_)body_physical_=false;if(hook_worker_)hook_worker_->WorkerClosed();else owners_->WorkerClosed();if(active_&&!finished_){finished_=true;finish_ok_=false;finish_error_="Actual host worker exited";}co_await CaptureWorker();}
   sr::NativeTask<> CloseWorker(bool force=false){
@@ -1612,7 +1586,7 @@ class Runner {
         co_await continuation_.Yield(sr::DedicatedRealMilliseconds()+10);
         for(const auto& line:host_->Poll(0)){
           const auto fields=Fields(line);
-          if(!fields.empty()&&fields[0]=="HOST_ERROR"){Size(fields,2);throw std::runtime_error("Native collection close failed: "+Scalar(fields[1],8192));}
+          if(!fields.empty()&&fields[0]=="HOST_ERROR"){Size(fields,2);throw std::runtime_error("Native collection close failed: "+Scalar(fields[1]));}
           throw std::runtime_error("Unexpected native collection packet after declarations");
         }
       }else if(!force)co_await Pump();else {co_await continuation_.Yield(sr::DedicatedRealMilliseconds()+10);try{host_->Poll(0);}catch(const std::exception&){KillHost();}}
@@ -1680,15 +1654,13 @@ int main(int argc,char** argv){
       if(i+1>=argc)throw std::runtime_error("Missing native runner option value");
       const std::string value=argv[++i];
       if(key=="--grep"||key=="-g"||key=="--grep-invert"||key=="-G"){
-        if(value.size()>16384)throw std::runtime_error("Native grep CLI UTF8 argument capacity exceeded");
         (key=="--grep"||key=="-g"?options.grep.include_argument:options.grep.exclude_argument)=value;continue;
       }
       if(key=="--project"){
-        if(options.projects.size()>=128||value.empty()||value.size()>256)throw std::runtime_error("Native project selector name/capacity rejected");
+        if(value.empty())throw std::runtime_error("Native project selector name rejected");
         options.projects.push_back(value);continue;
       }
       if(key=="--test-id"){
-        if(options.selection.ids.size()>=4096)throw std::runtime_error("Native selected identity capacity4096 exceeded");
         options.selection.ids.push_back(Integer(value));continue;
       }
       if(!seen.insert(key).second)throw std::runtime_error("Duplicate native runner option");
@@ -1698,16 +1670,16 @@ int main(int argc,char** argv){
       if(key=="--test-match-json"||key=="--test-ignore-json"||key=="--file-filters-json"){if(!options.discovery)options.discovery.emplace();sr::NativeDiscoveryConfiguration(*options.discovery,key,value);continue;}
       if(key=="--output-directory"){options.output_directory=sr::NativeOutputDirectoryRoot(value);continue;}
       if(key=="--repeat-each"){options.repeat_each=sr::ParseNativeRepeatCount(value,0);continue;}
-      if(key=="--workers"){options.workers=static_cast<unsigned>(Integer(value,8));if(!options.workers)throw std::runtime_error("Native parallel project workers require1..8");continue;}
+      if(key=="--workers"){options.workers=static_cast<unsigned>(Integer(value,std::numeric_limits<unsigned>::max()));if(!options.workers)throw std::runtime_error("Native parallel project workers require at least one");continue;}
       if(key=="--global-timeout"){options.global_timeout=Integer(value,2147483647);continue;}
-      if(key=="--max-failures"){options.max_failures=static_cast<unsigned>(Integer(value,4096));continue;}
+      if(key=="--max-failures"){options.max_failures=static_cast<unsigned>(Integer(value,std::numeric_limits<unsigned>::max()));continue;}
       if(key=="--shard"){
         const auto slash=value.find('/');
         if(slash==std::string::npos)throw std::runtime_error("Native shard must be current/total");
-        options.selection.shard_current=static_cast<uint32_t>(Integer(value.substr(0,slash),65536));
-        options.selection.shard_total=static_cast<uint32_t>(Integer(value.substr(slash+1),65536));
+        options.selection.shard_current=static_cast<uint32_t>(Integer(value.substr(0,slash),UINT32_MAX));
+        options.selection.shard_total=static_cast<uint32_t>(Integer(value.substr(slash+1),UINT32_MAX));
         if(!options.selection.shard_current||options.selection.shard_current>options.selection.shard_total)
-          throw std::runtime_error("Native shard must satisfy 1<=current<=total<=65536");
+          throw std::runtime_error("Native shard must satisfy 1<=current<=total");
         continue;
       }
       const auto path=paths.find(key);

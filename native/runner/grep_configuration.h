@@ -39,11 +39,7 @@ namespace suitecut::runner {
     ;
     public: explicit GrepConfiguration(const GrepConfigDeclarations& declarations){
       root_=Compile(declarations.root);
-      if(declarations.projects.size()>128)throw std::invalid_argument("Native config grep project capacity128 exceeded");
-      for(const auto& [project,layer]:declarations.projects){
-        if(project>=128)throw std::invalid_argument("Native config grep project identity rejected");
-        projects_.emplace(project,Compile(layer));
-      }
+      for(const auto& [project,layer]:declarations.projects)projects_.emplace(project,Compile(layer));
     }
     bool Matches(std::u16string_view title,std::optional<size_t> project,GrepPattern::Work& work)const{
       const Layer* layer=nullptr;
@@ -61,16 +57,9 @@ namespace suitecut::runner {
     }
     std::optional<Patterns> Compile(const std::optional<std::vector<GrepRegExp>>& declarations){
       if(!declarations)return std::nullopt;
-      if(declarations->size()>128)throw std::invalid_argument("Native config grep array capacity128 exceeded");
       Patterns result;
       for(const auto& declaration:*declarations){
-        if(++pattern_count_>256||declaration.source.size()>65536-pattern_units_)throw std::invalid_argument("Native config grep pattern/source aggregate capacity exceeded");
-        pattern_units_+=declaration.source.size();
-        auto pattern=std::make_shared<const GrepExpression>(CompileConfigGrep(declaration));
-        if(pattern->StateCount()>65536-state_count_||pattern->RangeCount()>262144-range_count_)throw std::invalid_argument("Native config grep aggregate state/range capacity exceeded");
-        state_count_+=pattern->StateCount();
-        range_count_+=pattern->RangeCount();
-        result.push_back(std::move(pattern));
+        result.push_back(std::make_shared<const GrepExpression>(CompileConfigGrep(declaration)));
       }
       return result;
     }
@@ -80,7 +69,6 @@ namespace suitecut::runner {
       }
       ;
     }
-    size_t pattern_count_=0,pattern_units_=0,state_count_=0,range_count_=0;
     Layer root_;
     std::map<size_t,Layer> projects_;
   }

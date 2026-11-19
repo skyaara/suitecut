@@ -4,7 +4,7 @@
 #include <memory>
 
 namespace suitecut::detail {
-// Event observation is bounded, performs no I/O, and does not consume poll().
+// Event observation performs no I/O and does not consume poll().
 class BidiFeatures {
  public:
   BidiFeatures();

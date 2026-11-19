@@ -14,9 +14,10 @@ namespace suitecut {
 // Browser acknowledgements and optional UI predicates are not task grades.
 // observe({boxes?,depth?,frame?|framePath?,mode?:snapshot|frames|dialogs|screenshot,
 //          options?:screenshotOptions,scope?:CSS,format?:full|compact,query?,delta?,
-//          maxControls?:1..256,maxTextBytes?:1..65536,timeoutMs?})
+//          maxControls?,maxTextBytes?,timeoutMs?}); maxControls/maxTextBytes are optional
+// caller limits (absent or 0: no limit).
 // Full (default) returns {ok,snapshot,controls,url,title}. Compact returns
-// bounded controls with allowed actions plus separate non-actionable context.
+// controls with allowed actions plus separate non-actionable context.
 // Compact deltas return semantic changes and a CURRENT refIndex, or reset:true
 // with controls when their page/scope/budget differs from the last compact call.
 // A semantic match does not establish physical node identity or reuse old refs.
@@ -24,13 +25,13 @@ namespace suitecut {
 // act({action,ref?,value?,key?,values?,event?,x?,y?,button?,deltaX?,deltaY?,steps?,
 //      source?,target?,from?:{x,y},to?:{x,y},options?,expect?:waitCondition,
 //      response?:full|compact|delta|none,timeoutMs?}) or
-// act({actions:[individualUIActions...],timeoutMs?}) executes <=64 known actions,
+// act({actions:[individualUIActions...],timeoutMs?}) executes known actions,
 // stops on failure and observes once. No evaluate, selector or raw command action.
 // wait({ref?,state?,text?,url?,changed?,timeoutMs?}) polls visible UI evidence.
 // Both act/wait return a fresh observation if their one deadline permits, unless
 // response:none explicitly skips it. That mode retains refs until another
 // snapshot, navigation or page switch; detached nodes still fail in the backend.
-// Coordinate drag interpolates 20 steps by default (1..1000); ref drag uses
+// Coordinate drag interpolates 20 steps by default (any positive int); ref drag uses
 // the native locator gesture. Mouse event:doubleclick sends clickCount:2.
 // act result: {ok,delivered:true|false|null,execution:completed|partial|notSent|outcomeUnknown,
 //              effect:unverified|confirmed|unconfirmed,completion:unverified,...}.

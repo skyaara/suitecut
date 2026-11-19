@@ -8,10 +8,6 @@
 namespace suitecut {
 namespace {
 [[noreturn]] void wrong_type() { throw std::runtime_error("Incorrect JSON value type"); }
-void validate_limits(const JsonLimits& limits) {
-  if (!limits.max_bytes || !limits.max_nodes || limits.max_depth > 256)
-    throw std::invalid_argument("Invalid JSON limits");
-}
 std::size_t utf8_width(std::string_view text, std::size_t at) {
   const auto first = static_cast<unsigned char>(text[at]);
   std::size_t width;
@@ -34,8 +30,7 @@ std::size_t utf8_width(std::string_view text, std::size_t at) {
 class Parser {
  public:
   Parser(std::string_view text, JsonLimits limits) : text_(text), limits_(limits) {
-    validate_limits(limits_);
-    if (text_.size() > limits_.max_bytes) fail("input limit");
+    if (limits_.max_bytes && text_.size() > limits_.max_bytes) fail("input limit");
   }
   Json run() { auto value = parse(0); whitespace(); if (at_ != text_.size()) fail("trailing input"); return value; }
  private:
@@ -73,7 +68,7 @@ class Parser {
       }
       if (at_ != start) {
         const auto length = at_ - start;
-        if (length > limits_.max_string_bytes - out.size()) fail("string limit");
+        if (limits_.max_string_bytes && length > limits_.max_string_bytes - out.size()) fail("string limit");
         out.append(text_.substr(start, length));
       }
       if (at_ == text_.size()) break;
@@ -106,7 +101,7 @@ class Parser {
         const auto start = at_ - 1, width = utf8_width(text_, start);
         out.append(text_.substr(start, width)); at_ = start + width;
       }
-      if (out.size() > limits_.max_string_bytes) fail("string limit");
+      if (limits_.max_string_bytes && out.size() > limits_.max_string_bytes) fail("string limit");
     }
     fail("unterminated string");
   }
@@ -133,7 +128,8 @@ class Parser {
     return value;
   }
   Json parse(std::size_t depth) {
-    if (depth > limits_.max_depth || ++nodes_ > limits_.max_nodes) fail("nesting or node limit");
+    ++nodes_;
+    if ((limits_.max_depth && depth > limits_.max_depth) || (limits_.max_nodes && nodes_ > limits_.max_nodes)) fail("nesting or node limit");
     whitespace(); if (at_ == text_.size()) fail("missing value");
     switch (text_[at_]) {
       case 'n': literal("null"); return nullptr;
@@ -158,18 +154,18 @@ class Parser {
 };
 class Dumper {
  public:
-  explicit Dumper(JsonLimits limits) : limits_(limits) { validate_limits(limits_); }
+  explicit Dumper(JsonLimits limits) : limits_(limits) {}
   std::string run(const Json& value) { dump(value, 0); return std::move(out_); }
  private:
   JsonLimits limits_;
   std::size_t nodes_ = 0;
   std::string out_;
   void append(std::string_view value) {
-    if (value.size() > limits_.max_bytes - out_.size()) throw std::runtime_error("JSON output limit exceeded");
+    if (limits_.max_bytes && value.size() > limits_.max_bytes - out_.size()) throw std::runtime_error("JSON output limit exceeded");
     out_.append(value);
   }
   void string(std::string_view value) {
-    if (value.size() > limits_.max_string_bytes) throw std::runtime_error("JSON string limit exceeded");
+    if (limits_.max_string_bytes && value.size() > limits_.max_string_bytes) throw std::runtime_error("JSON string limit exceeded");
     append("\"");
     constexpr char hex[] = "0123456789abcdef";
     for (std::size_t i = 0; i < value.size();) {
@@ -190,7 +186,8 @@ class Dumper {
     append("\"");
   }
   void dump(const Json& value, std::size_t depth) {
-    if (depth > limits_.max_depth || ++nodes_ > limits_.max_nodes) throw std::runtime_error("JSON nesting or node limit exceeded");
+    ++nodes_;
+    if ((limits_.max_depth && depth > limits_.max_depth) || (limits_.max_nodes && nodes_ > limits_.max_nodes)) throw std::runtime_error("JSON nesting or node limit exceeded");
     if (value.is_null()) append("null");
     else if (value.is_bool()) append(value.as_bool() ? "true" : "false");
     else if (value.is_number()) {

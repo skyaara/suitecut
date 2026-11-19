@@ -4,16 +4,9 @@
 #include "resource_lock_declarations.h"
 namespace suitecut::runner {
 inline std::vector<std::vector<std::string>> WorkGroupLockNames(const TestWorkGroups& groups,const ResourceLockDeclarations& declarations){
-  std::vector<std::vector<std::string>> names;names.reserve(groups.Groups().size());size_t references=0,bytes=0;
+  std::vector<std::vector<std::string>> names;names.reserve(groups.Groups().size());
   for(const auto& group:groups.Groups()){
-    auto resolved=declarations.Resolve(std::set<uint64_t>(group.tests.begin(),group.tests.end()));
-    if(resolved.size()>ResourceLocks::kReferences-references)throw std::invalid_argument("Native inherited group-lock reference capacity exceeded");
-    references+=resolved.size();
-    for(const auto& name:resolved){
-      if(name.size()+32>ResourceLocks::kMetadata-bytes)throw std::invalid_argument("Native inherited group-lock metadata capacity exceeded");
-      bytes+=name.size()+32;
-    }
-    names.push_back(std::move(resolved));
+    names.push_back(declarations.Resolve(std::set<uint64_t>(group.tests.begin(),group.tests.end())));
   }
   return names;
 }
@@ -27,21 +20,13 @@ class WorkGroupLocks {
   WorkGroupLocks(const WorkGroupPool& pool,std::vector<std::vector<std::string>> names)
       :pool_(pool),names_(std::move(names)),records_(names_.size()){
     if(names_.size()!=pool.Plan().Groups().size())throw std::invalid_argument("Native group-lock plan membership mismatch");
-    std::set<std::string> unique;size_t references=0,bytes=0;
     for(auto& group:names_){
       std::sort(group.begin(),group.end());group.erase(std::unique(group.begin(),group.end()),group.end());
-      if(group.size()>ResourceLocks::kNames||group.size()>ResourceLocks::kReferences-references)throw std::invalid_argument("Native group-lock reference capacity exceeded");
-      references+=group.size();
-      for(const auto& name:group){
-        if(name.size()%2||name.size()>kResourceLockUnits*2||name.size()+32>ResourceLocks::kMetadata-bytes)
-          throw std::invalid_argument("Native group-lock name/metadata capacity exceeded");
-        bytes+=name.size()+32;unique.insert(name);
-        if(unique.size()>ResourceLocks::kNames)throw std::invalid_argument("Native group-lock namespace capacity4096 exceeded");
-      }
+      for(const auto& name:group)if(name.size()%2)throw std::invalid_argument("Native group-lock name is not UTF16");
     }
   }
   bool CanAcquire(size_t group)const{
-    if(group>=names_.size()||records_[group]||active_>=WorkGroupPool::kWorkers)return false;
+    if(group>=names_.size()||records_[group])return false;
     for(const auto& name:names_[group])if(holders_.contains(name))return false;
     return true;
   }

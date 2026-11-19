@@ -171,7 +171,6 @@ class Source : public CefClient,
     DevToolsCallback callback;
     std::string session;
     bool retain_after_cancel = false;
-    size_t response_limit = kMaxResponseBytes;
     bool retained_control = false;
     bool lossless_scalars = false;
     uint64_t artifact_generation = 0;
@@ -317,8 +316,7 @@ class Source : public CefClient,
   void AutoAttach(const std::string& session);
   void DevTools(int owner, const std::string& method, Dict params, DevToolsCallback callback,
                 std::optional<std::string> target_session = std::nullopt,
-                bool retained_control = false, size_t response_limit = kMaxResponseBytes,
-                bool lossless_scalars = false);
+                bool retained_control = false, bool lossless_scalars = false);
   void Evaluate(int owner, const std::string& expression, DevToolsCallback callback,
                 const std::string& frame = "", bool utility = false,
                 const std::string& assertion_matcher = "");

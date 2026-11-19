@@ -96,7 +96,6 @@ const hex = (value: string): string => Buffer.from(value, 'utf8').toString('hex'
 const decodeError = (wire: string): string => {
   const checked = z
     .string()
-    .max(32768)
     .regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
     .parse(wire)
   return checked === '-' ? '' : Buffer.from(checked, 'hex').toString('utf16le')
@@ -214,8 +213,7 @@ export class NativeStepCallbacks {
   trackCallback(owner: NativeStepOwner, raw: Promise<void>, release: () => void): void {
     const actual = Owner.parse(owner),
       identity = key(actual)
-    if (this.outer.has(identity) || this.outer.size >= 64)
-      throw new Error('Native outer callback receipt capacity exceeded')
+    if (this.outer.has(identity)) throw new Error('Native outer callback receipt is duplicate')
     const callback = { owner: actual, rawSettled: false, release }
     this.outer.set(identity, callback)
     // This observer runs only after the genuine wrapper/raw author callback
@@ -260,7 +258,7 @@ export class NativeStepCallbacks {
       callback: (info: NativeTestStepInfo) => T | Promise<T>,
       options: NativeTestStepOptions = {},
     ): Promise<T> => {
-      const actualTitle = z.string().max(4096).parse(title)
+      const actualTitle = z.string().parse(title)
       if (typeof callback !== 'function')
         throw new TypeError('Native step callback must be a function')
       const actualOptions = z
@@ -269,7 +267,7 @@ export class NativeStepCallbacks {
           box: z.boolean().optional(),
           location: z
             .strictObject({
-              file: z.string().min(1).max(4096),
+              file: z.string().min(1),
               line: z.number().int().min(1).max(2147483647),
               column: z.number().int().min(1).max(2147483647),
             })
@@ -279,8 +277,8 @@ export class NativeStepCallbacks {
       const callsites = nativeRunnerCallsites()
       const location = actualOptions.location ?? callsites[0]
       if (!active()) throw new Error('Native step owning callback is no longer active')
-      if (this.requests.size >= 128 || this.nonce === 18446744073709551615n)
-        throw new Error('Native step admission request capacity exceeded')
+      if (this.nonce === 18446744073709551615n)
+        throw new Error('Native step admission request nonce exhausted')
       const ancestry = this.context.getStore()
       if (ancestry && !same(ancestry.owner, admittedOwner))
         throw new Error('Native step ancestry belongs to a different callback')
@@ -310,8 +308,6 @@ export class NativeStepCallbacks {
             site ? 1 : 0,
           )
       }
-      if (Buffer.byteLength(admissionFields.join(' ')) > 65536)
-        throw new RangeError('Native step combined metadata exceeds64KiB control budget')
       ++this.nonce
       return new Promise<T>((resolve, reject) => {
         this.requests.set(request, {
@@ -405,10 +401,7 @@ export class NativeStepCallbacks {
               } catch (value) {
                 actualError = value as UntrustedInput
                 try {
-                  error = (toError(actualError).stack ?? toError(actualError).message).slice(
-                    0,
-                    8192,
-                  )
+                  error = toError(actualError).stack ?? toError(actualError).message
                 } catch {
                   error = 'Thrown value could not be represented'
                 }
@@ -428,7 +421,7 @@ export class NativeStepCallbacks {
                     localSkip = cause.request
                 }
                 if (lease.mutationError)
-                  error = (lease.mutationError.stack ?? lease.mutationError.message).slice(0, 8192)
+                  error = lease.mutationError.stack ?? lease.mutationError.message
               }
               lease.rawOK = ok
               lease.settled = true
@@ -471,7 +464,7 @@ export class NativeStepCallbacks {
       callback: (info: NativeTestStepInfo) => T | Promise<T>,
       options: NativeTestStepOptions = {},
     ): Promise<void> => {
-      const actualTitle = z.string().max(4096).parse(title)
+      const actualTitle = z.string().parse(title)
       if (typeof callback !== 'function')
         throw new TypeError('Native step callback must be a function')
       const actualOptions = z
@@ -480,7 +473,7 @@ export class NativeStepCallbacks {
           box: z.boolean().optional(),
           location: z
             .strictObject({
-              file: z.string().min(1).max(4096),
+              file: z.string().min(1),
               line: z.number().int().min(1).max(2147483647),
               column: z.number().int().min(1).max(2147483647),
             })
@@ -490,8 +483,8 @@ export class NativeStepCallbacks {
       const callsites = nativeRunnerCallsites()
       const location = actualOptions.location ?? callsites[0]
       if (!active()) throw new Error('Native step owning callback is no longer active')
-      if (this.requests.size >= 128 || this.nonce === 18446744073709551615n)
-        throw new Error('Native step admission request capacity exceeded')
+      if (this.nonce === 18446744073709551615n)
+        throw new Error('Native step admission request nonce exhausted')
       const ancestry = this.context.getStore()
       if (ancestry && !same(ancestry.owner, admittedOwner))
         throw new Error('Native step ancestry belongs to a different callback')
@@ -521,8 +514,6 @@ export class NativeStepCallbacks {
             site ? 1 : 0,
           )
       }
-      if (Buffer.byteLength(admissionFields.join(' ')) > 65536)
-        throw new RangeError('Native step combined metadata exceeds64KiB control budget')
       ++this.nonce
       return new Promise<void>((resolve, reject) => {
         // Retain the unused real author closure until actual native admission.
@@ -565,8 +556,8 @@ export class NativeStepCallbacks {
         !active()
       )
         throw new Error('Native local-step skip owning callback is no longer active')
-      if (this.localMutations.size >= 128 || this.localNonce === 18446744073709551615n)
-        throw new Error('Native local-step skip mutation capacity exceeded')
+      if (this.localNonce === 18446744073709551615n)
+        throw new Error('Native local-step skip mutation nonce exhausted')
       const request = String(++this.localNonce),
         control = new Error('Native local step skip requested')
       let resolve!: () => void, reject!: (error: Error) => void
@@ -606,10 +597,9 @@ export class NativeStepCallbacks {
     function skip(reason: string): never
     function skip(condition: boolean, reason?: string): void
     function skip(conditionOrReason: boolean | string = true, reason?: string): void {
-      const condition = z.union([z.boolean(), z.string().max(8192)]).parse(conditionOrReason)
+      const condition = z.union([z.boolean(), z.string()]).parse(conditionOrReason)
       const actualReason = z
         .string()
-        .max(8192)
         .optional()
         .parse(typeof condition === 'string' ? condition : reason)
       if (condition === false) return
@@ -687,11 +677,7 @@ export class NativeStepCallbacks {
         (fields[0] === 'STEP_ADMITTED_NOT_INVOKED') !== (admission.kind === 'notInvoked')
       )
         throw new Error('Stale native step admission acknowledgement')
-      if (
-        (ok === '1') !== (id !== '0') ||
-        this.physical.has(id) ||
-        (ok === '1' && admission.kind === 'callback' && this.physical.size >= 64)
-      )
+      if ((ok === '1') !== (id !== '0') || this.physical.has(id))
         throw new Error('Invalid native admitted step identity')
       this.requests.delete(request)
       if (ok === '1') admission.admit(id)

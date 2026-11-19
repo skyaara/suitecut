@@ -3,8 +3,10 @@
 suitecut no longer imposes its own size, count, byte, concurrency or retention
 limits. The November 2026 audit listed 441 of them in `native/browser`; they
 are all removed, together with the ones the audit missed in `native/shared`,
-the TypeScript host (`src/`), and suitecut's own Chromium WebSocket-routing
-patch (`cef-patches/chromium156-websocket-routing.patch`). This includes limits
+the TypeScript host (`src/`, including the native viewer and the test-runner
+host), the standalone C/C++ SDK (`native/client`), the native test runner
+(`native/runner`), and suitecut's own experimental Chromium/CEF patches
+(`cef-patches/`). This includes limits
 that only copied a Chromium number (192 MiB DevTools bodies, 1,000 frames per
 page, the 123-byte WebSocket close reason): Chromium, Blink, V8, CEF, FFmpeg
 and VideoToolbox now enforce their own limits and return their own errors.
@@ -23,6 +25,14 @@ What that means in practice:
   and event queues) are unbounded. Recordings and streams have no file-size,
   canvas-size, fps, bitrate or duration cap of suitecut's own.
 - Trace archives switch to ZIP64 when a ZIP32 count or offset would overflow.
+- `Network.enable` gets the largest integer the protocol accepts
+  (2,147,483,647) for `maxTotalBufferSize`, `maxResourceBufferSize` and
+  `maxPostDataSize`, on pages, workers and the private response session, so
+  Chromium's own handling applies rather than a smaller number of ours. `route.fetch`
+  defaults to the same maximum for redirects; a caller's `maxRedirects` still applies.
+- In `native/client`, option fields such as `max_pending`, `max_payload_bytes`,
+  `JsonLimits`, `ImageLimits` and the agent `max_actions` stay as caller options:
+  their default is 0, meaning no limit, and a value a caller sets is enforced.
 
 ## What stays, and why
 
@@ -33,16 +43,15 @@ What that means in practice:
 | Validity | Empty, NUL, scheme, base64-canonical, finite, non-negative, HTTP status and port ranges, cookie expiry ≤ year 9999, latitude/longitude. |
 | Backpressure that only waits | Host stdin `writableLength` 4 MiB; writer `TryEvent` backlog (65,536 events / 64 MiB, an empty backlog accepts any size, routes retry); `reply_credits_`; `queued_commands_<64`; VideoToolbox `pending+packets>=4`. None of these refuses or drops work. |
 | Splitting only | 8 MiB body chunks, 24 KiB / 32 KiB staging pieces, 64 commands per UI turn, coverage inventory pages, 1 MiB trace write chunks. |
-| Parameters that raise Chromium's own buffers | `Network.enable` `maxTotalBufferSize`, `maxResourceBufferSize`, `maxPostDataSize`. Omitting them would shrink Chromium's buffers to its smaller defaults. |
-| Timeouts and retry policies | Every deadline; the 3-attempt HTTP auth retry (as Playwright). |
+| Parameters Chromium requires | `Network.enable` buffer sizes at the int32 maximum (above); Firefox BiDi `addDataCollector` `maxEncodedDataSize` (required by the protocol). |
+| Timeouts and retry policies | Every deadline, including the runner's 120,000 ms test/hook timeout ceiling; the 3-attempt HTTP auth retry (as Playwright). |
+| Fixed ABI layout | `native/client`'s C ABI `sc_error.message[512]`. |
 | Display only | Strict-mode and handle previews (100 characters, a few nodes), debug-log line clips. |
 
-`protocol/values.h` `kMaxResponseBytes` and `DevToolsCall::response_limit` are
-still passed around but nothing reads them; they can be deleted in a later
-cleanup that touches `page/source.h`.
-
-`native/runner` (the test runner, not the browser) still has its own report
-metadata caps; they were out of scope.
+The runner's grep engine checks remaining native stack (keeping a 256 KiB
+reserve) instead of a nesting-depth cap, and fails like V8's "maximum call
+stack size exceeded". Most of `native/runner` builds only on Linux; on macOS
+its portable targets are built and tested and the rest is syntax-checked.
 
 Regression cases live next to each header in its `*_test.cc`: each former
 limit is now exercised with a value past it.

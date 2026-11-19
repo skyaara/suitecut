@@ -31,9 +31,11 @@ struct LaunchOptions {
   bool headless = true;
   std::chrono::milliseconds startup_timeout{30000};
   std::chrono::milliseconds shutdown_timeout{5000};
-  std::size_t max_pending = 256;
-  std::size_t max_event_bytes = 64 * 1024 * 1024;
-  std::size_t max_payload_bytes = 192 * 1024 * 1024;
+  // Optional caller limits; 0 (the default) means no limit. SuiteCut adds
+  // none of its own: CEF, Chromium and Firefox enforce theirs.
+  std::size_t max_pending = 0;
+  std::size_t max_event_bytes = 0;
+  std::size_t max_payload_bytes = 0;
 };
 struct Packet {
   std::string header;
@@ -48,7 +50,8 @@ struct ClientStats {
   std::size_t pending = 0, queued_event_bytes = 0;
 };
 // Thread-safe requests and event polling. No application callback runs on the
-// reader thread. Futures own response buffers; event queue storage is bounded.
+// reader thread. Futures own response buffers; event queue storage is bounded
+// only by a caller-set max_event_bytes.
 class Transport {
  public:
   static std::shared_ptr<Transport> launch(const LaunchOptions& options);

@@ -38,9 +38,8 @@ for (const name of [
     ownFiles.add(fileURLToPath(new URL(name.replace(/\.js$/u, '.ts'), import.meta.url)))
   try {
     const data = readFileSync(new URL(name + '.map', import.meta.url))
-    if (data.length > 4 * 1024 * 1024) continue
     const map = z
-      .object({ sourceRoot: z.string().optional(), sources: z.array(z.string()).max(16) })
+      .object({ sourceRoot: z.string().optional(), sources: z.array(z.string()) })
       .parse(JSON.parse(data.toString('utf8')) as UntrustedInput)
     const root = map.sourceRoot
       ? new URL(map.sourceRoot.endsWith('/') ? map.sourceRoot : map.sourceRoot + '/', url)
@@ -57,7 +56,8 @@ export function nativeRunnerCallsites(): readonly NonNullable<NativeTestAnnotati
   if (!capture) return []
   const sites: NonNullable<NativeTestAnnotation['location']>[] = []
   try {
-    for (const frame of capture(64, { sourceMap: true })) {
+    // 200 is the most frames Node's getCallSites accepts; its default is 10.
+    for (const frame of capture(200, { sourceMap: true })) {
       const script = frame.scriptName
       if (
         !script ||
@@ -68,7 +68,6 @@ export function nativeRunnerCallsites(): readonly NonNullable<NativeTestAnnotati
       const file = script.startsWith('file:') ? fileURLToPath(script) : resolve(script)
       if (ownFiles.has(file) || file.includes(sep + 'node_modules' + sep)) continue
       if (
-        file.length > 4096 ||
         !Number.isSafeInteger(frame.lineNumber) ||
         !Number.isSafeInteger(frame.columnNumber) ||
         frame.lineNumber < 1 ||

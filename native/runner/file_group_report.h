@@ -19,11 +19,11 @@ struct ReportFileResourceLocks {
 };
 template<class Report>void ValidateFileGroupReports(const Report& report){
   if(report.files.empty()&&report.file_work_groups.empty()&&report.file_resource_locks.empty())return;
-  if(report.files.size()!=1||report.file_work_groups.empty()||report.file_work_groups.size()>NativeTestGroupTree::kGroups||
+  if(report.files.size()!=1||report.file_work_groups.empty()||
      !report.projects.empty()||!report.work_groups.empty()||!report.resource_locks.empty())
     throw std::invalid_argument("Native anonymous file report requires one actual file and no fabricated project");
   const auto& file=report.files[0];
-  if(!file.owner.id||file.path.empty()||file.path.front()!='/'||file.path.find('\0')!=std::string::npos||file.tests.size()>NativeTestGroupTree::kTests||
+  if(!file.owner.id||file.path.empty()||file.path.front()!='/'||file.path.find('\0')!=std::string::npos||
      !std::isfinite(file.opened)||!std::isfinite(file.retired)||file.opened<0||file.retired<file.opened)
     throw std::invalid_argument("Native anonymous file identity or close receipt rejected");
   (void)AttachmentPathJSON(file.path);
@@ -35,9 +35,9 @@ template<class Report>void ValidateFileGroupReports(const Report& report){
     (void)WorkGroupModeName(group.mode);
     if(group.id!=i+1||group.file_id!=file.owner.id||(group.mode==WorkGroupMode::Serial&&!group.suite)||
        (group.mode==WorkGroupMode::Parallel&&group.tests.size()!=1)||group.tests.size()>selected.size()-grouped.size()||
-       group.workers.size()>8192-workers.size()||(group.tests.empty()&&!selected.empty()))
-      throw std::invalid_argument("Native file work-group identity/capacity rejected");
-    if(group.generation&&(!*group.generation||*group.generation>NativeTestGroupTree::kGroups||!generations.insert(*group.generation).second))
+       (group.tests.empty()&&!selected.empty()))
+      throw std::invalid_argument("Native file work-group identity rejected");
+    if(group.generation&&(!*group.generation||!generations.insert(*group.generation).second))
       throw std::invalid_argument("Native file group admission generation rejected");
     for(const auto id:group.tests)if(!selected.contains(id)||!grouped.insert(id).second)
       throw std::invalid_argument("Native file group test ownership rejected");
@@ -65,18 +65,17 @@ template<class Report>void ValidateFileGroupReports(const Report& report){
   for(const auto& row:report.unrun)if(!selected.contains(row.test_id))throw std::invalid_argument("Native file report contains foreign unrun declaration");
   for(const auto& row:report.skipped)if(!selected.contains(row.test_id))throw std::invalid_argument("Native file report contains foreign skipped declaration");
   for(const auto& row:report.runtime_skipped)if(!selected.contains(row.test_id))throw std::invalid_argument("Native file runtime skip contains foreign declaration");
-  std::set<uint64_t> locked;std::set<std::string> namespace_names;size_t references=0,bytes=0;
+  std::set<uint64_t> locked;
   for(const auto& lock:report.file_resource_locks){
-    if(lock.file_id!=file.owner.id||!lock.group_id||lock.group_id>report.file_work_groups.size()||!locked.insert(lock.group_id).second||lock.names.empty()||lock.names.size()>ResourceLocks::kReferences-references)
-      throw std::invalid_argument("Native file lock report identity/capacity rejected");
+    if(lock.file_id!=file.owner.id||!lock.group_id||lock.group_id>report.file_work_groups.size()||!locked.insert(lock.group_id).second||lock.names.empty())
+      throw std::invalid_argument("Native file lock report identity rejected");
     const auto& group=report.file_work_groups[lock.group_id-1];
     if(!group.generation||lock.generation!=*group.generation||lock.receipt!=group.receipt)
       throw std::invalid_argument("Native file lock lacks exact terminal file group receipt");
-    references+=lock.names.size();std::set<std::string> unique;
+    std::set<std::string> unique;
     for(const auto& name:lock.names){
-      if(name.size()%2||name.size()>kResourceLockUnits*2||name.size()+32>ResourceLocks::kMetadata-bytes||!unique.insert(name).second)
-        throw std::invalid_argument("Native file lock report name/metadata rejected");
-      bytes+=name.size()+32;namespace_names.insert(name);if(namespace_names.size()>ResourceLocks::kNames)throw std::invalid_argument("Native file lock report namespace capacity exceeded");
+      if(name.size()%2||!unique.insert(name).second)
+        throw std::invalid_argument("Native file lock report name rejected");
     }
   }
 }

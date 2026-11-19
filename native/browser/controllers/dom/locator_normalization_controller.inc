@@ -42,7 +42,7 @@ void CaptureLocatorNormalization(const std::shared_ptr<LocatorNormalizationWork>
     provenance->SetString("documentGeneration",std::to_string(work->document.context_generation));provenance->SetInt("backendNodeId",backend);
     auto response=CefDictionaryValue::Create();response->SetString("metadataJSON",metadata);response->SetDictionary("provenance",provenance);
     if(LocatorNormalizationCurrent(work))Complete(work->owner,true,"",Json(response));
-  },work->document.session,true,262144,true);
+  },work->document.session,true,true);
 }
 void BeginLocatorNormalization(int owner,Dict message){
   const auto operation=operations_.Get(owner);if(!operation)return;

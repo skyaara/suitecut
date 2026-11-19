@@ -17,7 +17,7 @@ int main(int argc,char** argv){
   }
   const auto fixture=md::JSONParser(bytes).Parse();
   std::vector<std::u16string> titles;
-  for(const auto& title:md::Array(md::Get(fixture,"titles")))titles.push_back(sr::GrepUnits(title.raw,32768));
+  for(const auto& title:md::Array(md::Get(fixture,"titles")))titles.push_back(sr::GrepUnits(title.raw));
   size_t patterns=0,comparisons=0,negative=0,mismatches=0;
   for(const auto& row:md::Array(md::Get(fixture,"patterns"))){
     const auto source=sr::GrepUnits(md::Get(row,"source").raw);

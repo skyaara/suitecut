@@ -3,9 +3,6 @@ import { type UntrustedInput } from './untrusted.js'
 
 /** A self-contained codec shared by the SDK and the browser execution context. */
 export function createNativeValueCodec() {
-  // The tagged transport adds nesting of its own. Bound source graph depth
-  // before Chromium's return-by-value serializer reaches its nesting limit.
-  const maxDepth = 100
   // WindowProxy values from a different realm do not inherit this realm's
   // Window.prototype. The platform getter checks the actual native receiver;
   // an author-provided Symbol.toStringTag or `window` property cannot pass it.
@@ -83,9 +80,7 @@ export function createNativeValueCodec() {
     handleIndex?: (value: UntrustedInput) => number | undefined,
   ): object {
     const seen = new Map<object, number>()
-    const visit = (value: UntrustedInput, depth: number, nested: boolean, path: string): object => {
-      if (depth > maxDepth)
-        throw new Error('Cannot serialize result: object reference chain is too long.')
+    const visit = (value: UntrustedInput, nested: boolean, path: string): object => {
       const handle = handleIndex?.(value)
       if (handle !== undefined) return ['handle', handle]
       if (value === undefined || typeof value === 'symbol') return ['undefined']
@@ -156,7 +151,7 @@ export function createNativeValueCodec() {
           value instanceof constructor &&
           typeof toJSON === 'function'
         )
-          return visit(Reflect.apply(toJSON, value, []) as UntrustedInput, depth + 1, nested, path)
+          return visit(Reflect.apply(toJSON, value, []) as UntrustedInput, nested, path)
       }
       const previous = seen.get(value)
       if (previous !== undefined) return ['reference', previous]
@@ -165,20 +160,17 @@ export function createNativeValueCodec() {
       if (Array.isArray(value)) {
         const items: object[] = []
         for (let i = 0; i < value.length; i++)
-          items[i] = visit(value[i] as UntrustedInput, depth + 1, true, `${path}[${i}]`)
+          items[i] = visit(value[i] as UntrustedInput, true, `${path}[${i}]`)
         return ['array', id, items]
       }
       const fields: object[] = []
       for (const key of Object.keys(value)) {
         const item = Reflect.get(value, key) as UntrustedInput
-        fields[fields.length] = [
-          encodeText(key),
-          visit(item, depth + 1, true, path ? `${path}.${key}` : key),
-        ]
+        fields[fields.length] = [encodeText(key), visit(item, true, path ? `${path}.${key}` : key)]
       }
       return ['object', id, fields]
     }
-    return visit(input, 0, false, '')
+    return visit(input, false, '')
   }
   function decode(input: UntrustedInput, handles: UntrustedInput[] = []): UntrustedInput {
     const objects = new Map<number, object>()
@@ -214,8 +206,8 @@ export function createNativeValueCodec() {
         return utf16(value[1] as UntrustedInput)
       return fail()
     }
-    const visit = (value: UntrustedInput, depth: number): UntrustedInput => {
-      if (depth > maxDepth || !Array.isArray(value)) return fail()
+    const visit = (value: UntrustedInput): UntrustedInput => {
+      if (!Array.isArray(value)) return fail()
       const node = value as UntrustedInput[]
       const tag = typeof node[0] === 'string' ? node[0] : fail()
       switch (tag) {
@@ -315,7 +307,7 @@ export function createNativeValueCodec() {
             if (tag === 'array') {
               if (
                 !Reflect.defineProperty(result, i, {
-                  value: visit(field, depth + 1),
+                  value: visit(field),
                   writable: true,
                   enumerable: true,
                   configurable: true,
@@ -327,7 +319,7 @@ export function createNativeValueCodec() {
               const key = text(field[0] as UntrustedInput)
               if (
                 !Reflect.defineProperty(result, key, {
-                  value: visit(field[1] as UntrustedInput, depth + 1),
+                  value: visit(field[1] as UntrustedInput),
                   writable: true,
                   enumerable: true,
                   configurable: true,
@@ -342,7 +334,7 @@ export function createNativeValueCodec() {
           return fail()
       }
     }
-    return visit(input, 0)
+    return visit(input)
   }
   return { encode, decode }
 }

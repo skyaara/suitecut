@@ -23,7 +23,6 @@
 // response ownership and epoch guards. Live renderer prototypes need live proof.
 struct Harness {
   using Dict=CefRefPtr<CefDictionaryValue>;
-  static constexpr size_t kMaxResponseBytes=16*1048576;
   struct Frame {int context=17,utility_context=42;std::string loader="loader",session="session";};
   struct Call {std::string method,session;Dict params;bool lossless;std::function<void(bool,const std::string&)> done;};
   SuiteCutOperationRegistry operations_;
@@ -46,8 +45,8 @@ struct Harness {
   void WithFrame(int owner,const std::string& frame,std::function<void(int)> done,bool utility){assert(utility);operation_frames_[owner]=frame;operation_sessions_[owner]=frame_states_.at(frame).session;done(frame_states_.at(frame).utility_context);}
   void Complete(int owner,bool,const std::string& cause=""){if(!operations_.Finish(owner))return;error=cause;controls.Cancel(owner);}
   void RetryContext(int owner){++retries;controls.Pause(owner);}
-  void DevTools(int owner,const std::string& method,Dict params,std::function<void(bool,const std::string&)> done,std::optional<std::string> session=std::nullopt,bool retained=false,size_t limit=kMaxResponseBytes,bool lossless=false){
-    assert(!retained&&limit==(params->HasKey("serializationOptions")?16*1048576:kMaxResponseBytes));const auto entry=operations_.Get(owner);assert(entry);const auto actual=session.value_or(operation_sessions_[owner]);assert(controls.Group(owner,"suitecut-automation-1",actual));
+  void DevTools(int owner,const std::string& method,Dict params,std::function<void(bool,const std::string&)> done,std::optional<std::string> session=std::nullopt,bool retained=false,bool lossless=false){
+    assert(!retained);const auto entry=operations_.Get(owner);assert(entry);const auto actual=session.value_or(operation_sessions_[owner]);assert(controls.Group(owner,"suitecut-automation-1",actual));
     if(params->HasKey("objectGroup"))assert(controls.Group(owner,params->GetString("objectGroup"),actual));
     auto physical=controls.Begin(owner);assert(physical);calls.push_back({method,actual,params->Copy(false),lossless,[this,owner,generation=entry->generation,physical,done=std::move(done)](bool ok,const std::string& json){physical->Settle();if(operations_.IsCurrent(owner,generation)&&!controls.Retrying(owner))done(ok,json);}});
   }

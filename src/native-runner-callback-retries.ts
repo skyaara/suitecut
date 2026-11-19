@@ -23,7 +23,7 @@ const UInt = z
 const Token = z.union([z.literal('0'), UInt])
 const Owner = z.strictObject({ token: Token, scope: UInt, generation: UInt })
 const locationSchema = z.strictObject({
-  file: z.string().min(1).max(4096),
+  file: z.string().min(1),
   line: z.number().int().positive(),
   column: z.number().int().positive(),
 })
@@ -31,7 +31,6 @@ const encode = (value: string) => Buffer.from(value, 'utf16le').toString('hex') 
 const decode = (wire: string) => {
   const text = z
     .string()
-    .max(32768)
     .regex(/^(?:-|(?:[a-f\d]{4})+)$/u)
     .parse(wire)
   return text === '-' ? '' : Buffer.from(text, 'hex').toString('utf16le')
@@ -127,8 +126,8 @@ export class NativeCallbackRetryCallbacks {
       throw new Error('Native toPass requires an active body/beforeEach/afterEach callback')
     const step = Token.parse(this.steps.current(owner)),
       actualLocation = locationSchema.optional().parse(location)
-    if (this.requests.size >= 128 || this.nonce === 18446744073709551615n) {
-      const error = new Error('Native step admission request capacity exceeded')
+    if (this.nonce === 18446744073709551615n) {
+      const error = new Error('Native toPass request nonce exhausted')
       this.fatal(error)
       throw error
     }
@@ -147,8 +146,6 @@ export class NativeCallbackRetryCallbacks {
       actualLocation?.column ?? 0,
       actualLocation ? 1 : 0,
     ]
-    if (Buffer.byteLength(fields.join(' ')) > 65536)
-      throw new Error('Native toPass metadata exceeds original control budget')
     ++this.nonce
     return new IntrinsicPromise<void>((resolve, reject) => {
       this.requests.set(request, {
@@ -371,10 +368,6 @@ export class NativeCallbackRetryCallbacks {
             const message = runNativeRetryInvocation(actual, () =>
               runNativeMatcherUserCallback(() => this.describe(error)),
             )
-            if (message.length > 8192) {
-              this.fatal(new Error('Native toPass producer error exceeds original scalar budget'))
-              return
-            }
             void this.send(
               'TOPASS_PRODUCER_FAILURE',
               request,
@@ -448,10 +441,6 @@ export class NativeCallbackRetryCallbacks {
         : runNativeRetryInvocation(actual, () =>
             runNativeMatcherUserCallback(() => this.describe(failure)),
           )
-    if (message.length > 8192) {
-      this.fatal(new Error('Native toPass raw error exceeds original scalar budget'))
-      return
-    }
     const source = !ok ? (this.steps.originating(pending.owner, error) ?? '0') : '0'
     void this.send(
       'TOPASS_RAW',

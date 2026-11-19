@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <fstream>
 #include <future>
+#include <limits>
 #include <functional>
 #include <mutex>
 #include <sstream>
@@ -43,23 +44,16 @@ extern char** environ;
 namespace suitecut::detail {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr std::size_t command_limit = 4 * 1024 * 1024;
-constexpr std::size_t outgoing_limit = 8 * 1024 * 1024;
-constexpr std::size_t event_limit = 4096;
-constexpr std::size_t stderr_limit = 16384;
 std::runtime_error failure(const std::string& message) { return std::runtime_error(message); }
 bool nul(const std::string& value) { return value.find('\0') != std::string::npos; }
 void validate(const LaunchOptions& o) {
   if (o.cdp_endpoint.empty() && (o.executable.empty() || nul(o.executable) || !std::filesystem::path(o.executable).is_absolute()))
     throw failure("Chrome executable must be an absolute path without null bytes");
-  if (!o.cdp_endpoint.empty() && (o.cdp_endpoint.size() > 16384 || nul(o.cdp_endpoint) ||
-      !o.profile.empty() || !o.arguments.empty()))
-    throw failure("Chrome attachment requires a bounded endpoint and no launch profile or arguments");
-  if (o.connect_headers.size() > 64) throw failure("Too many WebSocket authentication headers");
-  std::size_t header_bytes=0;
+  if (!o.cdp_endpoint.empty() && (nul(o.cdp_endpoint) || !o.profile.empty() || !o.arguments.empty()))
+    throw failure("Chrome attachment requires an endpoint without null bytes and no launch profile or arguments");
   std::map<std::string,bool> header_names;
   for(const auto& [name,value]:o.connect_headers){
-    if(name.empty()||name.size()>256||value.size()>8192)throw failure("WebSocket request header exceeds byte budget");
+    if(name.empty())throw failure("Invalid WebSocket request header name");
     for(unsigned char c:name)if(c>=127||(!std::isalnum(c)&&std::string_view("!#$%&'*+-.^_`|~").find(static_cast<char>(c))==std::string_view::npos))
       throw failure("Invalid WebSocket request header name");
     for(unsigned char c:value)if((c<32&&c!='\t')||c==127)throw failure("Invalid WebSocket request header value");
@@ -67,28 +61,22 @@ void validate(const LaunchOptions& o) {
     if(!header_names.emplace(lower,true).second)throw failure("Duplicate WebSocket request header name");
     if(lower=="host"||lower=="connection"||lower=="upgrade"||lower=="content-length"||lower=="transfer-encoding"||lower.starts_with("sec-websocket-"))
       throw failure("Request headers cannot override managed WebSocket handshake fields");
-    if(name.size()+value.size()+4>32768-header_bytes)throw failure("WebSocket request headers exceed 32 KiB");
-    header_bytes+=name.size()+value.size()+4;
   }
   for(const auto* path:{&o.tls_ca_file,&o.tls_client_certificate,&o.tls_client_key}){
-    if(path->size()>16384||nul(*path))throw failure("Invalid TLS certificate/key path");
-    if(!path->empty()&&(!std::filesystem::is_regular_file(*path)||std::filesystem::file_size(*path)>16*1024*1024))
-      throw failure("TLS certificate/key must be a regular file within 16 MiB");
+    if(nul(*path))throw failure("Invalid TLS certificate/key path");
+    if(!path->empty()&&!std::filesystem::is_regular_file(*path))
+      throw failure("TLS certificate/key must be a regular file");
   }
   if(o.tls_client_certificate.empty()!=o.tls_client_key.empty())throw failure("TLS client certificate and private key must be supplied together");
   if(o.cdp_endpoint.empty()&&(!o.connect_headers.empty()||!o.tls_ca_file.empty()||!o.tls_client_certificate.empty()))
     throw failure("Connection authentication/TLS options require an attachment endpoint");
   if (!o.profile.empty() && (nul(o.profile) || !std::filesystem::path(o.profile).is_absolute()))
     throw failure("Chrome profile must be an absolute path without null bytes");
-  if (o.width < 2 || o.width > 3840 || o.height < 2 || o.height > 2160)
-    throw failure("Viewport must be within 2..3840 by 2..2160");
+  if (o.width < 2 || o.height < 2) throw failure("Viewport must be at least 2 by 2");
   for (auto timeout : {o.startup_timeout, o.shutdown_timeout})
     if (timeout.count() <= 0 || timeout > std::chrono::hours(24)) throw failure("Invalid Chrome lifecycle timeout");
-  if (!o.max_pending || o.max_pending > 4096 || !o.max_event_bytes ||
-      o.max_event_bytes > 256 * 1024 * 1024 || !o.max_payload_bytes || o.max_payload_bytes > 192 * 1024 * 1024)
-    throw failure("Invalid CDP transport storage limits");
-  if (o.arguments.size() > 1024) throw failure("Too many Chrome arguments");
-  std::size_t bytes = 0;
+  // max_pending/max_event_bytes/max_payload_bytes are optional caller limits;
+  // 0 means no limit and suitecut puts no upper bound on them.
   for (const auto& arg : o.arguments) {
     if (nul(arg) || !arg.starts_with("--") || arg == "--" ||
         arg.starts_with("--remote-debugging") || arg.starts_with("--user-data-dir") ||
@@ -96,8 +84,6 @@ void validate(const LaunchOptions& o) {
         arg.starts_with("--force-device-scale-factor") || arg.starts_with("--headless") ||
         arg.starts_with("--suitecut-") || arg == "--app" || arg.starts_with("--app="))
       throw failure("Chrome arguments cannot override managed debug, profile or viewport switches");
-    if (arg.size() > 65536 || bytes > 512 * 1024 - arg.size()) throw failure("Chrome argument budget exceeded");
-    bytes += arg.size();
   }
 }
 #ifndef _WIN32
@@ -251,7 +237,7 @@ Endpoint endpoint(const std::string& text,bool browser=true) {
     if(colon!=std::string::npos){port=authority.substr(colon+1);explicit_port=true;}
   }
   result.port=explicit_port?port_number(port):(result.tls?443:80);
-  if(result.host.empty()||result.host.size()>253)throw failure("Invalid attachment hostname");
+  if(result.host.empty())throw failure("Invalid attachment hostname");
   for(unsigned char c:result.host)if(!std::isalnum(c)&&c!='.'&&c!='-'&&c!=':')throw failure("Invalid attachment hostname");
   result.path=slash==std::string::npos?"/":text.substr(slash);
   if(result.path.find('#')!=std::string::npos) throw failure("CDP endpoint fragments are unsupported");
@@ -287,9 +273,9 @@ std::vector<Address> resolve(const Endpoint& target,Deadline deadline) {
     ~Lookup(){if(request.ar_result)freeaddrinfo(request.ar_result);}
   };
   struct Registry { std::mutex mutex;std::vector<std::shared_ptr<Lookup>> jobs; };
-  // libc cancellation may report EAI_NOTCANCELED. Keep at most eight such
-  // requests alive until completion, rather than freeing storage still owned by
-  // the resolver, blocking close, or spawning unbounded per-lookup threads.
+  // libc cancellation may report EAI_NOTCANCELED. Keep such requests alive
+  // until completion, rather than freeing storage still owned by the resolver
+  // or blocking close. No suitecut in-flight cap; libc enforces its own.
   static auto* registry=new Registry;
   auto lookup=std::make_shared<Lookup>();lookup->host=target.host;lookup->service=std::to_string(target.port);
   lookup->hints.ai_family=AF_UNSPEC;lookup->hints.ai_socktype=SOCK_STREAM;lookup->hints.ai_protocol=IPPROTO_TCP;
@@ -297,7 +283,6 @@ std::vector<Address> resolve(const Endpoint& target,Deadline deadline) {
   {
     std::lock_guard lock(registry->mutex);
     std::erase_if(registry->jobs,[](const auto& job){return job.use_count()==1&&gai_error(&job->request)!=EAI_INPROGRESS;});
-    if(registry->jobs.size()>=8)throw failure("Native hostname resolver is at its bounded in-flight capacity");
     registry->jobs.push_back(lookup);
     gaicb* requests[]={&lookup->request};sigevent notification{};notification.sigev_notify=SIGEV_NONE;
     if(getaddrinfo_a(GAI_NOWAIT,requests,1,&notification)!=0){registry->jobs.pop_back();throw failure("Could not start hostname resolution");}
@@ -312,7 +297,7 @@ std::vector<Address> resolve(const Endpoint& target,Deadline deadline) {
     if(Clock::now()>=deadline){(void)gai_cancel(&lookup->request);throw failure("Attachment hostname resolution timed out");}
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
-  for(auto* entry=lookup->request.ar_result;entry&&result.size()<32;entry=entry->ai_next)
+  for(auto* entry=lookup->request.ar_result;entry;entry=entry->ai_next)
     if((entry->ai_family==AF_INET||entry->ai_family==AF_INET6)&&entry->ai_addrlen<=sizeof(sockaddr_storage)){
       Address address;address.size=entry->ai_addrlen;std::memcpy(&address.value,entry->ai_addr,entry->ai_addrlen);result.push_back(address);
     }
@@ -455,12 +440,12 @@ void socket_write(SocketStream& socket,std::string_view text,Deadline deadline) 
     throw failure("Chrome attachment handshake write failed");
   }
 }
-void socket_read(SocketStream& socket,std::string& text,std::size_t limit,Deadline deadline){
+void socket_read(SocketStream& socket,std::string& text,Deadline deadline){
   ScopedSigpipe protection;
   std::array<char,4096> bytes;
   for(;;){
     const auto count=socket.read(bytes.data(),bytes.size());
-    if(count>0){if(static_cast<std::size_t>(count)>limit-text.size())throw failure("Chrome HTTP response exceeds byte budget");text.append(bytes.data(),static_cast<std::size_t>(count));return;}
+    if(count>0){text.append(bytes.data(),static_cast<std::size_t>(count));return;}
     if(count<0&&errno==EINTR)continue;
     if(count<0&&(errno==EAGAIN||errno==EWOULDBLOCK)){socket_wait(socket.fd,socket.read_want,deadline);continue;}
     throw failure("Chrome closed its attachment handshake");
@@ -469,7 +454,7 @@ void socket_read(SocketStream& socket,std::string& text,std::size_t limit,Deadli
 struct HttpReply { int status=0; std::map<std::string,std::string> headers; std::string body; };
 HttpReply http_headers(SocketStream& socket,Deadline deadline){
   std::string raw;
-  while(raw.find("\r\n\r\n")==std::string::npos)socket_read(socket,raw,16384,deadline);
+  while(raw.find("\r\n\r\n")==std::string::npos)socket_read(socket,raw,deadline);
   const auto end=raw.find("\r\n\r\n");
   std::istringstream stream(raw.substr(0,end));std::string line,version;HttpReply result;
   if(!std::getline(stream,line))throw failure("Invalid Chrome HTTP response");
@@ -491,49 +476,43 @@ std::string request_headers(const LaunchOptions& options){
   for(const auto& [name,value]:options.connect_headers)result+=name+": "+value+"\r\n";
   return result;
 }
+// No suitecut discovery size cap; only HTTP framing validity and integer
+// overflow are checked.
 std::string discovery_body(SocketStream& socket,HttpReply response,Deadline deadline){
-  constexpr std::size_t limit=1024*1024;
   if(response.headers.contains("transfer-encoding")){
     auto encoding=response.headers.at("transfer-encoding");
     for(auto& c:encoding)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     if(encoding!="chunked"||response.headers.contains("content-length"))throw failure("Unsupported or ambiguous discovery transfer encoding");
     std::string pending=std::move(response.body),result;
     const auto line=[&]() {
-      while(pending.find("\r\n")==std::string::npos){
-        if(pending.size()>16384)throw failure("Discovery chunk metadata exceeds byte budget");
-        socket_read(socket,pending,limit+16384,deadline);
-      }
+      while(pending.find("\r\n")==std::string::npos)socket_read(socket,pending,deadline);
       auto end=pending.find("\r\n");auto text=pending.substr(0,end);pending.erase(0,end+2);return text;
     };
-    for(std::size_t chunks=0;chunks<65536;++chunks){
+    for(;;){
       auto header=line();
-      if(header.size()>256)throw failure("Invalid discovery chunk size");
       const auto semicolon=header.find(';');if(semicolon!=std::string::npos)header.resize(semicolon);
       if(header.empty()||header.size()>16)throw failure("Invalid discovery chunk size");
       std::uint64_t count=0;
       for(unsigned char c:header){
         const unsigned digit=c>='0'&&c<='9'?c-'0':c>='a'&&c<='f'?c-'a'+10:c>='A'&&c<='F'?c-'A'+10:16;
-        if(digit==16||count>(limit-digit)/16)throw failure("Discovery chunk exceeds byte budget");
+        if(digit==16||count>(std::numeric_limits<std::size_t>::max()-digit)/16)throw failure("Invalid discovery chunk size");
         count=count*16+digit;
       }
       if(!count){
-        std::size_t trailers=0;
-        for(;;){auto trailer=line();if(trailer.empty())break;trailers+=trailer.size()+2;if(trailers>16384)throw failure("Discovery trailers exceed byte budget");}
+        for(;;){auto trailer=line();if(trailer.empty())break;}
         return result;
       }
-      if(count>limit-result.size())throw failure("Discovery body exceeds byte budget");
-      while(pending.size()<count+2)socket_read(socket,pending,limit+16384,deadline);
+      while(pending.size()<2||pending.size()-2<count)socket_read(socket,pending,deadline);
       if(pending.substr(static_cast<std::size_t>(count),2)!="\r\n")throw failure("Invalid discovery chunk terminator");
       result.append(pending.data(),static_cast<std::size_t>(count));pending.erase(0,static_cast<std::size_t>(count)+2);
     }
-    throw failure("Discovery chunk count exceeds budget");
   }
   if(response.headers.contains("content-length")){
     const auto& length=response.headers.at("content-length");std::size_t count=0;
-    if(length.empty()||length.size()>7)throw failure("Invalid Chrome discovery length");
+    if(length.empty()||length.size()>19)throw failure("Invalid Chrome discovery length"); // 19 digits fit size_t.
     for(char c:length){if(c<'0'||c>'9')throw failure("Invalid Chrome discovery length");count=count*10+c-'0';}
-    if(count>limit||response.body.size()>count)throw failure("Chrome discovery exceeds byte budget");
-    while(response.body.size()<count)socket_read(socket,response.body,count,deadline);
+    while(response.body.size()<count)socket_read(socket,response.body,deadline);
+    if(response.body.size()>count)throw failure("Chrome discovery body exceeds its Content-Length");
     return std::move(response.body);
   }
   ScopedSigpipe protection;
@@ -541,7 +520,7 @@ std::string discovery_body(SocketStream& socket,HttpReply response,Deadline dead
   for(;;){
     const auto count=socket.read(bytes.data(),bytes.size());
     if(!count)return std::move(response.body);
-    if(count>0){if(static_cast<std::size_t>(count)>limit-response.body.size())throw failure("Discovery body exceeds byte budget");response.body.append(bytes.data(),static_cast<std::size_t>(count));}
+    if(count>0)response.body.append(bytes.data(),static_cast<std::size_t>(count));
     else if(errno==EINTR)continue;
     else if(errno==EAGAIN||errno==EWOULDBLOCK)socket_wait(socket.fd,socket.read_want,deadline);
     else throw failure("Could not finish discovery response");
@@ -553,7 +532,7 @@ Endpoint discover(Endpoint target,const LaunchOptions& options,Deadline deadline
     socket_write(socket,"GET "+(target.path=="/"?std::string("/json/version"):target.path)+" HTTP/1.1\r\nHost: "+host_header(target)+"\r\nConnection: close\r\n"+request_headers(options)+"\r\n",deadline);
     auto response=http_headers(socket,deadline);
     if(response.status!=200)throw failure("Remote browser HTTP discovery was not successful");
-    auto document=Json::parse(discovery_body(socket,std::move(response),deadline),{1024*1024,16,4096,1024*1024});
+    auto document=Json::parse(discovery_body(socket,std::move(response),deadline));
     auto found=endpoint(document.at("webSocketDebuggerUrl").as_string());
     if(!found.websocket)throw failure("Chrome discovery omitted browser WebSocket URL");
     // Never forward credentials to another origin or downgrade authenticated
@@ -578,10 +557,10 @@ struct CdpConnection::Impl {
   std::map<int,Pending> pending;
   std::deque<Write> outgoing;
   std::deque<Event> events;
-  std::size_t outgoing_bytes = 0, event_bytes = 0;
+  std::size_t event_bytes = 0;
   std::uint64_t commands = 0, responses = 0, dropped_events = 0;
   int next_id = 0;
-  bool closing = false, finished = false;
+  bool closing = false, finished = false, started = false;
   const bool attached;
   std::function<bool(const Json&)> event_handler;
   std::exception_ptr terminal;
@@ -627,7 +606,7 @@ struct CdpConnection::Impl {
     it->second.result.set_exception(std::make_exception_ptr(failure("CDP request timed out")));
     pending.erase(it);
     for (auto out = outgoing.begin(); out != outgoing.end(); ++out)
-      if (out->id == id && out->offset == 0) { outgoing_bytes -= out->bytes.size(); outgoing.erase(out); break; }
+      if (out->id == id && out->offset == 0) { outgoing.erase(out); break; }
     // A partially written request must finish its NUL frame. Its late result
     // is ignored; IDs are never reused and remote side effects cannot cancel.
   }
@@ -644,17 +623,17 @@ struct CdpConnection::Impl {
     // Preserve an in-progress frame before the final Browser.close command.
     if (!outgoing.empty() && outgoing.front().offset) {
       auto first = std::move(outgoing.front()); outgoing.clear();
-      outgoing_bytes = first.bytes.size() - first.offset; outgoing.push_back(std::move(first));
-    } else { outgoing.clear(); outgoing_bytes = 0; }
+      outgoing.push_back(std::move(first));
+    } else outgoing.clear();
     if (graceful && attached) {
 #ifndef _WIN32
       auto bytes = websocket_frame({},8);
-      outgoing_bytes += bytes.size(); outgoing.push_back({0,std::move(bytes),0});
+      outgoing.push_back({0,std::move(bytes),0});
 #endif
     } else if (graceful && next_id < INT_MAX) {
       const int id = allocate();
       auto bytes = encode(Json{{"id",id},{"method","Browser.close"},{"params",Json::object{}}}.dump());
-      outgoing_bytes += bytes.size(); outgoing.push_back({id,std::move(bytes),0});
+      outgoing.push_back({id,std::move(bytes),0});
       ++commands;
     }
     changed.notify_all(); wake();
@@ -665,7 +644,8 @@ struct CdpConnection::Impl {
     begin_close_locked(false); changed.notify_all(); wake();
   }
   void receive(std::string_view bytes) {
-    auto value = Json::parse(bytes,{options.max_payload_bytes,64,1024*1024,options.max_payload_bytes});
+    // Frame/message size is already checked against a caller-set max_payload_bytes.
+    auto value = Json::parse(bytes);
     if (!value.is_object()) throw failure("Malformed CDP response");
     std::unique_lock lock(mutex);
     if (value.contains("id")) {
@@ -703,19 +683,21 @@ struct CdpConnection::Impl {
           value.at("params").at("isBlocked").is_bool()&&value.at("params").at("isBlocked").as_bool();
       const bool consumed_frame=consumed&&method=="Page.screencastFrame";
       const bool disposable = observer && !blocked && (method.starts_with("Network.") || method.starts_with("Runtime.console") || bidi_telemetry || consumed_frame);
-      if (bytes.size() > options.max_event_bytes) {
+      // No suitecut queue cap. Only a caller-set max_event_bytes (0 = no
+      // limit) bounds the queue. Then, without a backend observer, event loss
+      // is an explicit transport failure; observed telemetry is evicted first
+      // and lifecycle/control is never evicted.
+      const auto limit = options.max_event_bytes;
+      if (limit && bytes.size() > limit) {
         if (disposable) { ++dropped_events; return; }
-        throw failure("Critical CDP event exceeds queue byte budget");
+        throw failure("Critical CDP event exceeds the caller's max_event_bytes");
       }
-      // Preserve unobserved low-level semantics: without a backend observer,
-      // event loss is always an explicit transport failure. Observed telemetry
-      // instead forms a bounded public ring; lifecycle/control is never evicted.
-      if (observer) while (events.size() >= event_limit || bytes.size() > options.max_event_bytes - event_bytes) {
+      if (observer && limit) while (bytes.size() > limit - event_bytes) {
         const auto oldest = std::find_if(events.begin(),events.end(),[](const Event& event){return event.disposable;});
         if (oldest == events.end()) break;
         event_bytes -= oldest->bytes; events.erase(oldest); ++dropped_events;
       }
-      if (events.size() >= event_limit || bytes.size() > options.max_event_bytes - event_bytes) {
+      if (limit && bytes.size() > limit - event_bytes) {
         if (disposable) { ++dropped_events; return; }
         throw failure("Critical CDP event queue overflow; poll events before continuing");
       }
@@ -783,7 +765,7 @@ struct CdpConnection::Impl {
       }
       const bool control=opcode>=8;
       if(control&&(!final||length>125))throw failure("Invalid WebSocket control frame");
-      if(!control&&length>options.max_payload_bytes)throw failure("CDP WebSocket frame exceeds byte budget");
+      if(!control&&options.max_payload_bytes&&length>options.max_payload_bytes)throw failure("CDP WebSocket frame exceeds the caller's max_payload_bytes");
       if(opcode!=0&&opcode!=1&&opcode!=8&&opcode!=9&&opcode!=10)throw failure("Unsupported CDP WebSocket frame opcode");
       if(length>ws_buffer.size()-consumed-header)break;
       const auto payload=std::string_view(ws_buffer).substr(consumed+header,static_cast<std::size_t>(length));
@@ -798,12 +780,11 @@ struct CdpConnection::Impl {
         auto pong=websocket_frame(payload,10);
         std::lock_guard lock(mutex);
         if(!closing){
-          if(pong.size()>outgoing_limit-outgoing_bytes||outgoing.size()>=options.max_pending+64)throw failure("WebSocket control queue overflow");
-          outgoing_bytes+=pong.size();outgoing.push_back({0,std::move(pong),0});wake();
+          outgoing.push_back({0,std::move(pong),0});wake();
         }
       }else if(opcode==1||opcode==0){
         if((opcode==1&&ws_fragment)||(opcode==0&&!ws_fragment))throw failure("Invalid WebSocket text fragmentation");
-        if(payload.size()>options.max_payload_bytes-ws_message.size())throw failure("CDP WebSocket message exceeds byte budget");
+        if(options.max_payload_bytes&&payload.size()>options.max_payload_bytes-ws_message.size())throw failure("CDP WebSocket message exceeds the caller's max_payload_bytes");
         if(opcode==1&&final)receive(payload);
         else{
           ws_message.append(payload);
@@ -941,7 +922,7 @@ struct CdpConnection::Impl {
         throw failure("Chrome CDP command pipe closed");
       }
       if (!count) throw failure("Chrome CDP writer made no progress");
-      front.offset += static_cast<std::size_t>(count); outgoing_bytes -= static_cast<std::size_t>(count);
+      front.offset += static_cast<std::size_t>(count);
       if (front.offset == front.bytes.size()) outgoing.pop_front();
     }
   }
@@ -1005,22 +986,20 @@ struct CdpConnection::Impl {
             auto n = stream==0&&network?network->read(bytes.data(),bytes.size()): ::read(fd,bytes.data(),bytes.size());
             if (n > 0) {
               if (stream == 1) {
-                std::lock_guard lock(mutex); stderr_tail.append(bytes.data(),static_cast<std::size_t>(n));
-                if (stderr_tail.size() > stderr_limit) stderr_tail.erase(0,stderr_tail.size()-stderr_limit);
+                // Whole stderr up to startup: it is only read for launch diagnostics.
+                std::lock_guard lock(mutex); if (!started) stderr_tail.append(bytes.data(),static_cast<std::size_t>(n));
               } else if (attached) {
-                const auto limit=options.max_payload_bytes+65536+14;
-                if(static_cast<std::size_t>(n)>limit-ws_buffer.size())throw failure("CDP WebSocket buffer exceeds byte budget");
                 ws_buffer.append(bytes.data(),static_cast<std::size_t>(n));
                 websocket_receive();
               } else {
                 std::size_t begin = 0, size = static_cast<std::size_t>(n);
                 for (std::size_t i = 0; i < size; ++i) if (bytes[i] == '\0') {
-                  if (i-begin > options.max_payload_bytes-frame.size()) throw failure("CDP response exceeds byte budget");
+                  if (options.max_payload_bytes && i-begin > options.max_payload_bytes-frame.size()) throw failure("CDP response exceeds the caller's max_payload_bytes");
                   frame.append(bytes.data()+begin,i-begin);
                   if (frame.empty()) throw failure("Empty CDP response frame");
                   receive(frame); frame.clear(); begin = i+1;
                 }
-                if (size-begin > options.max_payload_bytes-frame.size()) throw failure("CDP response exceeds byte budget");
+                if (options.max_payload_bytes && size-begin > options.max_payload_bytes-frame.size()) throw failure("CDP response exceeds the caller's max_payload_bytes");
                 frame.append(bytes.data()+begin,size-begin);
               }
             } else if (!n) {
@@ -1061,6 +1040,7 @@ std::unique_ptr<CdpConnection> CdpConnection::launch(const LaunchOptions& option
   try {
     state.io = std::thread([impl=&state] { impl->run(); });
     connection->call("Browser.getVersion",Json::object{},"",deadline);
+    { std::lock_guard lock(state.mutex); state.started = true; state.stderr_tail.clear(); }
   } catch (...) {
     auto error = std::current_exception(); connection->close();
     std::string diagnostics; { std::lock_guard lock(state.mutex); diagnostics = state.stderr_tail; }
@@ -1085,7 +1065,7 @@ std::unique_ptr<CdpConnection> CdpConnection::connect_websocket(const LaunchOpti
 #endif
 }
 Json CdpConnection::call(const std::string& method, Json params, const std::string& session, Deadline deadline) {
-  if (method.empty() || method.size() > 65536 || nul(method) || nul(session) || session.size() > 65536 || !params.is_object())
+  if (method.empty() || nul(method) || nul(session) || !params.is_object())
     throw failure("Invalid CDP method, params or session");
   if (deadline <= Clock::now()) throw failure("CDP request timed out");
   auto& state = *impl_; int id; std::future<Json> result;
@@ -1093,19 +1073,17 @@ Json CdpConnection::call(const std::string& method, Json params, const std::stri
     std::lock_guard lock(state.mutex);
     if (state.terminal) std::rethrow_exception(state.terminal);
     if (state.closing) throw failure("CDP connection closed");
-    if (state.pending.size() >= state.options.max_pending) throw failure("CDP pending request budget exceeded");
+    if (state.options.max_pending && state.pending.size() >= state.options.max_pending)
+      throw failure("CDP pending request limit reached");
     id = state.allocate();
     Json request{{"id",id},{"method",method},{"params",std::move(params)}};
     if (!session.empty()) request["sessionId"] = session;
-    auto bytes = state.encode(request.dump({command_limit-1,64,1024*1024,command_limit-1}));
-    if (bytes.size() > outgoing_limit-state.outgoing_bytes || state.outgoing.size() >= state.options.max_pending+64)
-      throw failure("CDP command writer is full");
+    auto bytes = state.encode(request.dump());
     Impl::Pending item; item.deadline = deadline; result = item.result.get_future();
     state.pending.emplace(id,std::move(item));
-    const auto size = bytes.size();
     try { state.outgoing.push_back({id,std::move(bytes),0}); }
     catch (...) { state.pending.erase(id); throw; }
-    state.outgoing_bytes += size; ++state.commands; state.wake();
+    ++state.commands; state.wake();
   }
   if (result.wait_until(deadline) == std::future_status::timeout) {
     std::lock_guard lock(state.mutex); state.cancel_locked(id); state.wake();
@@ -1166,7 +1144,7 @@ void CdpConnection::close() {
     // Retained Page views may keep a closed Transport alive. Release queued
     // telemetry and writer buffers now; caller-owned response packets survive.
     state.events.clear(); state.event_bytes = 0;
-    state.outgoing.clear(); state.outgoing_bytes = 0;
+    state.outgoing.clear();
     state.event_handler = {};
   }
 #endif

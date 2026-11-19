@@ -192,7 +192,6 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                                         SuiteCutQueryNodeTransfer::Result result) {
                       const bool metadata = params && params->HasKey("serializationOptions");
                       DevTools(id, method, params, std::move(result), session, false,
-                               kMaxResponseBytes,
                                metadata || method == "Runtime.getProperties");
                     },
                     current,
@@ -229,7 +228,6 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                                               SuiteCutQueryNodeTransfer::Result result) {
                             const bool metadata = params && params->HasKey("serializationOptions");
                             DevTools(id, method, params, std::move(result), session, false,
-                                     kMaxResponseBytes,
                                      metadata || method == "Runtime.getProperties");
                           },
                           current,
@@ -307,8 +305,7 @@ auto Source::QueryInspect(int id, Dict message, const std::string& body, bool ut
         params->SetBool("awaitPromise", true);
         params->SetBool("returnByValue", by_value);
         params->SetString("objectGroup", "suitecut-automation-" + std::to_string(id));
-        DevTools(id, "Runtime.callFunctionOn", params, std::move(callback), std::nullopt, false,
-                 kMaxResponseBytes, !by_value);
+        DevTools(id, "Runtime.callFunctionOn", params, std::move(callback), std::nullopt, false, !by_value);
       });
 }
 
@@ -1058,7 +1055,7 @@ auto Source::ValidateVisibilitySelectors(int id, uint64_t generation, Dict messa
               }
               QueryEvaluate(id, generation, message);
             },
-            session, false, kMaxResponseBytes, true);
+            session, false, true);
       },
       true);
 }

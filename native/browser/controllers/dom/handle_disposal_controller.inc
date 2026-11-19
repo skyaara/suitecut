@@ -29,7 +29,7 @@ void DisposeNativeHandles(int id,Dict message){
       const auto session=handle.session;
       devtools_.emplace(tool,DevToolsCall{owner,[this,session,ack=std::move(ack)](bool ok,const std::string&)mutable{
         ack(ok,!session.empty()&&!sessions_.contains(session),ok?"":"Native handle disposal failed");
-      },session,true,65536,true,false});
+      },session,true,true,false});
       if(!SubmitDevTools(tool,"Runtime.releaseObjectGroup",params,session)){
         const auto found=devtools_.find(tool);
         if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native handle disposal dispatch failed");}

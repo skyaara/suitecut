@@ -29,7 +29,7 @@ interface Constant {
   readonly origin: 'declaredLiteral' | 'configuredLiteral'
   readonly value: NativeFixtureLiteral
 }
-const validName = (name: string): boolean => /^[A-Za-z_][A-Za-z0-9_]{0,255}$/u.test(name)
+const validName = (name: string): boolean => /^[A-Za-z_][A-Za-z0-9_]*$/u.test(name)
 const wireFields = (wire: NativeFixtureLiteralWire): readonly string[] =>
   wire.kind === 'undefined' ? ['U', '-'] : ['J', Buffer.from(wire.json).toString('hex')]
 
@@ -50,42 +50,15 @@ export class NativeFixtureBindings {
     options: Readonly<Record<string, NativeFixtureLiteral>> = {},
   ) {
     this.layers = nativeFixtureDeclarationLayers(catalog)
-    let declarationBytes = 0,
-      valueBytes = 0,
-      edges = 0
     for (const layer of this.layers)
       for (const [name, definition] of Object.entries(layer)) {
-        declarationBytes += name.length + 128
-        valueBytes += name.length + 128
-        if ('value' in definition) {
-          const wire = nativeFixtureLiteralWire(definition.value)
-          valueBytes += 32 + (wire.kind === 'json' ? Buffer.byteLength(wire.json) : 0)
-        }
-        for (const dependency of 'setup' in definition ? (definition.dependencies ?? []) : []) {
-          edges++
-          declarationBytes += dependency.length + 16
-        }
-        if (
-          this.declarations.length >= 256 ||
-          edges > 4096 ||
-          declarationBytes > 2 * 1024 * 1024 ||
-          valueBytes > 2 * 1024 * 1024
-        )
-          throw new RangeError('Native raw fixture declaration capacity exceeded')
         this.names.push(name)
         this.allNames.add(name)
         this.declarations.push(definition)
       }
-    if (Object.keys(options).length > 256)
-      throw new Error('Native fixture option capacity256 exceeded')
-    let bytes = valueBytes
     for (const [name, value] of Object.entries(options)) {
       if (!validName(name)) throw new Error('Invalid native fixture option name')
-      const wire = nativeFixtureLiteralWire(value)
-      bytes += name.length + 64 + (wire.kind === 'json' ? Buffer.byteLength(wire.json) : 0)
-      if (bytes > 2 * 1024 * 1024)
-        throw new Error('Native fixture option metadata capacity exceeded')
-      this.options.set(name, wire)
+      this.options.set(name, nativeFixtureLiteralWire(value))
     }
   }
   rows(): readonly (readonly (string | number)[])[] {
@@ -140,7 +113,7 @@ export class NativeFixtureBindings {
       if (
         fields.length !== 6 ||
         !rawId ||
-        !/^[1-9][0-9]{0,2}$/u.test(rawId) ||
+        !/^[1-9][0-9]*$/u.test(rawId) ||
         !definition ||
         key !== `nativeFixture${id}` ||
         this.versions.has(key) ||
@@ -166,7 +139,7 @@ export class NativeFixtureBindings {
       })
     } else if (command === 'FVERSION') {
       const [, rawId, key, scope, aliases] = fields
-      if (fields.length !== 5 || !rawId || !/^[1-9][0-9]{0,2}$/u.test(rawId))
+      if (fields.length !== 5 || !rawId || !/^[1-9][0-9]*$/u.test(rawId))
         throw new Error('Invalid native fixture version identity')
       const id = Number(rawId),
         definition = this.declarations[id - 1]
@@ -188,7 +161,7 @@ export class NativeFixtureBindings {
                 !name ||
                 !validName(name) ||
                 !target ||
-                !/^nativeFixture[1-9][0-9]{0,2}$/u.test(target) ||
+                !/^nativeFixture[1-9][0-9]*$/u.test(target) ||
                 extra !== undefined
               )
                 throw new Error('Invalid native fixture dependency alias')

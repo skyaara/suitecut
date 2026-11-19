@@ -20,12 +20,6 @@ void pause(Deadline deadline) {
   std::this_thread::sleep_until(std::min(deadline,std::chrono::steady_clock::now()+std::chrono::milliseconds(20)));
   bidi_check_active(deadline);
 }
-void validate_wire(const Json& value,std::size_t& work,int depth=0) {
-  if(++work>100000||depth>64)throw std::runtime_error("Native BiDi DOM request traversal limit exceeded");
-  if(value.is_string()&&value.as_string().size()>65536)throw std::runtime_error("Native BiDi DOM request string exceeds 64 KiB");
-  if(value.is_array())for(const auto& child:value.as_array())validate_wire(child,work,depth+1);
-  if(value.is_object())for(const auto& [key,child]:value.as_object()){(void)key;validate_wire(child,work,depth+1);}
-}
 std::string state_name(){return std::string("globalThis.")+kSuiteCutDOMDriverStateKey;}
 void bootstrap(BidiRuntime& rt,BidiPage& page,Deadline deadline) {
   if(rt.value(page,"!!"+state_name(),deadline,true).as_bool())return;
@@ -54,7 +48,7 @@ const Json& remote_result(const Json& result) {
 Json raw_script(BidiRuntime& rt,BidiPage& page,const std::string& expression,Deadline deadline) {
   bootstrap(rt,page,deadline);
   const auto result=rt.call("script.evaluate",Json{{"expression",expression},{"target",script_target(page)},
-    {"awaitPromise",true},{"resultOwnership","none"},{"serializationOptions",Json{{"maxObjectDepth",64},{"maxDomDepth",0}}}},deadline);
+    {"awaitPromise",true},{"resultOwnership","none"}},deadline);
   return remote_result(result);
 }
 std::string child_context(BidiRuntime& rt,BidiPage& page,const Json& owner,Deadline deadline) {
@@ -129,14 +123,14 @@ BidiFrameScope::BidiFrameScope(BidiRuntime& rt,BidiPage& page):impl_(std::make_u
 BidiFrameScope::~BidiFrameScope(){restore_root();}
 void BidiFrameScope::restore_root(){impl_->page.browsing_context=impl_->root;}
 void BidiFrameScope::enter_owner(Json owner,Deadline deadline) {
-  auto& p=*impl_;if(p.ancestors.size()>=64)throw std::runtime_error("Native BiDi frame path depth exceeds 64");
+  auto& p=*impl_;
   const auto child=child_context(p.rt,p.page,owner,deadline);
   auto parent=p.page;p.ancestors.push_back({std::move(parent),std::move(owner),child});
   p.page.browsing_context=child;p.input_context=child;bootstrap(p.rt,p.page,deadline);
 }
 void BidiFrameScope::enter_frame(const std::string& context,Deadline deadline) {
   auto& p=*impl_;if(context.empty()||context==p.page.browsing_context)return;
-  const auto tree=p.rt.call("browsingContext.getTree",Json{{"root",p.root},{"maxDepth",64}},deadline);
+  const auto tree=p.rt.call("browsingContext.getTree",Json{{"root",p.root}},deadline);
   std::vector<std::string> path;
   const auto& contexts=tree.at("contexts").as_array();
   if(contexts.empty()||!find_context_path(contexts.front(),context,path))throw std::runtime_error("Native BiDi frame identity is detached or unavailable");
@@ -144,7 +138,7 @@ void BidiFrameScope::enter_frame(const std::string& context,Deadline deadline) {
     Json query{{"query",Json::array{Json{{"engine","css"},{"selector","iframe,frame"}}}},{"strict",true}};
     const auto windows=raw_script(p.rt,p.page,"(()=>{const state="+state_name()+";return state.all("+query.dump()+").map(e=>e.contentWindow);})()",deadline);
     if(text(windows,"type")!="array"||!windows.contains("value"))throw std::runtime_error("Native BiDi frame owners are unavailable");
-    const auto& values=windows.at("value").as_array();if(values.size()>4096)throw std::runtime_error("Native BiDi frame owner limit exceeded");
+    const auto& values=windows.at("value").as_array();
     bool found=false;
     for(std::size_t index=0;index<values.size();++index)if(text(values[index],"type")=="window"&&values[index].contains("value")&&values[index].at("value").at("context")==Json(path[depth])) {
       query["query"].as_array().push_back(Json{{"engine","nth"},{"index",index}});enter_owner(query,deadline);found=true;break;
@@ -164,7 +158,7 @@ Json BidiFrameScope::map_point(double x,double y,bool force,Deadline deadline) {
   auto& p=*impl_;
   for(auto it=p.ancestors.rbegin();it!=p.ancestors.rend();++it) {
     if(child_context(p.rt,it->parent,it->owner,deadline)!=it->child)return Json{{"ready",false}};
-    const auto point=p.rt.value(it->parent,"(()=>{const e="+state_name()+".element("+it->owner.dump()+");if(!e||!e.isConnected)return {ready:false};e.scrollIntoView({block:'center',inline:'center',behavior:'instant'});const r=e.getBoundingClientRect(),s=getComputedStyle(e);let depth=0;for(let n=e;n;n=n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)||null){if(++depth>64)throw new Error('Native iframe transform ancestor depth limit exceeded');const style=getComputedStyle(n),m=style.transform==='none'?null:new DOMMatrixReadOnly(style.transform);if(style.perspective!=='none'||(m&&(!m.is2D||Math.abs(m.b)>1e-8||Math.abs(m.c)>1e-8||m.a<=0||m.d<=0)))throw new Error('Native pointer targeting does not support rotated, skewed or perspective iframe owners');}const sx=e.offsetWidth?r.width/e.offsetWidth:0,sy=e.offsetHeight?r.height/e.offsetHeight:0;if(!sx||!sy||s.visibility==='hidden'||s.display==='none')return {ready:false};const x="+Json(x).dump()+",y="+Json(y).dump()+";if(x<0||y<0||x>=e.clientWidth||y>=e.clientHeight)return {ready:false};const px=r.left+(e.clientLeft+x)*sx,py=r.top+(e.clientTop+y)*sy;if(px<0||py<0||px>=innerWidth||py>=innerHeight)return {ready:false};if(!"+std::string(force?"true":"false")+"){let hit=document.elementFromPoint(px,py);for(let depth=0;hit?.shadowRoot&&depth<64;depth++){const next=hit.shadowRoot.elementFromPoint(px,py);if(!next||next===hit)break;hit=next;}let receives=false;for(let n=hit;n;n=n.assignedSlot||n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)||null)if(n===e){receives=true;break;}if(!receives)return {ready:false};}return {ready:true,x:px,y:py};})()",deadline,true);
+    const auto point=p.rt.value(it->parent,"(()=>{const e="+state_name()+".element("+it->owner.dump()+");if(!e||!e.isConnected)return {ready:false};e.scrollIntoView({block:'center',inline:'center',behavior:'instant'});const r=e.getBoundingClientRect(),s=getComputedStyle(e);for(let n=e;n;n=n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)||null){const style=getComputedStyle(n),m=style.transform==='none'?null:new DOMMatrixReadOnly(style.transform);if(style.perspective!=='none'||(m&&(!m.is2D||Math.abs(m.b)>1e-8||Math.abs(m.c)>1e-8||m.a<=0||m.d<=0)))throw new Error('Native pointer targeting does not support rotated, skewed or perspective iframe owners');}const sx=e.offsetWidth?r.width/e.offsetWidth:0,sy=e.offsetHeight?r.height/e.offsetHeight:0;if(!sx||!sy||s.visibility==='hidden'||s.display==='none')return {ready:false};const x="+Json(x).dump()+",y="+Json(y).dump()+";if(x<0||y<0||x>=e.clientWidth||y>=e.clientHeight)return {ready:false};const px=r.left+(e.clientLeft+x)*sx,py=r.top+(e.clientTop+y)*sy;if(px<0||py<0||px>=innerWidth||py>=innerHeight)return {ready:false};if(!"+std::string(force?"true":"false")+"){let hit=document.elementFromPoint(px,py);while(hit?.shadowRoot){const next=hit.shadowRoot.elementFromPoint(px,py);if(!next||next===hit)break;hit=next;}let receives=false;for(let n=hit;n;n=n.assignedSlot||n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)||null)if(n===e){receives=true;break;}if(!receives)return {ready:false};}return {ready:true,x:px,y:py};})()",deadline,true);
     if(!point.at("ready").as_bool())return point;
     x=point.at("x").as_double();y=point.at("y").as_double();
   }
@@ -189,7 +183,7 @@ std::unique_ptr<BidiFrameScope> bidi_resolve_frame(BidiRuntime& rt,BidiPage& pag
   if(request.contains("frame")&&!request.at("frame").is_null())scope->enter_frame(request.at("frame").as_string(),deadline);
   if(request.contains("framePath")) {
     const auto& path=request.at("framePath");
-    if(!path.is_array()||path.as_array().size()>64)throw std::runtime_error("Invalid native BiDi frame path");
+    if(!path.is_array())throw std::runtime_error("Invalid native BiDi frame path");
     for(const auto& query:path.as_array()){if(!query.is_array())throw std::runtime_error("Native BiDi frame path segments must be locator query arrays");scope->enter_owner(Json{{"query",query},{"strict",true}},deadline);}
   }
   return scope;
@@ -235,11 +229,11 @@ Json page_wait(BidiRuntime& rt,BidiPage& page,const Json& request,Deadline deadl
 }
 
 Json upload(BidiRuntime& rt,BidiPage& page,const Json& request,Deadline deadline) {
-  if(!request.contains("files")||!request.at("files").is_array()||request.at("files").as_array().size()>1000)throw std::runtime_error("Native BiDi upload requires at most 1000 file paths");
+  if(!request.contains("files")||!request.at("files").is_array())throw std::runtime_error("Native BiDi upload requires a files array");
   Json::array files;std::size_t directories=0;
   for(const auto& entry:request.at("files").as_array()) {
     const auto path=entry.is_string()?entry.as_string():entry.at("path").as_string();
-    if(path.empty()||path.size()>4096||path.find('\0')!=std::string::npos)throw std::runtime_error("Invalid native upload path");
+    if(path.empty()||path.find('\0')!=std::string::npos)throw std::runtime_error("Invalid native upload path");
     const auto absolute=std::filesystem::absolute(std::filesystem::path(path));
     const bool directory=std::filesystem::is_directory(absolute);
     if(directory)++directories;else if(!std::filesystem::is_regular_file(absolute))throw std::runtime_error("Native upload path is not a regular file or directory: "+path);
@@ -264,7 +258,7 @@ Json upload(BidiRuntime& rt,BidiPage& page,const Json& request,Deadline deadline
 Json drag(BidiRuntime& rt,BidiPage& page,BidiFrameScope& source_scope,const Json& request,Deadline deadline) {
   if(!request.contains("target")||!request.at("target").is_object())throw std::runtime_error("Native BiDi drag requires a target locator");
   const auto steps=request.contains("steps")?request.at("steps").as_int():1;
-  if(steps<1||steps>10000)throw std::runtime_error("Native drag steps must be 1..10000");
+  if(steps<1)throw std::runtime_error("Native drag steps must be positive");
   const bool force=flag(request,"force"),trial=flag(request,"trial");
   Json source=request;source["action"]="click";
   if(request.contains("sourcePosition"))source["position"]=request.at("sourcePosition");
@@ -281,7 +275,7 @@ Json drag(BidiRuntime& rt,BidiPage& page,BidiFrameScope& source_scope,const Json
   }
   if(page.mouse_buttons&1)throw std::runtime_error("Native drag cannot start with the left mouse button already held");
   const auto source_context=page.browsing_context;
-  const bool html5_source=rt.value(page,"(()=>{let e="+state_name()+".element("+source.dump()+");for(let depth=0;e&&depth<64;depth++,e=e.parentElement||(e.parentNode?.nodeType===11&&e.parentNode.host)||null)if(e.draggable)return true;return false;})()",deadline,true).as_bool();
+  const bool html5_source=rt.value(page,"(()=>{let e="+state_name()+".element("+source.dump()+");for(;e;e=e.parentElement||(e.parentNode?.nodeType===11&&e.parentNode.host)||null)if(e.draggable)return true;return false;})()",deadline,true).as_bool();
   if(html5_source)throw std::runtime_error("Native Firefox HTML5 drag completion is unavailable: this engine's native drag-service transfer/drop has not been verified");
   source_scope.restore_root();
   Json target=request.at("target");target["action"]="hover";target["force"]=force;target["dragging"]=true;
@@ -337,8 +331,6 @@ Json drag(BidiRuntime& rt,BidiPage& page,BidiFrameScope& source_scope,const Json
 }
 }
 Json bidi_dom_command(BidiRuntime& rt,BidiPage& page,const Json& request,Deadline deadline) {
-  std::size_t work=0;validate_wire(request,work);
-  if(request.dump().size()>1024*1024)throw std::runtime_error("Native BiDi DOM request exceeds 1 MiB");
   auto frame_scope=bidi_resolve_frame(rt,page,request,deadline);bootstrap(rt,page,deadline);
   const auto family=text(request,"command"),action=text(request,"action");
   if(family=="waitForFunction"||family=="waitForURL"||family=="waitLoadState"||family=="waitForSelector"||family=="waitForText")return page_wait(rt,page,request,deadline);
@@ -376,7 +368,6 @@ Json bidi_dom_command(BidiRuntime& rt,BidiPage& page,const Json& request,Deadlin
       if(!frame_scope->ancestors_visible(deadline)){pause(deadline);continue;}
       if(action=="press")return frame_scope->input(Json{{"kind","keyboard"},{"action","press"},{"key",text(request,"key")},{"delay",request.contains("delay")?request.at("delay"):Json(0)}},deadline);
       const auto value=action=="clear"?std::string():text(request,"value");
-      if(value.size()>65536)throw std::runtime_error("Native BiDi input text exceeds 64 KiB");
       if(value.empty()&&action!="type")return frame_scope->input(Json{{"kind","keyboard"},{"action","press"},{"key","Backspace"}},deadline);
       return frame_scope->input(Json{{"kind","keyboard"},{"action",action=="type"?"type":"insertText"},{"text",value},{"delay",request.contains("delay")?request.at("delay"):Json(0)}},deadline);
     }

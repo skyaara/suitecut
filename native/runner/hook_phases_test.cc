@@ -112,7 +112,8 @@ int main() {
     assert(p.phases.Begin(65, 65, {{K::AfterAll, 1, {}}}, 10, 2000));
     auto query = p.acquire.front(); p.acquire.pop_front();
     p.phases.Acquired(query.request, query.scope, query.generation, true, "", 2001);
-    assert(p.errors.size() == 1 && p.phases.Inspect().physical == 64);
+    // No native lease cap: the 65th physical callback is admitted.
+    assert(p.errors.empty() && p.phases.Inspect().physical == 65);
     p.phases.WorkerClosed(); assert(p.phases.Inspect().physical == 0 && !p.results.back().ok);
   }
   {

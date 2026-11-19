@@ -31,14 +31,13 @@ native fixture token, scope and generation. A retained-Source startup bridge
 must be restricted to a selected authored callback, not a native-selected
 constant. `FCONST` pins the exact selected declaration, value wire and origin
 before that version is admitted; callback dependency aliases can be omitted
-only after this native selection. Literal and configured values are bounded
+only after this native selection. Literal and configured values are
 serialized data, without authored object identity.
 
-JSON values are bounded to 8192 serialized bytes, 2048 value nodes and depth
-16; numbers must parse as finite doubles. Strings retain checked escaped UTF16
+JSON values have no native size, node or depth limit; numbers must parse as finite doubles. Strings retain checked escaped UTF16
 units, including isolated surrogates and NUL. Raw JSON is retained exactly;
-undefined uses a separate typed marker. All literal/config metadata together
-is limited to 2 MiB, with the existing 256-declaration/override bounds. Complex
+undefined uses a separate typed marker. Literal/config metadata and
+declaration/override counts have no native limit. Complex
 author object identity, non-JSON values, per-project/test.use option selection
 and explicit per-fixture timeout clocks are separate capabilities.
 

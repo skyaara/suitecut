@@ -9,7 +9,6 @@ import * as z from 'zod'
 
 import { type NativeBrowserController } from './native-browser-controller.js'
 import { type NativeBrowser, type NativeVideoFrame } from './native-browser.js'
-import { nativeContextDeviceScaleFactor } from './native-context.js'
 import { type NativePage } from './native-page.js'
 import { NativeTimeoutError } from './native-timeouts.js'
 import { NativeViewerGate, type NativeViewerMode } from './native-viewer-gate.js'
@@ -52,8 +51,6 @@ export interface NativeBrowserViewerState {
   /** The selected page's renderer crashed. Reloading it recovers the page. */
   crashed: boolean
   resolutionMode: NativeViewerResolutionMode
-  maxWidth: number
-  maxHeight: number
   canResize: boolean
 }
 export interface NativeBrowserViewer {
@@ -72,8 +69,8 @@ const frameIdleMs = 5000
 const Options = z.strictObject({
   port: z.number().int().min(0).max(65535).default(0),
   network: z.boolean().default(false),
-  framesPerSecond: z.number().int().min(1).max(120).default(30),
-  quality: z.number().int().min(20).max(95).default(75),
+  framesPerSecond: z.number().int().min(1).default(30),
+  quality: z.number().int().min(1).max(100).default(75),
   takeoverTimeoutMs: z.number().int().min(100).max(120000).default(15000),
   resolutionMode: z.enum(['fixed', 'auto']).default('fixed'),
 })
@@ -96,30 +93,30 @@ const Action = z.discriminatedUnion('type', [
   z.strictObject({ ...base, type: z.literal('forward') }),
   z.strictObject({ ...base, type: z.literal('reload') }),
   z.strictObject({ ...base, type: z.literal('selectPage'), pageId: z.number().int().positive() }),
-  z.strictObject({ ...base, type: z.literal('navigate'), url: z.string().min(1).max(8192) }),
+  z.strictObject({ ...base, type: z.literal('navigate'), url: z.string().min(1) }),
   z.strictObject({
     ...base,
     type: z.literal('resize'),
-    width: z.number().int().min(2).max(3840),
-    height: z.number().int().min(2).max(2160),
+    width: z.number().int().min(2),
+    height: z.number().int().min(2),
     mode: z.enum(['fixed', 'auto']),
   }),
   z.strictObject({
     ...base,
     type: z.literal('pointer'),
     action: z.enum(['move', 'down', 'up']),
-    x: z.number().finite().min(0).max(3840),
-    y: z.number().finite().min(0).max(2160),
+    x: z.number().finite().min(0),
+    y: z.number().finite().min(0),
     button,
   }),
   z.strictObject({
     ...base,
     type: z.literal('wheel'),
-    deltaX: z.number().finite().min(-100000).max(100000),
-    deltaY: z.number().finite().min(-100000).max(100000),
+    deltaX: z.number().finite(),
+    deltaY: z.number().finite(),
   }),
   z.strictObject({ ...base, type: z.literal('key'), action: z.enum(['down', 'up']), key: keyName }),
-  z.strictObject({ ...base, type: z.literal('text'), text: z.string().min(1).max(8192) }),
+  z.strictObject({ ...base, type: z.literal('text'), text: z.string().min(1) }),
 ])
 class ViewerHTTPError extends Error {
   constructor(
@@ -137,13 +134,8 @@ async function body(request: IncomingMessage): Promise<UntrustedInput> {
   if (!request.headers['content-type']?.startsWith('application/json'))
     throw new ViewerHTTPError(415, 'Expected application/json')
   const chunks: Buffer[] = []
-  let size = 0
-  for await (const input of request) {
-    const chunk = Buffer.isBuffer(input) ? input : Buffer.from(String(input))
-    size += chunk.length
-    if (size > 49152) throw new ViewerHTTPError(413, 'Viewer action exceeds 48 KiB')
-    chunks.push(chunk)
-  }
+  for await (const input of request)
+    chunks.push(Buffer.isBuffer(input) ? input : Buffer.from(String(input)))
   try {
     return JSON.parse(Buffer.concat(chunks).toString('utf8')) as UntrustedInput
   } catch {
@@ -233,8 +225,7 @@ export async function createBrowserViewer(
   const heldKeys = new Set<string>()
   const heldButtons = new Set<z.infer<typeof button>>()
   const allSockets = new Set<Socket>()
-  const server = createServer({ requestTimeout: 10000, headersTimeout: 10000, maxHeaderSize: 8192 })
-  server.maxConnections = 32
+  const server = createServer({ requestTimeout: 10000, headersTimeout: 10000 })
   // Every Host a request may name: loopback, plus the network addresses when shared.
   const hosts = new Set<string>()
 
@@ -280,7 +271,8 @@ export async function createBrowserViewer(
           if (!rgb || !isCurrent()) return undefined
           return sharp(rgb.data, {
             raw: { width: rgb.width, height: rgb.height, channels: 3 },
-            limitInputPixels: 3840 * 2160,
+            // Raw pixels the browser already painted: no decoder bound to guard.
+            limitInputPixels: false,
           })
             .jpeg({ quality: config.quality, chromaSubsampling: '4:2:0' })
             .toBuffer()
@@ -365,7 +357,7 @@ export async function createBrowserViewer(
       })
       if (!framesWanted()) return
       detachFrame = page.source.onFrame((frame) => {
-        if (frame.pixelFormat !== 'bgra' || frame.width * frame.height > 3840 * 2160) return
+        if (frame.pixelFormat !== 'bgra') return
         if (frame.viewport !== undefined && frame.contentRect && selected) {
           geometrySources.add(selected)
           for (const notify of geometryWaiters) notify()
@@ -408,7 +400,6 @@ export async function createBrowserViewer(
     }
     syncViewport()
     const viewport = selected?.viewportSize()
-    const limits = viewportLimits()
     return {
       mode: gate.mode,
       owner,
@@ -421,19 +412,7 @@ export async function createBrowserViewer(
       frameError,
       crashed: !!selected && !selected.isClosed() && selected.source.state === 'failed',
       resolutionMode,
-      ...limits,
       canResize: !!selected && geometrySources.has(selected),
-    }
-  }
-  function viewportLimits(): { maxWidth: number; maxHeight: number } {
-    const source = selected?.source ?? browser.source
-    const original = source.viewport
-    const scale =
-      (selected && nativeContextDeviceScaleFactor(selected.context())) ??
-      (original ? Math.max(source.width / original.width, source.height / original.height) : 1)
-    return {
-      maxWidth: Math.min(3840, Math.floor(3840 / scale)),
-      maxHeight: Math.min(2160, Math.floor(2160 / scale)),
     }
   }
   function syncViewport(): boolean {
@@ -454,22 +433,12 @@ export async function createBrowserViewer(
     mode: NativeViewerResolutionMode,
   ): Promise<void> {
     const page = currentPage(),
-      before = page.viewportSize(),
-      limits = viewportLimits()
+      before = page.viewportSize()
     if (before && !geometrySources.has(page)) await frameGeometry(page)
     if (!before || !geometrySources.has(page))
       throw new ViewerHTTPError(
         409,
         'Update the native helper: live resizing requires frame viewport geometry',
-      )
-    if (mode === 'auto') {
-      width = Math.min(width, limits.maxWidth)
-      height = Math.min(height, limits.maxHeight)
-    }
-    if (width > limits.maxWidth || height > limits.maxHeight)
-      throw new ViewerHTTPError(
-        400,
-        `Viewport exceeds ${limits.maxWidth} × ${limits.maxHeight} at this device scale`,
       )
     if (width === before.width && height === before.height) {
       resolutionMode = mode
@@ -551,7 +520,7 @@ export async function createBrowserViewer(
         .strictObject({
           viewerIdleVersion: z.literal(1),
           idle: z.boolean(),
-          busy: z.string().max(512).optional(),
+          busy: z.string().optional(),
         })
         .parse(answer)
       busy = result.busy
@@ -733,8 +702,6 @@ export async function createBrowserViewer(
           break
         case 'key':
           if (command.action === 'down') {
-            if (heldKeys.size >= 32 && !heldKeys.has(command.key))
-              throw new ViewerHTTPError(429, 'Too many held keys')
             heldKeys.add(command.key)
             await page.keyboard.down(command.key)
           } else {
@@ -782,7 +749,6 @@ export async function createBrowserViewer(
     authorized(request)
     if (closing) throw new ViewerHTTPError(410, 'Browser viewer closed')
     if (request.method === 'POST' && url.pathname === '/session') {
-      if (clients.size >= 8) throw new ViewerHTTPError(429, 'Viewer allows eight connected clients')
       const clientId = randomBytes(16).toString('hex')
       clients.set(clientId, Date.now())
       sendJSON(response, 200, { clientId })
@@ -819,8 +785,7 @@ export async function createBrowserViewer(
         sendFrame()
         return
       }
-      if (frameWaiters.size >= 32) throw new ViewerHTTPError(429, 'Too many pending viewer frames')
-      // At most one bounded wait per polling client. A new JPEG wakes all clients;
+      // One bounded wait per polling request. A new JPEG wakes all clients;
       // disconnect and shutdown remove their listeners without retaining frames.
       await new Promise<void>((resolve) => {
         const finish = (): void => {

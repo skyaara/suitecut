@@ -4,10 +4,10 @@
   "chromium_revision": "refs/tags/156.0.8078.17",
   "cef_revision": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
   "patch": "chromium156-widget-input-receipt-probe.patch",
-  "patch_sha256": "d1b6cd6e10315faa9e9ad4b5014de9c22b456a7d1c4e46b64c8204b157f8a896",
+  "patch_sha256": "b41fdcc927e57925d5c73e5659f70864dae85bd8a4576bff92e930fa34ac593d",
   "status": "isolated-candidate-source-patch-custom-cef-build-required",
   "requires_patch": "chromium156-widget-input-receipts.patch",
-  "requires_patch_sha256": "c4218ea875cc53d0dc5f7001245e6afc68470799dd28f130be178c473c01fcc7",
+  "requires_patch_sha256": "b15c122bf173977d5efd4842f463d9175365d0e1ed9430d03a312192433eb854",
   "compiled": false,
   "runtime_verified": false,
   "source_cache": "/workspace/suitecut-widget-probe-vendor-20261017/base",
@@ -16,17 +16,20 @@
     {
       "path": "content/browser/devtools/protocol/input_handler.h",
       "original_sha256": "734336eb3a1a6670a945bbb7eb526f290daf8c14d5247dd03011e79390dd535e",
-      "patched_sha256": "cfa4567a6afb9b272f24e083f8f506c1ef0c2646614bb2b54c8fc2b4a33546f3"
+      "patched_sha256": null
     },
     {
       "path": "content/browser/devtools/protocol/input_handler.cc",
-      "original_sha256": "7bb9776346d851f7f923456d4a313bc4f2478b365a50ef323d90c43e11b80065",
-      "patched_sha256": "b0004b114a8ac543b03b1a50df10cf32c0cc6f60ef4f3ab208dd0974fb1d0aa4"
+      "original_sha256": null,
+      "patched_sha256": null
     },
     {
       "path": "third_party/blink/public/devtools_protocol/domains/Input.pdl",
       "original_sha256": "c068724bb6c91a1dd5ce700451d6c6817addd0653a5efcdcf73ca235590ed915",
-      "patched_sha256": "8914f08b0aa7fad12f5d15d1a66fbd7952726a2ae116745e466da2b9e10a8c93"
+      "patched_sha256": null
     }
+  ],
+  "limits": [
+    "maxLeases/maxPending were removed from the capability reply and the receipts patch it stacks on lost its caps after the applicability check; the input_handler.cc base hash and all three patched_sha256 values must be recomputed against the pinned source plus the receipts patch (null until then)"
   ]
 }

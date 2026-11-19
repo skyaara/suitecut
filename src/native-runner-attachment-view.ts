@@ -33,13 +33,10 @@ const Context = Owner.extend({
 })
 export type NativeAttachmentViewContext = z.infer<typeof Context>
 const Declaration = z.strictObject({
-  name: z.string().max(4096),
-  contentType: z.string().max(1024),
-  body: z
-    .instanceof(Uint8Array)
-    .refine((value) => value.byteLength <= 16 * 1024 * 1024)
-    .optional(),
-  path: z.string().max(8192).optional(),
+  name: z.string(),
+  contentType: z.string(),
+  body: z.instanceof(Uint8Array).optional(),
+  path: z.string().optional(),
 })
 interface AttemptView {
   readonly target: NativeTestAttachment[]
@@ -86,10 +83,6 @@ export class NativeAttachmentViews {
     owner: NativeStepOwner
     active: () => boolean
   }>()
-  private retainedBytes = 0
-  // 128 native files + 128 authored declarations + at most 128 pending
-  // native rejections. A full committed view cannot preempt native rejection.
-  private appendCount = 0
   constructor(
     private readonly workerIndex: number,
     private readonly pid: number,
@@ -113,14 +106,11 @@ export class NativeAttachmentViews {
     if (
       context.workerIndex !== this.workerIndex ||
       context.pid !== this.pid ||
-      this.contexts.has(owner) ||
-      this.contexts.size >= 64
+      this.contexts.has(owner)
     )
       throw new Error('Native attachment view has foreign or duplicate callback context')
     const attempt = attemptKey(context)
     if (!this.attempts.has(attempt)) {
-      if (this.attempts.size >= 8192)
-        throw new Error('Native attachment view attempt catalog exceeded')
       const target: NativeTestAttachment[] = []
       const view: NativeTestAttachments = new Proxy(target, {
         get: (array, property, receiver) => {
@@ -219,8 +209,6 @@ export class NativeAttachmentViews {
     publication?: { readonly ticket: string; readonly artifact: string },
   ): string | undefined {
     if (!this.propose) return undefined
-    if (attempt.proposedRevision >= 512n)
-      throw new Error('Native attachment mutation proposal capacity exceeded')
     const request = this.propose(owner, String(attempt.proposedRevision), slots, publication)
     ++attempt.proposedRevision
     return request
@@ -242,8 +230,6 @@ export class NativeAttachmentViews {
     try {
       const candidate = attempt.target.slice(),
         result = operation(candidate)
-      if (candidate.length > 256)
-        throw new Error('Native attachment visible slot capacity exceeded')
       const unchanged =
         candidate.length === attempt.target.length &&
         candidate.every(
@@ -265,14 +251,7 @@ export class NativeAttachmentViews {
       }
       // Complete validation precedes native declaration requests and author
       // reflection. No old request entry is removed by replacement/withdrawal.
-      const parsed = z.array(Declaration).max(128).parse(unknown)
-      const bytes = parsed.reduce((sum, item) => sum + (item.body?.byteLength ?? 0), 0)
-      if (
-        this.appendCount + parsed.length > 128 ||
-        this.entries.size + parsed.length > 384 ||
-        bytes > 64 * 1024 * 1024 - this.retainedBytes
-      )
-        throw new Error('Native attachment declaration host capacity exceeded')
+      const parsed = z.array(Declaration).parse(unknown)
       const privateItems = parsed.map((item) =>
         Object.freeze({
           name: item.name,
@@ -339,8 +318,6 @@ export class NativeAttachmentViews {
         if (!reference) throw new Error('Native attachment mutation has an unstaged reference')
         slots.push(reference)
       }
-      this.retainedBytes += bytes
-      this.appendCount += parsed.length
       this.submit(author.owner, attempt, slots)
       attempt.slots.splice(0, attempt.slots.length, ...slots)
       attempt.target.length = candidate.length
@@ -364,14 +341,7 @@ export class NativeAttachmentViews {
     if (attempt?.view !== view)
       throw new Error('Native attachment append belongs to another actual attempt')
     // Validate the whole batch before any request or declaration mutation.
-    const parsed = z.array(Declaration).max(128).parse(values)
-    const bytes = parsed.reduce((total, item) => total + (item.body?.byteLength ?? 0), 0)
-    if (
-      this.appendCount + parsed.length > 128 ||
-      this.entries.size + parsed.length > 384 ||
-      bytes > 64 * 1024 * 1024 - this.retainedBytes
-    )
-      throw new Error('Native attachment declaration host capacity exceeded')
+    const parsed = z.array(Declaration).parse(values)
     const privateItems = parsed.map((item) =>
       Object.freeze({
         name: item.name,
@@ -406,8 +376,6 @@ export class NativeAttachmentViews {
       attempt.references.set(original, `d${request}`)
       attempt.slots.push(`d${request}`)
     }
-    this.retainedBytes += bytes
-    this.appendCount += parsed.length
     return attempt.target.length
   }
   trackNormal(
@@ -420,13 +388,10 @@ export class NativeAttachmentViews {
       attempt = this.attempts.get(attemptKey(context))
     const item = z
       .strictObject({
-        name: z.string().max(4096),
-        contentType: z.string().max(1024).optional(),
-        body: z
-          .instanceof(Uint8Array)
-          .refine((value) => value.byteLength <= 16 * 1024 * 1024)
-          .optional(),
-        path: z.string().max(8192).optional(),
+        name: z.string(),
+        contentType: z.string().optional(),
+        body: z.instanceof(Uint8Array).optional(),
+        path: z.string().optional(),
       })
       .refine((value) => value.body === undefined || value.path === undefined)
       .parse(raw)
@@ -435,8 +400,6 @@ export class NativeAttachmentViews {
     if (
       !attempt ||
       this.entries.has(actualRequest) ||
-      this.entries.size >= 384 ||
-      bytes > 64 * 1024 * 1024 - this.retainedBytes ||
       (authorBody !== undefined && (item.body === undefined || authorBody.byteLength !== bytes))
     )
       throw new Error('Native attachment view normal request catalog rejected')
@@ -455,7 +418,6 @@ export class NativeAttachmentViews {
       ...(authorBody === undefined ? {} : { authorBody }),
       state: 'declared',
     })
-    this.retainedBytes += bytes
   }
   committed(owner: NativeStepOwner, request: string): boolean {
     this.context(owner)
@@ -480,18 +442,13 @@ export class NativeAttachmentViews {
     const receipt = z
       .strictObject({
         id: Integer,
-        name: z.string().max(4096),
-        contentType: z.string().max(1024),
+        name: z.string(),
+        contentType: z.string(),
         path: z
           .string()
-          .max(8192)
           .startsWith('/')
           .refine((value) => !value.includes('\0')),
-        bytes: z
-          .number()
-          .int()
-          .min(0)
-          .max(16 * 1024 * 1024),
+        bytes: z.number().int().min(0),
       })
       .parse(raw)
     if (

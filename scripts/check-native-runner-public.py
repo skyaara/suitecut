@@ -145,13 +145,14 @@ export default defineNativeSuite({fixtures:{broken:{setup:async()=>{throw new Er
 assert actual['attempts'][0]['status'] == 'failed'
 assert b'FORBIDDEN_BODY' not in bytes.fromhex(actual['workers'][0]['stdout']['data'])
 
-actual, elapsed = execute('native-stream-cap-physical-close', '''
-export default defineNativeSuite({tests:[{title:'actual oversized stdout',run:async()=>{process.stdout.write(Buffer.alloc(1100000,65));await new Promise(()=>{})}}]});
-''', 1)
-assert actual['globalErrors']
-assert actual['attempts'][0]['status'] == 'interrupted'
-assert actual['workers'][0]['signal'] == 9
-assert actual['workers'][0]['stdout']['byteLength'] <= 1048576
+actual, elapsed = execute('native-stream-past-former-cap-retained-whole', '''
+export default defineNativeSuite({tests:[{title:'actual stdout past former 1MiB cap',run:async()=>{process.stdout.write(Buffer.alloc(1100000,65))}}]});
+''')
+assert actual['globalErrors'] == []
+assert actual['attempts'][0]['status'] == 'passed'
+assert actual['workers'][0]['signal'] is None
+stdout = bytes.fromhex(actual['workers'][0]['stdout']['data'])
+assert actual['workers'][0]['stdout']['byteLength'] == len(stdout) and b'A' * 1100000 in stdout
 
 actual, elapsed = execute('retry-metadata-native-fence', '''
 const counter=new URL('./count.txt',import.meta.url);const n=fs.existsSync(counter)?Number(fs.readFileSync(counter,'utf8')):0;fs.writeFileSync(counter,String(n+1));

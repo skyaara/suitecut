@@ -64,7 +64,7 @@ bool CleanupSendKeysSequence(const std::shared_ptr<InputWork>& work) {
     }else FailSendKeysCleanup(work,"Native send-keys cleanup physical key-release acknowledgement failed");
     SendKeysPhysicalFinished(work->owner);
   };
-  devtools_.emplace(assigned,DevToolsCall{work->owner,std::move(callback),"",true,kMaxResponseBytes,true,false});
+  devtools_.emplace(assigned,DevToolsCall{work->owner,std::move(callback),"",true,true,false});
   if(!SubmitDevTools(assigned,"Input.dispatchKeyEvent",params,"")){
     devtools_.erase(assigned);send_keys_cleanup_commands_.erase(assigned);
     FailSendKeysCleanup(work,"Native send-keys cleanup physical key-release submission failed");

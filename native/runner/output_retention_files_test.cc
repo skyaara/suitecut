@@ -11,10 +11,10 @@ struct ActualRetentionAttempt {uint64_t test_id=1,generation=1;unsigned worker_i
 struct ActualRetentionReport {std::optional<sr::PreserveOutput> output_preservation;std::vector<sr::OutputDirectoryRecord> outputs;std::vector<sr::OutputRetentionRecord> output_retentions;std::vector<ActualRetentionAttempt> attempts{{}};};
 struct ActualRetentionProof {
  fs::path root;size_t physical=0;std::vector<std::string> failures;
- sr::RunnerOutputDirectories::Budget output_budget;sr::RunnerOutputRetention::Budget retention_budget;
+ sr::RunnerOutputDirectories::Budget output_budget;
  sr::RunnerOutputDirectories output;sr::RunnerOutputRetention retention;
  sr::OutputDirectoryOwner owner{1,1,1,getpid()};sr::OutputDirectoryRecord source;
- explicit ActualRetentionProof(fs::path path,sr::RunnerOutputRetention::Hooks hooks={}):root(std::move(path)),output("/proc/self/exe",{[this](const auto& error){failures.push_back(error);}},output_budget,{&physical,1}),retention("/proc/self/exe",{[this](const auto& error){failures.push_back(error);},std::move(hooks.after_spawn)},retention_budget,{&physical,1}){
+ explicit ActualRetentionProof(fs::path path,sr::RunnerOutputRetention::Hooks hooks={}):root(std::move(path)),output("/proc/self/exe",{[this](const auto& error){failures.push_back(error);}},output_budget,{&physical}),retention("/proc/self/exe",{[this](const auto& error){failures.push_back(error);},std::move(hooks.after_spawn)},{&physical}){
   fs::create_directories(root);const auto now=af::Now();assert(output.Begin(owner,root/"out",now+5000,now));const auto end=now+7000;
   while(output.Physical()){assert(af::Now()<end);output.Tick(af::Now());if(output.Physical())poll(nullptr,0,1);}
   assert(!physical&&failures.empty()&&output.Assign(owner,af::Now()));source=*output.Find(owner);assert(source.created&&source.ready_receipt&&source.writer_received&&source.received&&source.assigned&&source.writer_exit==0&&source.writer_pid!=getpid());

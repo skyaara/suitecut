@@ -19,7 +19,7 @@
     (void)sr::report_detail::Validate(report_);
     bool failure_recorded=false;
     sr::FinalizeNativeOutputRetention(report_,"/proc/self/exe",*options_.preserve_output,fence,
-      {&shared_->file_budget.physical,sr::RunnerAttachments::kPhysical},[&](const std::string& error){
+      {&shared_->file_budget.physical},[&](const std::string& error){
         if(!failure_recorded){failure_recorded=true;Global(Quote(error));}
       });
   }

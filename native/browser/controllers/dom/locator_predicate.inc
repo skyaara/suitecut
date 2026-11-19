@@ -26,7 +26,7 @@ void LocatorPredicateSend(const std::shared_ptr<LocatorPredicateWork>& work,cons
   if(!LocatorPredicateCurrent(work))return;
   DevTools(work->owner,method,params,[this,work,done=std::move(done)](bool ok,const std::string& json)mutable{
     if(LocatorPredicateCurrent(work))done(ok,json);
-  },session,false,kMaxResponseBytes,true);
+  },session,false,true);
 }
 void LocatorPredicateFailure(const std::shared_ptr<LocatorPredicateWork>& work,Dict result,const std::string& fallback){
   if(!LocatorPredicateCurrent(work))return;

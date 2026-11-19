@@ -27,12 +27,6 @@ bool missing_context(const std::exception& error) {
   try {const auto detail=Json::parse(message.substr(prefix.size()));return detail.at("code")==Json(-32000)&&detail.at("message")==Json("Cannot find context with specified id");}catch(...){return false;}
 }
 void reset_world(CdpPage& page) {page.isolated_context=0;page.isolated_loader.clear();page.isolated_frame.clear();}
-void validate_wire(const Json& value,std::size_t& work,int depth=0) {
-  if(++work>100000||depth>64)throw std::runtime_error("Native DOM request traversal limit exceeded");
-  if(value.is_string()&&value.as_string().size()>65536)throw std::runtime_error("Native DOM request string exceeds 64 KiB");
-  if(value.is_array())for(const auto& child:value.as_array())validate_wire(child,work,depth+1);
-  if(value.is_object())for(const auto& [key,child]:value.as_object())validate_wire(child,work,depth+1);
-}
 struct ScopedModifiers {
   CdpRuntime& rt;CdpPage& page;CdpFrameScope& scope;Deadline deadline;std::vector<std::string> added;
   ScopedModifiers(CdpRuntime& runtime,CdpPage& target,CdpFrameScope& frame,const Json& request,Deadline limit,bool pointer):rt(runtime),page(target),scope(frame),deadline(limit) {
@@ -109,13 +103,13 @@ std::string element_object(CdpRuntime& rt,CdpPage& page,const Json& request,Dead
   }
 }
 Json upload(CdpRuntime& rt,CdpPage& page,const Json& request,Deadline deadline,CdpFrameScope* frame) {
-  if(!request.contains("files")||!request.at("files").is_array()||request.at("files").as_array().size()>1000)
-    throw std::runtime_error("Native upload requires at most 1000 file paths");
+  if(!request.contains("files")||!request.at("files").is_array())
+    throw std::runtime_error("Native upload requires an array of file paths");
   Json::array files;
   std::size_t directories=0;
   for(const auto& file:request.at("files").as_array()) {
     const auto path=file.is_string()?file.as_string():file.at("path").as_string();
-    if(path.empty()||path.size()>4096||path.find('\0')!=std::string::npos)throw std::runtime_error("Invalid native upload path");
+    if(path.empty()||path.find('\0')!=std::string::npos)throw std::runtime_error("Invalid native upload path");
     const auto absolute=std::filesystem::absolute(std::filesystem::path(path));
     const bool directory=std::filesystem::is_directory(absolute);
     if(directory)++directories;
@@ -179,7 +173,7 @@ std::int64_t drag_sequence(const Json& event) {
 Json drag(CdpRuntime& rt,CdpPage& page,CdpFrameScope& source_scope,const Json& request,Deadline deadline) {
   if(!request.contains("target")||!request.at("target").is_object())throw std::runtime_error("Native drag requires a target locator");
   const auto steps=request.contains("steps")?request.at("steps").as_int():1;
-  if(steps<1||steps>10000)throw std::runtime_error("Native drag steps must be 1..10000");
+  if(steps<1)throw std::runtime_error("Native drag steps must be at least 1");
   const bool force=flag(request,"force"),trial=flag(request,"trial");
   Json source=request;source["action"]="click";
   if(request.contains("sourcePosition"))source["position"]=request.at("sourcePosition");
@@ -272,7 +266,7 @@ std::unique_ptr<CdpFrameScope> cdp_resolve_frame(CdpRuntime& rt,CdpPage& page,co
   if(request.contains("frame")&&!request.at("frame").is_null())scope->enter_frame(request.at("frame").as_string(),deadline);
   if(request.contains("framePath")) {
     const auto& path=request.at("framePath");
-    if(!path.is_array()||path.as_array().size()>64)throw std::runtime_error("Invalid native frame path");
+    if(!path.is_array())throw std::runtime_error("Invalid native frame path");
     for(const auto& segment:path.as_array()) {
       if(!segment.is_array())throw std::runtime_error("Native frame path segments must be locator query arrays");
       Json owner{{"query",segment},{"strict",true}};
@@ -284,8 +278,6 @@ std::unique_ptr<CdpFrameScope> cdp_resolve_frame(CdpRuntime& rt,CdpPage& page,co
   return scope;
 }
 Json cdp_dom_command(CdpRuntime& rt,CdpPage& page,const Json& request,Deadline deadline) {
-  std::size_t wire_work=0;validate_wire(request,wire_work);
-  if(request.dump().size()>1024*1024)throw std::runtime_error("Native DOM request exceeds 1 MiB");
   auto frame_scope=cdp_resolve_frame(rt,page,request,deadline);
   bootstrap(rt,page,deadline,frame_scope.get());
   const auto family=text(request,"command");
@@ -324,7 +316,6 @@ Json cdp_dom_command(CdpRuntime& rt,CdpPage& page,const Json& request,Deadline d
     if(action=="focus"||action=="scrollIntoViewIfNeeded")return Json();
     if(action=="fill"||action=="clear"||action=="type") {
       const auto value=action=="clear"?std::string():text(request,"value");
-      if(value.size()>65536)throw std::runtime_error("Native input text exceeds 64 KiB");
       if(action=="type")return frame_scope->input(Json{{"kind","keyboard"},{"action","type"},{"text",value},{"delay",request.contains("delay")?request.at("delay"):Json(0)}},deadline);
       // Selection is prepared on the resolved element in the isolated world;
       // Chromium's editing pipeline receives actual Unicode fill text via CDP.

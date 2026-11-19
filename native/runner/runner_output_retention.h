@@ -17,32 +17,28 @@ struct OutputRetentionFence {
 // and waitpid even after a logical deadline or malformed/failed helper reply.
 class RunnerOutputRetention {
  public:
-  static constexpr size_t kRecords=8192,kMetadata=64*1024*1024;
   static constexpr double kCleanupMaximum=kOutputRetentionCleanupMaximum;
-  struct Budget {size_t records=0,metadata=0;};
-  struct PhysicalBudget {size_t* count=nullptr;size_t maximum=0;};
+  // Shared live helper-process count; there is no suitecut maximum.
+  struct PhysicalBudget {size_t* count=nullptr;};
   struct Hooks {std::function<void(const std::string&)> failure;std::function<void(int64_t)> after_spawn{};};
-  RunnerOutputRetention(std::string executable,Hooks hooks,Budget& budget,PhysicalBudget physical):executable_(std::move(executable)),hooks_(std::move(hooks)),budget_(budget),physical_(physical){
-   if(executable_.empty()||!physical.count||!physical.maximum||physical.maximum>64)throw std::invalid_argument("Invalid native output retention actor");
+  RunnerOutputRetention(std::string executable,Hooks hooks,PhysicalBudget physical):executable_(std::move(executable)),hooks_(std::move(hooks)),physical_(physical){
+   if(executable_.empty()||!physical.count)throw std::invalid_argument("Invalid native output retention actor");
   }
   void Admit(const OutputDirectoryRecord& actual,const OutputRetentionOutcome& outcome,PreserveOutput policy,double deadline,double now){
    Time(now);ValidateRetentionSource(actual,outcome);if(now<*actual.assigned)throw std::invalid_argument("Native output retention predates assignment");const bool keep=PreserveNativeOutput(policy,outcome);
-   if(entries_.contains(actual.id)||budget_.records>=kRecords||(!keep&&(!std::isfinite(deadline)||deadline<=now||deadline-now>kCleanupMaximum)))throw std::invalid_argument("Native output retention duplicate/budget/deadline rejected");
+   if(entries_.contains(actual.id)||(!keep&&(!std::isfinite(deadline)||deadline<=now||deadline-now>kCleanupMaximum)))throw std::invalid_argument("Native output retention duplicate/deadline rejected");
    const std::filesystem::path path(actual.path);const auto parent=path.parent_path().string(),name=path.filename().string();
-   if(actual.path.find('\0')!=std::string::npos||actual.path.size()>8192||!path.is_absolute()||parent.empty()||parent.size()>8192||name.empty()||name.size()>255||!name.starts_with("suitecut-output-"))throw std::invalid_argument("Native output retention source path rejected");
+   if(actual.path.find('\0')!=std::string::npos||!path.is_absolute()||parent.empty()||name.empty()||!name.starts_with("suitecut-output-"))throw std::invalid_argument("Native output retention source path rejected");
    (void)AttachmentPathJSON(actual.path);
-   Entry entry;auto& record=entry.record;record.output_id=actual.id;record.owner=actual.owner;record.policy=policy;record.outcome=outcome;record.path=actual.path;record.decided=now;record.deadline=keep?0:deadline;record.error.reserve(4096);
+   Entry entry;auto& record=entry.record;record.output_id=actual.id;record.owner=actual.owner;record.policy=policy;record.outcome=outcome;record.path=actual.path;record.decided=now;record.deadline=keep?0:deadline;
    record.status=keep?OutputRetentionStatus::Kept:OutputRetentionStatus::Pending;if(keep)record.receipt=now;
    if(!keep)entry.command="REMOVE "+std::to_string(actual.id)+" "+attachment_files::Hex(parent)+" "+attachment_files::Hex(name)+" "+std::to_string(actual.device)+" "+std::to_string(actual.inode)+" "+std::to_string(actual.parent_device)+" "+std::to_string(actual.parent_inode)+" "+std::to_string(deadline);
-   const size_t charge=sizeof(Entry)+128+record.path.capacity()+record.error.capacity()+record.outcome.status.capacity()+record.outcome.expected_status.capacity()+entry.command.capacity()+5;
-   if(charge>kMetadata-budget_.metadata)throw std::length_error("Native output retention metadata capacity exceeded");
-   entries_.emplace(actual.id,std::move(entry));++budget_.records;budget_.metadata+=charge;
+   entries_.emplace(actual.id,std::move(entry));
   }
   bool Start(uint64_t output,const OutputRetentionFence& actual,double now){
    Time(now);if(!actual.Retired())return false;const auto found=entries_.find(output);if(found==entries_.end())throw std::invalid_argument("Native output retention has no accepted decision");auto& entry=found->second;
    if(entry.record.status!=OutputRetentionStatus::Pending||entry.process)return false;
    if(now>=entry.record.deadline){FailUnstarted(entry,"Native output retention budget expired before admission",now);return true;}
-   if(*physical_.count>=physical_.maximum)return false;
    ++*physical_.count;
    try{
     entry.process=std::make_unique<DedicatedHostProcess>(executable_,std::vector<std::string>{"--native-output-retention-worker"});entry.record.helper_pid=entry.process->Pid();
@@ -87,13 +83,13 @@ class RunnerOutputRetention {
     if(fields[0]=="RETIRED"&&fields.size()==6){
      const auto status=fields[2]=="removed"?OutputRetentionStatus::Removed:fields[2]=="alreadyAbsent"?OutputRetentionStatus::AlreadyAbsent:fields[2]=="foreignPreserved"?OutputRetentionStatus::ForeignPreserved:throw std::runtime_error("Invalid native output retention result");
      const auto files=attachment_files::UInt(fields[3]),directories=attachment_files::UInt(fields[4]),symlinks=attachment_files::UInt(fields[5]);
-     if(files>16384||directories>16384||symlinks>16384||files+directories+symlinks>16384||(status!=OutputRetentionStatus::Removed&&(files||directories||symlinks))||(status==OutputRetentionStatus::Removed&&!directories))throw std::runtime_error("Native output retention result counts exceed actual inventory bound");
+     if((status!=OutputRetentionStatus::Removed&&(files||directories||symlinks))||(status==OutputRetentionStatus::Removed&&!directories))throw std::runtime_error("Native output retention result counts contradict the reported status");
      entry.record.removed_files=files;entry.record.removed_directories=directories;entry.record.removed_symlinks=symlinks;entry.reply=status;
-    }else if(fields[0]=="ERROR"&&fields.size()==5){const auto number=attachment_files::UInt(fields[2]);if(number>INT32_MAX)throw std::runtime_error("Native output retention errno exceeds bound");Error(entry,"Native output retention "+attachment_files::Unhex(fields[3],4096)+" errno="+std::to_string(number)+": "+attachment_files::Unhex(fields[4],4096));}
+    }else if(fields[0]=="ERROR"&&fields.size()==5){const auto number=attachment_files::UInt(fields[2]);if(number>INT32_MAX)throw std::runtime_error("Native output retention errno exceeds bound");Error(entry,"Native output retention "+attachment_files::Unhex(fields[3])+" errno="+std::to_string(number)+": "+attachment_files::Unhex(fields[4]));}
     else throw std::runtime_error("Invalid native output retention helper packet");
     entry.terminal=true;entry.record.receipt=DedicatedRealMilliseconds();
    }
   }catch(const std::exception& error){Error(entry,error.what());entry.process->Kill();}}
-  std::string executable_;Hooks hooks_;Budget& budget_;PhysicalBudget physical_;double last_=0;std::map<uint64_t,Entry> entries_;
+  std::string executable_;Hooks hooks_;PhysicalBudget physical_;double last_=0;std::map<uint64_t,Entry> entries_;
 };
 } // namespace suitecut::runner

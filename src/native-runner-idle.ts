@@ -8,10 +8,7 @@ const UInt = z
   .string()
   .regex(/^[1-9][0-9]{0,19}$/u)
   .refine((value) => BigInt(value) <= 18446744073709551615n)
-const Count = z
-  .union([z.literal('0'), UInt])
-  .transform((value) => Number(value))
-  .refine((value) => value <= 64)
+const Count = z.union([z.literal('0'), UInt]).transform((value) => Number(value))
 const Fields = z.tuple([z.literal('WORKER_IDLE'), UInt, UInt, UInt, UInt, UInt, UInt, Count])
 export interface NativeIdleSnapshot {
   readonly ready: boolean

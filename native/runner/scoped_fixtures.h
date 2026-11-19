@@ -40,7 +40,7 @@ class ScopedFixtures {
             const std::vector<std::string>& roots, double deadline,
             double now, std::shared_ptr<FixtureChargedClock> charged = {}) {
     if (!Time(deadline, now) || deadline <= now || !id || !generation ||
-        retiring_ || terminating_ || scopes_.contains(id) || scopes_.size() >= 16)
+        retiring_ || terminating_ || scopes_.contains(id))
       return false;
     if (charged && (!charged->CanObserve(now) || charged->Expired(now))) return false;
     auto requested = Automatic(kind);
@@ -124,7 +124,7 @@ class ScopedFixtures {
     names_.erase(Key(lease.worker ? 0 : lease.scope, lease.name));
     if (!expected || !ok) {
       const std::string cause = "Fixture " + lease.name +
-          (!expected ? " settled before native release" : " teardown failed: " + Bounded(error));
+          (!expected ? " settled before native release" : " teardown failed: " + error);
       if (lease.worker) {
         for (auto& [id, owner] : scopes_) { (void)id; Record(owner, cause); }
         Terminate(cause);
@@ -156,7 +156,7 @@ class ScopedFixtures {
               double cleanupDeadline, double now) {
     auto owner = Find(id, generation);
     if (!owner || !Time(cleanupDeadline, now)) return;
-    Record(*owner, Bounded(error));
+    Record(*owner, error);
     Close(id, generation, cleanupDeadline, now);
   }
   bool FixtureExpired(uint64_t token,uint64_t scope,uint64_t generation,const std::string& error,double now) {
@@ -244,13 +244,11 @@ class ScopedFixtures {
   using FixtureKey = std::pair<uint64_t, std::string>;
   static FixtureKey Key(uint64_t scope, const std::string& name) { return {scope, name}; }
   static bool Time(double deadline, double now) { return std::isfinite(deadline) && std::isfinite(now); }
-  static std::string Bounded(const std::string& error) { return error.substr(0, 8192); }
   static std::vector<Fixture> Explicit(std::vector<Fixture> defs) {
     for (auto& definition : defs) definition.automatic = false;
     return defs;
   }
   static void MergeRoots(std::vector<std::string>& into, const std::vector<std::string>& roots) {
-    if (roots.size() > 256) throw std::invalid_argument("Requested fixture capacity256 exceeded");
     for (const auto& root : roots)
       if (std::find(into.begin(), into.end(), root) == into.end()) into.push_back(root);
   }
@@ -268,7 +266,7 @@ class ScopedFixtures {
   }
   static void Record(Owner& owner, const std::string& error) {
     owner.failed = true;
-    if (owner.error.empty()) owner.error = Bounded(error);
+    if (owner.error.empty()) owner.error = error;
   }
   void Terminate(const std::string& cause) {
     if (terminating_) return;
@@ -293,8 +291,8 @@ class ScopedFixtures {
         if (leases_.at(existing->second).phase == Phase::Ready) continue;
         return;
       }
-      if (leases_.size() >= 64 || nonce_ == UINT64_MAX) {
-        Record(found->second, "Physical scoped fixture callback capacity exhausted");
+      if (nonce_ == UINT64_MAX) {
+        Record(found->second, "Scoped fixture callback token space exhausted");
         Terminate(found->second.error); return;
       }
       const uint64_t token = ++nonce_;

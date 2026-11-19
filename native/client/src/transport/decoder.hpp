@@ -8,10 +8,11 @@
 namespace suitecut {
 // Serialized reader-thread decoder. Callback owns each completed packet. An
 // error poisons the decoder; no input, EOF or callbacks are accepted afterward.
+// Optional caller limits; 0 (the default) means no limit beyond the 4-byte
+// header length field. Payload lengths are whatever the header declares.
 class PacketDecoder {
  public:
-  explicit PacketDecoder(std::size_t max_header_bytes = 65536,
-                         std::size_t max_payload_bytes = 192 * 1024 * 1024);
+  explicit PacketDecoder(std::size_t max_header_bytes = 0, std::size_t max_payload_bytes = 0);
   void feed(std::span<const std::uint8_t> bytes, const std::function<void(Packet&&)>& callback);
   void finish();
  private:

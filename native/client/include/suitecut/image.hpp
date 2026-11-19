@@ -5,12 +5,13 @@
 #include <vector>
 
 namespace suitecut {
+// Optional caller limits. Zero, the default, means no limit. A nonzero
+// max_decoded_bytes bounds each decoded RGBA image and inflated scanline stream separately.
 struct ImageLimits {
-  std::uint32_t max_dimension = 16384;
-  std::size_t max_pixels = 16 * 1024 * 1024;
-  std::size_t max_encoded_bytes = 64 * 1024 * 1024;
-  // Each decoded RGBA image and inflated scanline stream is bounded separately.
-  std::size_t max_decoded_bytes = 128 * 1024 * 1024;
+  std::uint32_t max_dimension = 0;
+  std::size_t max_pixels = 0;
+  std::size_t max_encoded_bytes = 0;
+  std::size_t max_decoded_bytes = 0;
 };
 struct PngImage {
   std::uint32_t width = 0, height = 0;

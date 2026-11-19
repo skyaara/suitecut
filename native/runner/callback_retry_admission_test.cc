@@ -18,7 +18,7 @@ void* Allocate(size_t size){
 using namespace suitecut::runner;
 const StepOwner owner{1,4,0,1,4,2,501,"body"};
 void SameCharge(const TestSteps::Budget& a,const TestSteps::Budget& b){
-  assert(a.records==b.records&&a.physical==b.physical&&a.reserved==b.reserved);
+  assert(a.physical==b.physical);
 }
 unsigned Ledger(bool retained){
   unsigned failures=0;
@@ -34,14 +34,14 @@ unsigned Ledger(bool retained){
     armed=false;
     if(failed){
       ++failures;SameCharge(before,budget);
-      assert(steps.Records().size()==state.records&&steps.Inspect().physical==state.physical&&steps.Inspect().metadata_reserved==state.metadata_reserved);
+      assert(steps.Records().size()==state.records&&steps.Inspect().physical==state.physical);
       // No index may refer to the rolled-back vector slot.
       for(uint64_t id=1;id<=budget.sequence;++id)assert((steps.Find(id)!=nullptr)==(prior&&id==*prior));
       admitted=steps.Begin(owner,0,"\"recovered\"",0,12);assert(admitted&&(!prior||*admitted>*prior));
     }
     assert(admitted&&steps.Find(*admitted)&&steps.Find(*admitted)->receipt==StepReceipt::Pending);
     if(prior)assert(steps.Find(*prior)&&steps.Find(*prior)->title_json=="\"prior\""&&steps.Find(*prior)->receipt==StepReceipt::Pending);
-    assert(budget.records==before.records+1&&budget.physical==before.physical+1);
+    assert(budget.physical==before.physical+1);
     if(!failed)break;
   }
   assert(failures>=2);return failures;

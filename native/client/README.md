@@ -38,7 +38,7 @@ auto ready = agent.call("wait", {{"text", "Saved"}, {"timeoutMs", 2000}});
 
 `act` returns a fresh observation, including after an ordinary action error when
 time permits. Each semantic observation replaces the short refs; old refs are
-rejected. `act.actions` executes up to 64 already known UI actions in order,
+rejected. `act.actions` executes a list of already known UI actions in order,
 stops on failure, and observes once. `wait` accepts rendered text, a URL, a ref
 state, or a change from the previous observation. Calls share one deadline,
 defaulting to five seconds and capped at 30 seconds; mutations are never retried.
@@ -49,16 +49,15 @@ that an application task succeeded. Screenshot, frame, and dialog inspection
 are modes of `observe`. The installed control executable's `--simple` mode
 publishes only these three tools and rejects raw evaluation and driver calls.
 
-`observe({"format":"compact"})` returns bounded interactive controls with
+`observe({"format":"compact"})` returns interactive controls with
 their supported actions and separate text context. Inert layout nodes are not
 advertised as controls. `scope` selects a CSS subtree, `query` filters literal
-case-insensitive text, and `maxControls`/`maxTextBytes` bound the control output
-(defaults: 100 controls and 8192 text bytes; context has a separate 4096-byte
-budget). Truncation is explicit. Compact input controls omit current values;
+case-insensitive text, and optional `maxControls`/`maxTextBytes` bound the control
+output when a caller sets them (by default there is no limit). Truncation is explicit. Compact input controls omit current values;
 password values are also redacted by the underlying observation projection.
 
 `observe({"format":"compact","delta":true})` compares semantic UI content
-with the previous compact observation of the same page, scope and budget. A
+with the previous compact observation of the same page, scope and limits. A
 compatible delta returns `changes` and a current `refIndex`; the first call or
 a scope change returns `reset:true` with controls. Every snapshot still retires
 old refs. A similar-looking node is never assigned an old ref. Diffs flag
@@ -68,8 +67,8 @@ ambiguity and suppress removals when their input was incomplete.
 existing full default. `none` avoids the post-action snapshot and its browser
 round trips; refs remain usable for a known sequence until a later snapshot or
 navigation. Inspect the UI before treating an acknowledgement as success. A
-coordinate drag accepts `from:{x,y}`, `to:{x,y}`, and `steps` (default 20, range
-1..1000); mouse `event:doubleclick` is also supported.
+coordinate drag accepts `from:{x,y}`, `to:{x,y}`, and `steps` (default 20, at
+least 1); mouse `event:doubleclick` is also supported.
 
 ## Native command-line sessions
 
@@ -101,8 +100,8 @@ Only `open` starts an absent session. `status` reports the native worker PID;
 `close` retires the owned browser before acknowledging shutdown. The idle timeout
 defaults to ten minutes and is configurable at startup with `--idle-ms`.
 Concurrent opens serialize startup, and each worker serializes browser commands
-without creating a thread per request. IPC uses a private Unix socket, bounded
-messages, peer checks on Linux, and deadlines; dispatched input is never
+without creating a thread per request. IPC uses a private Unix socket, 4-byte
+length-prefixed messages, peer checks on Linux, and deadlines; dispatched input is never
 automatically replayed on timeout or disconnect. The default session directory
 is `$XDG_RUNTIME_DIR/suitecut-control` or `/tmp/suitecut-control-UID`; override it
 with a short absolute `--session-dir` owned by the user with mode 0700. Small
@@ -256,13 +255,13 @@ before removing its temporary profile. The default SDK-owned launch continues
 to use its private pipe and automatic process/profile cleanup.
 
 The CEF transport acknowledges complete network request-body transfers on its
-existing I/O thread after admitting their exact chunks into the bounded event
+existing I/O thread after admitting their exact chunks into the event
 queue. This keeps command replies moving even when the application is not
 polling events. Raw `networkbody` and `contextnetworkbody` packets remain
 available through `Transport::poll`; callers should not acknowledge them again.
-Incomplete bodies are limited to 128 transfers and 16 MiB, with a 2 MiB limit
-per body. Queued packets remain subject to `max_event_bytes` and the event-count
-limit; receipt controls have a separate bounded queue and a 30-second deadline.
+The SDK places no count or size limit on incomplete bodies; they are released when
+their page, context or worker closes. Queued packets are subject to `max_event_bytes`
+only when the caller sets it; receipt controls have a 30-second deadline.
 
 Numeric ports, HTTP(S) discovery and WS(S) browser URLs are supported, including
 remote hosts. No Node or JavaScript runtime is needed by either connection mode.
@@ -275,7 +274,7 @@ controls include navigation, Promise evaluation, open-shadow-root CSS and
 semantic locators, form controls, trusted CDP pointer/keyboard input, semantic
 observations with document-bound references, PNG/JPEG/WebP screenshots,
 viewport changes, isolated contexts/pages, cookies, and raw `Page::devtools`.
-Independent asynchronous requests use the existing bounded transport API.
+Independent asynchronous requests use the existing asynchronous transport API.
 Ordinary commands execute in order. A narrow continuation queue allows
 `Page.handleJavaScriptDialog`, `Fetch.*`, `Debugger.*`,
 `Runtime.runIfWaitingForDebugger` and `Runtime.terminateExecution` DevTools calls
@@ -284,8 +283,8 @@ and send those continuations themselves. Chromium uses four fixed control
 threads: pipe/socket I/O, ordinary commands, continuations and deadlines. One
 media worker is created lazily on first recording/tracing/profiling use and
 blocks while idle.
-The two command queues share bounded pending-request and queued-byte budgets;
-requests do not create threads.
+The two command queues share the caller's optional `max_pending` limit (none by
+default); requests do not create threads.
 
 Queue deadlines and explicit cancellation settle their futures independently.
 Cancellation cannot undo work already dispatched, and a dispatched slow Promise
@@ -369,7 +368,7 @@ capabilities and runtime proof remain specific to each backend.
 | Downloads | `set_download_directory`, `downloads`, `download_status`, `cancel_download`, `download_path`, `save_download` | Native page-owned download IDs; `inProgress`, `completed` or `canceled` state; actual downloaded bytes |
 | Media | `emulate_media` / agent `emulation` | Media type, color scheme, reduced motion and forced colors; contrast where supported; omitted fields retain their values, and JSON `null` clears the named override |
 | Other emulation | `emulate_geolocation`, `clear_geolocation`, `emulate_timezone`, `emulate_user_agent` | Actual browser engine overrides; unsupported extra fields fail explicitly |
-| HAR | `start_har`, `stop_har`, `export_har` / agent `network` | HAR 1.2 output; `start_har({{"content","embed"}})` captures bounded bodies, while `"omit"` excludes response body text and retains available POST data |
+| HAR | `start_har`, `stop_har`, `export_har` / agent `network` | HAR 1.2 output; `start_har({{"content","embed"}})` captures bodies, while `"omit"` excludes response body text and retains available POST data |
 
 Download directory policy applies to a browser context; individual records and
 ID-based operations remain scoped to the owning page. Local paths and save
@@ -384,7 +383,8 @@ Firefox 158 has no per-context contrast override, so `contrast` returns an
 explicit capability error. Its native print medium uses light color matching;
 print and screen/dark combinations follow the engine's real CSS behavior.
 
-HAR collection is bounded. CEF output is filtered to the capturing page and
+The SDK does not cap or evict HAR entries or bodies; they are kept until the capture
+restarts or the page closes. CEF output is filtered to the capturing page and
 admits one active capture per context. Unsupported options and unavailable native body data
 must remain explicit rather than appearing as captured empty content. These
 APIs do not implement a complete archive/replay system. New three-backend live
@@ -482,13 +482,13 @@ flags; absence is an explicit error.
 C++ applications can call `AgentDriver::tools()` and
 `AgentDriver(browser).call(name, arguments)` from `suitecut/agent_driver.hpp`.
 The driver creates no model runtime or per-call threads. Keep one driver per
-ordered agent session and serialize its calls. `Agent::run` remains the bounded
+ordered agent session and serialize its calls. `Agent::run` remains the time-limited
 batch interface for dependent actions with optional UI postconditions.
 
 ## Credentials, image comparison and capture artifacts
 
 `suitecut/credentials.hpp` provides `CredentialVault`, an authenticated encrypted
-store with private POSIX paths and bounded entries. Applications supply the
+store with private POSIX paths. Applications supply the
 master password and attach a shared vault using
 `AgentDriver::set_credential_vault`. Agent `credentials` actions save/list/remove
 records or explicitly log in through native form actions. Responses contain
@@ -510,7 +510,8 @@ they are not automatically persisted in the encrypted vault.
 `suitecut/image.hpp` decodes/encodes static PNG and compares RGBA pixels with a
 per-channel tolerance, optional alpha comparison, dimension reporting and exact
 changed-pixel counts/ratio. It supports all standard PNG color types/depths and
-Adam7, validates CRC/order/zlib streams, and enforces image/byte limits. APNG is
+Adam7, validates CRC/order/zlib streams, and enforces image/byte limits only when
+the caller sets `ImageLimits`. APNG is
 rejected; color-profile/gamma conversion and perceptual similarity are not
 performed. Optional diff PNGs mark changed/missing pixels magenta and unchanged
 pixels transparent. Dimension mismatches use the documented bounding canvas.
@@ -524,10 +525,10 @@ when `actualPath` is omitted; `diffPath` must name a new output file:
 Chromium capture adds `Page::start_recording/stop_recording/recording_status/
 cancel_recording`, `start_tracing/stop_tracing` and
 `start_profiler/stop_profiler`, with corresponding `recording`, `tracing` and
-`profiler` agent tools. Recording accepts MP4/WebM, bounded capture settings and
-1–120 output FPS. Source frames are resampled to that output timeline; output
+`profiler` agent tools. Recording accepts MP4/WebM, caller-chosen capture settings and
+any positive output FPS. Source frames are resampled to that output timeline; output
 FPS is not a promise of distinct compositor frames at that rate. A recording
-uses a bounded source spool and an FFmpeg/ffprobe finalization helper, with
+uses a source spool and an FFmpeg/ffprobe finalization helper, with
 metadata alongside the video. Trace/profile JSON and media artifacts are
 created exclusively. These Chromium features have separate runtime validation;
 their presence does not imply Firefox support.
@@ -554,19 +555,19 @@ and their finite validation evidence are described separately in
 | Pointer/keyboard/forms | Click/double-click, hover, drag, focus, fill/type, keys, select/check | Native CDP input; inspect outcomes after failure/cancellation |
 | File upload | `Locator::set_input_files`, driver `upload` | Absolute local files or one directory on a `webkitdirectory` input; multiple files and clear; no in-memory upload API |
 | Waits | Locator/page/frame waits; driver `wait_for` | URL, predicate, text, selector/state and load-state controls |
-| Screenshots | PNG/JPEG/WebP, clip/full page, masks/color/style, animation handling | Bounded main-document/open-shadow masks; framed masks and disabling animations across frames fail explicitly |
+| Screenshots | PNG/JPEG/WebP, clip/full page, masks/color/style, animation handling | Main-document/open-shadow masks; framed masks and disabling animations across frames fail explicitly |
 | PDF | `Page::pdf`, driver `pdf` | CDP paper dimensions/options; unsupported convenience option names fail explicitly |
 | Downloads | Configure directory, list/status/cancel/path/save | Browser-local filesystem; GUID-owned artifacts and main-frame download records |
-| Network and HAR | Requests/responses/body, HAR start/stop/export | Bounded journals and HAR metadata; not a full traffic archive/replay system |
+| Network and HAR | Requests/responses/body, HAR start/stop/export | Journals and HAR metadata kept until cleared or page close; not a full traffic archive/replay system |
 | Routes | Context-scoped glob continue/abort/mock; raw `Fetch.*` | Static rules and explicit host-managed CDP continuations; no JavaScript callback runtime |
 | Headers/auth/offline | Context/page setters | Extra HTTP headers, HTTP Basic challenge credentials and offline mode |
-| Console/errors/dialogs | Typed journals and dialog replies; driver families/events | Bounded event history; modal continuations can unblock active evaluation |
+| Console/errors/dialogs | Typed journals and dialog replies; driver families/events | Event history kept until cleared or page close; modal continuations can unblock active evaluation |
 | Init scripts/media | Add/list/remove init scripts; media emulation and raw DevTools | Context-scoped scripts; additional CDP emulation remains explicitly addressable |
 | Browser state | Cookie APIs, storage get/restore, driver `state` | Context cookies and current-origin local/session storage; restore applies once to the current origin; no deferred-origin or IndexedDB/service-worker state |
 | Credentials | `CredentialVault`, driver `credentials` | Host-configured encrypted store; secret values are not returned by agent tools; login submits actual form actions |
 | Agent/MCP/WebMCP | `AgentDriver`, JSON lines, MCP stdio, page WebMCP tools | Host supplies the agent/model; WebMCP requires the browser API |
-| Trace/video/profiling | Typed Chromium capture and agent families | Bounded output, exclusive artifacts, FFmpeg finalization for MP4/WebM; Firefox helpers explicitly unavailable |
-| Pixel comparison | `decode_png/encode_png/compare_png`, driver `image_compare` | Native bounded PNG/ZLIB; exact channel tolerances, dimension changes and optional diff; no perceptual/color-profile comparison |
+| Trace/video/profiling | Typed Chromium capture and agent families | Exclusive artifacts, FFmpeg finalization for MP4/WebM; Firefox helpers explicitly unavailable |
+| Pixel comparison | `decode_png/encode_png/compare_png`, driver `image_compare` | Native PNG/ZLIB; exact channel tolerances, dimension changes and optional diff; no perceptual/color-profile comparison |
 | Native escape hatch | Asynchronous transport, events, `Page::devtools` | Backend-specific commands; unsupported operations return errors |
 
 Populated file/directory selections use native CDP. Clearing a selection uses
@@ -613,14 +614,15 @@ browser.close();
 `suitecut/observation.hpp` adds `compact_observation(page.observe(), options)`
 and stateless `observation_diff(previous, current)`. Compact output retains
 actionable references, states and ancestor context, with explicit truncation
-flags for node, text and traversal budgets. Differences ignore reference-only
+flags when a caller sets node, text or scan limits (`ObservationOptions` has no
+limit by default). Differences ignore reference-only
 changes; ambiguous duplicate controls remain explicit. These helpers run in the
 client after a full engine snapshot; they reduce model input, not DOM traversal.
 Use `page.locator(selector).observe()` to capture a specific real subtree on a
 large page. Each successful scoped capture replaces the active references in
 that frame; omitted references expire, while retained elements keep their tokens.
 
-`suitecut/agent.hpp` provides `Agent::run(page, actions, options)` for a bounded
+`suitecut/agent.hpp` provides `Agent::run(page, actions, options)` for an
 ordered list of native actions, with optional final observation. For example:
 
 ```cpp
@@ -707,8 +709,7 @@ one library client across actions to avoid repeated browser startup.
 
 Raw requests are JSON objects containing a `command`, a `pageId` where needed,
 and that command's fields. The transport assigns `version` and an increasing
-request `id`; the complete serialized command must fit the engine's 65,536-byte
-line limit. Raw responses retain the original header and binary payload,
+request `id`; the SDK places no size limit on the serialized command. Raw responses retain the original header and binary payload,
 including engine `ok:false` error responses. The typed facade checks engine
 errors. Binary buffers are moved between the decoder, queue and consumer.
 
@@ -730,16 +731,18 @@ request usable for a later wait or cancellation.
 
 ## Memory and lifetime
 
-The default transport permits 256 pending commands, bounds outgoing command
-bytes, and caps queued events at 64 MiB without preallocating that space. Raw
-frame transmission is on demand. The event budget can be lowered for agents
-which do not consume frames. Poll subscribed events regularly: disposable
-media events may be dropped under pressure, while critical event overflow fails
-the connection instead of losing a callback that browser work depends on.
-Protocol headers, payloads, JSON depth, nodes and strings have explicit limits.
+By default the transport sets no limit on pending commands, outgoing command
+bytes, queued events or payload size (`max_pending`, `max_event_bytes` and
+`max_payload_bytes` default to 0, meaning no limit); CEF and Chromium enforce their
+own limits. Raw frame transmission is on demand. Poll subscribed events regularly:
+without a limit, undrained events stay in memory. A caller who sets
+`max_event_bytes` gets that bound: disposable media events may then be dropped
+under pressure, while critical event overflow fails the connection instead of
+losing a callback that browser work depends on. `JsonLimits` and `ImageLimits`
+also default to no limit.
 Completed futures and packets belong to the application; retaining an arbitrary
-number of completed results also retains their buffers. The queue limits do not
-cap application-owned results. JSON preserves exact signed 64-bit integers and
+number of completed results also retains their buffers. Caller-set queue limits
+do not cap application-owned results. JSON preserves exact signed 64-bit integers and
 uses finite doubles for larger numeric values. It requires valid Unicode scalar
 strings; use raw packet payloads if you need to preserve serialized lone UTF-16
 surrogates from JavaScript.
@@ -773,17 +776,17 @@ Browser integration and measured workload tools are kept separate from the
 default test run because they require a built native runtime. Sanitizers on
 this library do not instrument the separately compiled CEF/Chromium library.
 
-## Bounded independent reads
+## Independent reads
 
 The engine manages its internal background worker threads automatically from
 CPU affinity and container CPU quotas. Workers start on demand and are reused
-within a bounded shared pool. Normal SDK calls require no worker or request
+within a shared pool. Normal SDK calls require no worker or request
 window setting; the SDK uses one persistent I/O thread for browser communication.
 The example below is an optional way to overlap independent application reads.
 
 The `suitecut-native-read-window` example submits independent evaluations through
 the existing asynchronous transport, using a sliding window of four requests by
-default and a hard maximum of sixteen. It creates no request worker threads.
+default (any positive window size is accepted). It creates no request worker threads.
 Each consumed result opens a slot for the next request; output is streamed in
 submission order, so a slow earlier request can delay replenishing the window.
 `LaunchOptions::max_pending` is set to the window size. Each request has a
@@ -801,7 +804,7 @@ their existing pages by supplying each page's `id()` as the request's `pageId`.
 The caller must ensure expressions are read-only and independent; arbitrary
 JavaScript can mutate the page, and this example does not inspect or sandbox it.
 Keep dependent navigation, input, and verification steps ordered, as in
-`Agent::run`. Pending requests are bounded, but results retained by application
+`Agent::run`. Pending requests are limited by the window, but results retained by application
 code still consume application-owned memory.
 
 Each output line contains `index`, `pageId`, and `nativeResult`. The latter is
@@ -810,7 +813,7 @@ the original evaluation envelope returned by `response_json()`, including
 `ok:false` responses fail the example; JavaScript exception metadata remains in
 the output. This differs from `Page::evaluate()`, which converts JSON-compatible
 values and throws for JavaScript exceptions or unsupported values. See
-[`examples/read_window.cpp`](examples/read_window.cpp) for submission, bounded
+[`examples/read_window.cpp`](examples/read_window.cpp) for submission, windowed
 storage, deadline, and cancellation handling.
 
 ## Test package layout

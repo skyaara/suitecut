@@ -24,35 +24,24 @@ export interface NativeSnapshotConfiguration {
     readonly toMatchAriaSnapshot?: { readonly pathTemplate?: string }
   }
 }
-const text = (maximum: number) =>
+const text = () =>
   z
     .string()
-    .refine(
-      (value) =>
-        !value.includes('\0') &&
-        Buffer.byteLength(value) <= maximum &&
-        Buffer.from(value).toString('utf8') === value,
-    )
+    .refine((value) => !value.includes('\0') && Buffer.from(value).toString('utf8') === value)
 export const NativeSnapshotConfigurationSchema = z.strictObject({
-  testDir: text(7900).optional(),
-  snapshotDir: text(7900).optional(),
-  snapshotPathTemplate: text(32000).optional(),
+  testDir: text().optional(),
+  snapshotDir: text().optional(),
+  snapshotPathTemplate: text().optional(),
   expect: z
     .strictObject({
-      toHaveScreenshot: z.strictObject({ pathTemplate: text(32000).optional() }).optional(),
-      toMatchAriaSnapshot: z.strictObject({ pathTemplate: text(32000).optional() }).optional(),
+      toHaveScreenshot: z.strictObject({ pathTemplate: text().optional() }).optional(),
+      toMatchAriaSnapshot: z.strictObject({ pathTemplate: text().optional() }).optional(),
     })
     .optional(),
 })
-const part = z.strictObject({ kind: z.enum(['literal', 'arg', 'ext']), value: text(32768) })
-const parts = z
-  .array(part)
-  .min(1)
-  .max(256)
-  .refine(
-    (value) => value.reduce((bytes, item) => bytes + Buffer.byteLength(item.value), 0) <= 32768,
-  )
-const path = text(7900).refine((value) => isAbsolute(value) && resolve(value) === value)
+const part = z.strictObject({ kind: z.enum(['literal', 'arg', 'ext']), value: text() })
+const parts = z.array(part).min(1)
+const path = text().refine((value) => isAbsolute(value) && resolve(value) === value)
 const plan = z.strictObject({
   version: z.literal(1),
   baseDirectory: path,
@@ -79,25 +68,22 @@ const sharedPlan = z
   }, 'Invalid native snapshot plan references')
 const unavailable = z.strictObject({
   version: z.literal(1),
-  unsupported: text(4096),
+  unsupported: text(),
   snapshotDir: path.optional(),
 })
-const suffixText = text(1024).refine(
+const suffixText = text().refine(
   (value) => value !== '.' && value !== '..' && !value.includes('/') && !value.includes('\\'),
   'Native snapshotSuffix supports only a filename component',
 )
 const suffixParts = z
   .array(part.extend({ kind: z.enum(['literal', 'arg', 'ext', 'suffix']) }))
   .min(1)
-  .max(256)
-  .refine(
-    (value) => value.reduce((bytes, item) => bytes + Buffer.byteLength(item.value), 0) <= 32768,
-  )
 const suffixContext = z.strictObject({
   version: z.literal(3),
   suffix: z.strictObject({
     initial: suffixText,
-    maxBytes: z.literal(1024),
+    // Accepted for older native runners; the host enforces no suffix length.
+    maxBytes: z.number().int().nonnegative().optional(),
     policy: z.literal('filenameComponent'),
   }),
   paths: z.union([
@@ -179,9 +165,8 @@ export function nativeTestSnapshots(input: UntrustedInput): NativeTestSnapshots 
       if (names.length !== 1) throw new Error('Native snapshotPath kind requires exactly one name')
     }
     const segments = z
-      .array(text(4096).refine((value) => value.length > 0 && !isAbsolute(value)))
+      .array(text().refine((value) => value.length > 0 && !isAbsolute(value)))
       .min(1)
-      .max(32)
       .parse(names)
     const name = join(...segments)
     if (name === '..' || name.startsWith('..' + sep) || isAbsolute(name))
@@ -199,13 +184,8 @@ export function nativeTestSnapshots(input: UntrustedInput): NativeTestSnapshots 
               ? extension
               : suffixAccess.snapshotSuffix
       result += item.kind !== 'literal' && value ? item.value + value : value
-      if (Buffer.byteLength(result) > 7900)
-        throw new Error('Native snapshotPath exceeds its filesystem bound')
     }
-    const actual = resolve(parsed.baseDirectory, result)
-    if (Buffer.byteLength(actual) > 7900)
-      throw new Error('Native snapshotPath exceeds its filesystem bound')
-    return actual
+    return resolve(parsed.baseDirectory, result)
   }
   return Object.freeze({
     snapshotDir: parsed.snapshotDir,
@@ -224,27 +204,22 @@ export class NativeSnapshotCallbacks {
     string,
     { current: NativeTestSnapshots; fresh: () => NativeTestSnapshots; retry?: number }
   >()
-  private bytes = 0
   packet(fields: readonly string[], testCount: number): void {
     const [kind, id, wire] = z
       .tuple([
         z.literal('TEST_SNAPSHOT_CONTEXT'),
-        z.string().regex(/^[1-9][0-9]{0,3}$/u),
-        z
-          .string()
-          .max(60000)
-          .regex(/^(?:[a-f\d]{2})+$/u),
+        z.string().regex(/^[1-9][0-9]*$/u),
+        z.string().regex(/^(?:[a-f\d]{2})+$/u),
       ])
       .parse(fields)
     if (kind !== 'TEST_SNAPSHOT_CONTEXT' || Number(id) > testCount || this.contexts.has(id))
       throw new Error('Native snapshot plan lacks its actual test declaration')
     const raw = Buffer.from(wire, 'hex'),
       encoded = raw.toString('utf8')
-    if (!Buffer.from(encoded).equals(raw) || raw.length > 16777216 - this.bytes)
-      throw new Error('Native snapshot plan encoding or metadata capacity exceeded')
+    if (!Buffer.from(encoded).equals(raw))
+      throw new Error('Native snapshot plan encoding is not UTF-8')
     const fresh = () => nativeTestSnapshots(JSON.parse(encoded) as UntrustedInput)
     this.contexts.set(id, { current: fresh(), fresh })
-    this.bytes += raw.length
   }
   snapshot(testId: string): NativeTestSnapshots {
     const context = this.contexts.get(testId)
@@ -253,7 +228,7 @@ export class NativeSnapshotCallbacks {
   }
   /** The host passes only the actual native BODY/CALL retry field, after its ownership checks. */
   admit(testId: string, retry: number): NativeTestSnapshots {
-    z.number().int().min(0).max(100).parse(retry)
+    z.number().int().min(0).parse(retry)
     const context = this.contexts.get(testId)
     if (!context) throw new Error('Native snapshot suffix has no associated test admission')
     if (context.retry !== undefined && context.retry !== retry) context.current = context.fresh()

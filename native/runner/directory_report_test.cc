@@ -103,6 +103,6 @@ int main(){
   d.segments[0].generation=1;Reject([&]{d.Validate({},{});});
   sr::DirectoryReport failed;failed.original_start=1;failed.coordinator_pid=321;d.coordinator_pid=321;failed.collections={c};failed.collections[0].observed=false;failed.errors={"\"actual collection failed\""};failed.Validate({},{});assert(failed.RunFailed());
   sr::DirectoryReport empty;empty.original_start=1;empty.coordinator_pid=321;Reject([&]{empty.Validate({},{});});empty.pass_with_no_tests=true;empty.empty_shard=true;empty.Validate({},{});assert(!empty.RunFailed());
-  sr::DirectoryJSONBuffer bounded;bounded.bytes.resize(sr::DirectoryJSONBuffer::kBytes-1);Reject([&]{bounded.Put("xx");});
+  sr::DirectoryJSONBuffer unbounded;unbounded.bytes.resize(64*1024*1024-1);unbounded.Put("xx");assert(unbounded.bytes.size()==64*1024*1024+1);
   std::cout<<"Directory report: controlled coverage/receipt/serialization checks PASS\n";
 }

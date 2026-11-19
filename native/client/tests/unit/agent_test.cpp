@@ -118,8 +118,7 @@ int main(int argc, char** argv) {
              Json(Json::array{Json{{"action", "click"}, {"target", target("unknown", "x")}}}),
              Json(Json::array{Json{{"action", "press"}, {"key", "Enter"}, {"retry", true}}}),
              Json(Json::array{Json{{"action", "pointerClick"}, {"x", -1}, {"y", 0}}}),
-             Json(Json::array{Json{{"action", "observe"}, {"depth", 100}}}),
-             Json(Json::array{Json{{"action", "insertText"}, {"text", std::string(17000, 'x')}}})}) {
+             Json(Json::array{Json{{"action", "observe"}, {"depth", -2}}})}) {
       check(!suitecut::Agent::run(page, bad).ok, "Invalid canonical action must fail before dispatch");
     }
     for (const auto& bad_expect : Json::array{
@@ -142,8 +141,9 @@ int main(int argc, char** argv) {
       check(!suitecut::Agent::run(page, Json::array{}, limits).ok, "Batch duration bounds validate");
     }
     check(before == browser.transport()->stats().commands, "Every invalid shape remains side-effect free");
-    Json::array too_many(65, Json{{"action", "observe"}});
-    check(!suitecut::Agent::run(page, Json(too_many)).ok, "Action count is bounded");
+    Json::array many(65, Json{{"action", "observe"}});
+    auto capped = no_observe; capped.max_actions = 64;
+    check(!suitecut::Agent::run(page, Json(many), capped).ok, "Caller action count limit is ignored");
     auto small = no_observe; small.max_bytes = 5;
     check(!suitecut::Agent::run(page, Json::array{Json{{"action", "observe"}}}, small).ok,
           "Serialized batch size is bounded");
@@ -167,6 +167,11 @@ int main(int argc, char** argv) {
     check(success.actions[0].effect == suitecut::AgentEffect::unverified &&
               !success.actions[0].evidence,
           "Acknowledgment alone never confirms an effect");
+    check(suitecut::Agent::run(page, Json(many), no_observe).ok, "Default batch limited the action count");
+    check(suitecut::Agent::run(page, Json::array{Json{{"action", "observe"}, {"depth", 100}},
+              Json{{"action", "insertText"}, {"text", std::string(17000, 'x')}},
+              Json{{"action", "pointerClick"}, {"x", 2000000}, {"y", 0}}}, no_observe).ok,
+          "Deep observation, long text or a far coordinate was limited");
     const auto prior = mutations(page);
     auto failure = suitecut::Agent::run(page, Json::array{
         Json{{"action", "press"}, {"key", "FAIL"}},

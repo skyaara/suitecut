@@ -36,7 +36,7 @@ Json agent_tool_profiles() {
 }
 Json agent_tool_catalog(const std::string& profiles) {
   std::set<std::string> selected{"core"};
-  if(profiles.empty()||profiles.size()>256)throw std::invalid_argument("Invalid tool profile list");
+  if(profiles.empty())throw std::invalid_argument("Invalid tool profile list");
   for(std::size_t begin=0;begin<profiles.size();) {
     const auto end=profiles.find(',',begin);const auto name=profiles.substr(begin,end==std::string::npos?end:end-begin);
     if(name!="core"&&name!="network"&&name!="state"&&name!="debug"&&name!="media"&&name!="all")

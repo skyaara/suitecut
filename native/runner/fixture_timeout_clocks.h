@@ -109,12 +109,11 @@ struct FixtureClockRecord {
 // A supplied charged clock must outlive the corresponding active slot.
 class FixtureTimeoutClocks {
  public:
-  static constexpr size_t kPhysical = 64, kHistory = 8192;
   bool Begin(const FixtureClockOwner& owner, std::optional<uint64_t> custom,
              uint64_t inherited, double now, FixtureChargedClock* charged) {
     if (!Owner(owner) || !Time(now) || inherited > FixtureChargedClock::kMaxTimeout ||
         (custom && *custom > FixtureChargedClock::kMaxTimeout) ||
-        active_.size() >= kPhysical || records_.size() >= kHistory || active_.contains(owner.token)) return false;
+        active_.contains(owner.token)) return false;
     const bool independent = custom.has_value() || owner.worker_fixture;
     if (!independent && !charged) return false;
     if (charged && !charged->CanObserve(now)) return false;
@@ -143,7 +142,7 @@ class FixtureTimeoutClocks {
     auto* slot = Find(owner);
     if (!slot || inherited > FixtureChargedClock::kMaxTimeout || !Time(now) ||
         records_[slot->record].phase != FixtureClockPhase::Ready ||
-        now < records_[slot->record].started + records_[slot->record].elapsed || records_.size() >= kHistory) return false;
+        now < records_[slot->record].started + records_[slot->record].elapsed) return false;
     const bool independent = records_[slot->record].independent;
     if (cleanup && !cleanup->CanObserve(now)) return false;
     if (cleanup && cleanup->Excluded()) return false;

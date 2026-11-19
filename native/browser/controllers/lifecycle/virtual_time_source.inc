@@ -106,7 +106,7 @@ void NativeVirtualTimeDispatch(const suitecut::NativeVirtualTime::Dispatch& call
     self->native_virtual_time_->Acknowledge(call.token,ok,Now(),ticks,self->native_virtual_time_exception_sequence_);
   };
   // This physical callback remains registered after the user's command ends.
-  devtools_.emplace(assigned,DevToolsCall{call.owner,std::move(callback),"",true,16384,true,false});
+  devtools_.emplace(assigned,DevToolsCall{call.owner,std::move(callback),"",true,true,false});
   if(!SubmitDevTools(assigned,method,params,"")){
     devtools_.erase(assigned);native_virtual_time_->Acknowledge(call.token,false,Now());
   }

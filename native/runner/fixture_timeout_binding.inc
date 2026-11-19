@@ -106,7 +106,7 @@
         const auto title=definition->title_json.value_or(Quote(public_name));
         auto error=std::string("\"Fixture \\\"")+title.substr(1,title.size()-2)+"\\\" timeout of "+std::to_string(record.timeout)+"ms exceeded during "+(record.slot==sr::FixtureClockPhase::Setup?"setup.":"teardown.");
         if(const auto excerpt=metadata.fixture_sources.Excerpt(record.owner.declaration)){const auto text=Quote(*excerpt);error+="\\n"+text.substr(1,text.size()-2);}
-        error+='\"';if(!sr::JsonString(error,8192))throw std::runtime_error("Native fixture timeout diagnostic capacity exceeded");
+        error+='\"';if(!sr::JsonString(error))throw std::runtime_error("Native fixture timeout diagnostic is not valid JSON");
         if(closing_worker_)Global(error);else{timeout_=true;if(actual_error_.empty())actual_error_=error;}
         if(!host_->Send("FIXTURE_ABORT "+std::to_string(record.owner.token)+" "+std::to_string(record.owner.scope)+" "+std::to_string(record.owner.generation)+" "+FixtureControlWire("Native fixture original slot deadline expired")))throw std::runtime_error("Native expired fixture signal control failed");
         if(hook_worker_){if(!hook_worker_->FixtureExpired(record.owner.token,record.owner.scope,record.owner.generation,error,now))throw std::runtime_error("Native expired fixture lost its actual hook lease");}
@@ -128,7 +128,7 @@
     const auto owner=FixtureSlotOwner(token,scope,generation);
     if(active_&&!finished_&&!closing_worker_&&scope==active_->test.id&&generation==active_->generation){
       if(actual_error_.empty()){actual_error_=error;originating_step_=0;}
-      else{if(attempt_secondary_errors_.size()>=256)throw std::length_error("Native attempt secondary error capacity256 exceeded");Charge(error.size()+128);attempt_secondary_errors_.push_back({{{active_->test.id,active_->generation,worker_index_,host_->Pid()},scope,generation},error,0,true});}
+      else{attempt_secondary_errors_.push_back({{{active_->test.id,active_->generation,worker_index_,host_->Pid()},scope,generation},error,0,true});}
     }else if(owner.worker_fixture&&closing_worker_)Global(error);
     else throw std::runtime_error("Native raw fixture failure lacks current actual attempt or worker retirement owner");
   }

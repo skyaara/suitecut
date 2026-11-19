@@ -13,8 +13,8 @@ export const NATIVE_VIEWER_USAGE = `Usage: suitecut view [http(s)://url] [option
   --width <pixels>    Browser viewport width; default 1280.
   --height <pixels>   Browser viewport height; default 720.
   --resolution <WxH|auto>  Initial viewport or automatic fit during human control.
-  --fps <1..120>      Viewer maximum frame rate; default 30.
-  --quality <20..95>  JPEG quality; default 75.
+  --fps <1..>         Viewer maximum frame rate; default 30.
+  --quality <1..100>  JPEG quality; default 75.
   --proxy <url>       Browser proxy (defaults to HTTPS_PROXY / HTTP_PROXY).
 Open the printed private link in your browser. Ctrl+C closes the viewer and helper.
 `
@@ -59,12 +59,10 @@ export async function runNativeViewerCli(args: readonly string[]): Promise<numbe
           !parsed ||
           !Number.isInteger(width) ||
           width < 2 ||
-          width > 3840 ||
           !Number.isInteger(height) ||
-          height < 2 ||
-          height > 2160
+          height < 2
         )
-          throw new Error('--resolution requires auto or WxH within 3840x2160')
+          throw new Error('--resolution requires auto or WxH of at least 2x2')
         values.width = width
         values.height = height
         resolutionMode = 'fixed'
@@ -75,10 +73,10 @@ export async function runNativeViewerCli(args: readonly string[]): Promise<numbe
       const integer = Number(value)
       const bounds: Record<string, [number, number]> = {
         port: [0, 65535],
-        width: [2, 3840],
-        height: [2, 2160],
-        fps: [1, 120],
-        quality: [20, 95],
+        width: [2, Number.MAX_SAFE_INTEGER],
+        height: [2, Number.MAX_SAFE_INTEGER],
+        fps: [1, Number.MAX_SAFE_INTEGER],
+        quality: [1, 100],
       }
       const range = bounds[key]
       if (!range || !Number.isInteger(integer) || integer < range[0] || integer > range[1])

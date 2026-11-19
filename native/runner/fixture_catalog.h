@@ -10,7 +10,6 @@ struct FixtureDeclaration {
 };
 class FixtureCatalog {
  public:
-  static constexpr size_t kLayers=32,kDeclarations=256,kEdges=4096,kMetadata=2*1024*1024;
   using Layer=std::vector<FixtureDeclaration>;
   struct Binding {std::string name,key;uint64_t declaration;bool operator==(const Binding&)const=default;};
   struct Version {
@@ -18,14 +17,12 @@ class FixtureCatalog {
     std::vector<std::string> dependencies;std::vector<Binding> bindings;
   };
   explicit FixtureCatalog(std::vector<Layer> layers){
-    if(layers.empty()||layers.size()>kLayers)throw std::invalid_argument("Native fixture layer capacity rejected");
-    size_t edges=0,bytes=0;uint64_t expected=0;
+    if(layers.empty())throw std::invalid_argument("Native fixture catalog requires a layer");
+    uint64_t expected=0;
     for(size_t index=0;index<layers.size();++index){std::set<std::string> names;const auto previous=effective_;
       for(auto& input:layers[index]){
-        if(versions_.size()>=kDeclarations||input.id!=++expected||!Name(input.name)||!names.insert(input.name).second||(input.scope&&*input.scope!=Scope::Test&&*input.scope!=Scope::Worker))throw std::invalid_argument("Native fixture declaration identity/name/scope rejected");
-        if(input.dependencies.size()>kDeclarations||input.dependencies.size()>kEdges-edges)throw std::invalid_argument("Native fixture dependency edge capacity exceeded");
-        edges+=input.dependencies.size();
-        Charge(bytes,input.name.size()+128);for(const auto& dependency:input.dependencies){if(!Name(dependency))throw std::invalid_argument("Native fixture dependency name rejected");Charge(bytes,dependency.size()+16);}
+        if(input.id!=++expected||!Name(input.name)||!names.insert(input.name).second||(input.scope&&*input.scope!=Scope::Test&&*input.scope!=Scope::Worker))throw std::invalid_argument("Native fixture declaration identity/name/scope rejected");
+        for(const auto& dependency:input.dependencies)if(!Name(dependency))throw std::invalid_argument("Native fixture dependency name rejected");
         Version version;version.id=input.id;version.layer=index+1;version.name=input.name;version.key="nativeFixture"+std::to_string(input.id);version.dependencies=std::move(input.dependencies);
         if(const auto found=previous.find(input.name);found!=previous.end()){
           const auto& base=Get(found->second);version.previous=base.id;version.scope=base.scope;version.automatic=base.automatic;
@@ -51,10 +48,9 @@ class FixtureCatalog {
   const std::vector<Version>& Versions()const{return versions_;}
   const std::map<std::string,uint64_t>& Visible()const{return effective_;}
   const std::vector<Fixture>& Definitions()const{return definitions_;}
-  std::vector<std::string> Roots(const std::vector<std::string>& names)const{if(names.size()>kDeclarations)throw std::invalid_argument("Native requested fixture capacity exceeded");std::vector<std::string> roots;roots.reserve(names.size());for(const auto& name:names)roots.push_back(Effective(name).key);return roots;}
-  static bool Name(const std::string& name){if(name.empty()||name.size()>256)return false;for(size_t i=0;i<name.size();++i){const unsigned char c=name[i];if((c>='A'&&c<='Z')||(c>='a'&&c<='z')||c=='_'||(i&&c>='0'&&c<='9'))continue;return false;}return true;}
+  std::vector<std::string> Roots(const std::vector<std::string>& names)const{std::vector<std::string> roots;roots.reserve(names.size());for(const auto& name:names)roots.push_back(Effective(name).key);return roots;}
+  static bool Name(const std::string& name){if(name.empty())return false;for(size_t i=0;i<name.size();++i){const unsigned char c=name[i];if((c>='A'&&c<='Z')||(c>='a'&&c<='z')||c=='_'||(i&&c>='0'&&c<='9'))continue;return false;}return true;}
  private:
-  static void Charge(size_t& bytes,size_t add){if(add>kMetadata-bytes)throw std::length_error("Native fixture declaration metadata capacity exceeded");bytes+=add;}
   void Resolve(uint64_t id,std::map<uint64_t,unsigned>& seen){
     if(seen[id]==2)return;
     if(seen[id]==1)throw std::invalid_argument("Native fixture dependency cycle at: "+Get(id).name);

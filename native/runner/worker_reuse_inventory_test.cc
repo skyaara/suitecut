@@ -88,7 +88,7 @@ class Child {
 };
 static P::Key Key(){return {{1,2,3},1};}
 static P::Group Group(size_t i){return {Key().file,i,i+1};}
-static P::GroupFence Fence(){P::GroupFence f;f.retained.count=1;f.retained.values[0]={1,1,1};return f;}
+static P::GroupFence Fence(){P::GroupFence f;f.retained.values={{1,1,1}};return f;}
 static void Idle(P& pool,const P::Borrow& borrow,Child& child){
   Check(pool.Complete(borrow,P::Outcome::Passed),"native controlled group completion failed");const auto now=Now();
   const auto request=pool.RequestIdle(borrow,Fence(),now,now+1000);Check(request.has_value(),"native idle request rejected");

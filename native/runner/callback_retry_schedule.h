@@ -10,6 +10,7 @@
 #include <span>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace suitecut::runner {
 // Scheduling only. The adapter must supply a genuinely admitted native step
@@ -17,7 +18,6 @@ namespace suitecut::runner {
 // Logical rejection never substitutes for that receipt or actual host waitpid.
 class CallbackRetrySchedule {
  public:
-  static constexpr size_t kIntervals=64;
   static constexpr uint64_t kSafeDuration=9007199254740991ULL;
   enum class Verdict {Pending,Passed,TimedOut,Canceled,InfrastructureFailure};
   enum class Phase {Ready,Running,Draining,Backoff,Terminal};
@@ -51,16 +51,15 @@ class CallbackRetrySchedule {
     if(!Valid(identity_)||!std::isfinite(now)||now<0||!std::isfinite(owner_deadline)||owner_deadline<=now||options.timeout>kSafeDuration)
       throw std::invalid_argument("Native callback retry admission identity/deadline rejected");
     if(options.intervals){
-      if(options.intervals->empty()||options.intervals->size()>kIntervals)
+      if(options.intervals->empty())
         throw std::invalid_argument("Native callback retry interval count rejected");
       interval_count_=options.intervals->size();
-      for(size_t i=0;i<interval_count_;++i){
+      for(size_t i=0;i<interval_count_;++i)
         if((*options.intervals)[i]>kSafeDuration)
           throw std::invalid_argument("Native callback retry interval duration rejected");
-        intervals_[i]=(*options.intervals)[i];
-      }
+      intervals_.assign(options.intervals->begin(),options.intervals->end());
     }else{
-      interval_count_=4;intervals_[0]=100;intervals_[1]=250;intervals_[2]=500;intervals_[3]=1000;
+      interval_count_=4;intervals_={100,250,500,1000};
     }
     if(options.timeout){
       const auto duration=static_cast<double>(options.timeout);
@@ -174,7 +173,7 @@ class CallbackRetrySchedule {
     return static_cast<double>(interval)>=deadline-origin?deadline:std::min(deadline,origin+static_cast<double>(interval));
   }
   void FinishLogical(Verdict verdict){verdict_=verdict;if(!physical_)phase_=Phase::Terminal;}
-  Identity identity_;std::array<uint64_t,kIntervals> intervals_{};size_t interval_count_=0;
+  Identity identity_;std::vector<uint64_t> intervals_;size_t interval_count_=0;
   double started_=0,owner_deadline_=0,next_due_=0,last_now_=0;
   std::optional<double> own_deadline_;
   Current current_{};uint64_t attempts_=0;Verdict verdict_=Verdict::Pending;Phase phase_=Phase::Ready;bool physical_=false;

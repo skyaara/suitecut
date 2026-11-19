@@ -14,16 +14,16 @@ namespace {
 using Bytes = std::vector<std::uint8_t>;
 constexpr std::array<std::uint8_t, 8> signature{137,80,78,71,13,10,26,10};
 [[noreturn]] void invalid(const char* reason) { throw std::runtime_error(std::string("Invalid PNG: ") + reason); }
-void validate_limits(const ImageLimits& l) {
-  if (!l.max_dimension || l.max_dimension > 32768 || !l.max_pixels || l.max_pixels > 64 * 1024 * 1024 ||
-      !l.max_encoded_bytes || l.max_encoded_bytes > 128 * 1024 * 1024 ||
-      !l.max_decoded_bytes || l.max_decoded_bytes > 256 * 1024 * 1024)
-    throw std::invalid_argument("Invalid native image limits");
-}
+// zlib counts bytes in uInt; larger buffers are fed through it in pieces of this size.
+constexpr std::size_t zlib_step = std::numeric_limits<uInt>::max();
+// PNG chunk lengths and image dimensions are at most 2^31-1 (PNG specification).
+constexpr std::uint32_t png_int_max = 0x7fffffff;
 std::size_t pixels(std::uint32_t w, std::uint32_t h, const ImageLimits& l) {
   const std::uint64_t count = std::uint64_t(w) * h;
-  if (!w || !h || w > l.max_dimension || h > l.max_dimension || count > l.max_pixels ||
-      count * 4 > l.max_decoded_bytes) throw std::runtime_error("PNG dimensions exceed native image limits");
+  if (!w || !h || w > png_int_max || h > png_int_max) throw std::runtime_error("PNG dimensions are invalid");
+  if (count > std::numeric_limits<std::size_t>::max() / 4) throw std::runtime_error("PNG dimensions overflow addressable memory");
+  if ((l.max_dimension && (w > l.max_dimension || h > l.max_dimension)) || (l.max_pixels && count > l.max_pixels) ||
+      (l.max_decoded_bytes && count * 4 > l.max_decoded_bytes)) throw std::runtime_error("PNG dimensions exceed native image limits");
   return static_cast<std::size_t>(count);
 }
 std::uint32_t u32(const std::uint8_t* p) {
@@ -33,14 +33,14 @@ unsigned u16(const std::uint8_t* p) { return (unsigned(p[0]) << 8) | p[1]; }
 void put32(Bytes& out, std::uint32_t n) {
   for (int shift : {24,16,8,0}) out.push_back(static_cast<std::uint8_t>(n >> shift));
 }
-void chunk(Bytes& out, const char* name, const Bytes& data, const ImageLimits& limits) {
-  if (out.size() > limits.max_encoded_bytes || data.size() > limits.max_encoded_bytes - out.size() ||
-      limits.max_encoded_bytes - out.size() - data.size() < 12)
+void chunk(Bytes& out, const char* name, const std::uint8_t* data, std::size_t size, const ImageLimits& limits) {
+  const auto max = limits.max_encoded_bytes;
+  if (max && (out.size() > max || size > max - out.size() || max - out.size() - size < 12))
     throw std::runtime_error("Encoded PNG exceeds native image limit");
-  put32(out, static_cast<std::uint32_t>(data.size()));
+  put32(out, static_cast<std::uint32_t>(size));
   const auto start = out.size();
-  out.insert(out.end(), name, name + 4); out.insert(out.end(), data.begin(), data.end());
-  put32(out, static_cast<std::uint32_t>(crc32(0, out.data() + start, static_cast<uInt>(data.size() + 4))));
+  out.insert(out.end(), name, name + 4); out.insert(out.end(), data, data + size);
+  put32(out, static_cast<std::uint32_t>(crc32(0, out.data() + start, static_cast<uInt>(size + 4))));
 }
 struct Pass { unsigned x, y, dx, dy; };
 constexpr std::array<Pass,7> adam7{{{0,0,8,8},{4,0,8,8},{0,4,4,8},{2,0,4,4},{0,2,2,4},{1,0,2,2},{0,1,1,2}}};
@@ -71,18 +71,17 @@ unsigned paeth(unsigned a, unsigned b, unsigned c) {
 } // namespace
 
 PngImage decode_png(const Bytes& bytes, ImageLimits limits) {
-  validate_limits(limits);
-  if (bytes.size() > limits.max_encoded_bytes) invalid("encoded byte limit");
+  if (limits.max_encoded_bytes && bytes.size() > limits.max_encoded_bytes) invalid("encoded byte limit");
   if (bytes.size() < signature.size() || !std::equal(signature.begin(), signature.end(), bytes.begin())) invalid("signature");
   unsigned depth = 0, color = 0, interlace = 0;
   PngImage image;
   Bytes compressed, palette, transparency;
   bool ihdr = false, plte = false, trns = false, idat = false, idat_ended = false, end = false;
-  std::size_t offset = 8, chunks = 0;
+  std::size_t offset = 8;
   while (offset < bytes.size()) {
-    if (++chunks > 65536 || bytes.size() - offset < 12) invalid("truncated or excessive chunks");
+    if (bytes.size() - offset < 12) invalid("truncated chunk");
     const auto size = u32(bytes.data() + offset);
-    if (size > 0x7fffffff || size > bytes.size() - offset - 12) invalid("chunk length");
+    if (size > png_int_max || size > bytes.size() - offset - 12) invalid("chunk length");
     const auto* name = bytes.data() + offset + 4;
     for (int i = 0; i < 4; ++i) if (!((name[i] >= 'A' && name[i] <= 'Z') || (name[i] >= 'a' && name[i] <= 'z'))) invalid("chunk name");
     if (name[2] & 32) invalid("reserved chunk bit");
@@ -130,17 +129,28 @@ PngImage decode_png(const Bytes& bytes, ImageLimits limits) {
     const auto w = extent(image.width,p.x,p.dx), h = extent(image.height,p.y,p.dy);
     if (!w || !h) continue;
     const std::uint64_t row = (std::uint64_t(w) * n_channels * depth + 7) / 8;
+    constexpr std::uint64_t most = std::numeric_limits<std::size_t>::max() - 1;
+    if (row + 1 > most / h || (row + 1) * h > most - inflated_size) invalid("inflated size overflows addressable memory");
     const auto contribution = (row + 1) * h;
-    if (contribution > limits.max_decoded_bytes - inflated_size) invalid("inflated byte limit");
+    if (limits.max_decoded_bytes && contribution > limits.max_decoded_bytes - inflated_size) invalid("inflated byte limit");
     inflated_size += static_cast<std::size_t>(contribution);
   }
-  Bytes inflated(inflated_size + 1);
+  // Grow toward the exact scanline size as data actually inflates, so a tiny file
+  // declaring huge dimensions does not commit that memory up front.
+  Bytes inflated(std::min<std::size_t>(inflated_size + 1, std::size_t(1) << 20));
   z_stream stream{};
   if (inflateInit(&stream) != Z_OK) throw std::runtime_error("Cannot initialize PNG inflater");
-  stream.next_in = const_cast<Bytef*>(compressed.data()); stream.avail_in = static_cast<uInt>(compressed.size());
-  stream.next_out = inflated.data(); stream.avail_out = static_cast<uInt>(inflated.size());
-  const int status = inflate(&stream, Z_FINISH);
-  const bool valid = status == Z_STREAM_END && stream.total_out == inflated_size && stream.total_in == compressed.size();
+  std::size_t consumed = 0, produced = 0; int status = Z_OK;
+  while (status == Z_OK) {
+    if (produced == inflated.size() && inflated.size() <= inflated_size)
+      inflated.resize(inflated.size() > inflated_size / 2 ? inflated_size + 1 : inflated.size() * 2);
+    const auto in = std::min(compressed.size() - consumed, zlib_step), out = std::min(inflated.size() - produced, zlib_step);
+    stream.next_in = compressed.data() + consumed; stream.avail_in = static_cast<uInt>(in);
+    stream.next_out = inflated.data() + produced; stream.avail_out = static_cast<uInt>(out);
+    status = inflate(&stream, Z_NO_FLUSH);
+    consumed += in - stream.avail_in; produced += out - stream.avail_out;
+  }
+  const bool valid = status == Z_STREAM_END && produced == inflated_size && consumed == compressed.size();
   inflateEnd(&stream);
   if (!valid) invalid("zlib stream length/checksum or trailing data");
   image.rgba.resize(count * 4);
@@ -192,24 +202,38 @@ PngImage decode_png(const Bytes& bytes, ImageLimits limits) {
 }
 
 Bytes encode_png(const PngImage& image, ImageLimits limits) {
-  validate_limits(limits);
-  if (limits.max_encoded_bytes < 58) throw std::runtime_error("Encoded PNG exceeds native image limit");
+  if (limits.max_encoded_bytes && limits.max_encoded_bytes < 58) throw std::runtime_error("Encoded PNG exceeds native image limit");
   const auto count = pixels(image.width,image.height,limits);
   if (image.rgba.size() != count*4) throw std::invalid_argument("PNG RGBA byte count differs from dimensions");
   const std::size_t stride = static_cast<std::size_t>(image.width)*4;
-  const std::uint64_t raw_size = std::uint64_t(stride+1)*image.height;
-  if (raw_size > limits.max_decoded_bytes) throw std::runtime_error("PNG scanlines exceed native image limit");
-  Bytes raw(static_cast<std::size_t>(raw_size));
+  if (stride+1 > std::numeric_limits<std::size_t>::max()/image.height) throw std::runtime_error("PNG scanlines overflow addressable memory");
+  const std::size_t raw_size = (stride+1)*image.height;
+  if (limits.max_decoded_bytes && raw_size > limits.max_decoded_bytes) throw std::runtime_error("PNG scanlines exceed native image limit");
+  Bytes raw(raw_size);
   for (unsigned y=0;y<image.height;++y)
     std::copy_n(image.rgba.data()+std::size_t(y)*stride,stride,raw.data()+std::size_t(y)*(stride+1)+1);
-  uLongf compressed_size=std::min<uLongf>(compressBound(static_cast<uLong>(raw.size())),limits.max_encoded_bytes-57);
-  Bytes compressed(compressed_size);
-  if (compress2(compressed.data(),&compressed_size,raw.data(),static_cast<uLong>(raw.size()),Z_BEST_SPEED)!=Z_OK)
-    throw std::runtime_error("PNG compression failed or encoded byte limit exceeded");
-  compressed.resize(compressed_size);
+  Bytes compressed(raw.size()/2+1024);
+  z_stream stream{};
+  if (deflateInit(&stream,Z_BEST_SPEED)!=Z_OK) throw std::runtime_error("Cannot initialize PNG compressor");
+  std::size_t consumed=0, produced=0; int status=Z_OK;
+  while (status!=Z_STREAM_END) {
+    if (produced==compressed.size()) compressed.resize(compressed.size()*2);
+    const auto in=std::min(raw.size()-consumed,zlib_step), out=std::min(compressed.size()-produced,zlib_step);
+    stream.next_in=raw.data()+consumed; stream.avail_in=static_cast<uInt>(in);
+    stream.next_out=compressed.data()+produced; stream.avail_out=static_cast<uInt>(out);
+    status=deflate(&stream,consumed+in==raw.size()?Z_FINISH:Z_NO_FLUSH);
+    consumed+=in-stream.avail_in; produced+=out-stream.avail_out;
+    if (status!=Z_OK&&status!=Z_STREAM_END&&status!=Z_BUF_ERROR) { deflateEnd(&stream); throw std::runtime_error("PNG compression failed"); }
+  }
+  deflateEnd(&stream);
+  compressed.resize(produced);
   Bytes out(signature.begin(),signature.end()), header;
   put32(header,image.width);put32(header,image.height);header.insert(header.end(),{8,6,0,0,0});
-  chunk(out,"IHDR",header,limits);chunk(out,"IDAT",compressed,limits);chunk(out,"IEND",{},limits);
+  chunk(out,"IHDR",header.data(),header.size(),limits);
+  // Split the zlib stream into IDAT chunks no longer than the PNG chunk-length maximum.
+  for (std::size_t at=0;at<compressed.size();at+=std::min<std::size_t>(compressed.size()-at,png_int_max))
+    chunk(out,"IDAT",compressed.data()+at,std::min<std::size_t>(compressed.size()-at,png_int_max),limits);
+  chunk(out,"IEND",nullptr,0,limits);
   return out;
 }
 

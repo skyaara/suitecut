@@ -25,7 +25,7 @@ bool LocatorSuggestionCurrent(std::shared_ptr<LocatorSuggestionWork>work){
 }
 void LocatorSuggestionSend(const std::shared_ptr<LocatorSuggestionWork>&work,const std::string&method,Dict params,DevToolsCallback done){
   if(!LocatorSuggestionCurrent(work))return;
-  DevTools(work->owner,method,params,[this,work,done=std::move(done)](bool ok,const auto&json){if(LocatorSuggestionCurrent(work))done(ok,json);},work->document.session,true,262144,true);
+  DevTools(work->owner,method,params,[this,work,done=std::move(done)](bool ok,const auto&json){if(LocatorSuggestionCurrent(work))done(ok,json);},work->document.session,true,true);
 }
 Dict LocatorSuggestionParams(const std::shared_ptr<LocatorSuggestionWork>&work,const std::string&function){
   auto params=CefDictionaryValue::Create();params->SetString("objectId",work->node);params->SetString("functionDeclaration",function);

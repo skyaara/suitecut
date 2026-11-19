@@ -10,7 +10,7 @@ CEF engine and media tools separately; SDK installation does not launch a browse
 | ------------------------ | ------------------------------------------------------- | -------------------------------------- |
 | `include/suitecut/`      | Installed C ABI and C++20 API                           | Standard library, other public headers |
 | `src/core/`              | JSON values, credential storage, image decoding         | OpenSSL Crypto, Zlib, OS               |
-| `src/wire/`              | Bounded pipe/WebSocket transport, TLS, process lifetime | Core, OpenSSL SSL, OS                  |
+| `src/wire/`              | Pipe/WebSocket transport, TLS, process lifetime         | Core, OpenSSL SSL, OS                  |
 | `src/backends/chromium/` | CDP browser state and commands                          | Wire, shared DOM helpers               |
 | `src/backends/firefox/`  | BiDi browser state and commands                         | Wire, shared DOM helpers               |
 | `src/transport/`         | CEF binary decoder, backend selection, request lifetime | Both backends                          |
@@ -37,13 +37,13 @@ No private header or build-only target is exported. C++ API compatibility
 requires a compatible compiler/standard library; the versioned C ABI is the
 foreign-language boundary. Windows runtime support is not qualified here.
 
-## Ownership and bounded work
+## Ownership of work
 
-Transport owns process/connection teardown, pending requests, deadlines and event
-budgets. Backends own protocol state. Browser and agent layers use those owners;
+Transport owns process/connection teardown, pending requests, deadlines and
+caller-set event limits. Backends own protocol state. Browser and agent layers use those owners;
 they must not introduce a thread per command, replay mutations on timeout, or
-report logical close as completed physical teardown. Keep worker and queue
-bounds explicit. Test actual state, media and process retirement through
+report logical close as completed physical teardown. Do not add
+suitecut-imposed size, count or queue caps; CEF and Chromium enforce their own. Test actual state, media and process retirement through
 `tests/cef`, including failures and cancellation.
 
 ## Making changes

@@ -96,12 +96,14 @@ describe('native-issued snapshot token plans', () => {
       ['/absolute'],
       ['a\0b'],
       ['\ud800'],
-      ['x'.repeat(4097)],
     ])
       expect(() => {
         Reflect.apply(path, null, args)
       }).toThrow()
     expect(path('a', '..', 'kept.png')).toBe('/actual/snapshots/kept-proj-linux.png')
+    expect(path(...Array.from({ length: 40 }, () => 'd'), 'x'.repeat(5000) + '.png')).toContain(
+      'x'.repeat(5000),
+    )
   })
   it('does not replace native tokens that appear in authored names', () => {
     expect(nativeTestSnapshots(plan()).snapshotPath('{testName}.png')).toBe(
@@ -146,12 +148,12 @@ describe('native-issued snapshot token plans', () => {
       nativeTestSnapshots({ ...plan(), aria: [{ kind: 'eval', value: 'arbitrary' }] }),
     ).toThrow()
   })
-  it('bounds final UTF8 paths after all inserted argument copies', () => {
+  it('returns whole paths past the former 7900-byte bound; the filesystem enforces its own', () => {
     const raw = plan()
     raw.snapshot = Array.from({ length: 4 }, () => argument)
-    expect(() => nativeTestSnapshots(raw).snapshotPath('a'.repeat(3000) + '.png')).toThrow(
-      'filesystem bound',
-    )
+    const actual = nativeTestSnapshots(raw).snapshotPath('a'.repeat(3000) + '.png')
+    expect(Buffer.byteLength(actual)).toBeGreaterThan(12000)
+    expect(actual).toContain('a'.repeat(12000))
   })
   it('uses native local IDs for every kind without inferring from definition order', () => {
     const info = nativeTestSnapshots(shared())
@@ -177,10 +179,13 @@ describe('native-issued snapshot token plans', () => {
       { ...shared(), plans: [{ id: 0, parts: [literal('x')] }] },
       { ...shared(), kinds: { snapshot: 1, screenshot: 4, aria: 1 } },
       { ...shared(), kinds: { snapshot: 1, screenshot: 1, aria: 1, fake: 1 } },
+    ])
+      expect(() => nativeTestSnapshots(input)).toThrow()
+    for (const input of [
       { ...shared(), plans: [{ id: 1, parts: Array.from({ length: 257 }, () => argument) }] },
       { ...shared(), plans: [{ id: 1, parts: [literal('x'.repeat(32769))] }] },
     ])
-      expect(() => nativeTestSnapshots(input)).toThrow()
+      expect(() => nativeTestSnapshots(input)).not.toThrow()
   })
   it('keeps plan IDs local to the actual admitted DTO and preserves earlier snapshot closures', () => {
     const first = nativeTestSnapshots(shared('/project-first/'))
@@ -242,21 +247,12 @@ describe('native-issued snapshot token plans', () => {
         '/actual/file.mjs-snapshots/tree.png',
       )
     }
-    for (const invalid of [
-      '.',
-      '..',
-      '../foreign',
-      'a/b',
-      'a\\b',
-      '\0',
-      '\ud800',
-      'x'.repeat(1025),
-      1,
-      null,
-    ]) {
+    for (const invalid of ['.', '..', '../foreign', 'a/b', 'a\\b', '\0', '\ud800', 1, null]) {
       expect(() => Reflect.set(info, 'snapshotSuffix', invalid)).toThrow()
       expect(info.snapshotSuffix).toBe('custom')
     }
+    info.snapshotSuffix = 'x'.repeat(5000)
+    expect(info.snapshotSuffix).toHaveLength(5000)
     expect(Object.isFrozen(info)).toBe(true)
   })
   it('keeps suffix mutation scoped to the actual native test and supports unavailable paths independently', () => {
@@ -277,9 +273,10 @@ describe('native-issued snapshot token plans', () => {
     expect(retry.snapshotSuffix).toBe('linux')
     first.snapshotSuffix = 'stale'
     expect(retry.snapshotSuffix).toBe('linux')
-    expect(() => callbacks.admit('1', 101)).toThrow()
+    expect(() => callbacks.admit('1', -1)).toThrow()
     expect(() => callbacks.admit('foreign', 0)).toThrow('no associated test admission')
     expect(callbacks.admit('1', 1)).toBe(retry)
+    expect(callbacks.admit('1', 101)).not.toBe(retry)
     const fresh = new NativeSnapshotCallbacks()
     fresh.packet(
       ['TEST_SNAPSHOT_CONTEXT', '1', Buffer.from(JSON.stringify(mutable())).toString('hex')],
@@ -306,12 +303,16 @@ describe('native-issued snapshot token plans', () => {
         ...mutable(),
         suffix: { initial: '../foreign', maxBytes: 1024, policy: 'filenameComponent' },
       },
-      { ...mutable(), suffix: { initial: 'linux', maxBytes: 2048, policy: 'filenameComponent' } },
       { ...mutable(), suffix: { initial: 'linux', maxBytes: 1024, policy: 'path' } },
       { ...mutable(), paths: { ...shared(), kinds: { snapshot: 2, screenshot: 1, aria: 1 } } },
       mutable().paths,
     ])
       expect(() => nativeTestSnapshots(input)).toThrow()
+    for (const suffix of [
+      { initial: 'linux', maxBytes: 2048, policy: 'filenameComponent' },
+      { initial: 'linux', policy: 'filenameComponent' },
+    ])
+      expect(nativeTestSnapshots({ ...mutable(), suffix }).snapshotSuffix).toBe('linux')
     const pooled = nativeTestSnapshots({
       ...mutable(),
       paths: { ...shared(), plans: [{ id: 1, parts: mutable().paths.snapshot }] },

@@ -117,15 +117,14 @@ export default defineNativeSuite({hooks:{beforeEach:[{run:async()=>{throw new Er
 ''', 1)
 assert 'actual \ud800 \x00 ' in value['attempts'][0]['error'] and value['attempts'][0]['error'].count('界') == 6000
 
-value, output, elapsed = execute('native-physical-hook-capacity-before-next-admission', '''
+value, output, elapsed = execute('native-physical-hooks-admitted-past-former-64', '''
 export default defineNativeSuite({hooks:{beforeAll:Array.from({length:65},(_,index)=>({timeout:20,run:async()=>{log('actual callback'+index);await new Promise(()=>{})}}))},
- tests:[{title:'actual capacity failure',run:async()=>{throw new Error('BODY MUST NOT RUN')}}]});
+ tests:[{title:'actual held hooks',run:async()=>{throw new Error('BODY MUST NOT RUN')}}]});
 ''', 1)
-assert output.decode().splitlines() == ['actual callback'+str(index) for index in range(64)], output
+assert output.decode().splitlines() == ['actual callback'+str(index) for index in range(65)], output
 assert value['workers'][0]['signal'] == 9 and value['attempts'][0]['status'] == 'timedOut'
 assert value['globalErrors'] == []
-assert_attempt_secondary(value, 'Physical hook callback capacity64 exceeded', scope_id='65',
-                         scopes={(str(scope), '1') for scope in range(1, 66)})
+assert not any('capacity' in row['error'] for row in value['attempts'][0].get('secondaryErrors', []))
 
 value, output, elapsed = execute('independent-all-hook-original-budgets', '''
 const delay=()=>new Promise(resolve=>setTimeout(resolve,45));

@@ -9,10 +9,9 @@ class ProjectPool {
  public:
   using State=SerialProjectPlan::State;using Outcome=SerialProjectPlan::Outcome;
   using Result=SerialProjectPlan::Result;using Admission=SerialProjectPlan::Admission;
-  static constexpr size_t kWorkers=8;
   ProjectPool(ProjectGraph graph,ProjectPlanSelection selection,size_t limit):graph_(std::move(graph)),results_(graph_.Declarations().size()),limit_(limit),no_dependencies_(selection.no_dependencies){
     retired_.resize(results_.size());canceled_.resize(results_.size());
-    if(!limit||limit>kWorkers)throw std::invalid_argument("Native parallel project workers require1..8");
+    if(!limit)throw std::invalid_argument("Native parallel project workers require at least one");
     if(selection.selected.size()!=results_.size()||(!no_dependencies_&&graph_.Closure(selection.selected)!=selection.selected))throw std::invalid_argument("Native project pool selection omits dependency/teardown closure");
     for(size_t i=0;i<results_.size();++i)if(selection.selected[i])results_[i].state=State::Pending;
   }
@@ -50,7 +49,6 @@ class ProjectPool {
     found->second.outcome=outcome;Retire(found);return true;
   }
   void Stop(const std::string& reason){
-    if(reason.size()>8192)throw std::invalid_argument("Native project pool stop reason capacity exceeded");
     if(stopped_)return;
     stopped_=true;
     for(auto it=active_.begin();it!=active_.end();)if(!it->second.started){const auto admission=it->second.admission;results_[admission.index]={State::NotRun,std::nullopt,reason};canceled_[admission.index]=admission;it=active_.erase(it);}else ++it;

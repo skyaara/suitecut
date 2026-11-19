@@ -40,9 +40,10 @@ int main() {
       options.interactive_only=random()%2;options.max_nodes=random()%40;
       options.max_text_bytes=random()%4096;options.max_scan_nodes=random()%150;
       auto observation=suitecut::compact_observation(forest,options);
-      if(observation.at("nodes").as_array().size()>options.max_nodes||
-         static_cast<std::size_t>(observation.at("textBytes").as_int())>options.max_text_bytes||
-         static_cast<std::size_t>(observation.at("scannedNodes").as_int())>options.max_scan_nodes)
+      // A zero option means no limit.
+      if((options.max_nodes&&observation.at("nodes").as_array().size()>options.max_nodes)||
+         (options.max_text_bytes&&static_cast<std::size_t>(observation.at("textBytes").as_int())>options.max_text_bytes)||
+         (options.max_scan_nodes&&static_cast<std::size_t>(observation.at("scannedNodes").as_int())>options.max_scan_nodes))
         throw std::runtime_error("Observation exceeded a declared budget");
       const auto serialized=observation.dump();
       if(Json::parse(serialized)!=observation)throw std::runtime_error("Projection roundtrip failed");

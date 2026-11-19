@@ -74,8 +74,8 @@ int main() {
     bounded = compact_observation(Json::array{control("Pay")}, options);
     check(!bounded.at("nodes").at(0).contains("ref"), "Partial actionable reference exposed");
     options = {};
-    options.max_nodes = 0;
-    check(compact_observation(Json::array{control("Pay")}, options).at("truncated").as_bool(), "Zero node cap ignored");
+    options.max_nodes = 0; // 0 means no limit.
+    check(!compact_observation(Json::array{control("Pay")}, options).at("truncated").as_bool(), "Zero node option limited output");
     check(!compact_observation(Json::array{}, options).at("truncated").as_bool(), "Empty forest falsely truncated");
 
     auto previous = compact_observation(Json::array{control("Save"), control("Cancel", "rFixture_1_1")});
@@ -113,7 +113,13 @@ int main() {
 
     Json deep = Json::array{control("Deep")};
     for (int i = 0; i < 70; ++i) deep = Json::array{Json{{"role", "group"}, {"children", std::move(deep)}}};
-    check(compact_observation(deep).at("depthLimit").as_bool(), "Depth budget ignored");
+    const auto deep_observation = compact_observation(deep);
+    check(!deep_observation.at("truncated").as_bool() && deep_observation.at("nodes").as_array().size() == 71,
+          "Deep forest was cut short");
+    Json::array long_text(5000, Json(std::string(512, 'x')));
+    bounded = compact_observation(long_text);
+    check(!bounded.at("truncated").as_bool() && bounded.at("nodes").as_array().size() == 5000 &&
+          bounded.at("textBytes").as_int() > 1024 * 1024, "Default observation was limited");
     Json::array wide(100000, control("Repeated"));
     options = {};
     options.interactive_only = true;
@@ -122,10 +128,9 @@ int main() {
     check(bounded.at("scannedNodes").as_int() == 17 && bounded.at("nodes").as_array().size() == 16,
           "Wide input is not scanned lazily");
     rejects([] { (void)compact_observation(Json{{"role", "button"}}); });
-    rejects([] { suitecut::ObservationOptions limits; limits.max_nodes = 4097; (void)compact_observation(Json::array{}, limits); });
-    rejects([] { suitecut::ObservationOptions limits; limits.max_text_bytes = 1024 * 1024 + 1; (void)compact_observation(Json::array{}, limits); });
-    rejects([] { suitecut::ObservationOptions limits; limits.max_scan_nodes = 65537; (void)compact_observation(Json::array{}, limits); });
-    rejects([&] { (void)observation_diff(previous, current, 4097); });
+    { suitecut::ObservationOptions limits; limits.max_nodes = 4097; limits.max_text_bytes = 1024 * 1024 + 1; limits.max_scan_nodes = 65537;
+      check(!compact_observation(Json::array{}, limits).at("truncated").as_bool(), "Large caller limits were rejected"); }
+    (void)observation_diff(previous, current, 4097);
     rejects([&] { (void)observation_diff(Json::array{}, current); });
     std::cout << "Compact observation bounds, UTF8, privacy, filtering and semantic differences passed\n";
     return 0;

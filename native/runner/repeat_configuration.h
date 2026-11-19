@@ -6,12 +6,12 @@ namespace suitecut::runner {
 class NativeRepeatDeclarations {
  public:
   void Declare(uint64_t owner,size_t actual_projects,uint64_t value){
-    if(frozen_||actual_projects>128||owner>actual_projects)throw std::invalid_argument("Native repeat config lacks actual declaration ownership");
+    if(frozen_||owner>actual_projects)throw std::invalid_argument("Native repeat config lacks actual declaration ownership");
     if(!owner){if(root_)throw std::invalid_argument("Duplicate native root repeat declaration");root_=value;}
     else if(!projects_.emplace(owner-1,value).second)throw std::invalid_argument("Duplicate native project repeat declaration");
   }
   void Freeze(size_t projects){
-    if(frozen_||projects>128||(!projects_.empty()&&projects_.rbegin()->first>=projects))throw std::invalid_argument("Native repeat config cannot freeze unknown project declarations");
+    if(frozen_||(!projects_.empty()&&projects_.rbegin()->first>=projects))throw std::invalid_argument("Native repeat config cannot freeze unknown project declarations");
     project_count_=projects;frozen_=true;
   }
   NativeRepeatCounts Resolve(std::optional<size_t> project,NativeRepeatRole role,

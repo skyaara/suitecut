@@ -5,6 +5,7 @@
 #include "include/cef_api_hash.h"
 #include "network_controls.h"
 #include <cassert>
+#include <limits>
 #include <iostream>
 using Dict=CefRefPtr<CefDictionaryValue>;
 // The production broker include and NetworkControls run against real CEF value
@@ -31,7 +32,7 @@ struct Harness {
   Harness(){
     owner->hooks_.route_fetch=[this](int operation,int context,std::shared_ptr<int> expected,Dict request,Dict options,double deadline,std::shared_ptr<void> lease,auto done){
       assert(operation==13&&context==7&&expected==request_context_&&request->GetString("url")=="https://native.test/worker-data"&&request->GetString("method")=="POST"&&options->GetInt("timeoutMs")==10&&deadline==11);
-      std::string error;auto params=suitecut::NativeRouteFetchRequest(request,options,now,deadline,deadline,error);assert(params&&params->GetString("body")=="AP8NCg=="&&params->GetInt("maxRedirects")==20&&params->GetInt("maxRetries")==0);
+      std::string error;auto params=suitecut::NativeRouteFetchRequest(request,options,now,deadline,deadline,error);assert(params&&params->GetString("body")=="AP8NCg=="&&params->GetInt("maxRedirects")==std::numeric_limits<int>::max()&&params->GetInt("maxRetries")==0);
       ++fetched;physical=std::move(lease);completion=std::move(done);
     };
     owner->hooks_.cancel_route_fetch=[this](int operation){assert(operation==13);++canceled;};

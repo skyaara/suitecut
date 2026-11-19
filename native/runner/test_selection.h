@@ -24,10 +24,9 @@ inline std::vector<size_t> SelectTestIndices(const std::vector<uint64_t>& declar
                                            const TestSelection& selection,
                                            const std::vector<uint64_t>& focused = {},
                                            bool has_suite_focus = false) {
-  if (declarations.size() > 4096 || selection.ids.size() > 4096 || focused.size() > 4096 ||
-      !selection.shard_current || !selection.shard_total ||
-      selection.shard_current > selection.shard_total || selection.shard_total > 65536)
-    throw std::invalid_argument("Invalid native test selection or shard (current/total, total<=65536)");
+  if (!selection.shard_current || !selection.shard_total ||
+      selection.shard_current > selection.shard_total)
+    throw std::invalid_argument("Invalid native test selection or shard (1<=current<=total)");
   std::set<uint64_t> available, requested, focus;
   for (auto id : declarations)
     if (!id || !available.insert(id).second)

@@ -37,7 +37,7 @@ void RecordNativeRepeatConfiguration(const Metadata& value){
       record.resolved.push_back({local?*local+1:0,role,value.repeat_declarations.Resolve(local,role,options_.repeat_each)});
     }
   }
-  record.Validate();Charge(record.MetadataBytes());report_.repeat_configuration=std::move(record);
+  record.Validate();report_.repeat_configuration=std::move(record);
 }
 bool NeedsNativeRepeatCoordinator(const Metadata& value)const{
   if(options_.directory_admission||parallel_actor_)return false;
@@ -87,13 +87,11 @@ void SelectNativeDirectoryRepeats(sr::DirectoryReport& facts,const sr::MultiFile
       bool declared_empty=false;if(local)declared_empty=std::none_of(original.catalog.project_tests.begin(),original.catalog.project_tests.end(),[&](const auto& member){return member.second==*local;});
       units.push_back({original.file.id,project+1,role,counts,std::move(projection.declarations),declared_empty,sizeof(sr::DirectoryAdmission)});grouping.push_back(std::move(projection.group_sizes));
     }
-  const auto repeat_catalog=std::make_shared<const sr::NativeRepeatCatalog>(std::move(units),sr::DirectoryReport::kSegments,4096,0);
-  uint64_t containers=repeat_catalog->OwnedMetadataBytes();for(const auto& unit:repeat_catalog->Units())containers=sr::repeat_detail::Add(containers,sr::repeat_detail::Add(sizeof(std::vector<sr::NativeRepeatTest>),sr::repeat_detail::Multiply(unit.declarations->capacity(),sizeof(sr::NativeRepeatTest))));
-  Charge(static_cast<size_t>(containers));
-  const sr::NativeRepeatSelectionLimits limits{sr::DirectoryReport::kSegments,128,67108864};
+  const auto repeat_catalog=std::make_shared<const sr::NativeRepeatCatalog>(std::move(units),std::numeric_limits<uint64_t>::max(),std::numeric_limits<uint64_t>::max(),0);
+  // No suitecut planning caps: every limit is the full uint64 range.
+  const sr::NativeRepeatSelectionLimits limits{std::numeric_limits<uint64_t>::max(),std::numeric_limits<uint64_t>::max(),std::numeric_limits<uint64_t>::max()};
   auto& usage=shared_->repeat_planning_usage;
   if(usage.slices||usage.source_reports)throw std::runtime_error("Native repeat global selection was already accepted");
-  usage.metadata_bytes=shared_->metadata_charge;
   auto primary=sr::SelectNativeRepeatPrimary(*repeat_catalog,grouping,options_.selection.shard_current,options_.selection.shard_total,limits,usage,[this]{ThrowIfStopped();});
   if(!primary.unsharded_logical_tests&&!options_.pass_with_no_tests)throw std::runtime_error("No tests found");
   std::vector<bool> roots(eligible.projects.selected.size());
@@ -104,20 +102,13 @@ void SelectNativeDirectoryRepeats(sr::DirectoryReport& facts,const sr::MultiFile
   for(size_t p=0;p<roots.size();++p)if(facts.selection.projects.selected[p]){facts.selection.roles[p]=roots[p]?"primary":eligible.roles[p];selected_projects.insert(p+1);}
   sr::AppendNativeRepeatSupport(*repeat_catalog,selected_projects,primary.slices,limits,usage,[this]{ThrowIfStopped();});
   auto accepted_selection=std::make_shared<const sr::NativeRepeatSelection>(repeat_catalog,std::move(primary.slices),limits,usage);
-  uint64_t retained=sizeof(sr::NativeRepeatSelection)+accepted_selection->Slices().capacity()*sizeof(sr::NativeSelectedRepeatSlice);std::set<const std::vector<uint64_t>*> charged;
-  for(const auto& slice:accepted_selection->Slices())if(charged.insert(slice.local_ids.get()).second)retained=sr::repeat_detail::Add(retained,sizeof(std::vector<uint64_t>)+slice.local_ids->capacity()*sizeof(uint64_t));
-  // Planning reserves projected future attempt/error space once for the entire
-  // run. Charge only actually retained container storage here; genuine later
-  // reports consume the existing actual metadata ledger through Charge.
-  Charge(static_cast<size_t>(retained));
   for(const auto& test:catalog.Tests())for(const auto& selected:accepted_selection->Slices()){
     const auto& unit=repeat_catalog->Units().at(selected.unit);if(unit.file!=catalog.Files().at(test.file).file.id||unit.project!=test.project+1)continue;
     if(std::find(selected.local_ids->begin(),selected.local_ids->end(),test.local_id)!=selected.local_ids->end()){facts.selection.project_tests[test.project].push_back(test.selection_id);break;}
   }
   auto accepted_groups=std::make_shared<const sr::NativeRepeatGroupPartition>(accepted_selection,facts.catalog,limits,usage,[this]{ThrowIfStopped();});
-  Charge(static_cast<size_t>(accepted_groups->OwnedMetadataBytes()));
-  // Publish the immutable logical/group selection only after every bounded
-  // construction and retained-storage charge succeeds. Failure before this
+  // Publish the immutable logical/group selection only after every
+  // construction succeeds. Failure before this
   // point has no selected actor/source receipts, and remains unresolved.
   facts.repeat_selection=std::move(accepted_selection);facts.repeat_groups=std::move(accepted_groups);
   facts.selection_resolved=true;facts.empty_shard=primary.unsharded_logical_tests&&std::none_of(roots.begin(),roots.end(),[](bool value){return value;});

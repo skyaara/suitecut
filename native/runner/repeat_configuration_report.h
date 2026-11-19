@@ -18,12 +18,11 @@ struct RepeatConfigurationReport {
   };
   std::vector<Resolved> resolved;
   void Validate()const {
-    if((!primary_override&&!root&&project_declarations.empty())||project_declarations.size()>128||resolved.size()>128)
-      throw std::invalid_argument("Native repeat configuration report lacks bounded explicit declarations");
-    for(const auto& [project,count]:project_declarations){(void)count;if(project>=128)throw std::invalid_argument("Native repeat configuration project declaration rejected");}
+    if(!primary_override&&!root&&project_declarations.empty())
+      throw std::invalid_argument("Native repeat configuration report lacks explicit declarations");
     std::set<uint64_t> projects;
     for(const auto& row:resolved){
-      if(row.project>128||!projects.insert(row.project).second)throw std::invalid_argument("Native repeat configuration resolved owner rejected");
+      if(!projects.insert(row.project).second)throw std::invalid_argument("Native repeat configuration resolved owner rejected");
       NativeRepeatConfiguration config;config.root=root;config.primary_override=primary_override;
       if(row.project)if(const auto found=project_declarations.find(static_cast<size_t>(row.project-1));found!=project_declarations.end())config.project=found->second;
       if(row.counts!=ResolveNativeRepeatCounts(config,row.role,0))throw std::invalid_argument("Native repeat configuration resolved counts differ from actual declarations");
@@ -32,7 +31,7 @@ struct RepeatConfigurationReport {
   size_t MetadataBytes()const {Validate();return 512+256*(project_declarations.size()+resolved.size());}
   void ValidateAdmission(uint64_t local_project,size_t actual_project_count,NativeRepeatRole role,const NativeRepeatCounts& counts)const {
     Validate();
-    if(actual_project_count>128||local_project>actual_project_count||(!local_project&&actual_project_count))throw std::invalid_argument("Native repeat configuration lacks actual admitted local project");
+    if(local_project>actual_project_count||(!local_project&&actual_project_count))throw std::invalid_argument("Native repeat configuration lacks actual admitted local project");
     for(const auto& [project,count]:project_declarations){(void)count;if(project>=actual_project_count)throw std::invalid_argument("Native repeat configuration declared a foreign collected project");}
     NativeRepeatConfiguration config;config.root=root;config.primary_override=primary_override;
     if(local_project)if(const auto found=project_declarations.find(static_cast<size_t>(local_project-1));found!=project_declarations.end())config.project=found->second;

@@ -11,7 +11,7 @@ struct ReportWorkerReuse {
 template<class Report>void ValidateWorkerReuseReports(const Report& report){
   const auto& reuse=report.worker_reuse;
   if(reuse.hosts.empty()&&reuse.borrows.empty())return;
-  if(report.files.size()!=1||!report.projects.empty()||!report.work_groups.empty()||!report.file_resource_locks.empty()||reuse.hosts.empty()||reuse.hosts.size()>WorkerReusePool::kGroups||reuse.borrows.empty()||reuse.borrows.size()>WorkerReusePool::kGroups||reuse.hosts.size()!=report.workers.size())
+  if(report.files.size()!=1||!report.projects.empty()||!report.work_groups.empty()||!report.file_resource_locks.empty()||reuse.hosts.empty()||reuse.borrows.empty()||reuse.hosts.size()!=report.workers.size())
     throw std::invalid_argument("Native worker reuse report owner/capacity rejected");
   std::set<unsigned> indices;std::set<uint64_t> groups;std::vector<size_t> last(reuse.hosts.size(),SIZE_MAX);
   for(size_t i=0;i<reuse.hosts.size();++i){const auto& host=reuse.hosts[i];

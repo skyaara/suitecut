@@ -23,7 +23,7 @@ int main(int argc,char** argv){
     for(const auto& id:md::Array(md::Get(row,"stockSelectedIds")))expected.insert(md::Text(id));
     GrepPattern::Work work;
     for(const auto& title:md::Array(md::Get(fixture,"titles"))){
-      if(policy.Matches(GrepUnits(md::Get(title,"title").raw,32768),work))actual.insert(md::Text(md::Get(title,"stockId")));
+      if(policy.Matches(GrepUnits(md::Get(title,"title").raw),work))actual.insert(md::Text(md::Get(title,"stockId")));
       ++matches;
     }
     if(actual!=expected)throw std::runtime_error("grep oracle native selection mismatch: "+name);

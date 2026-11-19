@@ -2,6 +2,7 @@
 #include "suitecut/browser.hpp"
 #include <cmath>
 #include <filesystem>
+#include <limits>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -21,7 +22,7 @@ const char* usage =
   "CEF records WebM or macOS hardware H.264 MP4 with optional audio; Chromium records silent MP4/WebM.\n"
   "Bundled engine/media tools are found relative to this executable. No Node.js.\n";
 double number(const std::string& input,double low,double high,bool whole) {
-  const auto value=Json::parse(input,{128,1,1,128});
+  const auto value=Json::parse(input);
   if(!value.is_number()||!std::isfinite(value.as_double())||value.as_double()<low||
      value.as_double()>high||(whole&&std::floor(value.as_double())!=value.as_double()))
     throw std::invalid_argument("Numeric option is outside its supported range");
@@ -71,9 +72,9 @@ int main(int argc,char** argv) {
       else if(key=="--browser"){options.executable=value;browser_explicit=true;}
       else if(key=="--ffmpeg")ffmpeg=value;
       else if(key=="--ffprobe")ffprobe=value;
-      else if(key=="--fps")fps=number(value,1,120,false);
-      else if(key=="--width")options.width=static_cast<int>(number(value,2,3840,true));
-      else if(key=="--height")options.height=static_cast<int>(number(value,2,2160,true));
+      else if(key=="--fps")fps=number(value,1,std::numeric_limits<double>::max(),false);
+      else if(key=="--width")options.width=static_cast<int>(number(value,2,std::numeric_limits<int>::max(),true));
+      else if(key=="--height")options.height=static_cast<int>(number(value,2,std::numeric_limits<int>::max(),true));
       else if(key=="--duration-ms")duration=static_cast<int>(number(value,1,600000,true));
       else if(key=="--browser-arg")options.arguments.push_back(value);
       else if(key=="--backend") {

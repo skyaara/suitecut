@@ -53,12 +53,11 @@ struct Harness {
  bool MaterializeConsoleArguments(int,Dict,std::function<void()>){return false;}
  std::string QueryDiagnosticExpression(Dict,const std::string&){return "'strict mode violation: actual duplicate nodes'";}
  void QueryInspect(int owner,Dict,const std::string& code,bool utility,bool by_value,DevToolsCallback done){assert(utility&&!by_value);body=code;evaluation_groups_[owner].insert(operation_sessions_[owner]);auto params=CefDictionaryValue::Create();params->SetString("objectGroup","suitecut-automation-"+std::to_string(owner));DevTools(owner,"Runtime.evaluate",params,std::move(done),operation_sessions_[owner]);}
- void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback done,const std::string& session,bool=false,size_t=0,bool=false){
+ void DevTools(int owner,const std::string& method,Dict params,DevToolsCallback done,const std::string& session,bool=false,bool=false){
   const auto found=locator_predicate_work_.find(owner);if(found!=locator_predicate_work_.end()&&!LocatorPredicateCurrent(found->second))return;
   const auto entry=operations_.Get(owner);assert(entry);assert(selectors.Group(owner,"suitecut-automation-"+std::to_string(owner),session));assert(ReferenceTemporaryGroups(owner));auto physical=selectors.Begin(owner);assert(physical);
   calls.push_back({method,session,params->Copy(false),[this,owner,generation=entry->generation,physical,done=std::move(done)](bool ok,const std::string& json)mutable{physical->Settle();if(operations_.IsCurrent(owner,generation)&&!selectors.Retrying(owner))done(ok,json);}});
  }
- static constexpr size_t kMaxResponseBytes=1048576;
  void RetryContext(int owner){++retries;selectors.Pause(owner);}
  Dict Config(){auto config=CefDictionaryValue::Create();config->SetString("frame","main");config->SetString("function","async function(){return true;}");config->SetList("handles",CefListValue::Create());return config;}
  uint64_t Start(){const auto entry=operations_.Begin(1,now,10);assert(entry);return entry->generation;}

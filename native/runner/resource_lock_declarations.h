@@ -11,21 +11,15 @@ class ResourceLockDeclarations {
   ResourceLockDeclarations(std::vector<uint64_t> tests,std::vector<SuiteDeclaration> suites,
       std::vector<SuiteTestDeclaration> memberships,ByOwner test_names,ByOwner suite_names,Names file_names={})
       :tests_(tests.begin(),tests.end()),test_names_(std::move(test_names)),suite_names_(std::move(suite_names)),file_names_(std::move(file_names)){
-    if(tests.size()>4096||tests_.size()!=tests.size()||tests_.contains(0))throw std::invalid_argument("Invalid native resource-lock test identities");
+    if(tests_.size()!=tests.size()||tests_.contains(0))throw std::invalid_argument("Invalid native resource-lock test identities");
     std::set<uint64_t> suite_ids;for(const auto& suite:suites)if(!suite.id||!suite_ids.insert(suite.id).second)throw std::invalid_argument("Invalid native resource-lock suite identities");
     if(suites.empty()){if(!memberships.empty()||!suite_names_.empty())throw std::invalid_argument("Native resource-lock suite declaration has no actual tree");}
     else{
       tree_.emplace(std::move(suites),std::move(memberships));
       if(std::set<uint64_t>(tree_->TestOrder().begin(),tree_->TestOrder().end())!=tests_)throw std::invalid_argument("Native resource-lock tree disagrees with actual test declarations");
     }
-    size_t references=0,bytes=0;std::set<std::string> names;
     const auto check=[&](const Names& declared){
-      if(declared.size()>64||declared.size()>ResourceLocks::kReferences-references)throw std::invalid_argument("Native resource-lock declaration/reference capacity exceeded");
-      references+=declared.size();
-      for(const auto& name:declared){
-        if(name.size()%2||name.size()>kResourceLockUnits*2||name.size()+32>ResourceLocks::kMetadata-bytes)throw std::invalid_argument("Native resource-lock declaration name/metadata capacity exceeded");
-        bytes+=name.size()+32;names.insert(name);if(names.size()>ResourceLocks::kNames)throw std::invalid_argument("Native resource-lock namespace capacity exceeded");
-      }
+      for(const auto& name:declared)if(name.size()%2)throw std::invalid_argument("Native resource-lock declaration name is not UTF16");
     };
     check(file_names_);
     for(const auto& [id,declared]:test_names_){if(!tests_.contains(id))throw std::invalid_argument("Unknown native resource-lock test owner");check(declared);}

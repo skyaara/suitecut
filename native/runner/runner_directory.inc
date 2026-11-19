@@ -13,7 +13,7 @@ int RunDirectory(bool collected_single=false){
   // per file. Preserve other native options so later bounded policies inherit.
   auto child_template=options_;child_template.fail_on_flaky_tests=false;if(options_.terminal_reporter!=sr::NativeTerminalReporter::Console)child_template.terminal_reporter=sr::NativeTerminalReporter::None;child_template.discovery.reset();child_template.workers=1;child_template.list=false;child_template.pass_with_no_tests=true;child_template.projects.clear();child_template.no_dependencies=false;child_template.selection={};child_template.junit.clear();child_template.html.clear();child_template.test_directory=options_.discovery?options_.discovery->directory:options_.test_directory;
   std::string scratch;std::shared_ptr<const sr::MultiFileCatalog> catalog;std::unique_ptr<sr::MultiFilePlan> native_plan;
-  const auto error=[&](const std::exception& e){if(facts->errors.size()>=256)throw std::runtime_error("Native directory error capacity exceeded");facts->errors.push_back(Quote(e.what()));};
+  const auto error=[&](const std::exception& e){facts->errors.push_back(Quote(e.what()));};
   try{
     DirectoryPhysicalFence();
     if(collected_single){
@@ -22,12 +22,9 @@ int RunDirectory(bool collected_single=false){
       auto declarations=ListingCatalog(*catalog_);sr::DirectoryCollectionReport receipt;
       receipt.file=0;receipt.identity=files[0].owner->Token();receipt.path=files[0].owner->Path();receipt.observed=true;
       receipt.protocol=declarations.protocol;receipt.timing=repeat_collection_timing_;receipt.workers=report_.workers;receipt.errors=report_.global_errors_json;
-      // Retain the already-real collection before stop/quota/namespace policy
+      // Retain the already-real collection before stop/namespace policy
       // can fail. Transfer only after the facts row has accepted all allocations.
       facts->collections.push_back(std::move(receipt));report_.workers.clear();
-      for(const auto& worker:facts->collections.back().workers)shared_->directory_worker_bytes+=worker.stdout_bytes.size()+worker.stderr_bytes.size();
-      if(declarations.tests.size()>4096-shared_->directory_declarations||declarations.protocol.size()>16777216-shared_->directory_protocol_bytes)throw std::runtime_error("Native repeat initial collection exceeds original global metadata bounds");
-      shared_->directory_declarations+=declarations.tests.size();shared_->directory_protocol_bytes+=declarations.protocol.size();
       facts->resource_locks_serialize_files=HasResourceLocks(*catalog_);
       collected.push_back({files[0].owner->Token(),files[0].owner->Path(),std::move(declarations),options_.selection.catalog_eligible,options_.selection.eligible});
     }
@@ -56,7 +53,6 @@ int RunDirectory(bool collected_single=false){
       else {facts->selection=catalog->Select(options_.selection,options_.projects,options_.no_dependencies);facts->selection_resolved=true;facts->empty_shard=primary_count(eligible)&&!primary_count(facts->selection);}
       facts->active_file_limit=facts->resource_locks_serialize_files?1:options_.workers;
       native_plan=std::make_unique<sr::MultiFilePlan>(*catalog,facts->selection,facts->active_file_limit,options_.max_failures,false,facts->repeat_selection,facts->repeat_groups);auto& plan=*native_plan;
-      if(!options_.list&&plan.Segments().size()>128){const std::string why="Native directory actual source capacity128 exceeded before callbacks";plan.Stop(why);facts->errors.push_back(Quote(why));}
       if(!options_.list){
         RunDirectoryCohorts(plan,*catalog,files,scratch,child_template,*facts,inputs);
       }
@@ -66,7 +62,7 @@ int RunDirectory(bool collected_single=false){
   DirectoryPhysicalFence();
   for(auto& file:files){file.owner->Validate();file.owner->Retire();}
   if(!facts->selection_resolved&&facts->errors.empty()&&options_.pass_with_no_tests)facts->empty_shard=true;
-  facts->attachment_declarations=shared_->file_budget.declarations.records;facts->attachment_bytes=shared_->file_budget.reserved;facts->step_records=shared_->step_budget.records;facts->soft_records=shared_->soft_budget.records;facts->output_records=shared_->output_budget.records;facts->source_records=shared_->source_leases.Records().size();facts->physical_workers=shared_->active_workers;facts->physical_io=shared_->file_budget.physical;facts->physical_steps=shared_->step_budget.physical;facts->physical_soft=shared_->soft_budget.physical;facts->physical_sources=shared_->source_leases.Outstanding();facts->publication_pending=shared_->file_budget.publications.pending;
+  facts->physical_workers=shared_->active_workers;facts->physical_io=shared_->file_budget.physical;facts->physical_steps=shared_->step_budget.physical;facts->physical_soft=shared_->soft_budget.physical;facts->physical_sources=shared_->source_leases.Outstanding();facts->publication_pending=shared_->file_budget.publications.pending;
   for(const auto* output:{&options_.report,&options_.junit,&options_.html})if(!output->empty())sr::CheckTestListingOutput(*output,protected_inputs);
   sr::ReportMergeOptions merge_options;merge_options.fail_on_flaky_tests=options_.fail_on_flaky_tests;
   auto merged=sr::MergedRunnerReport::ReadDirectory(inputs,facts,merge_options);

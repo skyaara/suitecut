@@ -19,10 +19,8 @@ struct Fixture {std::string name;Scope scope;std::vector<std::string> dependenci
 class FixtureGraph {
  public:
   explicit FixtureGraph(std::vector<Fixture> definitions):definitions_(std::move(definitions)){
-    if(definitions_.size()>256)throw std::invalid_argument("Fixture definition capacity256 exceeded");
     for(size_t i=0;i<definitions_.size();++i){const auto& d=definitions_[i];
-    if(d.name.empty()||d.name.size()>256||(d.timeout&&*d.timeout>120000)||!indices_.emplace(d.name,i).second)throw std::invalid_argument("Invalid or duplicate fixture: "+d.name);}
-    size_t edge_count=0;for(const auto& d:definitions_){edge_count+=d.dependencies.size();if(edge_count>4096)throw std::invalid_argument("Fixture dependency edge capacity4096 exceeded");}
+    if(d.name.empty()||(d.timeout&&*d.timeout>120000)||!indices_.emplace(d.name,i).second)throw std::invalid_argument("Invalid or duplicate fixture: "+d.name);}
     for(const auto& d:definitions_)for(const auto& n:d.dependencies){const auto& dep=Get(n);
     if(d.scope==Scope::Worker&&dep.scope==Scope::Test)throw std::invalid_argument("Worker fixture "+d.name+" cannot depend on test fixture "+n);}
     std::map<std::string,int> seen;std::vector<std::string> result;for(const auto& d:definitions_)Visit(d.name,seen,result);
@@ -31,7 +29,6 @@ class FixtureGraph {
     if(i==indices_.end())throw std::invalid_argument("Unknown fixture: "+name);
     return definitions_[i->second];}
   std::vector<std::string> Plan(const std::vector<std::string>& requested)const{
-    if(requested.size()>256)throw std::invalid_argument("Requested fixture capacity256 exceeded");
     std::map<std::string,int> seen;std::vector<std::string> result;
     // Automatic fixtures are admitted before the test's requested fixtures.
     for(const auto scope:{Scope::Worker,Scope::Test})
@@ -75,7 +72,6 @@ class FixtureOwners {
   }
   void Settled(uint64_t token,uint64_t test,uint64_t generation,bool ok,std::string error,double now){
     if(!std::isfinite(now))return;
-    if(error.size()>8192)error.resize(8192);
     auto i=leases_.find(token);
     if(i==leases_.end()||i->second.test!=test||i->second.generation!=generation)return;
     SyncBudget(now);
@@ -90,7 +86,6 @@ class FixtureOwners {
   }
   void Finish(bool ok,std::string error,double now){
     if(!std::isfinite(now))return;
-    if(error.size()>8192)error.resize(8192);
     if(!active_||(phase_!=Phase::Running&&phase_!=Phase::SkipDrain)||closing_)return;
     SyncBudget(now);
     if(phase_==Phase::SkipDrain&&now>=cleanup_deadline_){Tick(now);return;}
@@ -189,7 +184,6 @@ class FixtureOwners {
       const auto name=active_->plan[active_->index];auto found=names_.find(name);
       if(found!=names_.end()){auto& l=leases_.at(found->second);
     if(l.state==LeaseState::Ready){++active_->index;continue;}return;}
-      if(leases_.size()>=64){Fail("Physical fixture callback capacity64 exceeded",now);return;}
       if(nonce_==std::numeric_limits<uint64_t>::max()){Fail("Fixture callback token space exhausted",now);return;}
       const auto& d=graph_.Get(name);const uint64_t token=++nonce_;
       auto [i,added]=leases_.emplace(token,Lease{name,d.scope,LeaseState::Starting,active_->test,active_->generation});(void)added;
@@ -198,7 +192,6 @@ class FixtureOwners {
     phase_=Phase::Running;hooks_.ready(active_->test,active_->generation);
   }
   void Fail(std::string error,double now){
-    if(error.size()>8192)error.resize(8192);
     failure_=true;stop_after_test_=true;
     if(error_.empty())error_=std::move(error);
     if(!active_){closing_=true;hooks_.terminateWorker(error_);return;}

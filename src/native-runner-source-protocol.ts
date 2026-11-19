@@ -21,7 +21,7 @@ const UInt = z
   .regex(/^[1-9][0-9]{0,19}$/u)
   .refine((value) => BigInt(value) <= 18446744073709551615n)
 const ZeroUInt = z.union([z.literal('0'), UInt])
-const Key = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,255}$/u)
+const Key = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/u)
 const Setup = z.union([
   z.tuple([z.literal('SOURCE_SETUP'), UInt, UInt, UInt, UInt, UInt, UInt, Key]),
   z.tuple([
@@ -182,8 +182,7 @@ export class NativeSourceSetupProtocol {
     if (fields[0] === 'SOURCE_SETUP') {
       const [, catalog, declaration, token, owner, test, generation, fixtureKey, callbackScope] =
         Setup.parse(fields)
-      if (this.selections.has(token) || this.selections.size >= 64)
-        throw new Error('Duplicate native Source setup sidecar')
+      if (this.selections.has(token)) throw new Error('Duplicate native Source setup sidecar')
       if (callbackScope === undefined || callbackScope === 'test' ? test === '0' : test !== '0')
         throw new Error('Native Source all-hook associated test identity differs')
       this.selections.set(token, {
@@ -302,7 +301,7 @@ export class NativeSourceSetupProtocol {
           UInt,
           UInt,
           UInt,
-          z.string().min(1).max(64),
+          z.string().min(1),
           z.literal('callbackIteration').optional(),
         ])
         .parse(fields)
@@ -419,8 +418,8 @@ export class NativeSourceSetupProtocol {
     this.changed()
   }
   private next(): string {
-    if (this.pending.size >= 16 || this.nonce === 18446744073709551615n)
-      throw new Error('Native Source request capacity exceeded')
+    if (this.nonce === 18446744073709551615n)
+      throw new Error('Native Source request nonce exhausted')
     return String(++this.nonce)
   }
   private continue(

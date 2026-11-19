@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cmath>
 #include <filesystem>
+#include <limits>
 #include <openssl/evp.h>
 #include <stdexcept>
 #ifndef _WIN32
@@ -15,10 +16,10 @@ namespace suitecut::control {
 namespace {
 void need(bool value,const char* why){if(!value)throw std::invalid_argument(why);}
 double number(const std::string& input) {
-  const auto value=Json::parse(input,{128,1,1,128});
+  const auto value=Json::parse(input);
   need(value.is_number()&&std::isfinite(value.as_double()),"Expected a finite numeric argument");return value.as_double();
 }
-Json integer(const std::string& input){auto value=Json::parse(input,{128,1,1,128});need(value.is_integer(),"Expected an integer argument");return value;}
+Json integer(const std::string& input){auto value=Json::parse(input);need(value.is_integer(),"Expected an integer argument");return value;}
 std::string ref(std::string value) {
   if(value.starts_with('@'))value.erase(0,1);
   need(value.size()>1&&value[0]=='e'&&value.find_first_not_of("0123456789",1)==std::string::npos,"Use an eN ref from the latest observation");return value;
@@ -71,7 +72,7 @@ Json cli_request(const std::vector<std::string>& words,Json observation,const st
   } else if(command=="fill"||command=="type") {arity(2,2);args=Json{{"action",command},{"ref",ref(words[1])},{"value",words[2]}};}
   else if(command=="clear"||command=="hover"||command=="focus"||command=="check"||command=="uncheck") {arity(1,1);args=Json{{"action",command},{"ref",ref(words[1])}};}
   else if(command=="select") {
-    arity(2,257);Json::array values;for(std::size_t i=2;i<size;++i)values.emplace_back(words[i]);
+    need(size>=3,"Incorrect command arguments; see help");Json::array values;for(std::size_t i=2;i<size;++i)values.emplace_back(words[i]);
     args=Json{{"action","select"},{"ref",ref(words[1])},{"values",std::move(values)}};
   } else if(command=="press") {arity(1,2);args=Json{{"action","press"},{"key",words[1]}};if(size==3)args["ref"]=ref(words[2]);}
   else if(command=="scroll") {arity(1,2);args=Json{{"action","mouse"},{"event","wheel"},{"deltaY",number(words[1])},{"deltaX",size==3?number(words[2]):0}};}
@@ -91,7 +92,7 @@ Json cli_request(const std::vector<std::string>& words,Json observation,const st
     else {arity(2,2);if(words[1]=="text"||words[1]=="url")args[words[1]]=words[2];
       else {args["ref"]=ref(words[1]);args["state"]=words[2];}}
   } else if(command=="dialog") {arity(1,2);need(words[1]=="accept"||words[1]=="dismiss","Dialog action must be accept or dismiss");args=Json{{"action","dialog"},{"accept",words[1]=="accept"}};if(size==3)args["promptText"]=words[2];}
-  else if(command=="batch") {arity(1,1);args["actions"]=Json::parse(words[1],{256*1024,32,16384,128*1024});need(args.at("actions").is_array(),"Batch requires a JSON array of simple UI actions");}
+  else if(command=="batch") {arity(1,1);args["actions"]=Json::parse(words[1]);need(args.at("actions").is_array(),"Batch requires a JSON array of simple UI actions");}
   else if(command=="tabs") {
     tool="pages";arity(0,2);args["action"]=size==1?"list":words[1];
     if(size>1){need(words[1]=="list"||words[1]=="new"||words[1]=="switch"||words[1]=="close","Unknown tabs action");
@@ -102,7 +103,7 @@ Json cli_request(const std::vector<std::string>& words,Json observation,const st
   } else if(command=="viewport") {tool="viewport";arity(2,2);args=Json{{"width",integer(words[1])},{"height",integer(words[2])}};}
   else if(command=="read") {tool="read";arity(0,0);}
   else if(command=="get") {tool="get";arity(1,2);args["kind"]=words[1];if(size==3)args["ref"]=ref(words[2]);}
-  else if(command=="call") {arity(2,2);tool=words[1];args=Json::parse(words[2],{4*1024*1024,64,65536,4*1024*1024});need(args.is_object(),"call arguments must be a JSON object");}
+  else if(command=="call") {arity(2,2);tool=words[1];args=Json::parse(words[2]);need(args.is_object(),"call arguments must be a JSON object");}
   else throw std::invalid_argument("Unknown command: "+command+"; see help");
   if((tool=="act"||tool=="wait")&&!args.contains("response"))args["response"]=response;
   return Json{{"tool",tool},{"arguments",std::move(args)}};
@@ -113,14 +114,14 @@ Json save_output(const Json& reply,const std::string& requested) {
   if(result.is_object()&&result.contains("ok")&&!result.at("ok").as_bool())return reply;
   std::string bytes,mime="application/json",path=requested;
   if(result.is_object()&&result.contains("base64")) {
-    const auto& encoded=result.at("base64").as_string();need(encoded.size()<=8*1024*1024&&encoded.size()%4==0,"Invalid screenshot byte budget");
+    const auto& encoded=result.at("base64").as_string();need(encoded.size()<=static_cast<std::size_t>(std::numeric_limits<int>::max())&&encoded.size()%4==0,"Invalid screenshot encoding length");
     bytes.resize(encoded.size()/4*3);
     const auto size=EVP_DecodeBlock(reinterpret_cast<unsigned char*>(bytes.data()),reinterpret_cast<const unsigned char*>(encoded.data()),static_cast<int>(encoded.size()));
     need(size>=0,"Invalid screenshot encoding");std::size_t actual=static_cast<std::size_t>(size);
     if(!encoded.empty()&&encoded.back()=='=')--actual;
     if(encoded.size()>1&&encoded[encoded.size()-2]=='=')--actual;
     bytes.resize(actual);mime=result.at("mimeType").as_string();
-  } else {need(!path.empty(),"Output path is required");bytes=result.dump({8*1024*1024,64,65536,8*1024*1024});bytes+='\n';}
+  } else {need(!path.empty(),"Output path is required");bytes=result.dump();bytes+='\n';}
 #ifndef _WIN32
   if(path.empty())path="/tmp/suitecut-capture-"+std::to_string(::getuid())+"-"+std::to_string(::getpid())+"-"+
     std::to_string(std::chrono::steady_clock::now().time_since_epoch().count())+".png";

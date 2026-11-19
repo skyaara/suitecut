@@ -72,14 +72,8 @@ export async function downloadMediaArchive(
     throw new Error(`Media download failed: HTTP ${response.status} for ${url}`)
   }
   const hash = createHash('sha256')
-  let bytes = 0
   const meter = new Transform({
     transform(chunk: Buffer, _encoding, callback) {
-      bytes += chunk.length
-      if (bytes > 512 * 1024 * 1024) {
-        callback(new Error('Media archive exceeds 512 MiB'))
-        return
-      }
       hash.update(chunk)
       callback(null, chunk)
     },
@@ -124,10 +118,7 @@ export async function extractMediaArchive(archive: string, directory: string): P
       const meter = new Transform({
         transform(chunk: Buffer, _encoding, callback) {
           bytes += chunk.length
-          callback(
-            bytes > 512 * 1024 * 1024 ? new Error('Extracted media file exceeds 512 MiB') : null,
-            chunk,
-          )
+          callback(null, chunk)
         },
       })
       try {
@@ -166,8 +157,6 @@ export async function extractMediaArchive(archive: string, directory: string): P
             zip.readEntry()
             return
           }
-          if (entry.uncompressedSize > 512 * 1024 * 1024)
-            throw new Error('Extracted media file exceeds 512 MiB')
           const input = await new Promise<Readable>((resolveStream, rejectStream) => {
             zip.openReadStream(entry, (error, stream) => {
               if (error) rejectStream(error)

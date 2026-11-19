@@ -33,9 +33,8 @@ Names are canonical UTF16LE bytes, including empty names, NUL, non-BMP pairs and
 isolated code units. Wire hex case and JSON escaping cannot create different
 keys for equal code units. Unicode normalization/case folding is not performed.
 An empty string is a real lock name; an empty array declares no names. Duplicate
-names collapse before acquisition. Names are bounded1024 code units,64 names per
-declarative owner,4096 unique names,65536 references and8MiB native metadata per
-resolved invocation. Excess metadata is a visible native error before callbacks.
+names collapse before acquisition. Native imposes no lock name length, name
+count, reference count or metadata size limit.
 
 `ProjectPool::Next` accepts a native read-only readiness predicate. It checks a
 project's complete set before allocating a pool reservation. Locked waiting

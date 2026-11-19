@@ -8,7 +8,6 @@ namespace suitecut::runner {
 // supplies Open/Close/Amend; a metadata retirement is never a process receipt.
 class AttachmentDeclarations {
  public:
-  static constexpr size_t kRecords=128,kMetadata=16*1024*1024,kErrorReserve=8192*6+2;
   enum class Source { Absent, Body, PathReference };
   enum class Receipt { Pending, ReferenceAccepted, Committed, Failed, Canceled, Rejected };
   struct Record {
@@ -23,10 +22,10 @@ class AttachmentDeclarations {
     AttachmentRetryProvenance callback_retry{};
     bool retry_failure_disposed=false;
   };
-  struct Budget {uint64_t sequence=0;size_t records=0,metadata=0;};
-  explicit AttachmentDeclarations(Budget* budget=nullptr):budget_(budget){records_.reserve(kRecords);}
+  struct Budget {uint64_t sequence=0;};
+  explicit AttachmentDeclarations(Budget* budget=nullptr):budget_(budget){}
   void Open(const StepOwner& owner,double deadline,double now){
-    Time(now);if(!Valid(owner)||!std::isfinite(deadline)||deadline<=now||contexts_.size()>=64||contexts_.contains(Key(owner)))throw std::invalid_argument("Native append callback context rejected");
+    Time(now);if(!Valid(owner)||!std::isfinite(deadline)||deadline<=now||contexts_.contains(Key(owner)))throw std::invalid_argument("Native append callback context rejected");
     contexts_.emplace(Key(owner),Context{owner,deadline,true});
   }
   void Close(const StepOwner& owner){auto& context=Owned(owner);context.open=false;}
@@ -37,17 +36,15 @@ class AttachmentDeclarations {
                    Source source,const std::optional<std::string>& path,const std::optional<uint64_t>& bytes,double now,const std::optional<std::string>& rejection=std::nullopt,const AttachmentRetryProvenance& callback_retry={}){
     Time(now);auto& context=Owned(owner);
     if(!callback_retry.Empty()&&!callback_retry.Complete())throw std::invalid_argument("Native append retry identity is incomplete");
-    if(((!context.open||now>=context.deadline)&&!rejection)||!request||!JsonString(name_json,4096)||!JsonString(type_json,1024)||
+    if(((!context.open||now>=context.deadline)&&!rejection)||!request||!JsonString(name_json)||!JsonString(type_json)||
        (source!=Source::Absent&&source!=Source::Body&&source!=Source::PathReference)||
        (source==Source::PathReference&&!path)||(source==Source::Absent&&path)||(source==Source::Body)!=bytes.has_value()||
-       (path&&!JsonString(*path,8192))||(bytes&&*bytes>16*1024*1024)||(rejection&&!JsonString(*rejection,8192)))throw std::invalid_argument("Native append declaration metadata or original deadline rejected");
+       (path&&!JsonString(*path))||(rejection&&!JsonString(*rejection)))throw std::invalid_argument("Native append declaration metadata or original deadline rejected");
     for(const auto& record:records_)if(record.request==request&&record.owner.worker_index==owner.worker_index&&record.owner.pid==owner.pid)throw std::invalid_argument("Native append request already belongs to this actual worker");
-    const size_t reservation=name_json.size()+type_json.size()+(path?path->size():0)+owner.callback_kind.size()+kErrorReserve+768;
-    if(records_.size()>=kRecords||reservation>kMetadata-reserved_||sequence_==UINT64_MAX||
-       (budget_&&(budget_->records>=kRecords||reservation>kMetadata-budget_->metadata||budget_->sequence==UINT64_MAX)))throw std::runtime_error("Native append declaration catalog capacity exceeded");
-    Record record;record.id=budget_?budget_->sequence+1:sequence_+1;record.request=request;record.owner=owner;record.name_json=name_json;record.type_json=type_json;record.source=source;record.author_path_json=path;record.expected_bytes=bytes;record.declared=now;record.error_json.reserve(kErrorReserve);record.callback_retry=callback_retry;
+    if(sequence_==UINT64_MAX||(budget_&&budget_->sequence==UINT64_MAX))throw std::runtime_error("Native append declaration sequence exhausted");
+    Record record;record.id=budget_?budget_->sequence+1:sequence_+1;record.request=request;record.owner=owner;record.name_json=name_json;record.type_json=type_json;record.source=source;record.author_path_json=path;record.expected_bytes=bytes;record.declared=now;record.callback_retry=callback_retry;
     if(rejection){record.receipt=Receipt::Rejected;record.received=now;record.error_json=*rejection;}else if(source!=Source::Body){record.receipt=Receipt::ReferenceAccepted;record.received=now;}
-    records_.push_back(std::move(record));++sequence_;reserved_+=reservation;if(budget_){++budget_->sequence;++budget_->records;budget_->metadata+=reservation;}
+    records_.push_back(std::move(record));++sequence_;if(budget_)++budget_->sequence;
     return records_.back().id;
   }
   void BindArtifact(const StepOwner& owner,uint64_t id,uint64_t artifact){
@@ -61,7 +58,7 @@ class AttachmentDeclarations {
     record.receipt=Receipt::Committed;record.received=artifact.received;
   }
   void Failed(const StepOwner& owner,uint64_t id,const std::string& error_json,double now,bool retry_failure_disposed=false){
-    Time(now);auto& record=Pending(owner,id);if((retry_failure_disposed&&!record.callback_retry.Complete())||now<record.declared||!JsonString(error_json,8192)||error_json.size()>record.error_json.capacity())throw std::invalid_argument("Native append failure receipt rejected");
+    Time(now);auto& record=Pending(owner,id);if((retry_failure_disposed&&!record.callback_retry.Complete())||now<record.declared||!JsonString(error_json))throw std::invalid_argument("Native append failure receipt rejected");
     record.error_json=error_json;record.received=now;record.retry_failure_disposed=retry_failure_disposed;record.receipt=Receipt::Failed;
   }
   void Canceled(const StepOwner& owner,uint64_t id,uint64_t actual_request,double now){
@@ -72,7 +69,6 @@ class AttachmentDeclarations {
   }
   const Record* Find(uint64_t id)const{for(const auto& record:records_)if(record.id==id)return &record;return nullptr;}
   const std::vector<Record>& Records()const{return records_;}
-  size_t ReservedMetadata()const{return reserved_;}
  private:
   struct Context {StepOwner owner;double deadline;bool open;};
   static void Time(double now){if(!std::isfinite(now)||now<0)throw std::invalid_argument("Invalid native append observation time");}
@@ -80,6 +76,6 @@ class AttachmentDeclarations {
   static std::string Key(const StepOwner& owner){return std::to_string(owner.callback_token)+":"+std::to_string(owner.scope)+":"+std::to_string(owner.scope_generation);}
   Context& Owned(const StepOwner& owner){const auto found=contexts_.find(Key(owner));if(found==contexts_.end()||found->second.owner!=owner)throw std::invalid_argument("Native append callback context is stale or foreign");return found->second;}
   Record& Pending(const StepOwner& owner,uint64_t id){for(auto& record:records_)if(record.id==id){if(record.owner!=owner||record.source!=Source::Body||record.receipt!=Receipt::Pending)throw std::invalid_argument("Native append body receipt is foreign, stale or duplicate");return record;}throw std::invalid_argument("Native append body receipt has no declaration");}
-  Budget* budget_;std::map<std::string,Context> contexts_;std::vector<Record> records_;uint64_t sequence_=0;size_t reserved_=0;
+  Budget* budget_;std::map<std::string,Context> contexts_;std::vector<Record> records_;uint64_t sequence_=0;
 };
 } // namespace suitecut::runner

@@ -25,7 +25,8 @@
 namespace suitecut {
 namespace {
 constexpr std::size_t header_bytes = 48, tag_bytes = 16;
-constexpr std::size_t payload_limit = CredentialVault::max_file_bytes - header_bytes - tag_bytes;
+// OpenSSL takes int lengths; larger payloads are fed through it in pieces of this size.
+constexpr std::size_t evp_step = std::size_t(1) << 30;
 constexpr int kdf_iterations = 600000;
 constexpr std::array<unsigned char,8> magic{'S','C','V','A','U','L','T',0};
 using Clock = std::chrono::steady_clock;
@@ -79,25 +80,16 @@ std::uint32_t read_u32(const unsigned char* input) {
   return value;
 }
 void valid_name(const std::string& name) {
-  if (name.empty() || name.size()>CredentialVault::max_name_bytes ||
-      std::any_of(name.begin(),name.end(),[](unsigned char c){return c<0x20||c==0x7f;}))
-    throw std::invalid_argument("Credential name must be bounded nonempty UTF-8 text without controls");
+  if (name.empty() || std::any_of(name.begin(),name.end(),[](unsigned char c){return c<0x20||c==0x7f;}))
+    throw std::invalid_argument("Credential name must be nonempty UTF-8 text without controls");
   try { Json(name).dump(); } catch (...) { throw std::invalid_argument("Credential name must be valid UTF-8"); }
 }
-JsonLimits payload_limits() {
-  JsonLimits limits;
-  limits.max_bytes=payload_limit; limits.max_string_bytes=CredentialVault::max_credential_bytes;
-  limits.max_depth=32; limits.max_nodes=65536;
-  return limits;
-}
 void valid_credential(const Json& credential) {
-  JsonLimits limits=payload_limits();
-  limits.max_bytes=CredentialVault::max_credential_bytes; limits.max_nodes=8192;
-  try { SecureString encoded{credential.dump(limits)}; }
-  catch (...) { throw std::invalid_argument("Credential value exceeds supported JSON or size limits"); }
+  try { SecureString encoded{credential.dump()}; }
+  catch (...) { throw std::invalid_argument("Credential value must be serializable JSON with valid UTF-8 text"); }
 }
 std::vector<unsigned char> encrypt(const SecureBytes& password,const std::string& plaintext) {
-  if (plaintext.size()>payload_limit) fail("Credential vault exceeds its encrypted file limit");
+  if (plaintext.size()>std::numeric_limits<std::uint32_t>::max()) fail("Credential vault payload exceeds its 4-byte length field");
   std::vector<unsigned char> output(header_bytes+plaintext.size()+tag_bytes);
   std::copy(magic.begin(),magic.end(),output.begin());
   store_u32(output.data()+8,1); store_u32(output.data()+12,kdf_iterations);
@@ -110,18 +102,22 @@ std::vector<unsigned char> encrypt(const SecureBytes& password,const std::string
       EVP_EncryptInit_ex(cipher.get(),nullptr,nullptr,key.value.data(),output.data()+32)!=1)
     fail("Credential vault encryption failed");
   int written=0,final=0;
-  if (EVP_EncryptUpdate(cipher.get(),nullptr,&written,output.data(),header_bytes)!=1 ||
-      EVP_EncryptUpdate(cipher.get(),output.data()+header_bytes,&written,
-          reinterpret_cast<const unsigned char*>(plaintext.data()),static_cast<int>(plaintext.size()))!=1 ||
-      written!=static_cast<int>(plaintext.size()) ||
-      EVP_EncryptFinal_ex(cipher.get(),output.data()+header_bytes+written,&final)!=1 || final!=0 ||
+  if (EVP_EncryptUpdate(cipher.get(),nullptr,&written,output.data(),header_bytes)!=1)
+    fail("Credential vault encryption failed");
+  const auto* input=reinterpret_cast<const unsigned char*>(plaintext.data());
+  for (std::size_t at=0;at<plaintext.size();at+=static_cast<std::size_t>(written)) {
+    const auto step=static_cast<int>(std::min(plaintext.size()-at,evp_step));
+    if (EVP_EncryptUpdate(cipher.get(),output.data()+header_bytes+at,&written,input+at,step)!=1 || written!=step)
+      fail("Credential vault encryption failed");
+  }
+  if (EVP_EncryptFinal_ex(cipher.get(),output.data()+header_bytes+plaintext.size(),&final)!=1 || final!=0 ||
       EVP_CIPHER_CTX_ctrl(cipher.get(),EVP_CTRL_GCM_GET_TAG,tag_bytes,
           output.data()+header_bytes+plaintext.size())!=1)
     fail("Credential vault encryption failed");
   return output;
 }
 Json decrypt(const SecureBytes& password,const std::vector<unsigned char>& input) {
-  if (input.size()<header_bytes+tag_bytes || input.size()>CredentialVault::max_file_bytes ||
+  if (input.size()<header_bytes+tag_bytes ||
       !std::equal(magic.begin(),magic.end(),input.begin()) || read_u32(input.data()+8)!=1 ||
       read_u32(input.data()+12)!=kdf_iterations ||
       read_u32(input.data()+44)!=input.size()-header_bytes-tag_bytes)
@@ -135,22 +131,25 @@ Json decrypt(const SecureBytes& password,const std::vector<unsigned char>& input
       EVP_DecryptInit_ex(cipher.get(),nullptr,nullptr,key.value.data(),input.data()+32)!=1)
     fail("Credential vault decryption failed");
   int written=0,final=0;
-  if (EVP_DecryptUpdate(cipher.get(),nullptr,&written,input.data(),header_bytes)!=1 ||
-      EVP_DecryptUpdate(cipher.get(),plaintext.value.data(),&written,input.data()+header_bytes,
-          static_cast<int>(size))!=1 || written!=static_cast<int>(size) ||
-      EVP_CIPHER_CTX_ctrl(cipher.get(),EVP_CTRL_GCM_SET_TAG,tag_bytes,
+  if (EVP_DecryptUpdate(cipher.get(),nullptr,&written,input.data(),header_bytes)!=1)
+    fail("Credential vault authentication failed");
+  for (std::size_t at=0;at<size;at+=static_cast<std::size_t>(written)) {
+    const auto step=static_cast<int>(std::min(size-at,evp_step));
+    if (EVP_DecryptUpdate(cipher.get(),plaintext.value.data()+at,&written,input.data()+header_bytes+at,step)!=1 || written!=step)
+      fail("Credential vault authentication failed");
+  }
+  if (EVP_CIPHER_CTX_ctrl(cipher.get(),EVP_CTRL_GCM_SET_TAG,tag_bytes,
           const_cast<unsigned char*>(input.data()+header_bytes+size))!=1 ||
-      EVP_DecryptFinal_ex(cipher.get(),plaintext.value.data()+written,&final)!=1 || final!=0)
+      EVP_DecryptFinal_ex(cipher.get(),plaintext.value.data()+size,&final)!=1 || final!=0)
     fail("Credential vault authentication failed");
   Json result;
   try {
-    result=Json::parse(std::string_view(reinterpret_cast<const char*>(plaintext.value.data()),size),payload_limits());
-    if (!result.is_object() || result.as_object().size()>CredentialVault::max_entries)
-      fail("Credential vault payload exceeds entry limits");
+    result=Json::parse(std::string_view(reinterpret_cast<const char*>(plaintext.value.data()),size));
+    if (!result.is_object()) fail("Credential vault payload is not an object");
     for (const auto& [name,value] : result.as_object()) { valid_name(name); valid_credential(value); }
   } catch (...) {
     cleanse_json(result);
-    fail("Credential vault payload is invalid or exceeds limits");
+    fail("Credential vault payload is invalid");
   }
   return result;
 }
@@ -174,7 +173,7 @@ void private_file(int fd) {
     fail("Credential vault file must be a private regular file");
 }
 std::pair<Fd,std::string> private_parent(const std::string& path) {
-  if (path.empty()||path.size()>4096||path.find('\0')!=std::string::npos)
+  if (path.empty()||path.find('\0')!=std::string::npos)
     throw std::invalid_argument("Credential vault path is invalid");
   std::filesystem::path absolute;
   try { absolute=std::filesystem::absolute(std::filesystem::path(path)); }
@@ -183,7 +182,7 @@ std::pair<Fd,std::string> private_parent(const std::string& path) {
     throw std::invalid_argument("Credential vault path must not contain parent traversal");
   absolute=absolute.lexically_normal();
   const auto name=absolute.filename().string();
-  if (name.empty()||name=="."||name==".."||name.size()>180)
+  if (name.empty()||name=="."||name=="..")
     throw std::invalid_argument("Credential vault filename is invalid");
   Fd parent(::open("/",O_RDONLY|O_DIRECTORY|O_CLOEXEC));
   if (parent.value<0) fail("Credential vault parent cannot be opened");
@@ -217,7 +216,6 @@ std::shared_ptr<std::timed_mutex> path_mutex(int directory,const std::string& na
   }
   auto found=registry.find(key);
   if (found!=registry.end()) if (auto existing=found->second.lock()) return existing;
-  if (registry.size()>=4096) fail("Credential vault open-path capacity exceeded");
   auto result=std::make_shared<std::timed_mutex>(); registry[key]=result; return result;
 }
 struct FileLock {
@@ -257,7 +255,9 @@ struct CredentialVault::Impl {
   std::string name,lock_name;
   std::shared_ptr<std::timed_mutex> mutex;
   Impl(const std::string& path,const std::string& master) {
-    if (master.empty()||master.size()>4096) throw std::invalid_argument("Credential vault master password must contain1..4096 bytes");
+    // PBKDF2 takes the password length as an int.
+    if (master.empty()||master.size()>static_cast<std::size_t>(std::numeric_limits<int>::max()))
+      throw std::invalid_argument("Credential vault master password must be nonempty");
     password.value.assign(master.begin(),master.end());
     auto parent=private_parent(path); directory=std::move(parent.first); name=std::move(parent.second);
     mutex=path_mutex(directory.value,name);
@@ -281,9 +281,7 @@ struct CredentialVault::Impl {
     if (file.value<0) fail("Credential vault file is missing, unavailable or unsafe");
     private_file(file.value);
     struct stat info{};
-    if (::fstat(file.value,&info)!=0||info.st_size<0||
-        static_cast<std::uint64_t>(info.st_size)>CredentialVault::max_file_bytes)
-      fail("Credential vault file exceeds its size limit");
+    if (::fstat(file.value,&info)!=0||info.st_size<0) fail("Credential vault file cannot be inspected");
     std::vector<unsigned char> bytes(static_cast<std::size_t>(info.st_size));
     std::size_t offset=0;
     while (offset<bytes.size()) {
@@ -303,13 +301,14 @@ struct CredentialVault::Impl {
   }
   void write(const Json& entries) const {
     SecureString plaintext;
-    try { plaintext.value=entries.dump(payload_limits()); }
-    catch (...) { fail("Credential vault exceeds supported JSON or file limits"); }
+    try { plaintext.value=entries.dump(); }
+    catch (...) { fail("Credential vault entries are not serializable JSON"); }
     const auto bytes=encrypt(password,plaintext.value);
     std::array<unsigned char,12> random{};
     Fd temporary;
     std::string temporary_name;
-    for (int attempt=0;attempt<8;++attempt) {
+    // 96 random bits per name: retry until an unused name is found.
+    for (;;) {
       random_bytes(random.data(),random.size());
       constexpr char hex[]="0123456789abcdef";
       temporary_name=".suitecut-vault-";
@@ -319,7 +318,6 @@ struct CredentialVault::Impl {
       if (temporary.value>=0) break;
       if (errno!=EEXIST) fail("Credential vault temporary file cannot be created");
     }
-    if (temporary.value<0) fail("Credential vault temporary file capacity exceeded");
     bool renamed=false;
     try {
       if (::fchmod(temporary.value,0600)!=0) fail("Credential vault file permissions cannot be set");
@@ -361,7 +359,6 @@ void CredentialVault::put(const std::string& name,Json credential) {
 #if !defined(_WIN32)
   FileLock held(*impl_->mutex,impl_->directory.value,impl_->lock_name);
   Json entries=impl_->read(); JsonGuard guard{entries};
-  if (!entries.contains(name)&&entries.as_object().size()>=max_entries) fail("Credential vault entry capacity exceeded");
   if (entries.contains(name)) cleanse_json(entries.at(name));
   entries[name]=std::move(credential);
   impl_->write(entries);

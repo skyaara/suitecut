@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "cdp_internal.hpp"
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
@@ -26,7 +27,7 @@ double coordinate(const Json& input, const char* name, double fallback, bool req
     return fallback;
   }
   const double value = input.at(name).as_double();
-  if (!std::isfinite(value) || std::abs(value) > 1000000)
+  if (!std::isfinite(value))
     throw std::invalid_argument(std::string("Invalid input ") + name);
   return value;
 }
@@ -152,7 +153,7 @@ Key key_for(std::string name, int modifiers) {
   return value;
 }
 std::vector<std::string> combination(const std::string& key) {
-  if (key.empty() || key.size() > 128) throw std::invalid_argument("Keyboard key must contain 1 to 128 bytes");
+  if (key.empty()) throw std::invalid_argument("Keyboard key must not be empty");
   if (key == "+") return {key};
   std::vector<std::string> result;
   std::size_t offset = 0;
@@ -276,9 +277,9 @@ void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadl
     throw std::invalid_argument("External Chrome input requires the devtools backend");
   const auto button = input.contains("button") ? input.at("button").as_string() : "left";
   const int bit = button_mask(button);
-  const int count = integer(input, "clickCount", action == "dblclick" ? 2 : 1, 1, 1000);
+  const int count = integer(input, "clickCount", action == "dblclick" ? 2 : 1, 1, INT_MAX);
   const int delay = integer(input, "delay", 0, 0, 120000);
-  const int steps = integer(input, "steps", 1, 1, 10000);
+  const int steps = integer(input, "steps", 1, 1, INT_MAX);
   const double x = coordinate(input, "x", page.mouse_x, action == "move" || action == "click" || action == "dblclick");
   const double y = coordinate(input, "y", page.mouse_y, action == "move" || action == "click" || action == "dblclick");
   const double dx = coordinate(input, "deltaX", 0, action == "wheel");
@@ -286,7 +287,7 @@ void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadl
   budget(deadline, action == "click" || action == "dblclick" ? delay : 0, count);
   if (action == "move") {
     const double start_x = page.mouse_x, start_y = page.mouse_y;
-    for (int step = 1; step <= steps; ++step) {
+    for (long long step = 1; step <= steps; ++step) {
       page.mouse_x = start_x + (x - start_x) * step / steps;
       page.mouse_y = start_y + (y - start_y) * step / steps;
       // CDP needs the held button identity as well as the buttons bitmask
@@ -320,14 +321,14 @@ void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadl
   bool held = false;
   int current_click = 1;
   try {
-    for (int click = 1; click <= count; ++click) {
-      current_click = click;
+    for (long long click = 1; click <= count; ++click) {
+      current_click = static_cast<int>(click);
       held = true;
       page.mouse_buttons |= bit;
-      dispatch_mouse(runtime, page, "mousePressed", button, click, deadline);
+      dispatch_mouse(runtime, page, "mousePressed", button, current_click, deadline);
       pause(delay, deadline);
       page.mouse_buttons &= ~bit;
-      dispatch_mouse(runtime, page, "mouseReleased", button, click, deadline);
+      dispatch_mouse(runtime, page, "mouseReleased", button, current_click, deadline);
       held = false;
     }
   } catch (...) {

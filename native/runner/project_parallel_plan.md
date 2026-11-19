@@ -39,8 +39,8 @@ The smallest useful slice is independent projects on a native worker pool,
 with one worker active per project. Project-local tests, suite hooks, worker
 fixture values and retry replacement stay serial using their current controllers.
 Do not split a project's suites or worker fixtures across workers initially.
-There are at most128 project admissions,4096 original tests and a separately
-validated finite worker limit. The existing serial mode remains the default.
+Native imposes no project admission or test count limit; the worker count is
+the caller's option. The existing serial mode remains the default.
 
 Replace the planner's single `active_` with bounded admission records. A ready
 ordinary project requires all declared dependencies to have passed and physically
@@ -83,7 +83,7 @@ separate gaps.
 
 ## Controller proof scope
 
-`ProjectPool` reserves at most8 active projects. Its exact project generation,
+`ProjectPool` admits at most the caller's worker count of active projects. Its exact project generation,
 monotonically increasing worker index and actual PID fence logical completion
 and real worker exit independently. Failed dependencies block without fake
 attempts; pending/never-started owners stop without releasing live workers.

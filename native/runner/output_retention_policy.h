@@ -24,7 +24,7 @@ struct OutputRetentionOutcome {
  OutputDirectoryOwner owner;unsigned retry=0;std::string status,expected_status;bool expected=false;
 };
 inline bool PreserveNativeOutput(PreserveOutput policy,const OutputRetentionOutcome& outcome){
- if(!outcome.owner.test_id||!outcome.owner.generation||!outcome.owner.worker_index||outcome.owner.pid<=0||outcome.owner.pid>INT32_MAX||outcome.retry>100||
+ if(!outcome.owner.test_id||!outcome.owner.generation||!outcome.owner.worker_index||outcome.owner.pid<=0||outcome.owner.pid>INT32_MAX||
     (outcome.status!="passed"&&outcome.status!="failed"&&outcome.status!="timedOut"&&outcome.status!="skipped"&&outcome.status!="interrupted")||
     (outcome.expected_status!="passed"&&outcome.expected_status!="failed"&&outcome.expected_status!="skipped"))
    throw std::invalid_argument("Native output retention lacks exact final attempt facts");

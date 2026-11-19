@@ -5,7 +5,7 @@ namespace suitecut::runner {
 // Compact UTF16 scalar wire, bounded to four ASCII bytes per original unit.
 // A checked native JSON scalar is decoded without normalizing isolated units.
 inline std::string StepWire(const std::string& json){
-  if(!JsonString(json,8192))throw std::invalid_argument("Invalid native step wire scalar");
+  if(!JsonString(json))throw std::invalid_argument("Invalid native step wire scalar");
   static constexpr char hex[]="0123456789abcdef";std::string out;
   const auto unit=[&](uint32_t value){out+=hex[(value>>4)&15];out+=hex[value&15];out+=hex[(value>>12)&15];out+=hex[(value>>8)&15];};
   for(size_t i=1;i+1<json.size();++i){uint32_t code=static_cast<unsigned char>(json[i]);

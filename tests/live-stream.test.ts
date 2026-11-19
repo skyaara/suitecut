@@ -194,7 +194,7 @@ describe('live stream publishing', () => {
     expect(input.writableEnded).toBe(true)
   })
 
-  it('resynchronizes audio time when backpressure evicts its matching raw video', async () => {
+  it('keeps raw video past the old 64 MiB budget, so audio time stays contiguous', async () => {
     let now = 1000
     const clock = vi.spyOn(performance, 'now').mockImplementation(() => now)
     let release = (): void => undefined
@@ -243,7 +243,7 @@ describe('live stream publishing', () => {
       release()
       await vi.advanceTimersByTimeAsync(1)
       expect(mediaTimes[0]).toBe(850)
-      expect(mediaTimes[1]).toBeCloseTo(1250)
+      expect(mediaTimes[1]).toBeCloseTo(850 + 1000 / 60)
     } finally {
       release()
       await stream.stop()

@@ -71,9 +71,7 @@ function array(value: UntrustedInput, label: string): UntrustedInput[] {
 function remoteValue(
   value: UntrustedInput,
   references = new Map<string, UntrustedInput>(),
-  depth = 0,
 ): UntrustedInput {
-  if (depth > 100) throw new Error('BiDi evaluation result exceeds maximum depth')
   const remote = protocolRecord(value, 'BiDi remote value')
   const type = protocolString(remote.type, 'BiDi remote value type')
   const id = typeof remote.internalId === 'string' ? remote.internalId : undefined
@@ -119,7 +117,7 @@ function remoteValue(
       const result: UntrustedInput[] = []
       if (id !== undefined) references.set(id, result)
       for (const entry of array(remote.value, 'array contents'))
-        result.push(remoteValue(entry, references, depth + 1))
+        result.push(remoteValue(entry, references))
       return result
     }
     case 'object': {
@@ -127,12 +125,11 @@ function remoteValue(
       if (id !== undefined) references.set(id, result)
       for (const entry of array(remote.value, 'object contents')) {
         const pair = array(entry, 'object entry')
-        const key =
-          typeof pair[0] === 'string' ? pair[0] : remoteValue(pair[0], references, depth + 1)
+        const key = typeof pair[0] === 'string' ? pair[0] : remoteValue(pair[0], references)
         if (typeof key !== 'string' || pair.length !== 2)
           throw new Error('Invalid BiDi object entry')
         Object.defineProperty(result, key, {
-          value: remoteValue(pair[1], references, depth + 1),
+          value: remoteValue(pair[1], references),
           enumerable: true,
           configurable: true,
           writable: true,
@@ -147,8 +144,8 @@ function remoteValue(
         const pair = array(entry, 'map entry')
         if (pair.length !== 2) throw new Error('Invalid BiDi map entry')
         result.set(
-          typeof pair[0] === 'string' ? pair[0] : remoteValue(pair[0], references, depth + 1),
-          remoteValue(pair[1], references, depth + 1),
+          typeof pair[0] === 'string' ? pair[0] : remoteValue(pair[0], references),
+          remoteValue(pair[1], references),
         )
       }
       return result
@@ -157,7 +154,7 @@ function remoteValue(
       const result = new Set<UntrustedInput>()
       if (id !== undefined) references.set(id, result)
       for (const entry of array(remote.value, 'set contents'))
-        result.add(remoteValue(entry, references, depth + 1))
+        result.add(remoteValue(entry, references))
       return result
     }
     default:

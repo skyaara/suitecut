@@ -19,7 +19,10 @@ patches and all 40 touched source paths, including the exact V8 dependency.
 | Original-widget mouse receipts | Chromium browser input | Native controller/SDK integrated behind exact runtime probe; custom library pending |
 | Widget receipt revision probe | Chromium browser protocol | Read-only supplement follows widget patch; custom library pending |
 
-Each adjacent manifest records exact source/output hashes and limitations. The
+Each adjacent manifest records exact source/output hashes and limitations.
+SuiteCut's own size, count and length caps were later removed from every patch;
+output hashes for the files those changes touched are null until the patches are
+re-applied to the pinned sources and recomputed. The
 unapplied MIDI adapter is separate from the vendor bundle and is never enabled
 by the stock build. The production native coverage controller requires `suitecut.coverage.final-lifecycle.v1`, JS
 revision 2 and CSS revision 3. The older isolated JS/CSS producer candidates in
@@ -28,8 +31,8 @@ context/agent lifecycle producer support remains backend work.
 
 The integrated original-widget mouse controller consumes the real lease API
 only after its exact read-only revision probe succeeds. The probe supplement
-must follow the widget receipt patch; its three source postimages are included
-in the bundle's final hashes. Stock CEF keeps this capability false. See
+must follow the widget receipt patch; its three source postimages belong in
+the bundle's final hashes (null until recomputed). Stock CEF keeps this capability false. See
 [`docs/features/native-widget-mouse.md`](../../../docs/features/native-widget-mouse.md) for raw
 root-widget/attached-OOPIF scope, physical cancellation and remaining backend
 receipt families. These candidates do not constitute complete browser parity.

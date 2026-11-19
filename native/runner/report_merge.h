@@ -16,7 +16,7 @@ inline unsigned Index(const JSON& row,std::string_view key){const auto value=UIn
 inline int64_t PID(const JSON& row,std::string_view key){const auto value=UInt(row,key);if(!value||value>INT32_MAX)Invalid("invalid process identity");return static_cast<int64_t>(value);}
 inline std::vector<uint64_t> IDs(const JSON& row,std::string_view key){std::vector<uint64_t> result;for(const auto& id:Rows(row,key)){const auto value=Integer(id,true);if(!value)Invalid("zero test/project identity");result.push_back(value);}return result;}
 inline StepOwner Owner(const JSON& row){return {ID(row,"testId"),ID(row,"generation"),ID(row,"callbackToken",true),ID(row,"scopeId"),ID(row,"scopeGeneration"),Index(row,"workerIndex"),PID(row,"pid"),Text(Get(row,"callbackKind"))};}
-inline void OptionalString(const JSON& row,std::string_view key,size_t limit,std::optional<std::string>& target){if(Find(row,key))target=CheckedString(row,key,limit);}
+inline void OptionalString(const JSON& row,std::string_view key,std::optional<std::string>& target){if(Find(row,key))target=CheckedString(row,key);}
 inline std::string Wire(std::string_view checked){
   if(checked=="\"\"")return "-";
   std::string result;
@@ -28,14 +28,14 @@ inline std::string Wire(std::string_view checked){
 }
 inline ModifierAnnotation Annotation(const JSON& row){
   ModifierAnnotation value;value.type=Text(Get(row,"type"));
-  if(Find(row,"description")){value.description_present=true;value.reason_json=CheckedString(row,"description",8192);value.reason_wire=Wire(value.reason_json);}
-  if(const auto* location=Find(row,"location")){ModifierLocation loc;loc.file_json=CheckedString(*location,"file",8192);loc.file_wire=Wire(loc.file_json);loc.line=Index(*location,"line");loc.column=Index(*location,"column");value.location=loc;}
+  if(Find(row,"description")){value.description_present=true;value.reason_json=CheckedString(row,"description");value.reason_wire=Wire(value.reason_json);}
+  if(const auto* location=Find(row,"location")){ModifierLocation loc;loc.file_json=CheckedString(*location,"file");loc.file_wire=Wire(loc.file_json);loc.line=Index(*location,"line");loc.column=Index(*location,"column");value.location=loc;}
   ValidateModifierAnnotation(value);return value;
 }
 inline std::vector<AttemptSecondaryError> SecondaryErrors(const JSON& row,const ReportAttempt& attempt){
-  std::vector<AttemptSecondaryError> result;const auto& rows=OptionalRows(row,"secondaryErrors");if(rows.size()>256)Invalid("secondary error capacity exceeded");
+  std::vector<AttemptSecondaryError> result;const auto& rows=OptionalRows(row,"secondaryErrors");
   for(const auto& item:rows){const auto origin=Text(Get(item,"origin"));if(origin!="phaseResult"&&origin!="fixtureRaw")Invalid("unknown secondary error origin");
-    AttemptSecondaryError value{{{ID(item,"testId"),ID(item,"generation"),Index(item,"workerIndex"),PID(item,"pid")},ID(item,"scopeId"),ID(item,"scopeGeneration")},CheckedString(item,"error",8192),0,origin=="fixtureRaw"};
+    AttemptSecondaryError value{{{ID(item,"testId"),ID(item,"generation"),Index(item,"workerIndex"),PID(item,"pid")},ID(item,"scopeId"),ID(item,"scopeGeneration")},CheckedString(item,"error"),0,origin=="fixtureRaw"};
     if(value.source.attempt!=AttemptErrorOwner{attempt.test_id,attempt.generation,attempt.worker_index,attempt.pid})Invalid("secondary error has foreign actual attempt owner");
     if(const auto* source=Find(item,"originatingStepId")){value.originating_step=Integer(*source,true);if(!value.originating_step||value.fixture_raw)Invalid("invalid secondary originating step");}
     result.push_back(std::move(value));
@@ -67,26 +67,26 @@ inline void ReadCore(Source& source){
     const auto& code=Get(row,"exitCode");const auto& signal=Get(row,"signal");
     if(known){if((code.kind==JSON::Null)==(signal.kind==JSON::Null))Invalid("contradictory worker exit receipt");const auto value=Integer(code.kind==JSON::Null?signal:code);if(value>255||(code.kind==JSON::Null&&!value))Invalid("invalid worker exit status");worker.exit_code=static_cast<int>(value);worker.signaled=code.kind==JSON::Null;}
     else if(code.kind!=JSON::Null||signal.kind!=JSON::Null)Invalid("unknown worker exit has a fabricated status");
-    for(const auto name:{"stdout","stderr"}){const auto& stream=Get(row,name);if(Text(Get(stream,"encoding"))!="hex")Invalid("incompatible worker stream encoding");const auto text=Text(Get(stream,"data"));if(text.size()%2||text.size()/2!=UInt(stream,"byteLength"))Invalid("corrupt worker byte length");auto bytes=DecodeHex(text.empty()?"-":text,kRunnerReportStreamBytes);if(std::string_view(name)=="stdout")worker.stdout_bytes=std::move(bytes);else worker.stderr_bytes=std::move(bytes);}
+    for(const auto name:{"stdout","stderr"}){const auto& stream=Get(row,name);if(Text(Get(stream,"encoding"))!="hex")Invalid("incompatible worker stream encoding");const auto text=Text(Get(stream,"data"));if(text.size()%2||text.size()/2!=UInt(stream,"byteLength"))Invalid("corrupt worker byte length");auto bytes=DecodeHex(text.empty()?"-":text);if(std::string_view(name)=="stdout")worker.stdout_bytes=std::move(bytes);else worker.stderr_bytes=std::move(bytes);}
     core.workers.push_back(std::move(worker));
   }
   for(const auto& row:Rows(doc,"attempts")){
-    ReportAttempt attempt;attempt.test_id=ID(row,"testId");attempt.generation=ID(row,"generation");attempt.retry=Index(row,"retry");attempt.worker_index=Index(row,"workerIndex");attempt.pid=PID(row,"pid");attempt.title_json=CheckedString(row,"title",4096);attempt.error_json=CheckedString(row,"error",8192);attempt.status=Text(Get(row,"status"));attempt.expected=Bool(Get(row,"expected"));attempt.duration_ms=Number(Get(row,"durationMs"));
+    ReportAttempt attempt;attempt.test_id=ID(row,"testId");attempt.generation=ID(row,"generation");attempt.retry=Index(row,"retry");attempt.worker_index=Index(row,"workerIndex");attempt.pid=PID(row,"pid");attempt.title_json=CheckedString(row,"title");attempt.error_json=CheckedString(row,"error");attempt.status=Text(Get(row,"status"));attempt.expected=Bool(Get(row,"expected"));attempt.duration_ms=Number(Get(row,"durationMs"));
     if(const auto* wall=Find(row,"wallDurationMs"))attempt.wall_duration_ms=Number(*wall);
-    OptionalString(row,"skipReason",8192,attempt.skip_reason_json);OptionalString(row,"expectedFailureReason",8192,attempt.expected_failure_reason_json);if(const auto* status=Find(row,"expectedStatus"))attempt.expected_status=Text(*status);
+    OptionalString(row,"skipReason",attempt.skip_reason_json);OptionalString(row,"expectedFailureReason",attempt.expected_failure_reason_json);if(const auto* status=Find(row,"expectedStatus"))attempt.expected_status=Text(*status);
     for(const auto& annotation:Rows(row,"annotations"))attempt.annotations.push_back(Annotation(annotation));
     // Rich source links are validated against the original step transcript below;
     // they are never reconstructed as fabricated presentation-core steps.
     source.secondary_errors.emplace(attempt.generation,SecondaryErrors(row,attempt));
     core.attempts.push_back(std::move(attempt));
   }
-  for(const auto& row:Rows(doc,"unrun"))core.unrun.push_back({ID(row,"testId"),CheckedString(row,"title",4096),CheckedString(row,"reason",8192)});
-  for(const auto& row:Rows(doc,"skipped"))core.skipped.push_back({ID(row,"testId"),CheckedString(row,"title",4096),CheckedString(row,"reason",8192)});
+  for(const auto& row:Rows(doc,"unrun"))core.unrun.push_back({ID(row,"testId"),CheckedString(row,"title"),CheckedString(row,"reason")});
+  for(const auto& row:Rows(doc,"skipped"))core.skipped.push_back({ID(row,"testId"),CheckedString(row,"title"),CheckedString(row,"reason")});
   for(const auto& row:Rows(doc,"skipCauses")){
-    ReportSkipCause cause;cause.scope_id=ID(row,"causeId");cause.scope_generation=ID(row,"scopeGeneration");cause.callback_id=ID(row,"callbackId");cause.callback_token=ID(row,"callbackToken");cause.test_id=ID(row,"associatedTestId");cause.generation=ID(row,"associatedGeneration");cause.suite_id=ID(row,"suiteId",true);cause.worker_index=Index(row,"workerIndex");cause.pid=PID(row,"pid");cause.reason_json=CheckedString(row,"reason",8192);cause.status=Text(Get(row,"status"));const auto& annotations=Rows(row,"annotations");if(annotations.size()>1)Invalid("multiple beforeAll cause annotations");if(!annotations.empty())cause.annotation=Annotation(annotations.front());core.skip_causes.push_back(std::move(cause));
+    ReportSkipCause cause;cause.scope_id=ID(row,"causeId");cause.scope_generation=ID(row,"scopeGeneration");cause.callback_id=ID(row,"callbackId");cause.callback_token=ID(row,"callbackToken");cause.test_id=ID(row,"associatedTestId");cause.generation=ID(row,"associatedGeneration");cause.suite_id=ID(row,"suiteId",true);cause.worker_index=Index(row,"workerIndex");cause.pid=PID(row,"pid");cause.reason_json=CheckedString(row,"reason");cause.status=Text(Get(row,"status"));const auto& annotations=Rows(row,"annotations");if(annotations.size()>1)Invalid("multiple beforeAll cause annotations");if(!annotations.empty())cause.annotation=Annotation(annotations.front());core.skip_causes.push_back(std::move(cause));
   }
-  for(const auto& row:Rows(doc,"runtimeSkipped"))core.runtime_skipped.push_back({ID(row,"testId"),ID(row,"causeId"),CheckedString(row,"title",4096)});
-  for(const auto& error:Rows(doc,"globalErrors")){if(error.kind!=JSON::String||!JsonString(error.raw,8192))Invalid("invalid global error");core.global_errors_json.emplace_back(error.raw);}
+  for(const auto& row:Rows(doc,"runtimeSkipped"))core.runtime_skipped.push_back({ID(row,"testId"),ID(row,"causeId"),CheckedString(row,"title")});
+  for(const auto& error:Rows(doc,"globalErrors")){if(error.kind!=JSON::String||!JsonString(error.raw))Invalid("invalid global error");core.global_errors_json.emplace_back(error.raw);}
   for(const auto& row:OptionalRows(doc,"serialGroups")){
     ReportSerialGroup group;group.id=ID(row,"id");group.retries=Index(row,"retries");group.status=Text(Get(row,"status"));group.tests=IDs(row,"testIds");
     for(const auto& omission:Rows(row,"omissions"))group.omissions.push_back({ID(omission,"testId"),Index(omission,"retry"),ID(omission,"causeTestId"),ID(omission,"causeGeneration")});
@@ -106,18 +106,17 @@ inline void ReadCore(Source& source){
 // steps. Private runtime callback deadlines are not present in source JSON.
 inline void ValidateCallbackAssertionEvidence(const Source& source,const std::map<uint64_t,const JSON*>& steps){
   const auto& rows=OptionalRows(source.document,"callbackAssertions");
-  if(rows.size()>TestSteps::kRecords)Invalid("callback assertion capacity exceeded");
   if(rows.empty()){for(const auto&[id,step]:steps){(void)id;if(Find(*step,"callbackAssertion"))Invalid("iteration lacks callback assertion");}return;}
   std::map<std::tuple<uint64_t,uint64_t,unsigned,int64_t>,const ReportAttempt*> actual_attempts;
   for(const auto& attempt:source.core.attempts)actual_attempts.emplace(std::tuple{attempt.test_id,attempt.generation,attempt.worker_index,attempt.pid},&attempt);
   std::map<unsigned,int64_t> retired_workers;for(const auto& worker:source.core.workers)if(worker.exit_code>=0)retired_workers.emplace(worker.worker_index,worker.pid);
   struct State {const JSON* row;StepOwner owner;uint64_t parent,attempts,count=0;double started,deadline,received;std::optional<double> own;const JSON* last=nullptr;uint64_t last_id=0;};
-  std::map<uint64_t,State> assertions;std::set<std::pair<unsigned,uint64_t>> requests;size_t bytes=0;
+  std::map<uint64_t,State> assertions;std::set<std::pair<unsigned,uint64_t>> requests;
   for(const auto& row:rows){
     const auto owner=Owner(row);const auto id=ID(row,"id"),request=ID(row,"requestId"),parent=ID(row,"parentStepId",true),attempts=UInt(row,"attempts");
-    const auto status=Text(Get(row,"status")),receipt=Text(Get(row,"receipt"));const auto error=CheckedString(row,"error",8192);
+    const auto status=Text(Get(row,"status")),receipt=Text(Get(row,"receipt"));const auto error=CheckedString(row,"error");
     const auto start=Number(Get(row,"startedMonotonicMs")),deadline=Number(Get(row,"deadlineMonotonicMs")),received=Number(Get(row,"receiptMonotonicMs"));
-    if(!attempts||attempts>TestSteps::kRecords||ID(row,"lastInvocation")!=attempts||received<start||
+    if(!attempts||ID(row,"lastInvocation")!=attempts||received<start||
        (owner.callback_kind!="body"&&owner.callback_kind!="beforeEach"&&owner.callback_kind!="afterEach")||
        (owner.callback_kind!="body"&&!owner.callback_token)||
        (status!="passed"&&status!="timedOut"&&status!="canceled"&&status!="infrastructure")||
@@ -127,7 +126,6 @@ inline void ValidateCallbackAssertionEvidence(const Source& source,const std::ma
     if(worker==retired_workers.end()||worker->second!=owner.pid||!actual_attempts.contains({owner.test_id,owner.attempt_generation,owner.worker_index,owner.pid}))Invalid("callback assertion lacks actual attempt/worker retirement metadata");
     std::optional<double> own;if(const auto* value=Find(row,"ownDeadlineMonotonicMs")){own=Number(*value);if(*own<=start||deadline>*own)Invalid("callback assertion own deadline rejected");}
     if(parent){const auto found=steps.find(parent);if(found==steps.end()||Owner(*found->second)!=owner||Number(Get(*found->second,"startedMonotonicMs"))>start||Number(Get(*found->second,"receiptMonotonicMs"))<received||Text(Get(*found->second,"receipt"))=="notInvoked")Invalid("callback assertion parent physical ownership rejected");}
-    const auto cost=error.size()+owner.callback_kind.size()+512;if(cost>TestSteps::kMetadata-bytes)Invalid("callback assertion metadata capacity exceeded");bytes+=cost;
     if(!assertions.emplace(id,State{&row,owner,parent,attempts,0,start,deadline,received,own}).second)Invalid("duplicate callback assertion");
   }
   // Iterate source order, not sorted IDs: contiguous invocation history must
@@ -144,7 +142,7 @@ inline void ValidateCallbackAssertionEvidence(const Source& source,const std::ma
     state.last=&step;state.last_id=id;++state.count;
   }
   std::map<uint64_t,const JSON*> soft_rows;
-  const auto& soft=OptionalRows(source.document,"softAssertions");if(soft.size()>SoftAssertions::kRecords)Invalid("callback soft cause capacity exceeded");
+  const auto& soft=OptionalRows(source.document,"softAssertions");
   for(const auto& row:soft)if(!soft_rows.emplace(ID(row,"id"),&row).second)Invalid("duplicate callback soft cause");
   const auto accepted_soft=[&](const JSON& step){
     if(Text(Get(step,"status"))!="failed"||!Find(step,"softErrorId")||Find(step,"attachmentError"))return false;
@@ -154,15 +152,15 @@ inline void ValidateCallbackAssertionEvidence(const Source& source,const std::ma
     if((!mismatch&&!deadline)||raw!=(mismatch?"recognizedMismatch":"recognizedDeadline")||
        Bool(Get(row,"acceptedMismatch"))!=mismatch||Bool(Get(row,"acceptedDeadline"))!=deadline||
        Owner(row)!=owner||!ID(row,"requestId")||Bool(Get(row,"cleanup"))!=(owner.callback_kind=="afterEach")||
-       CheckedString(row,"error",8192)!=CheckedString(step,"error",8192)||CheckedString(step,"receiptError",8192)!="\"\""||
-       (Find(row,"cancelReason")&&CheckedString(row,"cancelReason",8192)!="\"\""))Invalid("callback soft failure has contradictory actual cause");
+       CheckedString(row,"error")!=CheckedString(step,"error")||CheckedString(step,"receiptError")!="\"\""||
+       (Find(row,"cancelReason")&&CheckedString(row,"cancelReason")!="\"\""))Invalid("callback soft failure has contradictory actual cause");
     const auto attempt=actual_attempts.find({owner.test_id,owner.attempt_generation,owner.worker_index,owner.pid});
     if(attempt==actual_attempts.end()||attempt->second->status=="passed"||attempt->second->status=="skipped")Invalid("callback soft failure lost its actual outer attempt failure");
     const auto source_step=steps.find(ID(row,"stepId"));
     if(source_step==steps.end()||Owner(*source_step->second)!=owner)Invalid("callback soft cause has foreign step");
     const auto admitted=Number(Get(row,"admittedMonotonicMs")),received=Number(Get(row,"receiptMonotonicMs"));
     if(admitted<Number(Get(*source_step->second,"startedMonotonicMs"))||received<admitted||received>Number(Get(*source_step->second,"receiptMonotonicMs"))||received>Number(Get(step,"receiptMonotonicMs")))Invalid("callback soft cause time order rejected");
-    auto id=source_step->first;for(size_t depth=0;id&&depth<=TestSteps::kDepth;++depth){
+    auto id=source_step->first;for(size_t depth=0;id&&depth<=steps.size();++depth){
       const auto parent=steps.find(id);if(parent==steps.end()||Owner(*parent->second)!=owner)break;
       if(id==ID(step,"id"))return true;
       id=ID(*parent->second,"parentId",true);
@@ -174,18 +172,17 @@ inline void ValidateCallbackAssertionEvidence(const Source& source,const std::ma
     // A worker may die during backoff after a prior iteration settled. The
     // converse does not hold: an exited final iteration cannot claim Settled.
     if(Text(Get(last,"receipt"))=="workerExited"&&receipt!="workerExited")Invalid("callback assertion worker exit receipt contradicted");
-    if(status=="passed"&&(receipt!="settled"||(Text(Get(last,"status"))!="passed"&&!accepted_soft(last))||!Bool(Get(last,"receiptOK"))||!Bool(Get(last,"callbackReceiptOK"))||CheckedString(row,"error",8192)!="\"\""||state.received>=state.deadline))Invalid("callback assertion passing verdict rejected");
+    if(status=="passed"&&(receipt!="settled"||(Text(Get(last,"status"))!="passed"&&!accepted_soft(last))||!Bool(Get(last,"receiptOK"))||!Bool(Get(last,"callbackReceiptOK"))||CheckedString(row,"error")!="\"\""||state.received>=state.deadline))Invalid("callback assertion passing verdict rejected");
   }
 }
 inline void ValidateEvidence(Source& source,bool require_artifacts){
   const auto& doc=source.document;const auto& core=source.core;
   std::set<uint64_t> steps;std::map<uint64_t,const JSON*> step_rows;
-  if(Rows(doc,"steps").size()>TestSteps::kRecords)Invalid("step record capacity exceeded");
   for(const auto& row:Rows(doc,"steps")){
     const auto id=ID(row,"id");Unique(steps,id);Associated(row,core);const auto parent=ID(row,"parentId",true);
     if(parent&&(parent==id||!step_rows.contains(parent)||Owner(row)!=Owner(*step_rows.at(parent))))Invalid("step references missing/later/foreign parent");
     step_rows.emplace(id,&row);
-    CheckedString(row,"title",4096);CheckedString(row,"error",8192);CheckedString(row,"receiptError",8192);
+    CheckedString(row,"title");CheckedString(row,"error");CheckedString(row,"receiptError");
     if(!report_detail::Status(Text(Get(row,"status"))))Invalid("invalid terminal step status");
     const auto start=Number(Get(row,"startedMonotonicMs")),end=Number(Get(row,"endedMonotonicMs")),received=Number(Get(row,"receiptMonotonicMs"));if(start>end||end>received)Invalid("step receipt time order");
     const auto receipt=Text(Get(row,"receipt"));if(receipt!="settled"&&receipt!="workerExited"&&receipt!="notInvoked")Invalid("invalid step receipt");
@@ -203,13 +200,11 @@ inline void ValidateEvidence(Source& source,bool require_artifacts){
     if(raw_receipt<Number(Get(*found->second,"startedMonotonicMs"))||raw_receipt>Number(Get(*found->second,"receiptMonotonicMs")))Invalid("secondary error raw callback receipt has impossible time order");
     if(owner.test_id!=actual.attempt.test||owner.attempt_generation!=actual.attempt.generation||owner.worker_index!=actual.attempt.worker||owner.pid!=actual.attempt.pid||owner.scope!=actual.scope||owner.scope_generation!=actual.generation||Text(Get(*found->second,"status"))!="failed"||!Find(*found->second,"callbackReceiptMonotonicMs")||Bool(Get(*found->second,"callbackReceiptOK")))Invalid("secondary error has foreign or absent raw step receipt");
   }}
-  size_t artifact_bytes=0;std::set<uint64_t> artifacts;std::set<std::pair<unsigned,uint64_t>> requests;std::set<std::string> paths;
+  std::set<uint64_t> artifacts;std::set<std::pair<unsigned,uint64_t>> requests;std::set<std::string> paths;
   for(const auto& row:Rows(doc,"attachments")){
-    AttachmentRecord artifact;artifact.id=ID(row,"id");artifact.request=ID(row,"requestId");artifact.owner=Owner(row);artifact.name_json=CheckedString(row,"name",4096);artifact.content_type_json=CheckedString(row,"contentType",1024);artifact.path=Text(Get(row,"path"));artifact.source_kind=Text(Get(row,"sourceKind"));artifact.bytes=UInt(row,"byteLength");artifact.device=ID(row,"device",true);artifact.inode=ID(row,"inode");artifact.writer_pid=PID(row,"writerPid");const auto exit=UInt(row,"writerExitCode");if(exit||!Bool(Get(row,"writerExitConfirmed")))Invalid("attachment lacks successful writer retirement");artifact.writer_exit=0;
+    AttachmentRecord artifact;artifact.id=ID(row,"id");artifact.request=ID(row,"requestId");artifact.owner=Owner(row);artifact.name_json=CheckedString(row,"name");artifact.content_type_json=CheckedString(row,"contentType");artifact.path=Text(Get(row,"path"));artifact.source_kind=Text(Get(row,"sourceKind"));artifact.bytes=UInt(row,"byteLength");artifact.device=ID(row,"device",true);artifact.inode=ID(row,"inode");artifact.writer_pid=PID(row,"writerPid");const auto exit=UInt(row,"writerExitCode");if(exit||!Bool(Get(row,"writerExitConfirmed")))Invalid("attachment lacks successful writer retirement");artifact.writer_exit=0;
     artifact.started=Number(Get(row,"startedMonotonicMs"));artifact.committed=Number(Get(row,"commitReceiptMonotonicMs"));artifact.received=Number(Get(row,"writerExitReceiptMonotonicMs"));if(const auto* step=Find(row,"stepId")){artifact.step_id=Integer(*step,true);if(!steps.contains(artifact.step_id))Invalid("attachment references missing step");}
     ValidateNativeAttachment(artifact);Associated(row,core);Unique(artifacts,artifact.id);
-    if(artifact.bytes>64*1024*1024-artifact_bytes)Invalid("committed artifact byte capacity exceeded");
-    artifact_bytes+=artifact.bytes;
     if(Number(Get(row,"durationMs"))!=artifact.received-artifact.started)Invalid("attachment duration disagrees with writer receipt times");
     if(!requests.emplace(artifact.owner.worker_index,artifact.request).second||!paths.insert(artifact.path).second)Invalid("duplicate attachment request/path");
     ArtifactCheck check{artifact.id,artifact.path,"unavailable"};struct stat info{};
@@ -218,8 +213,6 @@ inline void ValidateEvidence(Source& source,bool require_artifacts){
     if(require_artifacts&&check.state!="matchesRecordedIdentity")Invalid("required committed artifact "+artifact.path+": "+check.state);
     source.artifacts.push_back(std::move(check));
   }
-  if(artifacts.size()>128)Invalid("attachment capacity exceeded");
-  if(OptionalRows(doc,"attachmentDeclarations").size()>128)Invalid("attachment declaration capacity exceeded");
   for(const auto& row:OptionalRows(doc,"attachmentDeclarations")){
     Associated(row,core);const auto receipt=Text(Get(row,"receipt"));if(receipt=="committed"){const auto artifact=ID(row,"attachmentId");if(!artifacts.contains(artifact))Invalid("committed declaration has no actual attachment");}
     else if(Find(row,"attachmentId"))Invalid("uncommitted declaration invented attachment reference");
@@ -228,7 +221,7 @@ inline void ValidateEvidence(Source& source,bool require_artifacts){
   for(const auto& row:OptionalRows(doc,"outputs")){Unique(outputs,ID(row,"id"));Associated(row,core);const auto proposed=Text(Get(row,"proposedPath"));if(proposed.empty()||proposed.front()!='/'||proposed.find('\0')!=std::string::npos)Invalid("invalid output directory reference");}
   std::vector<ReportProject> projects;
   for(const auto& row:OptionalRows(doc,"projects")){
-    ReportProject project;project.id=ID(row,"id");project.name_json=CheckedString(row,"name",256);project.metadata_json=std::string(Get(row,"metadata").raw);project.status=Text(Get(row,"status"));project.test_ids=IDs(row,"testIds");project.selected_test_ids=IDs(row,"selectedTestIds");project.dependencies=IDs(row,"dependencies");project.selection_role=Text(Get(row,"selectionRole"));project.dependencies_ignored=Bool(Get(row,"dependenciesIgnored"));project.default_enabled=Bool(Get(row,"default"));
+    ReportProject project;project.id=ID(row,"id");project.name_json=CheckedString(row,"name");project.metadata_json=std::string(Get(row,"metadata").raw);project.status=Text(Get(row,"status"));project.test_ids=IDs(row,"testIds");project.selected_test_ids=IDs(row,"selectedTestIds");project.dependencies=IDs(row,"dependencies");project.selection_role=Text(Get(row,"selectionRole"));project.dependencies_ignored=Bool(Get(row,"dependenciesIgnored"));project.default_enabled=Bool(Get(row,"default"));
     for(const auto& worker:Rows(row,"workerIndices")){const auto index=Integer(worker);if(index>UINT32_MAX)Invalid("project worker out of range");project.workers.push_back(static_cast<unsigned>(index));}
     if(Find(row,"teardown"))project.teardown=ID(row,"teardown");
     if(Find(row,"failedDependency"))project.failed_dependency=ID(row,"failedDependency");
@@ -242,16 +235,16 @@ inline void ValidateEvidence(Source& source,bool require_artifacts){
   }
   if(const auto* reuse=Find(doc,"workerReuse")){Rows(*reuse,"hosts");Rows(*reuse,"borrows");}
 }
-inline Source Load(std::string id,const std::filesystem::path& path,bool require_artifacts,size_t& total_bytes){
+inline Source Load(std::string id,const std::filesystem::path& path,bool require_artifacts){
   Source source;source.id=std::move(id);source.path=std::filesystem::absolute(path).lexically_normal().string();source.bytes=std::make_shared<std::string>();
   std::ifstream input(path,std::ios::binary);if(!input)Invalid("cannot open input "+path.string());
-  char chunk[65536];while(input){input.read(chunk,sizeof(chunk));const auto count=static_cast<size_t>(input.gcount());if(count>128*1024*1024-total_bytes)Invalid("combined input byte capacity128MiB exceeded");total_bytes+=count;source.bytes->append(chunk,count);}if(!input.eof())Invalid("cannot read input "+path.string());
+  char chunk[65536];while(input){input.read(chunk,sizeof(chunk));const auto count=static_cast<size_t>(input.gcount());source.bytes->append(chunk,count);}if(!input.eof())Invalid("cannot read input "+path.string());
   try{source.document=JSONParser(*source.bytes).Parse();ReadCore(source);ValidateEvidence(source,require_artifacts);}catch(const std::exception& error){throw std::invalid_argument("Input "+source.path+": "+error.what());}return source;
 }
 inline std::string Quote(std::string_view text){
   static constexpr char hex[]="0123456789abcdef";std::string result="\"";
   for(const unsigned char value:text){if(value=='"'||value=='\\'){result+='\\';result+=static_cast<char>(value);}else if(value<32){result+="\\u00";result+=hex[value>>4];result+=hex[value&15];}else result+=static_cast<char>(value);}
-  result+='"';if(!JsonString(result,128*1024*1024))Invalid("non-UTF8 output string");return result;
+  result+='"';if(!JsonString(result))Invalid("non-UTF8 output string");return result;
 }
 inline void JSONProperty(report_detail::AtomicFile& out,std::string_view name,std::string_view json){
   const auto escaped=report_detail::XML(json);report_detail::Property(out,name,escaped.text);report_detail::NumericProperty(out,std::string(name)+".xmlSanitizedUnits",escaped.sanitized);
@@ -286,11 +279,11 @@ class MergedRunnerReport {
   MergedRunnerReport& operator=(MergedRunnerReport&&)=default;
   static MergedRunnerReport Read(const std::vector<ReportMergeInput>& inputs,const ReportMergeOptions& options={}){
     using namespace merge_detail;
-    if(inputs.empty()||inputs.size()>128||(options.expected_inputs&&inputs.size()!=options.expected_inputs))Invalid("missing inputs or input count mismatch (capacity128)");
-    MergedRunnerReport result;result.run_policy_.enabled=options.fail_on_flaky_tests;result.sources_.reserve(inputs.size());std::set<std::string> ids,paths;std::set<std::pair<uint64_t,uint64_t>> files;size_t total_bytes=0;
-    for(const auto& input:inputs){if(input.source_id.empty()||input.source_id.size()>256||!JsonString(Quote(input.source_id),256)||input.source_id.find('\0')!=std::string::npos||!ids.insert(input.source_id).second)Invalid("invalid or duplicate source ID");
+    if(inputs.empty()||(options.expected_inputs&&inputs.size()!=options.expected_inputs))Invalid("missing inputs or input count mismatch");
+    MergedRunnerReport result;result.run_policy_.enabled=options.fail_on_flaky_tests;result.sources_.reserve(inputs.size());std::set<std::string> ids,paths;std::set<std::pair<uint64_t,uint64_t>> files;
+    for(const auto& input:inputs){if(input.source_id.empty()||!JsonString(Quote(input.source_id))||input.source_id.find('\0')!=std::string::npos||!ids.insert(input.source_id).second)Invalid("invalid or duplicate source ID");
       const auto path=std::filesystem::weakly_canonical(std::filesystem::absolute(input.path)).string();if(!paths.insert(path).second)Invalid("same input path repeated");struct stat info{};if(::stat(input.path.c_str(),&info)<0)throw std::system_error(errno,std::generic_category(),"Native report merge input stat "+input.path.string());if(!S_ISREG(info.st_mode)||!files.emplace(static_cast<uint64_t>(info.st_dev),static_cast<uint64_t>(info.st_ino)).second)Invalid("input is not a distinct regular report file");
-      result.sources_.push_back(Load(input.source_id,input.path,options.require_artifacts,total_bytes));
+      result.sources_.push_back(Load(input.source_id,input.path,options.require_artifacts));
     }result.totals_=Sum(result.sources_);return result;
   }
   static MergedRunnerReport ReadDirectory(const std::vector<ReportMergeInput>& inputs,std::shared_ptr<const DirectoryReport> directory,const ReportMergeOptions& options={}){

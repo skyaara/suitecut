@@ -44,7 +44,7 @@ int main(){
   native.Packet({"ATTACH_MUTATE","8","10","3","1","5","0","S","0","-"},now+12,false);
   native.FenceWithAppendFailure(10,3,1,[&](const auto& error){assert(error&&error->find("callback closed")!=std::string::npos);},now+13);
   assert(native.IdleReady()&&native.Physical()==0&&native.Declarations().size()==1&&native.Records().empty());++controls;
-  assert(budget.physical==0&&budget.accepted==0&&budget.declarations.records==1&&budget.mutations.metadata>0&&budget.mutations.metadata<=AttachmentMutations::kMetadata);++controls;
+  assert(budget.physical==0&&budget.declarations.sequence==1);++controls;
   auto later_body=body;later_body.scope=4;native.BeginCallback(later_body,now+10000,now+14);
   native.Packet({"ATTACH_MUTATE","9","0","4","1","5","0","S","0","d999"},now+15,false);
   assert(!native.CanAcceptTestSkip(0,4,1,10,now+16));

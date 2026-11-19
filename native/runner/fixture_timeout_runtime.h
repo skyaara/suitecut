@@ -4,6 +4,7 @@
 #include <array>
 #include <functional>
 #include <memory>
+#include <vector>
 
 namespace suitecut::runner {
 // Native fixture timing ingress. The caller supplies an already-admitted real
@@ -24,7 +25,7 @@ class FixtureTimeoutRuntime {
   bool Begin(const FixtureClockOwner& owner, std::optional<uint64_t> configured,
              uint64_t project_timeout, std::shared_ptr<FixtureChargedClock> charged,
              double now) {
-    if (contexts_.contains(owner.token) || contexts_.size() >= FixtureTimeoutClocks::kPhysical)
+    if (contexts_.contains(owner.token))
       return false;
     // Reserve the owning shared pointer before the timing sidecar can borrow it.
     // Pre-spawn/allocation failures leave the caller's genuine lease intact.
@@ -86,10 +87,9 @@ class FixtureTimeoutRuntime {
     if (!std::isfinite(now) || now < 0) return;
     // Never hold a map iterator across callbacks; authentic expiration may
     // synchronously cancel a scope or observe actual worker exit.
-    std::array<FixtureClockOwner, FixtureTimeoutClocks::kPhysical> owners{};
-    size_t count = 0;
-    for (const auto& [token, context] : contexts_) { (void)token; owners[count++] = context.owner; }
-    for (size_t i = 0; i < count; ++i) {
+    std::vector<FixtureClockOwner> owners;owners.reserve(contexts_.size());
+    for (const auto& [token, context] : contexts_) { (void)token; owners.push_back(context.owner); }
+    for (size_t i = 0; i < owners.size(); ++i) {
       auto* context = Find(owners[i]);
       if (!context) continue;
       Expire(*context, now);

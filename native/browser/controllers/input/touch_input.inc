@@ -26,7 +26,7 @@ void TouchDispatch(SuiteCutTouchControls::Packet packet,SuiteCutTouchControls::R
   // cleanup alive after its originating command has timed out or canceled.
   devtools_.emplace(assigned,DevToolsCall{0,[reply=std::move(reply)](bool ok,const std::string& json){
     reply(ok,ok?"":"Native touch dispatch failed: "+json);
-  },"",true,65536,true});
+  },"",true,true});
   if(!SubmitDevTools(assigned,method,params,"")){
     auto found=devtools_.find(assigned);
     if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native touch dispatch submission failed");}

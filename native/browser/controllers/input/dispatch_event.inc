@@ -120,7 +120,7 @@ void DispatchEventStrictResult(int id,uint64_t generation,const std::string& obj
     const auto text=suitecut::DevToolsString(remote->GetValue("value"));
     if(text.empty()){Complete(id,false,"Native dispatch strict diagnostic is invalid");return;}
     if(DispatchEventCurrent(id,generation))Complete(id,false,"dispatchEvent: "+text);
-  },std::nullopt,false,kMaxResponseBytes,true);
+  },std::nullopt,false,true);
 }
 
 void DispatchEventAction(int id,uint64_t generation,Dict config) {

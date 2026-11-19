@@ -3,17 +3,16 @@
 #include "project_pool.h"
 #include "json_text.h"
 namespace suitecut::runner {
-inline constexpr size_t kResourceLockUnits=1024;
 // Canonical UTF16LE bytes preserve empty names, NUL and isolated code units.
 // Empty lock name is a real name; an empty list declares no locks.
 inline std::string ResourceLockName(std::string_view wire){
   if(wire=="-")return {};
-  if(wire.empty()||wire.size()%4||wire.size()>kResourceLockUnits*4)
+  if(wire.empty()||wire.size()%4)
     throw std::invalid_argument("Invalid native resource-lock UTF16 name size");
-  return DecodeHex(wire,kResourceLockUnits*2);
+  return DecodeHex(wire);
 }
 inline std::string ResourceLockJSON(std::string_view name){
-  if(name.size()%2||name.size()>kResourceLockUnits*2)throw std::invalid_argument("Invalid native resource-lock UTF16 name");
+  if(name.size()%2)throw std::invalid_argument("Invalid native resource-lock UTF16 name");
   static constexpr char digits[]="0123456789abcdef";std::string json="\"";
   for(size_t at=0;at<name.size();at+=2){
     const auto low=static_cast<unsigned char>(name[at]),high=static_cast<unsigned char>(name[at+1]);
@@ -29,25 +28,16 @@ class ResourceLocks {
   using Owner=ProjectPool::Admission;
   enum class Receipt {Active,PhysicalRetired,NeverStarted};
   struct Record {Owner owner;Receipt receipt=Receipt::Active;};
-  static constexpr size_t kNames=4096,kReferences=65536,kMetadata=8*1024*1024;
   ResourceLocks(const ProjectPool& pool,std::vector<std::vector<std::string>> names)
       :pool_(pool),names_(std::move(names)),records_(names_.size()){
     if(names_.size()!=pool.Graph().Declarations().size())throw std::invalid_argument("Native resource-lock project membership mismatch");
-    std::set<std::string> unique;size_t references=0,bytes=0;
     for(auto& group:names_){
       std::sort(group.begin(),group.end());group.erase(std::unique(group.begin(),group.end()),group.end());
-      if(group.size()>kNames||group.size()>kReferences-references)throw std::invalid_argument("Native resource-lock reference capacity exceeded");
-      references+=group.size();
-      for(const auto& name:group){
-        if(name.size()%2||name.size()>kResourceLockUnits*2||name.size()+32>kMetadata-bytes)
-          throw std::invalid_argument("Native resource-lock name/metadata capacity exceeded");
-        bytes+=name.size()+32;unique.insert(name);
-        if(unique.size()>kNames)throw std::invalid_argument("Native resource-lock namespace capacity4096 exceeded");
-      }
+      for(const auto& name:group)if(name.size()%2)throw std::invalid_argument("Native resource-lock name is not UTF16");
     }
   }
   bool CanAcquire(size_t project)const{
-    if(project>=names_.size()||records_[project]||active_>=ProjectPool::kWorkers)return false;
+    if(project>=names_.size()||records_[project])return false;
     for(const auto& name:names_[project])if(holders_.contains(name))return false;
     return true;
   }

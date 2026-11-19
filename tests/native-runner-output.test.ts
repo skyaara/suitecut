@@ -32,13 +32,15 @@ describe('native output directory snapshots and lexical marshaling', () => {
     expect(info.outputPath()).toBe(info.outputDir)
     expect(info.outputPath('a dir', 'file.txt')).toBe(resolve(info.outputDir, 'a dir', 'file.txt'))
   })
-  it('rejects traversal, absolute, NUL and unbounded inputs rather than producing foreign paths', async () => {
+  it('rejects traversal, absolute and NUL inputs rather than producing foreign paths', async () => {
     const callbacks = new NativeOutputCallbacks(() => Promise.resolve())
     await callbacks.packet(packet(), 3, 71)
     const info = callbacks.snapshot('1')
-    for (const path of ['..', '../foreign', '/tmp/foreign', 'a\0b', 'x'.repeat(4097)])
+    for (const path of ['..', '../foreign', '/tmp/foreign', 'a\0b'])
       expect(() => info.outputPath(path)).toThrow()
-    expect(() => info.outputPath(...Array<string>(33).fill('a'))).toThrow()
+    expect(info.outputPath('x'.repeat(4097))).toBe(resolve(info.outputDir, 'x'.repeat(4097)))
+    const deep = Array<string>(33).fill('a')
+    expect(info.outputPath(...deep)).toBe(resolve(info.outputDir, ...deep))
     expect(info.outputPath('a', '..', 'safe')).toBe(resolve(info.outputDir, 'safe'))
   })
   it('keeps earlier callback snapshots immutable through later attempts', async () => {

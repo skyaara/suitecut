@@ -42,17 +42,17 @@ export const SuiteCutCheckpointOptionsSchema = z.strictObject({
 })
 
 export const SuiteCutCaptureViewportSchema = z.strictObject({
-  width: z.number().int().positive().max(7680),
-  height: z.number().int().positive().max(4320),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
 })
 
 export const SuiteCutCaptureSizeSchema = z.strictObject({
-  width: z.number().int().positive().max(7680).multipleOf(2),
-  height: z.number().int().positive().max(4320).multipleOf(2),
+  width: z.number().int().positive().multipleOf(2),
+  height: z.number().int().positive().multipleOf(2),
 })
 
 export const SuiteCutReconnectOptionsSchema = z.strictObject({
-  maxAttempts: z.number().int().nonnegative().max(1000).exactOptional(),
+  maxAttempts: z.number().int().nonnegative().exactOptional(),
   initialDelayMs: z.number().int().min(100).max(60_000).exactOptional(),
   maxDelayMs: z.number().int().min(100).max(300_000).exactOptional(),
 })
@@ -84,7 +84,7 @@ export const SuiteCutStreamOptionsSchema = z.strictObject({
   onDiagnostic: z
     .custom<(event: LiveStreamDiagnostic) => void>((value) => typeof value === 'function')
     .exactOptional(),
-  bitrateKbps: z.number().int().min(100).max(50_000).exactOptional(),
+  bitrateKbps: z.number().int().min(100).exactOptional(),
 })
 
 export const SuiteCutCaptureOptionsSchema = z.strictObject({

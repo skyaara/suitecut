@@ -789,8 +789,7 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
                               std::move(actual_reply));
       } else
         DevTools(id, method, message->GetDictionary("params"), std::move(actual_reply),
-                 std::nullopt, false, std::numeric_limits<size_t>::max(),
-                 method == "Page.getFrameTree");
+                 std::nullopt, false, method == "Page.getFrameTree");
     };
     if (message->HasKey("frame"))
       WithFrame(id, FrameId(message), [dispatch](int) { dispatch(); });

@@ -31,7 +31,7 @@ void ReferenceSubmit(int owner,uint64_t generation,const std::string& session,
   // settle physical registry ownership before checking logical continuation.
   const auto [position,inserted]=devtools_.emplace(tool,DevToolsCall{owner,
     [settlement](bool ok,const std::string& json){settlement->Finish(true,ok,json);},
-    session,true,kMaxResponseBytes,true,true});
+    session,true,true,true});
   if(!inserted){settlement->Finish(false,false,"{}");return;}
   const auto rollback=[this,tool,settlement]{
     const auto found=devtools_.find(tool);if(found!=devtools_.end())devtools_.erase(found);

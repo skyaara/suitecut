@@ -2,6 +2,8 @@
 #include "control_session.hpp"
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <limits>
 #include <stdexcept>
 #include <thread>
 #ifdef SUITECUT_CLI_SANITIZERS
@@ -34,7 +36,6 @@ namespace suitecut::control {
 namespace {
 using Clock=std::chrono::steady_clock;
 using Deadline=Clock::time_point;
-constexpr std::size_t max_request=4*1024*1024,max_response=8*1024*1024;
 volatile std::sig_atomic_t stopping=0;
 void stopped(int){stopping=1;}
 struct Fd {
@@ -65,22 +66,24 @@ void transfer(int fd,char* data,std::size_t bytes,bool write,Deadline deadline) 
     offset+=static_cast<std::size_t>(n);
   }
 }
-void send_json(int fd,const Json& value,Deadline deadline,std::size_t maximum=max_response) {
-  auto data=value.dump({maximum,64,65536,maximum});
+void send_json(int fd,const Json& value,Deadline deadline) {
+  auto data=value.dump();
+  // The 4-byte length prefix is the only size limit of this framing.
+  if(data.size()>std::numeric_limits<std::uint32_t>::max())throw std::invalid_argument("Session message exceeds the 4-byte length prefix");
   const auto size=static_cast<std::uint32_t>(data.size());
   char prefix[]{static_cast<char>(size),static_cast<char>(size>>8),static_cast<char>(size>>16),static_cast<char>(size>>24)};
   transfer(fd,prefix,4,true,deadline);transfer(fd,data.data(),data.size(),true,deadline);
 }
-Json receive_json(int fd,Deadline deadline,std::size_t maximum) {
+Json receive_json(int fd,Deadline deadline) {
   unsigned char prefix[4];transfer(fd,reinterpret_cast<char*>(prefix),4,false,deadline);
   const std::size_t size=prefix[0]|(std::size_t(prefix[1])<<8)|(std::size_t(prefix[2])<<16)|(std::size_t(prefix[3])<<24);
-  if(!size||size>maximum)throw std::invalid_argument("Session message exceeds its byte budget");
+  if(!size)throw std::invalid_argument("Session message is empty");
   std::string data(size,'\0');transfer(fd,data.data(),size,false,deadline);
-  return Json::parse(data,{maximum,64,65536,maximum});
+  return Json::parse(data);
 }
 std::string directory(const SessionOptions& options) {
   const auto& name=options.name;
-  if(name.empty()||name.size()>48||name=="."||name=="..")throw std::invalid_argument("Session name must contain1..48 letters, digits, '.', '-' or '_'");
+  if(name.empty()||name=="."||name=="..")throw std::invalid_argument("Session name must contain letters, digits, '.', '-' or '_'");
   for(const unsigned char c:name)if(!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='.'||c=='-'||c=='_'))
     throw std::invalid_argument("Session name contains an invalid character");
   auto path=options.directory;
@@ -206,7 +209,7 @@ Json session_request(const SessionOptions& options,const Json& request,bool star
       }
       ::close(child.value);child.value=-1;
       try {
-        const auto ready=receive_json(parent.value,Clock::now()+std::chrono::seconds(35),65536);
+        const auto ready=receive_json(parent.value,Clock::now()+std::chrono::seconds(35));
         if(!ready.at("ok").as_bool())throw std::runtime_error("Session startup failed: "+ready.at("error").as_string());
       } catch(...) {
         ::kill(pid,SIGTERM);
@@ -224,8 +227,8 @@ Json session_request(const SessionOptions& options,const Json& request,bool star
     throw std::runtime_error("Session is not running; start it with --session NAME open --browser /absolute/browser");
   }
   Fd fd(connected);const auto deadline=Clock::now()+std::chrono::milliseconds(options.timeout_ms);
-  send_json(fd.value,request,deadline,max_request);
-  return receive_json(fd.value,deadline,max_response);
+  send_json(fd.value,request,deadline);
+  return receive_json(fd.value,deadline);
 }
 void serve_session(const SessionOptions& options,int listener,int ready,
                    const std::function<Json(const Json&)>& call,const std::function<void()>& close) {
@@ -247,7 +250,7 @@ void serve_session(const SessionOptions& options,int listener,int ready,
 #endif
       Json result;
       try {
-        const auto request=receive_json(client.value,Clock::now()+std::chrono::seconds(2),max_request);
+        const auto request=receive_json(client.value,Clock::now()+std::chrono::seconds(2));
         last=Clock::now();const auto tool=request.at("request").at("tool").as_string();
         if(tool=="_session_close") {
           // Withdraw discovery before acknowledging shutdown. A new explicit

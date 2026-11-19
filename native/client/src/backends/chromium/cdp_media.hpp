@@ -6,7 +6,7 @@
 #include <memory>
 
 namespace suitecut::detail {
-// The connection observer only enqueues acknowledgements and bounded JPEG work.
+// The connection observer only enqueues acknowledgements and JPEG work.
 // One fixed worker writes source frames; encoders run only while stopping.
 class CdpMedia {
  public:

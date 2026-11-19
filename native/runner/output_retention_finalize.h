@@ -21,8 +21,7 @@ void FinalizeNativeOutputRetention(Report& report,const std::string& executable,
  }
  if(!report.output_retentions.empty())throw std::runtime_error("Native output retention rows have no accepted run policy");
  (void)PreserveOutputName(policy);
- RunnerOutputRetention::Budget budget;
- RunnerOutputRetention actor(executable,{std::forward<Failure>(failure)},budget,physical);
+ RunnerOutputRetention actor(executable,{std::forward<Failure>(failure)},physical);
  const auto started=DedicatedRealMilliseconds(),deadline=started+kOutputRetentionCleanupMaximum;
  for(const auto& output:report.outputs){
   if(output.status!=OutputDirectoryStatus::Ready||!output.assigned)continue;
@@ -35,9 +34,9 @@ void FinalizeNativeOutputRetention(Report& report,const std::string& executable,
  while(!actor.IdleReady()){
   actor.StartPending(actual,DedicatedRealMilliseconds());actor.Tick(DedicatedRealMilliseconds());
   if(actor.IdleReady())break;
-  std::array<pollfd,320> descriptors{};size_t count=0;
-  actor.ForEachPollDescriptor([&](const auto& descriptor){if(count==descriptors.size())throw std::runtime_error("Native output retention poll capacity exhausted");descriptors[count++]=descriptor;});
-  int result;do{result=::poll(descriptors.data(),count,10);}while(result<0&&errno==EINTR);
+  std::vector<pollfd> descriptors;
+  actor.ForEachPollDescriptor([&](const auto& descriptor){descriptors.push_back(descriptor);});
+  int result;do{result=::poll(descriptors.data(),static_cast<nfds_t>(descriptors.size()),10);}while(result<0&&errno==EINTR);
   if(result<0)throw std::runtime_error("Native output retention actual helper poll failed");
  }
  auto records=actor.Records();

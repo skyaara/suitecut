@@ -19,19 +19,10 @@ class SerialGroup {
   enum class Classification {NotRun,Passed,Skipped,Flaky,Failed,Interrupted};
   explicit SerialGroup(std::vector<TestCase> selected):tests_(std::move(selected)) {
     if(tests_.empty())throw std::invalid_argument("Native serial group must contain selected tests");
-    // Keep the existing test/declaration checks and metadata accounting. The
-    // group may replay every member up to the largest effective retry count.
+    // Keep the existing test/declaration checks. The group may replay every
+    // member up to the largest effective retry count.
     RetryPlan validated(tests_);
     for(const auto& test:tests_)max_retries_=std::max(max_retries_,test.retries);
-    size_t bytes=0;
-    for(const auto& test:tests_){
-      size_t record=test.title.size()+8448;
-      for(const auto& fixture:test.fixtures)record+=fixture.size()+32;
-      bytes+=record*(static_cast<size_t>(max_retries_)+1);
-      if(bytes>67108864)throw std::invalid_argument("Native serial group replay metadata budget64MiB exceeded");
-    }
-    if(tests_.size()*(static_cast<size_t>(max_retries_)+1)>8192)
-      throw std::invalid_argument("Native serial group replay record capacity8192 exceeded");
   }
   bool Begin(Worker worker) {
     if(state_!=State::AwaitingWorker||stop_||worker.pid<=0||worker.pid>INT32_MAX||!worker.generation||
@@ -52,7 +43,6 @@ class SerialGroup {
   }
   bool Finish(Worker worker,uint64_t generation,Outcome outcome,std::string error={},bool infrastructure_failure=false) {
     if(state_!=State::Active||!Owns(worker)||active_->generation!=generation)return false;
-    if(error.size()>8192)error.resize(8192);
     const bool expected=!infrastructure_failure&&(outcome==Outcome::Skipped||
       ((active_->test.expectedFailure||runtime_expected_failure_)?outcome==Outcome::Failed:outcome==Outcome::Passed));
     results_.push_back({*active_,outcome,expected,std::move(error)});

@@ -17,7 +17,7 @@
     fence.clean_outcomes&=!soft_hard_failure_&&!soft_cleanup_failed_&&!soft_infrastructure_failed_&&!callback_infrastructure_failed_;
     if(plan_)for(const auto& result:plan_->Results())fence.clean_outcomes&=!soft_.FailedAttempt(result.attempt.generation);
     fence.fixtures_ready=owners_&&owners_->IdleReady()&&(!fixture_runtime_||fixture_runtime_->IdleReady())&&!SourcesPhysical();
-    if(owners_){const auto state=owners_->State();fence.test_fixtures=state.testFixtures;owners_->ForEachReadyWorkerLease([&](uint64_t token,uint64_t test,uint64_t generation){if(fence.retained.count>=fence.retained.values.size())throw std::length_error("Native reusable fixture snapshot capacity exceeded");fence.retained.values[fence.retained.count++]={token,test,generation};});}
+    if(owners_){const auto state=owners_->State();fence.test_fixtures=state.testFixtures;owners_->ForEachReadyWorkerLease([&](uint64_t token,uint64_t test,uint64_t generation){fence.retained.values.push_back({token,test,generation});});}
     return fence;
   }
   void CompleteReusableGroup(){
@@ -140,9 +140,9 @@
           if(quiescent&&next<groups.Groups().size()){
             for(auto& slot:slots)if(slot->phase==Phase::WaitingCohort){slot->task.emplace(slot->actor->AwaitReusableIdle());slot->phase=Phase::WaitingACK;}
             if(const auto probe=pool.InventoryProbe()){
-              const auto inventory=sr::ObserveWorkerReuseInventory(*probe);std::array<sr::WorkerReusePool::CohortFence,8> fences{};size_t count=0;
-              for(size_t i=0;i<probe->count;++i){const auto found=std::find_if(slots.begin(),slots.end(),[&](const auto& slot){return slot->actor->reuse_borrow_->host==probe->hosts[i];});if(found==slots.end())throw std::logic_error("Native reuse inventory lost exact live actor");fences[count++]={*(*found)->actor->reuse_borrow_,(*found)->actor->ReusableFence()};}
-              if(!pool.ConfirmInventory(inventory,{fences.data(),count},sr::DedicatedRealMilliseconds()))pool.Drain();
+              const auto inventory=sr::ObserveWorkerReuseInventory(*probe);std::vector<sr::WorkerReusePool::CohortFence> fences;fences.reserve(probe->hosts.size());
+              for(size_t i=0;i<probe->hosts.size();++i){const auto found=std::find_if(slots.begin(),slots.end(),[&](const auto& slot){return slot->actor->reuse_borrow_->host==probe->hosts[i];});if(found==slots.end())throw std::logic_error("Native reuse inventory lost exact live actor");fences.push_back({*(*found)->actor->reuse_borrow_,(*found)->actor->ReusableFence()});}
+              if(!pool.ConfirmInventory(inventory,fences,sr::DedicatedRealMilliseconds()))pool.Drain();
               else for(auto& slot:slots){slot->phase=Phase::Idle;if(next<groups.Groups().size())admit(*slot,true);}
             }
           }
@@ -157,7 +157,7 @@
         const auto borrow=std::find_if(pool.Borrows().begin(),pool.Borrows().end(),[&](const auto& record){return record.borrow.group.index==i;});
         if(borrow==pool.Borrows().end()){row.status="notRun";row.receipt="notAdmitted";not_run=true;}
         else{row.generation=borrow->borrow.group.generation;row.workers={borrow->borrow.host.worker};if(!borrow->outcome)throw std::runtime_error("Native reused group has no genuine terminal outcome");row.status=*borrow->outcome==sr::WorkerReusePool::Outcome::Passed?"passed":*borrow->outcome==sr::WorkerReusePool::Outcome::Failed?"failed":"interrupted";row.receipt=borrow->receipt==sr::WorkerReusePool::Receipt::IdleTransferred?"idleTransferred":borrow->receipt==sr::WorkerReusePool::Receipt::PhysicalRetired?"physicalRetired":"active";failed|=row.status=="failed";interrupted|=row.status=="interrupted";}
-        for(const auto id:row.tests)if(reported.insert(id).second){const auto reason=Quote(StopRequested()?StopReason():"Native group was not admitted after actual worker retirement");Charge(catalog_->titles.at(id).size()+reason.size()+128);report_.unrun.push_back({id,catalog_->titles.at(id),reason});}
+        for(const auto id:row.tests)if(reported.insert(id).second){const auto reason=Quote(StopRequested()?StopReason():"Native group was not admitted after actual worker retirement");report_.unrun.push_back({id,catalog_->titles.at(id),reason});}
         report_.file_work_groups.push_back(std::move(row));
       }
       const auto opened=std::chrono::duration<double,std::milli>(shared_->suite_file->Opened().time_since_epoch()).count();const auto retired=std::chrono::duration<double,std::milli>(shared_->suite_file->Retire().time_since_epoch()).count();report_.files.push_back({groups.File(),shared_->suite_file->Path(),failed?"failed":interrupted?"interrupted":not_run?"notRun":"passed",ids,selected,opened,retired});

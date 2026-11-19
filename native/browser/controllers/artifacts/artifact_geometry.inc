@@ -58,7 +58,7 @@ void ArtifactResolveElement(std::shared_ptr<ArtifactGeometryWork> work) {
         work->node = node->GetString("objectId"); ArtifactUtilityNode(work);
       };
       if(QueryUsesMultipleWorlds(resolved))QueryInspect(id,resolved,"if(!nodes.length)return null;if(nodes.length>1)throw new Error('Strict screenshot locator matched multiple elements');return nodes[0];",true,false,std::move(callback));
-      else DevTools(id,"Runtime.evaluate",params,std::move(callback),std::nullopt,false,kMaxResponseBytes,true);
+      else DevTools(id,"Runtime.evaluate",params,std::move(callback),std::nullopt,false,true);
     }, utility);
   });
 }

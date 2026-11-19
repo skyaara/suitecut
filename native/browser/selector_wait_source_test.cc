@@ -14,9 +14,8 @@
 #include "selector_wait_controls.h"
 struct Harness {
  using Dict=CefRefPtr<CefDictionaryValue>;using Callback=std::function<void(bool,const std::string&)>;
- struct DevToolsCall{int owner;Callback callback;std::string session;bool retain_after_cancel=false;size_t response_limit=0;bool retained_control=false;bool selector_group_release=false;};
+ struct DevToolsCall{int owner;Callback callback;std::string session;bool retain_after_cancel=false;bool retained_control=false;bool selector_group_release=false;};
  struct Sent{int id;std::string method,group,session;};
- static constexpr size_t kMaxResponseBytes=192*1048576;
  bool browser_=true,submit=true;int next=0;std::map<int,DevToolsCall> devtools_;std::set<std::string> sessions_{"actual-child"};std::vector<Sent> sent;std::vector<std::string> errors,detached;
  static double Now(){return 0;}
  std::vector<int> deadline_release_failures,screenshot_release_failures;

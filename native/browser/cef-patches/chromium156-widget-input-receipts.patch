@@ -61,12 +61,12 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
  #include "base/strings/string_split.h"
  #include "base/strings/stringprintf.h"
  #include "base/strings/utf_string_conversions.h"
-@@ -889,6 +896,81 @@
+@@ -889,6 +896,80 @@
    base::WeakPtrFactory<InputHandler::InputInjector> weak_ptr_factory_{this};
  };
  
-+// UI-thread-only process bounds. The shared lease is captured by the real
-+// InputRouter callback, so session detachment cannot release a pending slot.
++// UI-thread-only process registry. The shared lease is captured by the real
++// InputRouter callback, so session detachment cannot release a pending lease.
 +namespace {
 +struct MouseWidgetLeaseRegistry {
 +  struct Entry {
@@ -78,7 +78,6 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
 +    bool pending = false;
 +  };
 +  std::map<uintptr_t, Entry> widgets;
-+  size_t pending = 0;
 +};
 +MouseWidgetLeaseRegistry& MouseWidgetLeases() {
 +  static base::NoDestructor<MouseWidgetLeaseRegistry> registry;
@@ -143,21 +142,21 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
  struct InputHandler::DragController::DragState {
    DropData data;
    blink::DragOperationsMask mask;
-@@ -1141,7 +1223,12 @@
+@@ -1141,7 +1222,12 @@
        allow_file_access_(allow_file_access),
        allow_sending_input_to_browser_(allow_sending_input_to_browser) {}
  
 -InputHandler::~InputHandler() = default;
 +InputHandler::~InputHandler() {
 +  // Pending callbacks retain their own lease. Held/uncertain input also needs
-+  // a bounded process orphan after this session's map and callbacks disappear.
++  // a process orphan after this session's map and callbacks disappear.
 +  for (const auto& [token, owner] : mouse_widgets_)
 +    owner->RetainDetached(owner);
 +}
  
  // static
  std::vector<InputHandler*> InputHandler::ForAgentHost(
-@@ -1356,6 +1443,182 @@
+@@ -1356,6 +1442,178 @@
        text16, std::vector<ui::ImeTextSpan>(), replacement_range,
        selection_start, selection_end, blink::mojom::ImeState::kNone,
        /*target_dom_node_id=*/blink::DOMNodeIdType(), std::move(closure));
@@ -177,9 +176,8 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
 +  if (!widget || !widget->GetView() || !widget->IsInitializedAndNotDead())
 +    return Response::ServerError("Native mouse widget is unavailable");
 +  PruneDestroyedMouseWidgetOrphans();
-+  auto& registry = MouseWidgetLeases();
-+  if (registry.widgets.size() >= 64 || registry.widgets.contains(reinterpret_cast<uintptr_t>(widget)))
-+    return Response::ServerError("Native mouse widget is already leased or capacity exceeded");
++  if (MouseWidgetLeases().widgets.contains(reinterpret_cast<uintptr_t>(widget)))
++    return Response::ServerError("Native mouse widget is already leased");
 +  auto owner = std::make_shared<MouseWidgetLease>(widget);
 +  owner->document = host_->GetWeakDocumentPtr();
 +  owner->document_token = host_->GetDocumentToken().ToString();
@@ -203,13 +201,12 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
 +  if (owner->pending || owner->uncertain || sequence <= 0 ||
 +      owner->sequence == std::numeric_limits<int>::max() ||
 +      sequence != owner->sequence + 1 ||
-+      MouseWidgetLeases().pending >= 64 || !std::isfinite(x) ||
-+      !std::isfinite(y) || std::abs(x) > 1000000 || std::abs(y) > 1000000 ||
++      !std::isfinite(x) || !std::isfinite(y) ||
 +      (type != "mousePressed" && type != "mouseReleased" && type != "mouseMoved") ||
 +      (button != "left" && button != "right" && button != "middle" && button != "none") ||
 +      (type != "mouseMoved" && button == "none") ||
 +      (modifiers && (*modifiers < 0 || *modifiers > 15)) ||
-+      (click_count && (*click_count < 0 || *click_count > 1000))) {
++      (click_count && *click_count < 0)) {
 +    callback->sendFailure(Response::InvalidParams("Invalid, busy or retired native mouse sequence"));
 +    return;
 +  }
@@ -265,7 +262,6 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
 +  }
 +  owner->sequence = sequence;
 +  owner->SetPending(true);
-+  ++MouseWidgetLeases().pending;
 +  auto completion = base::BindOnce(
 +      [](base::WeakPtr<InputHandler> self,
 +         std::shared_ptr<MouseWidgetLease> owner, int buttons,
@@ -274,7 +270,6 @@ diff --git a/content/browser/devtools/protocol/input_handler.cc b/content/browse
 +         bool observed, blink::mojom::InputEventResultSource source,
 +         blink::mojom::InputEventResultState state) {
 +        owner->SetPending(false);
-+        --MouseWidgetLeases().pending;
 +        const bool renderer_ack = observed &&
 +            (source == blink::mojom::InputEventResultSource::kCompositorThread ||
 +             source == blink::mojom::InputEventResultSource::kMainThread);

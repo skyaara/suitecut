@@ -63,7 +63,7 @@ namespace listing_detail {
 inline std::string Quote(std::string_view text){
   constexpr char h[]="0123456789abcdef";std::string result="\"";
   for(const unsigned char c:text){if(c=='"'||c=='\\'){result+='\\';result+=static_cast<char>(c);}else if(c<32){result+="\\u00";result+=h[c>>4];result+=h[c&15];}else result+=static_cast<char>(c);}
-  result+='"';if(!JsonString(result,16384))throw std::invalid_argument("Native listing string must be bounded UTF8");return result;
+  result+='"';if(!JsonString(result))throw std::invalid_argument("Native listing string must be bounded UTF8");return result;
 }
 inline void IDs(report_detail::AtomicFile& file,const auto& ids){bool first=true;file.Put("[");for(const auto id:ids){if(!first)file.Put(",");first=false;file.Put("\"");file.NumberValue(id);file.Put("\"");}file.Put("]");}
 inline void Strings(report_detail::AtomicFile& file,const auto& values){bool first=true;file.Put("[");for(const auto& value:values){if(!first)file.Put(",");first=false;file.Put(Quote(value));}file.Put("]");}
@@ -85,7 +85,7 @@ inline void WriteTestListing(const std::filesystem::path& output,const std::stri
   file.Put(",\"forbidOnly\":");file.Put(filter.forbid_only?"true":"false");file.Put(",\"shard\":{\"current\":");file.NumberValue(filter.shard_current);file.Put(",\"total\":");file.NumberValue(filter.shard_total);file.Put("}},\"selectedTestIds\":");if(selected){std::vector<uint64_t> ordered;for(const auto& test:catalog->tests)if(selected->tests.contains(test.id))ordered.push_back(test.id);IDs(file,ordered);}else file.Put("null");
   file.Put(",\"tests\":[");bool first=true;
   if(catalog)for(const auto& test:catalog->tests){
-    if(!test.id||!JsonString(test.title_json,4096))throw std::invalid_argument("Invalid native listing test declaration");
+    if(!test.id||!JsonString(test.title_json))throw std::invalid_argument("Invalid native listing test declaration");
     if(!first)file.Put(",");
     first=false;file.Put("{\"testId\":\"");file.NumberValue(test.id);file.Put("\",\"title\":");file.Put(test.title_json);if(catalog->grep_titles.contains(test.id)){file.Put(",\"grepTitle\":");file.Put(catalog->grep_titles.at(test.id));}
     file.Put(",\"selected\":");file.Put(selected?(selected->tests.contains(test.id)?"true":"false"):"null");
@@ -94,16 +94,16 @@ inline void WriteTestListing(const std::filesystem::path& output,const std::stri
     file.Put(",\"suiteId\":");if(member!=catalog->members.end()){file.Put("\"");file.NumberValue(member->suite);file.Put("\"");}else file.Put("null");
     file.Put(",\"timeoutMs\":");file.NumberValue(test.timeout_ms);file.Put(",\"retries\":");file.NumberValue(test.retries);file.Put(",\"expectedFailure\":");file.Put(test.expected_failure?"true":"false");
     file.Put(",\"focused\":");file.Put(std::find(catalog->focused.begin(),catalog->focused.end(),test.id)!=catalog->focused.end()?"true":"false");
-    file.Put(",\"skipReason\":");if(const auto skip=catalog->skipped.find(test.id);skip!=catalog->skipped.end()){if(!JsonString(skip->second,8192))throw std::invalid_argument("Invalid native listing skip reason");file.Put(skip->second);}else file.Put("null");
+    file.Put(",\"skipReason\":");if(const auto skip=catalog->skipped.find(test.id);skip!=catalog->skipped.end()){if(!JsonString(skip->second))throw std::invalid_argument("Invalid native listing skip reason");file.Put(skip->second);}else file.Put("null");
     file.Put(",\"effectiveFixtures\":");Strings(file,test.fixtures);file.Put("}");
   }
   file.Put("],\"suites\":[");first=true;
-  if(catalog)for(const auto& suite:catalog->suites){if(!first)file.Put(",");first=false;file.Put("{\"suiteId\":\"");file.NumberValue(suite.id);file.Put("\",\"parentId\":\"");file.NumberValue(suite.parent);file.Put("\",\"position\":");file.NumberValue(suite.position);file.Put(",\"title\":");const auto& title=catalog->suite_titles.at(suite.id);if(!JsonString(title,4096))throw std::invalid_argument("Invalid native listing suite title");file.Put(title);file.Put("}");}
+  if(catalog)for(const auto& suite:catalog->suites){if(!first)file.Put(",");first=false;file.Put("{\"suiteId\":\"");file.NumberValue(suite.id);file.Put("\",\"parentId\":\"");file.NumberValue(suite.parent);file.Put("\",\"position\":");file.NumberValue(suite.position);file.Put(",\"title\":");const auto& title=catalog->suite_titles.at(suite.id);if(!JsonString(title))throw std::invalid_argument("Invalid native listing suite title");file.Put(title);file.Put("}");}
   file.Put("],\"projects\":[");first=true;
   if(catalog)for(size_t index=0;index<catalog->projects.size();++index){const auto& project=catalog->projects[index];const auto& metadata=catalog->project_metadata.at(index);if(!ProjectMetadataJSON(metadata))throw std::invalid_argument("Invalid native listing project metadata");if(!first)file.Put(",");first=false;file.Put("{\"projectId\":\"");file.NumberValue(index+1);file.Put("\",\"name\":");file.Put(Quote(project.name));file.Put(",\"metadata\":");file.Put(metadata);if(const auto root=catalog->project_output_roots.find(index);root!=catalog->project_output_roots.end()){file.Put(",\"outputDir\":");file.Put(Quote(root->second));}file.Put(",\"defaultEnabled\":");file.Put(project.default_enabled?"true":"false");file.Put(",\"dependencies\":");Strings(file,project.dependencies);file.Put(",\"teardown\":");file.Put(project.teardown?Quote(*project.teardown):"null");file.Put(",\"selectionRole\":");file.Put(selected?Quote(selected->project_roles.at(index)):"null");file.Put(",\"selectedTestIds\":");if(selected)IDs(file,selected->project_tests.at(index));else file.Put("null");file.Put("}");}
   file.Put("],\"collectionProtocolUTF8Hex\":\"");if(catalog)file.Hex(catalog->protocol);file.Put("\",\"collectionWorkers\":[");first=true;
   for(const auto& worker:workers){if(!worker.worker_index||worker.pid<=0||worker.exit_code<0)throw std::invalid_argument("Native listing requires actual collection worker exit");if(!first)file.Put(",");first=false;file.Put("{\"workerIndex\":");file.NumberValue(worker.worker_index);file.Put(",\"pid\":");file.NumberValue(worker.pid);file.Put(",\"exitStatusKnown\":true,\"exitCode\":");if(worker.signaled)file.Put("null");else file.NumberValue(worker.exit_code);file.Put(",\"signal\":");if(worker.signaled)file.NumberValue(worker.exit_code);else file.Put("null");file.Put(",\"stdoutUTF8Hex\":\"");file.Hex(worker.stdout_bytes);file.Put("\",\"stderrUTF8Hex\":\"");file.Hex(worker.stderr_bytes);file.Put("\"}");}
-  file.Put("],\"errors\":[");first=true;for(const auto& error:errors){if(!JsonString(error,8192))throw std::invalid_argument("Invalid native listing error JSON");if(!first)file.Put(",");first=false;file.Put(error);}file.Put("]}\n");file.Commit();
+  file.Put("],\"errors\":[");first=true;for(const auto& error:errors){if(!JsonString(error))throw std::invalid_argument("Invalid native listing error JSON");if(!first)file.Put(",");first=false;file.Put(error);}file.Put("]}\n");file.Commit();
 }
 // Read-only inputs must never become the listing's atomic rename destination.
 inline void CheckTestListingOutput(const std::string& output,const std::vector<std::string>& inputs){

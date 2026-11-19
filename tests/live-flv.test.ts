@@ -25,15 +25,10 @@ it('parses fragmented FLV and preserves payloads across extended timestamp rewri
   expect(parsed).toEqual([stamped, tag])
 })
 
-it('rejects malformed headers, oversized tags, and corrupt trailing sizes', async () => {
+it('rejects malformed headers and corrupt trailing sizes', async () => {
   await expect(new LiveFlvParser().push(Buffer.alloc(13), () => Promise.resolve())).rejects.toThrow(
     'header',
   )
-  const tag = Buffer.alloc(11)
-  tag.writeUIntBE(0xffffff, 1, 3)
-  await expect(
-    new LiveFlvParser().push(Buffer.concat([LIVE_FLV_HEADER, tag]), () => Promise.resolve()),
-  ).rejects.toThrow('buffer limit')
   await expect(
     new LiveFlvParser().push(Buffer.concat([LIVE_FLV_HEADER, Buffer.alloc(15)]), () =>
       Promise.resolve(),
@@ -100,8 +95,8 @@ it('owns buffered bytes and waits for the consumer before delivering the next ta
   expect(parsed).toEqual([tag, tag])
 })
 
-it('accepts a tag at the size limit and rejects the first byte beyond it', async () => {
-  const tag = Buffer.alloc(8 * 1024 * 1024)
+it('accepts a tag past the old 8 MiB cap', async () => {
+  const tag = Buffer.alloc(8 * 1024 * 1024 + 16)
   tag.writeUIntBE(tag.length - 15, 1, 3)
   tag.writeUInt32BE(tag.length - 4, tag.length - 4)
   const parsed: Buffer[] = []
@@ -112,10 +107,4 @@ it('accepts a tag at the size limit and rejects the first byte beyond it', async
   })
   expect(parsed).toHaveLength(1)
   expect(parsed[0]?.equals(tag)).toBe(true)
-  tag.writeUIntBE(tag.length - 14, 1, 3)
-  await expect(
-    new LiveFlvParser().push(Buffer.concat([LIVE_FLV_HEADER, tag.subarray(0, 11)]), () => {
-      throw new Error('Oversized tag was emitted')
-    }),
-  ).rejects.toThrow('buffer limit')
 })

@@ -13,7 +13,7 @@ suitecut::SelectorWaitControls& SelectorWaits(){
         if(!ok&&browser_&&(session.empty()||sessions_.contains(session))){AssertionDeadlineReleaseFailed(owner);ScreenshotAssertionReleaseFailed(owner);}
         settled();if(!ok&&browser_&&(session.empty()||sessions_.contains(session)))Degraded("Native selector wait object-group release failed");
       };
-      DevToolsCall pending{owner,std::move(completed),session,true,kMaxResponseBytes,true};
+      DevToolsCall pending{owner,std::move(completed),session,true,true};
       pending.selector_group_release=true;
       devtools_.emplace(call,std::move(pending));
       if(!SubmitDevTools(call,"Runtime.releaseObjectGroup",params,session)){

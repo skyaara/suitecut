@@ -8,8 +8,8 @@ these component tests.
 
 ## Ownership and registration contract
 
-The runner owns a fixed-capacity controller (8 outstanding registrations, 256
-historical tickets). It reserves a ticket before the SDK may spawn Source. Each
+The runner owns one controller with no native limit on outstanding
+registrations or historical tickets. It reserves a ticket before the SDK may spawn Source. Each
 ticket binds the actual retained host lease/index/PID/kernel start identity and
 native worker-fixture catalog/declaration/token/test/generation. Native fixture
 resolution supplies the effective declaration version; author aliases cannot
@@ -37,8 +37,9 @@ normal direct-child waitpid ownership while it lives.
 
 ## Accepted work, idle and close
 
-Registration alone never enables reuse. The controller has a bounded ledger of
-64 genuine accepted native operations and monotonic per-Source emission IDs.
+Registration alone never enables reuse. The controller has a ledger of genuine
+accepted native operations, with no native count limit, and monotonic
+per-Source emission IDs.
 Each backend admission must reserve its operation before actual accepted work;
 only its actual physical backend/Inspector receipt retires that operation.
 Cancellation and timeout retain pending work. Out-of-order physical settlements

@@ -47,10 +47,10 @@ inline constexpr char kSuiteCutNativeAriaInteractive[] = R"JS(function formatNat
         'tree',
     ]);
     const output = [];
-    const textOf = (node, limit) => {
+    const textOf = (node) => {
         let text = '';
         const pending = [node];
-        while (pending.length && text.length < limit) {
+        while (pending.length) {
             const item = pending.pop();
             if (item === undefined)
                 break;
@@ -71,7 +71,6 @@ inline constexpr char kSuiteCutNativeAriaInteractive[] = R"JS(function formatNat
         }
         return text.replace(/\s+/gu, ' ').trim();
     };
-    const short = (value) => (value.length > 100 ? `${value.slice(0, 99)}…` : value);
     const kept = (node) => interactiveRoles.has(node.role) ||
         node.editable === true ||
         (node.cursor === 'pointer' && node.ref !== undefined);
@@ -79,9 +78,9 @@ inline constexpr char kSuiteCutNativeAriaInteractive[] = R"JS(function formatNat
         const name = node.name?.length
             ? node.name
             : node.role === 'heading' || kept(node)
-                ? textOf(node, 100)
+                ? textOf(node)
                 : '';
-        let text = `${'  '.repeat(depth)}- ${node.role}${name ? ` ${JSON.stringify(short(name))}` : ''}`;
+        let text = `${'  '.repeat(depth)}- ${node.role}${name ? ` ${JSON.stringify(name)}` : ''}`;
         for (const key of [
             'checked',
             'disabled',
@@ -98,14 +97,14 @@ inline constexpr char kSuiteCutNativeAriaInteractive[] = R"JS(function formatNat
                 text += ` [${key}=${String(state)}]`;
         }
         if (node.placeholder)
-            text += ` [placeholder=${JSON.stringify(short(node.placeholder))}]`;
+            text += ` [placeholder=${JSON.stringify(node.placeholder)}]`;
         if (options.boxes && node.box)
             text += ` [box=${[node.box.x, node.box.y, node.box.width, node.box.height].join(',')}]`;
         if (node.ref !== undefined)
             text += ` [ref=${node.ref}]`;
         if ((node.role === 'textbox' || node.role === 'searchbox' || node.role === 'combobox') &&
             node.text)
-            text += `: ${JSON.stringify(short(node.text))}`;
+            text += `: ${JSON.stringify(node.text)}`;
         return text;
     };
     const visit = (roots) => {

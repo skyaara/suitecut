@@ -66,17 +66,16 @@ class DedicatedHostProcess {
   pid_t Pid()const{return pid_;}
   bool ControlClosed()const{return control_closed_;}
   bool Send(std::string line){
-    if(exit_||line.size()>65536||line.find('\n')!=std::string::npos||writes_.size()>=64||write_bytes_+line.size()+1>1048576)return false;
-    line+='\n';write_bytes_+=line.size();writes_.push_back(std::move(line));Flush();return true;
+    if(exit_||line.find('\n')!=std::string::npos)return false;
+    line+='\n';writes_.push_back(std::move(line));Flush();return true;
   }
   std::array<pollfd,3> PollDescriptors()const{return {{{input_,static_cast<short>(POLLIN|(writes_.empty()?0:POLLOUT)),0},{output_,POLLIN,0},{errors_,POLLIN,0}}};}
   std::vector<std::string> Poll(int milliseconds=10){
     Flush();std::array<pollfd,3> fds{{{input_,POLLIN,0},{output_,POLLIN,0},{errors_,POLLIN,0}}};
     const auto ready=::poll(fds.data(),fds.size(),milliseconds);if(ready<0&&errno!=EINTR)throw std::runtime_error("Native host poll failed");
-    Read(input_,output_text_,1048576,&control_closed_);Read(output_,stdout_,1048576);Read(errors_,stderr_,1048576);
+    Read(input_,output_text_,&control_closed_);Read(output_,stdout_);Read(errors_,stderr_);
     std::vector<std::string> lines;size_t position;
-    while((position=output_text_.find('\n'))!=std::string::npos){if(position>65536)throw std::runtime_error("Native host protocol line limit exceeded");lines.push_back(output_text_.substr(0,position));output_text_.erase(0,position+1);}
-    if(output_text_.size()>65536)throw std::runtime_error("Native host partial protocol line limit exceeded");
+    while((position=output_text_.find('\n'))!=std::string::npos){lines.push_back(output_text_.substr(0,position));output_text_.erase(0,position+1);}
     ObserveExit();return lines;
   }
   std::optional<Exit> Exited(){ObserveExit();return exit_;}
@@ -87,12 +86,12 @@ class DedicatedHostProcess {
   void Tick(double now){ObserveExit();if(!exit_&&termination_deadline_&&now>=termination_deadline_)Kill();}
  private:
   friend struct DedicatedHostProcessTestAccess;
-  static void Read(int fd,std::string& into,size_t limit,bool* closed=nullptr){
+  static void Read(int fd,std::string& into,bool* closed=nullptr){
     std::array<char,4096> data;
-    for(;;){const auto count=::read(fd,data.data(),data.size());if(count>0){if(into.size()+static_cast<size_t>(count)>limit)throw std::runtime_error("Native host stream limit exceeded");into.append(data.data(),static_cast<size_t>(count));continue;}if(count==0&&closed)*closed=true;if(count<0&&errno==EINTR)continue;if(count<0&&closed&&errno==ECONNRESET){*closed=true;return;}if(count<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK)throw std::runtime_error("Native host read failed");return;}
+    for(;;){const auto count=::read(fd,data.data(),data.size());if(count>0){into.append(data.data(),static_cast<size_t>(count));continue;}if(count==0&&closed)*closed=true;if(count<0&&errno==EINTR)continue;if(count<0&&closed&&errno==ECONNRESET){*closed=true;return;}if(count<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK)throw std::runtime_error("Native host read failed");return;}
   }
   void Flush(){
-    while(!writes_.empty()){auto& line=writes_.front();const auto count=::send(input_,line.data()+write_offset_,line.size()-write_offset_,MSG_NOSIGNAL);if(count>0){write_offset_+=static_cast<size_t>(count);write_bytes_-=static_cast<size_t>(count);if(write_offset_==line.size()){writes_.pop_front();write_offset_=0;}continue;}if(count<0&&errno==EINTR)continue;if(count<0&&(errno==EAGAIN||errno==EWOULDBLOCK))return;return;}
+    while(!writes_.empty()){auto& line=writes_.front();const auto count=::send(input_,line.data()+write_offset_,line.size()-write_offset_,MSG_NOSIGNAL);if(count>0){write_offset_+=static_cast<size_t>(count);if(write_offset_==line.size()){writes_.pop_front();write_offset_=0;}continue;}if(count<0&&errno==EINTR)continue;if(count<0&&(errno==EAGAIN||errno==EWOULDBLOCK))return;return;}
   }
   void ObserveExit(){
     if(exit_||pid_<=0)return;
@@ -110,6 +109,6 @@ class DedicatedHostProcess {
     exit_=Exit{WIFSIGNALED(status),WIFSIGNALED(status)?WTERMSIG(status):WEXITSTATUS(status)};return true;
   }
   void CloseFDs(){for(int* fd:{&input_,&output_,&errors_})if(*fd>=0){::close(*fd);*fd=-1;}}
-  pid_t pid_=-1;int input_=-1,output_=-1,errors_=-1;std::optional<Exit> exit_;std::optional<int> wait_error_;std::deque<std::string> writes_;size_t write_bytes_=0,write_offset_=0;std::string output_text_,stdout_,stderr_;double termination_deadline_=0;bool control_closed_=false;
+  pid_t pid_=-1;int input_=-1,output_=-1,errors_=-1;std::optional<Exit> exit_;std::optional<int> wait_error_;std::deque<std::string> writes_;size_t write_offset_=0;std::string output_text_,stdout_,stderr_;double termination_deadline_=0;bool control_closed_=false;
 };
 }

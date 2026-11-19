@@ -43,8 +43,8 @@ struct Harness {
  std::string MissingHandle(int){return "Missing actual retained handle";}
  void ResolveFramePath(int,uint64_t,Dict,size_t,const std::string&,std::function<void(Dict)>){assert(false);}
  void WithFrame(int,const std::string&frame,std::function<void(int)>done,bool utility){assert(utility&&documents.contains(frame));done(documents.at(frame).utility);}
- void DevTools(int owner,const std::string&method,Dict params,DevToolsCallback done,const std::string&session,bool retained,size_t limit,bool lossless){
-   assert(session==documents.at("main").session&&retained&&limit==262144&&lossless);
+ void DevTools(int owner,const std::string&method,Dict params,DevToolsCallback done,const std::string&session,bool retained,bool lossless){
+   assert(session==documents.at("main").session&&retained&&lossless);
    auto lease=selectors.Begin(owner);assert(lease);
    calls.push_back({method,params->Copy(false),[lease,done=std::move(done)](bool ok,const auto&json){lease->Settle();done(ok,json);}});
  }

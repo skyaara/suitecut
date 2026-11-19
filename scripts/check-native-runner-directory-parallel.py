@@ -68,6 +68,6 @@ try:
   report=source['report'];assert len(report['outputRetention'])==1 and report['outputRetention'][0]['status']=='removed' and report['outputRetention'][0]['availability']=='originalLocationAbsent'
   assert not Path(report['outputRetention'][0]['originalPath']).exists() and Path(report['attachments'][0]['path']).read_bytes()==b'actual immutable artifact'
  credit=ordinary('actual bounded references','info.attachments.push(...Array.from({length:70},(_,n)=>({name:"actual"+n,contentType:"native/absent"})));')
- d,e,c=run('shared-declaration-credit-under-overlap',{'a.spec.mjs':credit,'b.spec.mjs':credit},expected=1);assert 70<=sum(len(x['report'].get('attachmentDeclarations',[])) for x in d['sources'])<=128 and d['summary']['unexpected']==1
+ d,e,c=run('shared-declaration-credit-under-overlap',{'a.spec.mjs':credit,'b.spec.mjs':credit});assert sum(len(x['report'].get('attachmentDeclarations',[])) for x in d['sources'])==140 and d['summary']['unexpected']==0
  index();print(json.dumps({'passed':True,'groups':len(groups),'index':str(root/'index.json')}))
 except BaseException:index();print('Preserved actual first negative:',root/'index.json',flush=True);raise

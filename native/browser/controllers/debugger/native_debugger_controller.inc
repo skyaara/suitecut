@@ -25,7 +25,7 @@ bool NativeDebuggerSend(const std::string& session,const std::string& method,Dic
   };
   // These actual retained callbacks survive canceled bootstrap/public owners.
   // Typed scalar projection applies only to genuine protocol-owned metadata.
-  devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,kMaxResponseBytes,true,true});
+  devtools_.emplace(assigned,DevToolsCall{0,callback,session,true,true,true});
   if(!SubmitDevTools(assigned,method,params,session)){
     const auto found=devtools_.find(assigned);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"{\"message\":\"Native shared Debugger dispatch was not accepted\"}");}
   }
@@ -41,7 +41,7 @@ void NativeDebuggerRawSend(int owner,uint64_t raw_receipt,const std::string&sess
   const int assigned=AllocateDevToolsId();
   if(!assigned){if(native_debugger_domains_)native_debugger_domains_->EndRaw(raw_receipt,false,false);reply(false,"{\"message\":\"Native raw Debugger command identity exhausted\"}");return;}
   DevToolsCallback actual_reply=[this,raw_receipt,reply=std::move(reply)](bool ok,const std::string&json){if(native_debugger_domains_)native_debugger_domains_->EndRaw(raw_receipt,ok);reply(ok,json);};
-  devtools_.emplace(assigned,DevToolsCall{owner,std::move(actual_reply),session,true,kMaxResponseBytes,true,false});
+  devtools_.emplace(assigned,DevToolsCall{owner,std::move(actual_reply),session,true,true,false});
   if(!SubmitDevTools(assigned,method,params,session)){
     const auto found=devtools_.find(assigned);
     if(found!=devtools_.end()){if(native_debugger_domains_)native_debugger_domains_->EndRaw(raw_receipt,false,false);auto actual=std::exchange(found->second.callback, nullptr);devtools_.erase(found);actual(false,"{\"message\":\"Native raw Debugger dispatch was not accepted\"}");}

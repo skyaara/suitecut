@@ -8,17 +8,14 @@
 
 namespace suitecut {
 namespace {
-constexpr std::size_t kMediaLimit = 3840 * 2160 * 4;
-constexpr std::size_t kResponseLimit = 192 * 1024 * 1024;
 constexpr std::string_view kTypes[] = {"ready","response","error","frame","audio","actionstage","binding","console","context","contextconsole","contextnetwork","contextnetworkbody","contextroute","contextroutemutation","contextworker","contextworkerpredicate","dialog","download","event","eventpredicate","filechooser","httplookup","navigation","network","networkbody","pagecrash","pageerror","pagerecovered","recording","streaming","urlpredicate","websocket","websocketroute","worker","workwatermark"};
 } // namespace
 PacketDecoder::PacketDecoder(std::size_t max_header_bytes, std::size_t max_payload_bytes)
     : max_header_(max_header_bytes), max_payload_(max_payload_bytes) {
-  if (max_header_ < 2 || max_header_ > 65536 || max_payload_ > kResponseLimit)
-    throw std::invalid_argument("Invalid native packet decoder limits");
+  if (max_header_ == 1) throw std::invalid_argument("Invalid native packet decoder limits");
 }
 void PacketDecoder::read_header() {
-  const auto value = Json::parse(packet_.header, {max_header_, 32, 16384, max_header_});
+  const auto value = Json::parse(packet_.header);
   if (!value.is_object() || !value.at("version").is_integer() || value.at("version").as_int() != 1 ||
       !value.at("type").is_string() || !value.at("bytes").is_integer())
     throw std::runtime_error("Invalid native packet header");
@@ -26,9 +23,8 @@ void PacketDecoder::read_header() {
   if (std::find(std::begin(kTypes), std::end(kTypes), type) == std::end(kTypes))
     throw std::runtime_error("Unknown native packet type");
   const auto length = value.at("bytes").as_int();
-  const auto limit = std::min(max_payload_, type == "response" ? kResponseLimit : kMediaLimit);
-  if (length < 0 || static_cast<std::uint64_t>(length) > limit)
-    throw std::runtime_error("Native packet payload exceeds limit");
+  if (length < 0 || (max_payload_ && static_cast<std::uint64_t>(length) > max_payload_))
+    throw std::runtime_error("Native packet payload exceeds the caller's limit");
   if (value.contains("pageId") && (!value.at("pageId").is_integer() || value.at("pageId").as_int() < 1 || value.at("pageId").as_int() > std::numeric_limits<int>::max()))
     throw std::runtime_error("Invalid native packet page ID");
   if (type == "response" && (!value.at("id").is_integer() || value.at("id").as_int() < 1 || value.at("id").as_int() > std::numeric_limits<int>::max() || !value.at("ok").is_bool()))
@@ -36,16 +32,20 @@ void PacketDecoder::read_header() {
   if ((type == "ready" || type == "error" || type == "pagecrash" || type == "pagerecovered" || type == "navigation" || type == "event" || type == "actionstage" || type == "urlpredicate" || type == "workwatermark") && length != 0)
     throw std::runtime_error("Unexpected native control payload");
   if (type == "frame") {
+    // No suitecut frame size cap. Dimensions stay within the engine's int
+    // geometry, so the uint64 byte count below cannot overflow.
     const auto width = value.at("width").as_int(), height = value.at("height").as_int();
     const auto format = value.contains("pixelFormat") ? value.at("pixelFormat").as_string() : "bgra";
-    if (width < 1 || width > 3840 || height < 1 || height > 2160 ||
-        (format != "bgra" && format != "i420") || (format == "i420" && (width % 2 || height % 2)) ||
-        length != (format == "bgra" ? width * height * 4 : width * height * 3 / 2))
+    if (width < 1 || width > std::numeric_limits<int>::max() || height < 1 || height > std::numeric_limits<int>::max() ||
+        (format != "bgra" && format != "i420") || (format == "i420" && (width % 2 || height % 2)))
+      throw std::runtime_error("Invalid native frame geometry");
+    const auto pixels = static_cast<std::uint64_t>(width) * static_cast<std::uint64_t>(height);
+    if (static_cast<std::uint64_t>(length) != (format == "bgra" ? pixels * 4 : pixels * 3 / 2))
       throw std::runtime_error("Invalid native frame geometry");
   }
   if (type == "audio") {
     const auto frames = value.at("frames").as_int();
-    if (frames < 1 || frames > 4096 || length != frames * 4) throw std::runtime_error("Invalid native PCM payload");
+    if (frames < 1 || length % 4 || length / 4 != frames) throw std::runtime_error("Invalid native PCM payload");
   }
   payload_size_ = static_cast<std::size_t>(length);
 }
@@ -67,8 +67,7 @@ void PacketDecoder::feed(std::span<const std::uint8_t> bytes, const std::functio
         prefix_size_ += take; bytes = bytes.subspan(take);
         if (prefix_size_ != 4) continue;
         header_size_ = std::uint32_t(prefix_[0]) | (std::uint32_t(prefix_[1]) << 8) | (std::uint32_t(prefix_[2]) << 16) | (std::uint32_t(prefix_[3]) << 24);
-        if (header_size_ < 2 || header_size_ > max_header_) throw std::runtime_error("Invalid native packet header length");
-        packet_.header.reserve(header_size_);
+        if (header_size_ < 2 || (max_header_ && header_size_ > max_header_)) throw std::runtime_error("Invalid native packet header length");
       }
       if (packet_.header.size() < header_size_) {
         const auto take = std::min(header_size_ - packet_.header.size(), bytes.size());

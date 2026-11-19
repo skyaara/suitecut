@@ -22,7 +22,6 @@ function prepare(
     !Number.isInteger(frame.height) ||
     frame.width < 1 ||
     frame.height < 1 ||
-    frame.width * frame.height > 3840 * 2160 ||
     frame.data.length < frame.width * frame.height * 4 ||
     !Number.isInteger(crop.x) ||
     !Number.isInteger(crop.y) ||

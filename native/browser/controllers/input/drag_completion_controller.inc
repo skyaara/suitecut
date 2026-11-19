@@ -142,7 +142,7 @@ bool NativeDropSend(const NativeDropCore::Scope& scope,
   native_drop_transport_.emplace(command, NativeDropTransport{scope, stage, receipt});
   try {
     devtools_.emplace(command, DevToolsCall{scope.owner, std::move(actual_reply),
-                                          "", true, 65536, true});
+                                          "", true, true});
   } catch (...) {
     native_drop_transport_.erase(command); throw;
   }

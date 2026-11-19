@@ -55,11 +55,11 @@ export interface SharedBrowserOptions {
 export interface SharedRecordingOptions {
   /** Output file. An `.mp4` is encoded with hardware H.264. Relative paths resolve from the working directory. */
   readonly path: string
-  /** Frames per second of the video, 1 to 120; only frames due at this rate are captured. Defaults to 60. */
+  /** Frames per second of the video, at least 1; only frames due at this rate are captured. Defaults to 60. */
   readonly fps?: number
   /** Records the front tab's sound as 48 kHz stereo AAC. Defaults to false. */
   readonly audio?: boolean
-  /** Video size. Defaults to the captured area in device pixels, scaled to fit 3840x2160. */
+  /** Video size. Defaults to the captured area in device pixels. */
   readonly width?: number
   readonly height?: number
   /** FFmpeg used to write the file. Defaults to `SUITECUT_FFMPEG_PATH`, then `ffmpeg` on the PATH. */
@@ -134,7 +134,7 @@ const pageScript = String.raw`(mode, index) => {
     const r = el.getBoundingClientRect()
     return r.width > 0 && r.height > 0 && el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
   }
-  const clean = (text, max = 120) => (text || '').replace(/\s+/g, ' ').trim().slice(0, max)
+  const clean = (text) => (text || '').replace(/\s+/g, ' ').trim()
   const labelled = (el) => (el.getAttribute('aria-labelledby') || '').split(/\s+/).map((id) => document.getElementById(id)?.innerText || '').join(' ')
   const name = (el) => clean(el.getAttribute('aria-label') || labelled(el) || el.labels?.[0]?.innerText ||
     (el.tagName === 'INPUT' && ['button', 'submit', 'reset'].includes(el.type) ? el.value : '') ||
@@ -153,8 +153,7 @@ const pageScript = String.raw`(mode, index) => {
   }
   const refs = new Map(targets.map((el, i) => [el, i]))
   const lines = []
-  let size = 0
-  const add = (line) => { if (size < 24000) { lines.push(line); size += line.length } }
+  const add = (line) => { lines.push(line) }
   const skip = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'SVG', 'HEAD'])
   const walk = (el, inside) => {
     if (skip.has(el.tagName.toUpperCase())) return
@@ -163,22 +162,22 @@ const pageScript = String.raw`(mode, index) => {
       const details = []
       if (el.disabled) details.push('disabled')
       if (el.type === 'checkbox' || el.type === 'radio') details.push(el.checked ? 'checked' : 'unchecked')
-      else if ('value' in el && el.tagName !== 'BUTTON' && el.value) details.push('value=' + JSON.stringify(el.type === 'password' ? '••••' : clean(el.value, 80)))
-      if (el.tagName === 'A') details.push('href=' + JSON.stringify(clean(el.getAttribute('href'), 100)))
+      else if ('value' in el && el.tagName !== 'BUTTON' && el.value) details.push('value=' + JSON.stringify(el.type === 'password' ? '••••' : clean(el.value)))
+      if (el.tagName === 'A') details.push('href=' + JSON.stringify(clean(el.getAttribute('href'))))
       add('- ' + role(el) + ' ' + JSON.stringify(name(el)) + ' [ref=e' + ref + ']' + (details.length ? ' ' + details.join(' ') : ''))
       inside = true
     } else if (!inside && /^H[1-6]$/.test(el.tagName) && shown(el)) {
-      add('- heading ' + JSON.stringify(clean(el.innerText, 200)) + ' [level=' + el.tagName[1] + ']')
+      add('- heading ' + JSON.stringify(clean(el.innerText)) + ' [level=' + el.tagName[1] + ']')
       return
     } else if (!inside) {
-      const own = clean([...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' '), 300)
+      const own = clean([...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' '))
       if (own && shown(el)) add('- text ' + JSON.stringify(own))
     }
     for (const child of el.children) walk(child, inside)
   }
   if (document.body) walk(document.body, false)
   const scroll = document.scrollingElement
-  return { title: document.title, url: location.href, scroll: scroll ? [Math.round(scroll.scrollTop), Math.max(0, scroll.scrollHeight - innerHeight)] : [0, 0], lines, truncated: size >= 24000 }
+  return { title: document.title, url: location.href, scroll: scroll ? [Math.round(scroll.scrollTop), Math.max(0, scroll.scrollHeight - innerHeight)] : [0, 0], lines }
 }`
 
 const snapshotResult = z.object({
@@ -186,7 +185,6 @@ const snapshotResult = z.object({
   url: z.string(),
   scroll: z.tuple([z.number(), z.number()]),
   lines: z.array(z.string()),
-  truncated: z.boolean(),
 })
 
 /** Launches the shared browser and resolves once its first tab exists. */
@@ -599,7 +597,7 @@ export class SharedTab {
     ]
     const dialog = this.browser.openDialogs.get(this.id)
     if (dialog) header.push(`Open dialog: ${JSON.stringify(dialog.message ?? '')}`)
-    return [...header, '', ...page.lines, ...(page.truncated ? ['(truncated)'] : [])].join('\n')
+    return [...header, '', ...page.lines].join('\n')
   }
 
   /** Scrolls a snapshot ref into view and returns its centre in page coordinates. */

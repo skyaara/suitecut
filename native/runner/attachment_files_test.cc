@@ -18,7 +18,7 @@ struct Job{
  void Until(const std::function<bool()>& done){const auto end=af::Now()+10000;while(!done()){assert(af::Now()<end);Poll();if(process->Exited())break;}}
  void Body(const std::string& bytes){Until([&]{return opened;});assert(opened);if(!bytes.empty()){assert(process->Send("CHUNK 1 1 "+af::Hex(bytes)));Until([&]{return !rows.empty()&&rows.back()[0]=="CHUNK_OK";});}assert(process->Send("FINISH 1"));Until([&]{return ready;});}
  void Exit(){Until([&]{return process->Exited().has_value();});assert(process->Exited());Poll();assert(process->Stdout().empty()&&process->Stderr().empty());}
- bool Error(const std::string& stage,int error){for(const auto& r:rows)if(r[0]=="ERROR"&&af::UInt(r[2])==static_cast<uint64_t>(error)&&af::Unhex(r[3],100)==stage)return true;return false;}
+ bool Error(const std::string& stage,int error){for(const auto& r:rows)if(r[0]=="ERROR"&&af::UInt(r[2])==static_cast<uint64_t>(error)&&af::Unhex(r[3])==stage)return true;return false;}
 };
 int main(int argc,char** argv){if(argc==2&&std::string_view(argv[1])=="--attachment-worker")return af::Worker();std::string pattern="/tmp/suitecut-native-attachments-XXXXXX";std::vector<char> chars(pattern.begin(),pattern.end());chars.push_back(0);const auto made=mkdtemp(chars.data());assert(made);const fs::path root=made;const auto out=root/"owned";fs::create_directory(out);const std::string bytes("real\0\xff\x01",7);
  {Job j(out,"B","",bytes.size());j.Body(bytes);assert(j.ready&&j.count==bytes.size()&&fs::is_empty(out)&&!j.process->Exited());assert(j.process->Send("COMMIT 1"));j.Exit();assert(j.committed&&!j.process->Exited()->signaled&&j.process->Exited()->code==0&&Read(out/"actual.bin")==bytes);fs::remove(out/"actual.bin");}

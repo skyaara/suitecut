@@ -12,9 +12,9 @@ class FixtureDefaultTimeouts {
  public:
   static constexpr uint64_t kDefault=30000,kMaximum=120000;
   void Root(uint64_t timeout){Validate(timeout);if(root_)throw std::invalid_argument("Duplicate native root timeout");root_=timeout;}
-  void Project(size_t index,uint64_t timeout){Validate(timeout);if(index>=128||!projects_.emplace(index,timeout).second)throw std::invalid_argument("Native project timeout owner rejected");}
+  void Project(size_t index,uint64_t timeout){Validate(timeout);if(!projects_.emplace(index,timeout).second)throw std::invalid_argument("Native project timeout owner rejected");}
   uint64_t Default(std::optional<size_t> project=std::nullopt)const{
-    if(project){if(*project>=128)throw std::invalid_argument("Native default timeout project rejected");const auto found=projects_.find(*project);if(found!=projects_.end())return found->second;}
+    if(project){const auto found=projects_.find(*project);if(found!=projects_.end())return found->second;}
     return root_.value_or(kDefault);
   }
   uint64_t Test(std::optional<uint64_t> declared,std::optional<size_t> project=std::nullopt)const{if(declared){Validate(*declared);return *declared;}return Default(project);}

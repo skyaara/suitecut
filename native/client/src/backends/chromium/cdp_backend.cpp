@@ -20,9 +20,6 @@
 namespace suitecut::detail {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr std::size_t command_limit = 65536;
-constexpr std::size_t queued_limit = 4 * 1024 * 1024;
-constexpr std::size_t resource_limit = 4096;
 // Only the command worker sets this pointer. Cancellation changes the pointed
 // flag atomically, so a multi-step helper stops before its next CDP operation.
 thread_local const std::atomic<bool>* active_cancellation = nullptr;
@@ -44,8 +41,10 @@ int positive_id(const Json& fields, const char* name, int fallback = 0) {
 }
 Packet packet(Json header, const Json& body, std::size_t limit) {
   // A missing payload is the existing native representation of JSON null.
-  // This also leaves error responses usable with very small payload budgets.
-  const auto text = body.is_null() ? std::string{} : body.dump({limit, 64, 1024 * 1024, limit});
+  // This also leaves error responses usable with very small payload limits.
+  // `limit` is the caller's max_payload_bytes; zero means no limit.
+  JsonLimits limits; limits.max_bytes = limit; limits.max_string_bytes = limit;
+  const auto text = body.is_null() ? std::string{} : body.dump(limits);
   header["version"] = 1;
   header["bytes"] = text.size();
   Packet result;
@@ -56,7 +55,7 @@ Packet packet(Json header, const Json& body, std::size_t limit) {
 Packet response(int id, int page, bool ok, const Json& body, std::size_t limit,
                 const std::string& error = {}) {
   Json header{{"version", 1}, {"type", "response"}, {"id", id}, {"pageId", page}, {"ok", ok}};
-  if (!ok) header["error"] = error.substr(0, 16384);
+  if (!ok) header["error"] = error;
   return packet(std::move(header), body, limit);
 }
 Json unwrap(Json evaluated) {
@@ -99,7 +98,7 @@ bool cdp_error_is(const std::exception& error,int code,const std::string& messag
   const std::string text=error.what();constexpr std::string_view prefix="CDP error: ";
   if(!text.starts_with(prefix))return false;
   try {
-    const auto detail=Json::parse(std::string_view(text).substr(prefix.size()),{65536,16,1024,65536});
+    const auto detail=Json::parse(std::string_view(text).substr(prefix.size()));
     return detail.at("code").as_int()==code&&detail.at("message").as_string()==message;
   } catch(...) {return false;}
 }
@@ -180,7 +179,6 @@ struct CdpBackend::Impl {
     int id = 0, page = 1;
     Json fields;
     Deadline deadline;
-    std::size_t bytes = 0;
     // Immutable snapshot for the narrow continuation lane. That worker never
     // accesses the command worker's runtime pages, contexts, or DOM state.
     std::string continuation_session;
@@ -190,8 +188,7 @@ struct CdpBackend::Impl {
   std::map<int, std::shared_ptr<Work>> pending;
   std::deque<std::shared_ptr<Work>> queue;
   std::deque<std::shared_ptr<Work>> continuations;
-  std::deque<std::pair<CdpAutomatic,std::size_t>> automatic;
-  std::size_t queue_bytes = 0;
+  std::deque<CdpAutomatic> automatic;
   std::deque<Packet> events;
   std::map<int, Packet> page_ready;
   std::map<std::string, int> session_pages;
@@ -216,15 +213,17 @@ struct CdpBackend::Impl {
   std::thread worker, continuation_worker, deadlines;
   std::string browser_version;
 
+  // Zero max_event_bytes means no limit. A caller limit is split between
+  // these lifecycle packets and the wire's raw event queue.
+  bool event_limited;
   std::size_t event_budget;
-  explicit Impl(const LaunchOptions& options) : event_budget(options.max_event_bytes/2) { runtime.options = options; }
+  explicit Impl(const LaunchOptions& options) : event_limited(options.max_event_bytes != 0), event_budget(options.max_event_bytes/2) { runtime.options = options; }
   void automatic_command(CdpAutomatic command) {
-    const auto bytes=command.params.dump({65536,32,16384,65536}).size()+command.method.size()+command.session.size();
     std::lock_guard lock(mutex);
     if(closing)return;
-    if(automatic.size()+pending.size()>=runtime.options.max_pending||bytes>queued_limit-queue_bytes)
-      throw std::runtime_error("Automatic network continuation budget exceeded");
-    automatic.emplace_back(std::move(command),bytes);queue_bytes+=bytes;changed.notify_all();
+    if(runtime.options.max_pending&&automatic.size()+pending.size()>=runtime.options.max_pending)
+      throw std::runtime_error("Automatic network continuation exceeds the caller's max_pending");
+    automatic.push_back(std::move(command));changed.notify_all();
   }
   bool observe(const Json& event) {
     runtime.network->observe(event);
@@ -245,7 +244,6 @@ struct CdpBackend::Impl {
       if(page){externally_closed.insert(page);page_ready.erase(page);}
       if(method=="Target.detachedFromTarget"&&params.contains("sessionId")) {
         const auto& detached=params.at("sessionId").as_string();
-        if(detached_sessions.size()>=resource_limit&&!detached_sessions.contains(detached))throw std::runtime_error("Detached session retirement queue capacity exceeded");
         detached_sessions.insert(detached);
       }
     }
@@ -265,12 +263,13 @@ struct CdpBackend::Impl {
   void enqueue_event_locked(Packet event) {
     if (closing) return;
     const auto bytes = event.header.size() + event.payload.size();
-    while (!events.empty() && (events.size() >= resource_limit ||
-           bytes > event_budget - counters.queued_event_bytes)) {
-      counters.queued_event_bytes -= events.front().header.size() + events.front().payload.size();
-      events.pop_front(); ++counters.dropped_events;
+    if (event_limited) {
+      while (!events.empty() && bytes > event_budget - counters.queued_event_bytes) {
+        counters.queued_event_bytes -= events.front().header.size() + events.front().payload.size();
+        events.pop_front(); ++counters.dropped_events;
+      }
+      if (bytes > event_budget) { ++counters.dropped_events; return; }
     }
-    if (bytes > event_budget) { ++counters.dropped_events; return; }
     events.push_back(std::move(event)); counters.queued_event_bytes += bytes;
     changed.notify_all();
   }
@@ -344,7 +343,7 @@ struct CdpBackend::Impl {
     }
     if(action!="setState"&&action!="setStorageState")throw std::invalid_argument("Unsupported storage action: "+action);
     const auto& state=fields.at("state");
-    if(!state.is_object()||!state.at("cookies").is_array()||!state.at("origins").is_array()||state.at("cookies").as_array().size()>4096||state.at("origins").as_array().size()>128)throw std::invalid_argument("Invalid bounded storage state");
+    if(!state.is_object()||!state.at("cookies").is_array()||!state.at("origins").is_array())throw std::invalid_argument("Invalid storage state");
     const auto current_origin=runtime.value(page,"location.origin",deadline).as_string();
     std::set<std::string> restored_origins;
     for(const auto& origin:state.at("origins").as_array()) {
@@ -357,7 +356,7 @@ struct CdpBackend::Impl {
       if(!restored_origins.insert(target_origin).second)
         throw std::invalid_argument("Storage restoration contains a duplicate origin");
       for(const auto* kind:{"localStorage","sessionStorage"})if(origin.contains(kind)) {
-        if(!origin.at(kind).is_array()||origin.at(kind).as_array().size()>4096)throw std::invalid_argument("Invalid storage entries");
+        if(!origin.at(kind).is_array())throw std::invalid_argument("Invalid storage entries");
         for(const auto& item:origin.at(kind).as_array()){item.at("name").as_string();item.at("value").as_string();}
       }
     }
@@ -383,8 +382,8 @@ struct CdpBackend::Impl {
     }
     if (action == "create") {
       reject_unknown(params, {});
-      if (runtime.contexts.size() + context_debt.size() >= resource_limit || runtime.next_context == INT_MAX)
-        throw std::runtime_error("Chromium context capacity exceeded");
+      if (runtime.next_context == INT_MAX)
+        throw std::runtime_error("Chromium context ID space exhausted");
       Json result;
       try { result = runtime.wire->call("Target.createBrowserContext", Json{{"disposeOnDetach", true}}, "", deadline); }
       catch (...) {
@@ -475,8 +474,8 @@ struct CdpBackend::Impl {
       reject_unknown(params, {"contextId"});
       if(id==0&&!runtime.options.cdp_endpoint.empty())
         throw std::runtime_error("Attached browsers require an SDK-owned context for new pages; create a context first");
-      if (runtime.pages.size() + target_debt.size() >= resource_limit || runtime.next_page == INT_MAX)
-        throw std::runtime_error("Chromium page capacity exceeded");
+      if (runtime.next_page == INT_MAX)
+        throw std::runtime_error("Chromium page ID space exhausted");
       Json result;
       try {
         if(id==0){std::lock_guard lock(mutex);default_creation_inflight=true;}
@@ -521,8 +520,8 @@ struct CdpBackend::Impl {
     if (action == "addCookies") {
       reject_unknown(params, {"contextId", "cookies"});
       const auto& cookies = params.at("cookies");
-      if (!cookies.is_array() || cookies.as_array().size() > resource_limit)
-        throw std::invalid_argument("Chromium cookies must be an array of at most 4096 entries");
+      if (!cookies.is_array())
+        throw std::invalid_argument("Chromium cookies must be an array");
       auto args=context_params(context->second);args["cookies"]=cookies;
       return runtime.wire->call("Storage.setCookies",std::move(args), "", deadline);
     }
@@ -587,7 +586,7 @@ struct CdpBackend::Impl {
   void remove_queued_locked(int id) {
     for (auto* lane : {&queue, &continuations})
       for (auto it = lane->begin(); it != lane->end(); ++it) if ((*it)->id == id) {
-        queue_bytes -= (*it)->bytes; lane->erase(it); return;
+        lane->erase(it); return;
       }
   }
   void cancel_locked(int id, const std::string& reason) {
@@ -608,9 +607,9 @@ struct CdpBackend::Impl {
         changed.wait(lock, [&] { return closing || !lane.empty() || (continuation&&!automatic.empty()); });
         if (closing) return;
         if(continuation&&!automatic.empty()) {
-          internal=std::move(automatic.front().first);queue_bytes-=automatic.front().second;automatic.pop_front();
+          internal=std::move(automatic.front());automatic.pop_front();
         } else {
-        work = lane.front(); lane.pop_front(); queue_bytes -= work->bytes;
+        work = lane.front(); lane.pop_front();
         if (!pending.contains(work->id)) continue;
         if (Clock::now() >= work->deadline) {
           cancel_locked(work->id, "Chromium request timed out in command queue"); continue;
@@ -680,17 +679,14 @@ struct CdpBackend::Impl {
 CdpBackend::CdpBackend(std::unique_ptr<Impl> impl) : impl_(std::move(impl)) {}
 CdpBackend::~CdpBackend() { try { close(); } catch (...) {} }
 std::unique_ptr<CdpBackend> CdpBackend::launch(const LaunchOptions& options) {
-  if (!options.max_pending || options.max_pending > resource_limit || !options.max_payload_bytes ||
-      options.max_payload_bytes > 192 * 1024 * 1024 || !options.max_event_bytes ||
-      options.max_event_bytes > 256 * 1024 * 1024)
-    throw std::invalid_argument("Invalid Chromium backend storage limits");
   duration_valid(options.startup_timeout); duration_valid(options.shutdown_timeout);
   auto backend = std::unique_ptr<CdpBackend>(new CdpBackend(std::make_unique<Impl>(options)));
   auto& state = *backend->impl_;
   const auto deadline = Clock::now() + options.startup_timeout;
   auto wire_options=options;
-  // One public event budget covers both backend lifecycle packets and raw wire
-  // events; retained bytes reported by stats() must never exceed that budget.
+  // A caller's event limit covers both backend lifecycle packets and raw wire
+  // events; retained bytes reported by stats() never exceed it. Zero stays
+  // zero (no limit) for the wire as well.
   wire_options.max_event_bytes=options.max_event_bytes-state.event_budget;
   state.runtime.wire = CdpConnection::launch(wire_options);
   state.runtime.contexts.emplace(0,"");
@@ -730,27 +726,24 @@ Request CdpBackend::submit(Json fields, std::chrono::milliseconds timeout) {
   std::lock_guard lock(state.mutex);
   if (state.terminal) std::rethrow_exception(state.terminal);
   if (state.closing) throw std::runtime_error("Chromium backend is closed");
-  if (state.pending.size()+state.automatic.size() >= state.runtime.options.max_pending)
-    throw std::runtime_error("Chromium pending request budget exceeded");
+  if (state.runtime.options.max_pending && state.pending.size()+state.automatic.size() >= state.runtime.options.max_pending)
+    throw std::runtime_error("Chromium pending requests reached the caller's max_pending");
   if (state.next_id == INT_MAX) throw std::runtime_error("Chromium request ID space exhausted");
   const int id = ++state.next_id;
   fields["id"] = id; fields["version"] = 1; fields["pageId"] = page;
   fields["timeoutMs"] = timeout.count();
-  const auto encoded = fields.dump({command_limit - 1, 64, command_limit, command_limit - 1});
-  const auto bytes = encoded.size() + 1;
-  if (bytes > queued_limit - state.queue_bytes) throw std::runtime_error("Chromium command queue is full");
   auto work = std::make_shared<Impl::Work>();
   const bool continuation = continuation_method(fields);
   if (continuation) {
     const auto session = state.page_sessions.find(page);
     if (session != state.page_sessions.end()) work->continuation_session = session->second;
   }
-  work->id = id; work->page = page; work->fields = std::move(fields); work->deadline = deadline; work->bytes = bytes;
+  work->id = id; work->page = page; work->fields = std::move(fields); work->deadline = deadline;
   Request result{id, work->promise.get_future()};
   state.pending.emplace(id, work);
   try { (continuation ? state.continuations : state.queue).push_back(std::move(work)); }
   catch (...) { state.pending.erase(id); throw; }
-  state.queue_bytes += bytes; ++state.counters.commands; state.counters.pending = state.pending.size();
+  ++state.counters.commands; state.counters.pending = state.pending.size();
   state.changed.notify_all(); return result;
 }
 void CdpBackend::cancel(int id) {
@@ -842,7 +835,7 @@ void CdpBackend::close() {
     if (!state.closing) {
       state.closing = true;
       while (!state.pending.empty()) state.cancel_locked(state.pending.begin()->first, "Chromium backend closed");
-      state.queue.clear(); state.continuations.clear();state.automatic.clear(); state.queue_bytes = 0;
+      state.queue.clear(); state.continuations.clear();state.automatic.clear();
       state.events.clear(); state.counters.queued_event_bytes = 0;
       state.page_ready.clear(); state.changed.notify_all();
     }

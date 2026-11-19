@@ -495,13 +495,13 @@ auto Source::Handle(int id, Dict message, bool frame_ready) -> void {
                     }
                     finish(std::move(preview));
                   },
-                  std::nullopt, false, kMaxResponseBytes, true);
+                  std::nullopt, false, true);
             };
             if (message->HasKey("bindingArgumentContext"))
               BindingArgumentMetadata(id, object_id, group, std::move(metadata));
             else
               DevTools(id, "Runtime.getProperties", properties, std::move(metadata), std::nullopt,
-                       false, kMaxResponseBytes, true);
+                       false, true);
           });
     };
     if (action == "create" && message->GetType("function") == VTYPE_STRING)

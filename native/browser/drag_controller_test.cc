@@ -50,7 +50,7 @@ class Source {
   };
   struct DevToolsCall {
     int owner; Reply callback; std::string session;
-    bool retain_after_cancel = false; size_t response_limit = 1048576;
+    bool retain_after_cancel = false;
     bool retained_control = false;
   };
   struct FrameState {

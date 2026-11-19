@@ -13,13 +13,13 @@
 struct Host {
   using Dict=CefRefPtr<CefDictionaryValue>;using Callback=std::function<void(bool,const std::string&)>;
   SuiteCutOperationRegistry operations_;bool browser_=true,closing_page_=false;double now=1;
-  struct Wire {int owner;std::string method,session;Dict params;bool retained;size_t response_limit;Callback callback;};
+  struct Wire {int owner;std::string method,session;Dict params;bool retained;Callback callback;};
   std::vector<Wire> pending;size_t publications=0;bool success=false;std::string error;
   double Now()const{return now;}
-  void DevTools(int owner,const std::string& method,Dict params,Callback callback,std::optional<std::string> session={},bool retained=false,size_t response_limit=0){pending.push_back({owner,method,session.value_or("missing"),params,retained,response_limit,std::move(callback)});}
+  void DevTools(int owner,const std::string& method,Dict params,Callback callback,std::optional<std::string> session={},bool retained=false){pending.push_back({owner,method,session.value_or("missing"),params,retained,std::move(callback)});}
   void Complete(int id,bool ok,const std::string& message="",const std::string& =""){assert(operations_.Finish(id));++publications;success=ok;error=message;}
   uint64_t Begin(double timeout=20){const auto entry=operations_.Begin(1,now,timeout);assert(entry);NativeBringToFront(1,entry->generation);return entry->generation;}
-  void Ack(bool ok=true,const std::string& json="{}"){assert(!pending.empty());auto call=std::move(pending.front());pending.erase(pending.begin());assert(call.method=="Page.bringToFront"&&call.params&&call.params->GetSize()==0&&call.session.empty()&&call.retained&&call.response_limit==8192);call.callback(ok,json);}
+  void Ack(bool ok=true,const std::string& json="{}"){assert(!pending.empty());auto call=std::move(pending.front());pending.erase(pending.begin());assert(call.method=="Page.bringToFront"&&call.params&&call.params->GetSize()==0&&call.session.empty()&&call.retained);call.callback(ok,json);}
 #include "controllers/lifecycle/page_activation_source.inc"
 };
 int main(){cef_api_hash(CEF_API_VERSION,0);size_t checks=0;

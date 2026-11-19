@@ -40,7 +40,6 @@ struct BidiPermissions::Impl {
   struct Entry {int context=0;Json value;};
   std::timed_mutex mutex;
   std::map<std::string,Entry> originals;
-  std::size_t original_bytes=2;
   bool closed=false;
 };
 BidiPermissions::BidiPermissions():impl_(std::make_unique<Impl>()){}
@@ -54,7 +53,6 @@ Json BidiPermissions::command(BidiRuntime& runtime,int context,const std::string
     Json::array records;for(const auto&[key,entry]:impl_->originals){(void)key;if(entry.context==context)records.push_back(entry.value);}
     restore(runtime,records,deadline);
     std::erase_if(impl_->originals,[&](const auto& item){return item.second.context==context;});
-    impl_->original_bytes=2;for(const auto&[key,entry]:impl_->originals){(void)key;impl_->original_bytes+=entry.value.dump().size()+1;}
     return Json{};
   }
   if(action!="grantPermissions")throw std::invalid_argument("Unsupported Firefox permission action: "+action);
@@ -63,7 +61,7 @@ Json BidiPermissions::command(BidiRuntime& runtime,int context,const std::string
     if(key!="contextId"&&key!="origin"&&key!="permissions")throw std::invalid_argument("Unsupported Firefox permission field: "+key);
   }
   const auto& input=params.at("permissions");
-  if(!input.is_array()||input.as_array().size()>64)throw std::invalid_argument("Firefox permissions must be an array with at most64 entries");
+  if(!input.is_array())throw std::invalid_argument("Firefox permissions must be an array");
   Json::array requested;std::set<std::string> unique;
   for(const auto& value:input.as_array()) {
     const auto parsed=descriptor(value.as_string());if(unique.insert(parsed.dump()).second)requested.push_back(parsed);
@@ -77,7 +75,7 @@ Json BidiPermissions::command(BidiRuntime& runtime,int context,const std::string
     if(origins.size()!=1||origins.contains("null"))throw std::invalid_argument("Firefox permissions require an explicit origin when the context has no unique nonopaque page origin");
     origin=*origins.begin();
   }
-  if(origin.empty()||origin.size()>8192||origin.find('\0')!=std::string::npos)throw std::invalid_argument("Invalid Firefox permission origin");
+  if(origin.empty()||origin.find('\0')!=std::string::npos)throw std::invalid_argument("Invalid Firefox permission origin");
   // Prevalidate the whole list and snapshot exact stored entries in one native
   // operation. Querying navigator.permissions alone loses expiry/inheritance.
   const auto snapshot=privileged(runtime,"(()=>{"+manager()+
@@ -88,18 +86,9 @@ Json BidiPermissions::command(BidiRuntime& runtime,int context,const std::string
     "if(descriptor.name==='storage-access')throw new Error('Firefox storage-access grants are unsupported');"
     "const existing=Services.perms.getPermissionObject(p,typed.type,true);records.push({descriptor,type:typed.type,origin,user,entry:existing?{capability:existing.capability,expireType:existing.expireType,expireTime:existing.expireTime}:null});}return records;})()",deadline);
   if(!snapshot.is_array()||snapshot.as_array().size()!=requested.size())throw std::runtime_error("Invalid Firefox permission snapshot");
-  std::size_t additions=0,added_bytes=0;
   for(const auto& entry:snapshot.as_array()) {
     const auto key=std::to_string(context)+"\n"+entry.at("origin").as_string()+"\n"+entry.at("type").as_string();
-    if(!impl_->originals.contains(key)){++additions;added_bytes+=entry.dump().size()+1;}
-  }
-  if(additions>4096-impl_->originals.size())throw std::runtime_error("Firefox permission restoration capacity exceeded");
-  // Keep the entire restoration batch below the helper's 48 KiB authored-script
-  // budget, so shutdown needs one native restore rather than an unbounded loop.
-  if(added_bytes>32768-impl_->original_bytes)throw std::runtime_error("Firefox permission restoration byte budget exceeded");
-  for(const auto& entry:snapshot.as_array()) {
-    const auto key=std::to_string(context)+"\n"+entry.at("origin").as_string()+"\n"+entry.at("type").as_string();
-    if(impl_->originals.try_emplace(key,Impl::Entry{context,entry}).second)impl_->original_bytes+=entry.dump().size()+1;
+    impl_->originals.try_emplace(key,Impl::Entry{context,entry});
   }
   for(const auto& entry:snapshot.as_array())runtime.call("permissions.setPermission",Json{{"descriptor",entry.at("descriptor")},{"state","granted"},{"origin",entry.at("origin")},{"userContext",user}},deadline);
   return Json{};
@@ -108,13 +97,12 @@ void BidiPermissions::forget(int context) {
   std::unique_lock lock(impl_->mutex,std::defer_lock);
   if(!lock.try_lock_for(std::chrono::milliseconds{100}))throw std::runtime_error("Firefox permission retirement lock deadline expired");
   std::erase_if(impl_->originals,[&](const auto& item){return item.second.context==context;});
-  impl_->original_bytes=2;for(const auto&[key,entry]:impl_->originals){(void)key;impl_->original_bytes+=entry.value.dump().size()+1;}
 }
 void BidiPermissions::close(BidiRuntime& runtime,Deadline deadline) {
   std::unique_lock lock(impl_->mutex,std::defer_lock);
   if(!lock.try_lock_until(deadline))throw std::runtime_error("Firefox permission cleanup lock deadline expired");
   impl_->closed=true;
   Json::array records;for(const auto&[key,entry]:impl_->originals){(void)key;records.push_back(entry.value);}
-  BidiCleanupScope cleanup;restore(runtime,records,deadline);impl_->originals.clear();impl_->original_bytes=2;
+  BidiCleanupScope cleanup;restore(runtime,records,deadline);impl_->originals.clear();
 }
 }

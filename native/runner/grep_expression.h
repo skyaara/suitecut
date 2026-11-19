@@ -46,7 +46,6 @@ namespace suitecut::runner {
   }
   ;
   inline GrepExpression CompileCLIGrep(std::u16string argument){
-    if(argument.size()>4096)throw std::invalid_argument("Native grep CLI argument capacity4096 exceeded");
     std::string flags="gi";
     if(!argument.empty()&&argument.front()=='/'){
       const auto slash=argument.rfind('/');

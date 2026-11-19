@@ -22,7 +22,7 @@ int main(int argc,char** argv){
       else if(flag=="--junit")set_output(junit,next(index));
       else if(flag=="--html")set_output(html,next(index));
       else if(flag=="--input"){const auto id=next(index);inputs.push_back({id,next(index)});}
-      else if(flag=="--expected-inputs"){const auto text=next(index);size_t count=0;const auto parsed=std::from_chars(text.data(),text.data()+text.size(),count);if(options.expected_inputs||parsed.ec!=std::errc{}||parsed.ptr!=text.data()+text.size()||!count||count>128)merge_detail::Invalid("invalid/duplicate expected input count");options.expected_inputs=count;}
+      else if(flag=="--expected-inputs"){const auto text=next(index);size_t count=0;const auto parsed=std::from_chars(text.data(),text.data()+text.size(),count);if(options.expected_inputs||parsed.ec!=std::errc{}||parsed.ptr!=text.data()+text.size()||!count)merge_detail::Invalid("invalid/duplicate expected input count");options.expected_inputs=count;}
       else if(flag=="--artifacts"){const auto policy=next(index);if(policy!="references"&&policy!="require")merge_detail::Invalid("unknown artifact policy");options.require_artifacts=policy=="require";}
       else if(flag=="--fail-on-flaky-tests"){if(options.fail_on_flaky_tests)merge_detail::Invalid("duplicate fail-on-flaky option");options.fail_on_flaky_tests=true;}
       else if(flag=="--fail-on-run-failure")fail_on_run_failure=true;

@@ -17,5 +17,5 @@ void NativeBringToFront(int id,uint64_t generation){
       }
       if(!result){Complete(id,false,"Invalid native page activation acknowledgement");return;}
       Complete(id,true,"","{}");
-    },std::string{},true,8192);
+    },std::string{},true);
 }

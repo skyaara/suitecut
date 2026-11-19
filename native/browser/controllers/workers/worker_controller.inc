@@ -217,7 +217,7 @@ bool WorkerAttached(Dict data, const std::string& parent_session) {
       if (!ok) { self->WorkerBootstrapFailed(id,generation,error); return; }
       found->second.network_ready = true; self->WorkerMaybeResume(id,generation); self->WorkerMaybePublish(id,generation);
     };
-    auto network = CefDictionaryValue::Create(); network->SetInt("maxTotalBufferSize",128*1048576); network->SetInt("maxResourceBufferSize",32*1048576);network->SetInt("maxPostDataSize",2097152);
+    auto network = CefDictionaryValue::Create(); network->SetInt("maxTotalBufferSize",std::numeric_limits<int>::max()); network->SetInt("maxResourceBufferSize",std::numeric_limits<int>::max());network->SetInt("maxPostDataSize",std::numeric_limits<int>::max());
     if (!self->WorkerBootstrapSend(session,"Network.enable",network,[self,id,generation,session,ready](bool ok,const std::string& json) {
       auto found = self->worker_targets_.find(id); if (found == self->worker_targets_.end() || found->second.generation != generation) return;
       if (!ok) { self->WorkerBootstrapFailed(id,generation,json); return; }
@@ -406,7 +406,7 @@ void WorkerRequest(int id, const std::string& method, Dict params, DevToolsCallb
       Complete(id,false,error.empty()?"Native worker command failed":error);return;
     }
     callback(true,json);
-  },session,true,std::numeric_limits<size_t>::max(),lossless_scalars);
+  },session,true,lossless_scalars);
 }
 void WorkerCreateResult(int id, int handle, const std::string& group, bool ok, const std::string& json) {
   if (!WorkerCurrent(id)) return;

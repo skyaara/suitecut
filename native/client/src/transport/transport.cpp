@@ -38,10 +38,6 @@ extern char** environ;
 namespace suitecut {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr std::size_t command_limit = 65536;
-constexpr std::size_t outgoing_limit = 4 * 1024 * 1024;
-constexpr std::size_t event_count_limit = 4096;
-constexpr std::size_t stderr_limit = 16384;
 
 std::runtime_error failure(const std::string& message) { return std::runtime_error(message); }
 bool has_nul(const std::string& value) { return value.find('\0') != std::string::npos; }
@@ -57,26 +53,16 @@ void validate(const LaunchOptions& options) {
   if (!options.profile.empty() && (has_nul(options.profile) ||
       !std::filesystem::path(options.profile).is_absolute()))
     throw failure("Profile must be an absolute path without null bytes");
-  if (options.width < 2 || options.width > 3840 || options.height < 2 || options.height > 2160)
-    throw failure("Viewport must be within 2..3840 by 2..2160");
+  // No suitecut viewport, FPS or storage cap; the engine and CEF enforce theirs.
+  if (options.width < 2 || options.height < 2) throw failure("Viewport must be at least 2 by 2");
   if (!std::isfinite(options.frames_per_second) || options.frames_per_second < 1 ||
-      options.frames_per_second > 120 || std::floor(options.frames_per_second) != options.frames_per_second)
-    throw failure("Native capture FPS must be an integer within 1..120");
+      options.frames_per_second > INT_MAX || std::floor(options.frames_per_second) != options.frames_per_second)
+    throw failure("Native capture FPS must be a positive integer");
   duration_valid(options.startup_timeout, "Startup timeout");
   duration_valid(options.shutdown_timeout, "Shutdown timeout");
-  if (!options.max_pending || options.max_pending > 4096 || !options.max_event_bytes ||
-      options.max_event_bytes > 256 * 1024 * 1024 || !options.max_payload_bytes ||
-      options.max_payload_bytes > 192 * 1024 * 1024)
-    throw failure("Invalid native transport storage limits");
-  std::size_t bytes = 0;
-  if (options.arguments.size() > 1024) throw failure("Too many engine arguments");
-  for (const auto& argument : options.arguments) {
+  for (const auto& argument : options.arguments)
     if (has_nul(argument) || argument == "--" || argument.starts_with("--suitecut-"))
       throw failure("Engine arguments cannot override managed SuiteCut switches");
-    if (argument.size() > command_limit || bytes > 512 * 1024 - argument.size())
-      throw failure("Engine arguments exceed their bounded budget");
-    bytes += argument.size();
-  }
 }
 
 #ifndef _WIN32
@@ -148,18 +134,15 @@ struct Transport::Impl {
   struct Outgoing { int id; std::string line; std::size_t offset = 0; };
   std::map<int, Pending> pending;
   // Receipt controls must progress even when every public request slot is in
-  // use. They run on the existing I/O thread and have their own bounded budget.
+  // use. They run on the existing I/O thread outside the caller's max_pending.
   struct BodyReceipt { Clock::time_point deadline; std::string scope; };
   std::map<int, BodyReceipt> body_receipts;
   struct Body { std::size_t total, offset; Clock::time_point deadline; };
   std::map<std::string, Body> bodies;
-  std::size_t body_bytes = 0;
   std::deque<Outgoing> outgoing;
   struct Event { Packet packet; bool disposable; };
   std::deque<Event> events;
   std::map<int, Packet> page_ready;
-  std::size_t page_ready_bytes = 0;
-  std::size_t outgoing_bytes = 0;
   ClientStats counters;
   int next_id = 0;
   bool closing = false, finished = false, ready_seen = false;
@@ -205,8 +188,8 @@ struct Transport::Impl {
       item.promise.set_exception(terminal ? terminal : closed_error);
     }
     pending.clear(); counters.pending = 0;
-    body_receipts.clear(); bodies.clear(); body_bytes = 0;
-    outgoing.clear(); outgoing_bytes = 0;
+    body_receipts.clear(); bodies.clear();
+    outgoing.clear();
     changed.notify_all();
   }
   void fail(std::exception_ptr error) {
@@ -215,11 +198,7 @@ struct Transport::Impl {
     begin_close_locked(); wake(); changed.notify_all();
   }
   void enqueue_locked(int id, std::string line) {
-    if (line.size() > command_limit || line.size() > outgoing_limit - outgoing_bytes ||
-        outgoing.size() >= options.max_pending * 2 + 64)
-      throw failure("Native command writer is full");
-    const auto bytes = line.size();
-    outgoing.push_back({id, std::move(line), 0}); outgoing_bytes += bytes;
+    outgoing.push_back({id, std::move(line), 0});
   }
   void cancel_locked(int target, const std::string& reason) {
     const auto found = pending.find(target);
@@ -231,7 +210,7 @@ struct Transport::Impl {
     // before its cancellation, otherwise later commands would become malformed.
     for (auto it = outgoing.begin(); it != outgoing.end(); ++it) {
       if (it->id == target && it->offset == 0) {
-        outgoing_bytes -= it->line.size(); outgoing.erase(it); return;
+        outgoing.erase(it); return;
       }
     }
     const int id = allocate_id();
@@ -241,7 +220,6 @@ struct Transport::Impl {
     ++counters.commands;
   }
   void acknowledge_body(Json fields, const char* stage) {
-    if (body_receipts.size() >= 256) throw failure("Native network body receipt capacity exceeded");
     const int id = allocate_id();
     if (fields.at("command") == Json("context")) fields["params"]["stage"] = stage;
     else fields["stage"] = stage;
@@ -254,7 +232,7 @@ struct Transport::Impl {
   }
   void forget_bodies(const std::string& scope) {
     for (auto it=bodies.begin();it!=bodies.end();) {
-      if (it->first.starts_with(scope)) { body_bytes-=it->second.total;it=bodies.erase(it); }
+      if (it->first.starts_with(scope)) it=bodies.erase(it);
       else ++it;
     }
     // Closure retires outstanding receipts too. Already-written controls can
@@ -283,7 +261,7 @@ struct Transport::Impl {
       if (!header.contains("owner") || !header.at("owner").is_string())
         throw failure("Invalid native worker body owner");
       const auto& owner = header.at("owner").as_string();
-      if (!owner.starts_with("broker:") || owner.size() < 8 || owner.size() > 128 ||
+      if (!owner.starts_with("broker:") || owner.size() < 8 ||
           owner[7] < '1' || owner[7] > '9' ||
           !std::all_of(owner.begin()+7, owner.end(), [](char c) { return c >= '0' && c <= '9'; }))
         throw failure("Invalid native worker body owner");
@@ -296,33 +274,29 @@ struct Transport::Impl {
       control = Json{{"command","networkBody"},{"pageId",page},{"bodyId",token}};
     }
     for (const char* name : {"offset","totalBytes"})
-      if (!header.contains(name) || !header.at(name).is_integer() || header.at(name).as_int() < 0 ||
-          header.at(name).as_int() > 2097152) throw failure("Invalid native network body geometry");
+      if (!header.contains(name) || !header.at(name).is_integer() || header.at(name).as_int() < 0)
+        throw failure("Invalid native network body geometry");
     if (header.contains("canceled") && !header.at("canceled").is_bool())
       throw failure("Invalid native network body cancellation");
     const auto offset = static_cast<std::size_t>(header.at("offset").as_int());
     const auto total = static_cast<std::size_t>(header.at("totalBytes").as_int());
     if (header.contains("canceled") && header.at("canceled").as_bool()) {
       if (offset || total || length) throw failure("Invalid native network body cancellation");
-      if (const auto found = bodies.find(scope); found != bodies.end()) {
-        body_bytes -= found->second.total; bodies.erase(found);
-      }
+      bodies.erase(scope);
       return std::nullopt;
     }
-    if (offset > total || length > 24576 || length > total-offset || (!length && total))
+    if (offset > total || length > total-offset || (!length && total))
       throw failure("Invalid native network body chunk");
     auto found = bodies.find(scope);
     if (found == bodies.end()) {
-      if (offset || bodies.size() >= 128 || total > 16777216-body_bytes)
-        throw failure("Native network body sequence or storage limit exceeded");
+      if (offset) throw failure("Native network body chunk is out of sequence");
       found = bodies.emplace(scope, Body{total,0,Clock::now()+std::chrono::seconds(30)}).first;
-      body_bytes += total;
     }
     if (found->second.total != total || found->second.offset != offset)
       throw failure("Native network body chunk is out of sequence");
     found->second.offset += length;
     if (found->second.offset != total) return std::nullopt;
-    body_bytes -= total; bodies.erase(found); return control;
+    bodies.erase(found); return control;
   }
   void receive(Packet packet) {
     const auto header = Json::parse(packet.header);
@@ -349,14 +323,7 @@ struct Transport::Impl {
     if (type == "ready") {
       const auto page = header.contains("pageId") ? header.at("pageId").as_int() : 1;
       if (page < 1 || page > INT_MAX) throw failure("Invalid ready page identity");
-      const auto found = page_ready.find(static_cast<int>(page));
-      const auto old_bytes = found == page_ready.end() ? 0 : found->second.header.size() + found->second.payload.size();
-      const auto bytes = packet.header.size() + packet.payload.size();
-      if ((found == page_ready.end() && page_ready.size() >= 1024) ||
-          bytes > 4 * 1024 * 1024 - (page_ready_bytes - old_bytes))
-        throw failure("Native ready-page cache capacity exceeded");
       page_ready.insert_or_assign(static_cast<int>(page), packet);
-      page_ready_bytes = page_ready_bytes - old_bytes + bytes;
       if (!ready_seen && page == 1) {
         ready_packet = std::move(packet); ready_seen = true; changed.notify_all(); return;
       }
@@ -368,10 +335,7 @@ struct Transport::Impl {
           event.at("event").as_string() == "page-closed" && event.contains("pageId")) {
         const auto page = event.at("pageId").as_int();
         forget_bodies("page:"+std::to_string(page)+":");
-        if (page > 0 && page <= INT_MAX) if (const auto found = page_ready.find(static_cast<int>(page)); found != page_ready.end()) {
-          page_ready_bytes -= found->second.header.size() + found->second.payload.size();
-          page_ready.erase(found); changed.notify_all();
-        }
+        if (page > 0 && page <= INT_MAX && page_ready.erase(static_cast<int>(page))) changed.notify_all();
       }
       if(event.is_object()&&event.contains("event")&&event.at("event")==Json("context-closed")&&event.contains("contextId"))
         forget_bodies("context:"+std::to_string(event.at("contextId").as_int())+":");
@@ -390,21 +354,23 @@ struct Transport::Impl {
       body_control = receive_body(header, packet.payload.size());
     const std::size_t bytes = packet.header.size() + packet.payload.size();
     const bool disposable = type == "frame" || type == "audio";
-    // Prefer losing disposable media to losing a dialog/binding/network event.
-    // Byte accounting includes the header; count also bounds zero-body events.
-    while (events.size() >= event_count_limit || bytes > options.max_event_bytes - counters.queued_event_bytes) {
+    // No suitecut queue cap. Only a caller-set max_event_bytes (0 = no limit)
+    // bounds the queue; then disposable media is lost before a dialog/binding/
+    // network event. Byte accounting includes the header.
+    const auto over = [&] { return options.max_event_bytes && bytes > options.max_event_bytes - counters.queued_event_bytes; };
+    while (over()) {
       const auto old = std::find_if(events.begin(), events.end(), [](const Event& event) { return event.disposable; });
       if (old == events.end()) break;
       counters.queued_event_bytes -= old->packet.header.size() + old->packet.payload.size();
       events.erase(old); ++counters.dropped_events;
     }
-    if (events.size() >= event_count_limit || bytes > options.max_event_bytes - counters.queued_event_bytes) {
+    if (over()) {
       if (disposable) { ++counters.dropped_events; return; }
       throw failure("Critical native event queue overflow; poll events before continuing");
     }
     events.push_back({std::move(packet), disposable}); counters.queued_event_bytes += bytes; changed.notify_all();
     if (body_control) {
-      // All exact bytes now belong to the bounded event queue (or have already
+      // All exact bytes now belong to the event queue (or have already
       // been returned by poll). Neither receipt waits for application polling.
       // Preserve the original chunks for raw consumers; release only the
       // engine's duplicate body reservation after safe local admission.
@@ -530,7 +496,7 @@ struct Transport::Impl {
         throw failure("Native command pipe closed");
       }
       if (!written) throw failure("Native command pipe made no progress");
-      front.offset += static_cast<std::size_t>(written); outgoing_bytes -= static_cast<std::size_t>(written);
+      front.offset += static_cast<std::size_t>(written);
       if (front.offset == front.line.size()) outgoing.pop_front();
     }
   }
@@ -554,7 +520,7 @@ struct Transport::Impl {
     // process-wide signal changes and leaves every application thread untouched.
     sigset_t blocked; sigemptyset(&blocked); sigaddset(&blocked, SIGPIPE);
     (void)pthread_sigmask(SIG_BLOCK, &blocked, nullptr);
-    PacketDecoder decoder(65536, options.max_payload_bytes);
+    PacketDecoder decoder(0, options.max_payload_bytes);
     bool stdout_done = false;
     for (;;) {
       try {
@@ -614,9 +580,9 @@ struct Transport::Impl {
               if (stream == 0) decoder.feed(std::span<const std::uint8_t>(bytes.data(), static_cast<std::size_t>(read)),
                 [this](Packet&& packet) { receive(std::move(packet)); });
               else {
+                // Whole stderr up to readiness: it is only read for startup diagnostics.
                 std::lock_guard lock(mutex);
-                stderr_tail.append(reinterpret_cast<const char*>(bytes.data()), static_cast<std::size_t>(read));
-                if (stderr_tail.size() > stderr_limit) stderr_tail.erase(0, stderr_tail.size() - stderr_limit);
+                if (!ready_seen) stderr_tail.append(reinterpret_cast<const char*>(bytes.data()), static_cast<std::size_t>(read));
               }
             } else if (!read) {
               close_fd(fd);
@@ -686,7 +652,6 @@ std::shared_ptr<Transport> Transport::launch(const LaunchOptions& options) {
 Transport::~Transport() { try { close(); } catch (...) {} }
 
 Request Transport::submit(std::string fields_json, std::chrono::milliseconds timeout) {
-  if (fields_json.size() > command_limit) throw failure("Native command exceeds 64 KiB");
   return submit_json(Json::parse(fields_json), timeout);
 }
 Request Transport::submit_json(Json message, std::chrono::milliseconds timeout) {
@@ -701,14 +666,15 @@ Request Transport::submit_json(Json message, std::chrono::milliseconds timeout) 
   std::lock_guard lock(state.mutex);
   if (state.terminal) std::rethrow_exception(state.terminal);
   if (state.closing) throw failure("Native transport is closed");
-  if (state.pending.size() >= state.options.max_pending) throw failure("Native pending request budget exceeded");
+  if (state.options.max_pending && state.pending.size() >= state.options.max_pending)
+    throw failure("Native pending request limit reached");
   const int id = state.allocate_id();
   message["version"] = 1; message["id"] = id; message["pageId"] = static_cast<int>(page);
   if (!message.contains("timeoutMs")) message["timeoutMs"] = static_cast<std::int64_t>(timeout.count());
   Impl::Pending pending;
   pending.deadline = Clock::now() + timeout; pending.page = static_cast<int>(page);
   Request request{id, pending.promise.get_future()};
-  auto line = message.dump({command_limit - 1, 64, command_limit, command_limit - 1}) + "\n";
+  auto line = message.dump() + "\n";
   state.pending.emplace(id, std::move(pending));
   try { state.enqueue_locked(id, std::move(line)); }
   catch (...) { state.pending.erase(id); throw; }
@@ -791,7 +757,7 @@ void Transport::close() {
 #ifndef _WIN32
     for (int* fd : {&state.input, &state.output, &state.error_output, &state.wake_read, &state.wake_write}) close_fd(*fd);
 #endif
-    state.page_ready.clear(); state.page_ready_bytes = 0;
+    state.page_ready.clear();
   }
   if (state.owned_profile) {
     std::error_code error; std::filesystem::remove_all(state.profile, error);

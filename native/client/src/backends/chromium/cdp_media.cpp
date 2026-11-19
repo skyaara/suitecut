@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
@@ -28,8 +29,6 @@ extern char** environ;
 namespace suitecut::detail {
 namespace {
 using Clock=std::chrono::steady_clock;
-constexpr std::size_t queue_limit=16*1024*1024,spool_limit=256*1024*1024;
-constexpr std::size_t artifact_limit=32*1024*1024,frame_limit=4*1024*1024;
 std::string text(const Json& j,const char* key,std::string fallback={}) {
   return j.contains(key)?j.at(key).as_string():std::move(fallback);
 }
@@ -40,7 +39,7 @@ int integer(const Json& j,const char* key,int fallback,int low,int high) {
 }
 std::string media_executable(const Json& fields,const char* key,const char* fallback) {
   auto value=text(fields,key,fallback);
-  if(value.empty()||value.size()>4096||value.find('\0')!=std::string::npos||
+  if(value.empty()||value.find('\0')!=std::string::npos||
      !std::filesystem::path(value).is_absolute())
     throw std::invalid_argument(std::string(key)+" must be an absolute executable path");
 #ifndef _WIN32
@@ -52,9 +51,9 @@ std::string media_executable(const Json& fields,const char* key,const char* fall
 }
 double seconds(Clock::duration d){return std::chrono::duration<double>(d).count();}
 std::string decimal(double v){std::ostringstream s;s<<std::setprecision(15)<<v;return s.str();}
-std::string decode(const std::string& input,std::size_t limit) {
-  if(input.empty()||input.size()%4||input.size()/4*3>limit+2)
-    throw std::runtime_error("Invalid or oversized media base64 frame");
+std::string decode(const std::string& input) {
+  if(input.empty()||input.size()%4)
+    throw std::runtime_error("Invalid media base64 frame");
   auto digit=[](unsigned char c)->int {
     if(c>='A'&&c<='Z')return c-'A';
     if(c>='a'&&c<='z')return c-'a'+26;
@@ -75,7 +74,6 @@ std::string decode(const std::string& input,std::size_t limit) {
     if(c>=0)out.push_back(static_cast<char>((b<<4)|(c>>2)));
     if(d>=0)out.push_back(static_cast<char>((c<<6)|d));
   }
-  if(out.size()>limit)throw std::runtime_error("Decoded media frame exceeds byte budget");
   return out;
 }
 std::pair<int,int> jpeg_size(const std::string& data) {
@@ -99,9 +97,8 @@ std::pair<int,int> jpeg_size(const std::string& data) {
   }
   throw std::runtime_error("JPEG frame dimensions are unavailable");
 }
-std::string read_file(const std::filesystem::path& path,std::size_t limit) {
+std::string read_file(const std::filesystem::path& path) {
   const auto size=std::filesystem::file_size(path);
-  if(size>limit)throw std::runtime_error("Media artifact exceeds byte budget");
   std::ifstream f(path,std::ios::binary);std::string s(static_cast<std::size_t>(size),'\0');
   if(!f.read(s.data(),static_cast<std::streamsize>(s.size())))throw std::runtime_error("Cannot read media artifact");
   return s;
@@ -117,7 +114,7 @@ struct Destination {
   std::filesystem::path path,spool;
   std::string basename;
   explicit Destination(const std::string& input) {
-    if(input.empty()||input.size()>4096||input.find('\0')!=std::string::npos||!std::filesystem::path(input).is_absolute())
+    if(input.empty()||input.find('\0')!=std::string::npos||!std::filesystem::path(input).is_absolute())
       throw std::invalid_argument("Media output requires an absolute path without null bytes");
     path=std::filesystem::path(input).lexically_normal();basename=path.filename().string();
     if(basename.empty()||basename=="."||basename=="..")throw std::invalid_argument("Media output requires a filename");
@@ -222,7 +219,7 @@ struct CdpMedia::Impl {
     return Json{{"state",r.stopping?"stopping":r.expired?"expired":"recording"},{"path",r.path},
       {"fps",r.fps},{"receivedFrames",r.received},{"sourceFrames",r.sources.size()},
       {"droppedFrames",r.dropped},{"spoolBytes",r.spool_bytes},{"queuedFrameBytes",queue_bytes},
-      {"peakQueuedFrameBytes",peak_queue_bytes},{"queueByteLimit",queue_limit},{"spoolByteLimit",spool_limit},
+      {"peakQueuedFrameBytes",peak_queue_bytes},
       {"error",r.error.empty()?Json{}:Json(r.error)}};
   }
   void work() {
@@ -260,15 +257,13 @@ struct CdpMedia::Impl {
       auto r=frame.recording;
       bool failed=false;
       try {
-        const auto bytes=decode(frame.data,frame_limit);
+        const auto bytes=decode(frame.data);
         const auto [width,height]=jpeg_size(bytes);
-        if(width<2||height<2||width>3840||height>2160)
-          throw std::runtime_error("Recording frames must be within 2..3840 by 2..2160");
+        if(width<2||height<2)
+          throw std::runtime_error("Recording frames must be at least 2 by 2");
 #ifndef _WIN32
         std::size_t index;
-        {std::lock_guard lock(mutex);index=r->sources.size();
-          if(r->spool_bytes+bytes.size()>spool_limit||index>=72000)
-            throw std::runtime_error("Recording source spool budget exceeded");}
+        {std::lock_guard lock(mutex);index=r->sources.size();}
         const auto name="source-"+std::to_string(index)+".jpg";
         write_file(r->destination->spool/name,bytes);
         std::lock_guard lock(mutex);r->sources.push_back({frame.received,frame.timestamp,name,bytes.size(),width,height});r->spool_bytes+=bytes.size();
@@ -284,8 +279,7 @@ struct CdpMedia::Impl {
   }
 #ifndef _WIN32
   void run_tool(std::vector<std::string> arguments,const std::filesystem::path& output,
-                const std::filesystem::path& error,Deadline deadline,
-                const std::filesystem::path& artifact={},std::size_t base_bytes=0) {
+                const std::filesystem::path& error,Deadline deadline) {
     cdp_check_active(deadline);
     int out=::open(output.c_str(),O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
     int err=::open(error.c_str(),O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
@@ -316,13 +310,6 @@ struct CdpMedia::Impl {
         if(waited<0&&errno!=EINTR)throw std::runtime_error("Cannot reap media tool");
         cdp_check_active(deadline);
         {std::lock_guard lock(mutex);if(closed)throw std::runtime_error("Media runtime closed during encoding");}
-        std::error_code error_code;
-        if(std::filesystem::file_size(error,error_code)>65536&&!error_code)
-          throw std::runtime_error("Media encoder error log exceeds 64 KiB");
-        if(std::filesystem::file_size(output,error_code)>1024*1024&&!error_code)
-          throw std::runtime_error("Media tool report exceeds 1 MiB");
-        if(!artifact.empty()&&std::filesystem::file_size(artifact,error_code)>spool_limit-base_bytes&&!error_code)
-          throw std::runtime_error("Recording source and encoded artifact exceed 256 MiB spool budget");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
     }catch(...) {
@@ -331,7 +318,7 @@ struct CdpMedia::Impl {
     }
     {std::lock_guard lock(mutex);helper=0;}
     if(!WIFEXITED(status)||WEXITSTATUS(status)!=0)
-      throw std::runtime_error("Media tool failed: "+read_file(error,65536));
+      throw std::runtime_error("Media tool failed: "+read_file(error));
   }
 #endif
 };
@@ -373,30 +360,22 @@ bool CdpMedia::observe(const Json& event) {
   }
   if(method!="Page.screencastFrame")return false;
   const auto session=text(event,"sessionId");
-  bool stop=false;
   {
     std::lock_guard lock(s.mutex);const auto found=s.recordings.find(session);
     if(found==s.recordings.end()||s.closed)return false;
     auto& r=*found->second;++r.received;
     if(r.accepting) {
       const auto& data=params.at("data").as_string();
-      if(data.size()>frame_limit*4/3+4) {r.error="Screencast encoded frame exceeds 4 MiB decoded budget";r.accepting=false;++r.dropped;stop=true;}
-      else {
-        while(!s.frames.empty()&&(s.frames.size()>=8||s.queue_bytes+data.size()>queue_limit)) {
-          auto& old=s.frames.front();s.queue_bytes-=old.data.size();++old.recording->dropped;--old.recording->queued;s.frames.pop_front();
-        }
-        double timestamp=0;
-        if(params.contains("metadata")&&params.at("metadata").contains("timestamp"))
-          timestamp=params.at("metadata").at("timestamp").as_double();
-        s.frames.push_back({found->second,data,seconds(Clock::now()-r.start),timestamp});
-        s.queue_bytes+=data.size();s.peak_queue_bytes=std::max(s.peak_queue_bytes,s.queue_bytes);++r.queued;s.changed.notify_all();
-      }
+      double timestamp=0;
+      if(params.contains("metadata")&&params.at("metadata").contains("timestamp"))
+        timestamp=params.at("metadata").at("timestamp").as_double();
+      s.frames.push_back({found->second,data,seconds(Clock::now()-r.start),timestamp});
+      s.queue_bytes+=data.size();s.peak_queue_bytes=std::max(s.peak_queue_bytes,s.queue_bytes);++r.queued;s.changed.notify_all();
     }else ++r.dropped;
   }
   // The protocol envelope session and the numeric frame acknowledgement ID
   // are different identifiers. Acknowledgement never waits on this I/O thread.
   s.enqueue({"Page.screencastFrameAck",session,Json{{"sessionId",params.at("sessionId")}}});
-  if(stop)s.enqueue({"Page.stopScreencast",session,Json::object{}});
   return true;
 }
 
@@ -424,7 +403,7 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
   if(family=="recording") {
     if(action=="start") {
       double fps=fields.contains("fps")?fields.at("fps").as_double():30;
-      if(!std::isfinite(fps)||fps<1||fps>120)throw std::invalid_argument("Recording fps must be within 1..120");
+      if(!std::isfinite(fps)||fps<=0)throw std::invalid_argument("Recording fps must be a positive finite number");
       const auto path=fields.at("path").as_string();
       const auto extension=std::filesystem::path(path).extension().string();
       if(extension!=".mp4"&&extension!=".webm")throw std::invalid_argument("Recording output must be .mp4 or .webm");
@@ -440,12 +419,11 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       const auto duration=integer(fields,"maxDurationMs",600000,1,600000);
       r->start=Clock::now();r->expires=Clock::time_point::max();
       Json params{{"format","jpeg"},{"quality",integer(fields,"quality",80,1,100)},{"everyNthFrame",1}};
-      if(fields.contains("maxWidth"))params["maxWidth"]=integer(fields,"maxWidth",1280,2,3840);
-      if(fields.contains("maxHeight"))params["maxHeight"]=integer(fields,"maxHeight",720,2,2160);
+      if(fields.contains("maxWidth"))params["maxWidth"]=integer(fields,"maxWidth",0,2,std::numeric_limits<int>::max());
+      if(fields.contains("maxHeight"))params["maxHeight"]=integer(fields,"maxHeight",0,2,std::numeric_limits<int>::max());
       {
         std::lock_guard lock(s.mutex);
         if(s.recordings.contains(page.session))throw std::runtime_error("This page already has an active recording");
-        if(s.recordings.size()>=4)throw std::runtime_error("At most four page recordings may be active");
         s.recordings.emplace(page.session,r);s.last_recordings.erase(page.session);s.ensure_worker_locked();
       }
       try{runtime.call(page,"Page.startScreencast",std::move(params),deadline);}
@@ -479,7 +457,6 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       if(r->sources.empty())throw std::runtime_error("Chrome delivered no screencast frames");
       const double duration=std::min(seconds(stopped-r->start),seconds(r->expires-r->start));
       const auto count=static_cast<std::size_t>(std::max(1.0,std::ceil(duration*r->fps)));
-      if(count>72000)throw std::runtime_error("Recording output exceeds 72000 resampled frames");
       std::ofstream manifest(r->destination->spool/"frames.ffconcat",std::ios::binary);
       if(!manifest)throw std::runtime_error("Cannot create recording frame manifest");
       manifest<<"ffconcat version 1.0\n";
@@ -494,8 +471,6 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       manifest.close();if(!manifest)throw std::runtime_error("Cannot finish recording manifest");
       const auto width=r->sources.front().width/2*2,height=r->sources.front().height/2*2;
       const auto video=r->destination->spool/("encoded"+std::filesystem::path(r->path).extension().string());
-      const auto manifest_bytes=std::filesystem::file_size(r->destination->spool/"frames.ffconcat");
-      if(manifest_bytes>spool_limit-r->spool_bytes)throw std::runtime_error("Recording manifest exceeds spool budget");
       std::vector<std::string> args{r->ffmpeg,"-nostdin","-hide_banner","-loglevel","error","-threads","2","-filter_threads","1",
         "-f","concat","-safe","0","-i",(r->destination->spool/"frames.ffconcat").string(),"-an","-vf",
         "scale="+std::to_string(width)+":"+std::to_string(height)+":force_original_aspect_ratio=decrease,pad="+std::to_string(width)+":"+std::to_string(height)+":(ow-iw)/2:(oh-ih)/2",
@@ -503,11 +478,11 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       if(std::filesystem::path(r->path).extension()==".mp4")args.insert(args.end(),{"-c:v","libx264","-preset","ultrafast","-threads","2","-movflags","+faststart"});
       else args.insert(args.end(),{"-c:v","libvpx-vp9","-deadline","realtime","-cpu-used","8","-threads","2"});
       args.push_back(video.string());
-      s.run_tool(std::move(args),r->destination->spool/"encoder.stdout",r->destination->spool/"encoder.stderr",deadline,video,r->spool_bytes+manifest_bytes);
+      s.run_tool(std::move(args),r->destination->spool/"encoder.stdout",r->destination->spool/"encoder.stderr",deadline);
       s.run_tool({r->ffprobe,"-v","error","-count_frames","-select_streams","v:0","-show_entries",
         "stream=codec_name,width,height,r_frame_rate,avg_frame_rate,nb_read_frames:format=duration","-of","json",video.string()},
         r->destination->spool/"probe.json",r->destination->spool/"probe.stderr",deadline);
-      const auto probe=Json::parse(read_file(r->destination->spool/"probe.json",1024*1024));
+      const auto probe=Json::parse(read_file(r->destination->spool/"probe.json"));
       const auto& stream=probe.at("streams").at(0);
       if(stream.at("nb_read_frames").as_string()!=std::to_string(count)||stream.at("width").as_int()!=width||stream.at("height").as_int()!=height)
         throw std::runtime_error("Encoded recording frame count or dimensions failed ffprobe verification");
@@ -524,17 +499,16 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
         {"durationSeconds",static_cast<double>(count)/r->fps},{"captureDurationSeconds",duration},{"outputFrames",count},
         {"receivedFrames",received},{"sourceFrames",r->sources.size()},{"usedSourceFrames",used},{"duplicatedFrames",count-used},
         {"droppedFrames",dropped},{"spoolBytes",r->spool_bytes},{"peakQueuedFrameBytes",peak_queue},
-        {"queueByteLimit",queue_limit},{"spoolByteLimit",spool_limit},{"resampling","sample-and-hold"},
+        {"resampling","sample-and-hold"},
         {"outputTimestampRule","frameIndex / fps, starting at zero; first source frame backfills earlier ticks"},
         {"sourceDelivery","Chrome compositor screencast; output cadence does not imply unique rendered frames"},
         {"expired",r->expired},{"verification",probe}};
       auto metadata=result;metadata["sourceTimestamps"]=Json(std::move(sources));metadata["sampleRuns"]=Json(std::move(runs));
       const auto metadata_file=r->destination->spool/"metadata.json";
-      write_file(metadata_file,metadata.dump({16*1024*1024,64,1024*1024,16*1024*1024})+"\n");
+      write_file(metadata_file,metadata.dump()+"\n");
       std::uintmax_t disk_bytes=0;
       for(const auto& file:std::filesystem::directory_iterator(r->destination->spool))
         if(file.is_regular_file())disk_bytes+=file.file_size();
-      if(disk_bytes>spool_limit)throw std::runtime_error("Recording artifact and metadata exceed total 256 MiB spool budget");
       result["peakSpoolBytes"]=disk_bytes;
       cdp_check_active(deadline);
       r->destination->commit(metadata_file,r->destination->basename+".json");
@@ -550,13 +524,12 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
     if(action=="status"){std::lock_guard lock(s.mutex);return Json{{"active",s.tracing},{"ending",s.trace_ending},{"streamReady",!s.trace_stream.empty()}};}
     if(action=="start") {
       const auto categories=text(fields,"categories","devtools.timeline,v8,blink.user_timing");
-      if(categories.size()>4096)throw std::invalid_argument("Tracing categories exceed 4096 bytes");
       const auto duration=integer(fields,"maxDurationMs",600000,1,600000);
       {std::lock_guard lock(s.mutex);if(s.tracing)throw std::runtime_error("Browser tracing is already active");s.tracing=true;s.trace_ending=false;s.trace_stream.clear();s.trace_expires=Clock::time_point::max();s.ensure_worker_locked();}
       try{runtime.wire->call("Tracing.start",Json{{"categories",categories},{"options","record-continuously"},{"transferMode","ReturnAsStream"},{"streamFormat","json"},{"streamCompression","none"}},"",deadline);}
       catch(...){std::lock_guard lock(s.mutex);s.tracing=false;throw;}
       {std::lock_guard lock(s.mutex);s.trace_expires=Clock::now()+std::chrono::milliseconds(duration);s.changed.notify_all();}
-      return Json{{"active",true},{"scope","browser"},{"bufferMode","record-continuously"},{"artifactByteLimit",artifact_limit}};
+      return Json{{"active",true},{"scope","browser"},{"bufferMode","record-continuously"}};
     }
     if(action!="stop")throw std::invalid_argument("Unknown tracing action: "+action);
     Destination destination(fields.at("path").as_string());
@@ -570,15 +543,14 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
       for(;;) {
         cdp_check_active(deadline);
         const auto part=runtime.wire->call("IO.read",Json{{"handle",stream},{"size",65536}},"",deadline);
-        const auto data=part.contains("base64Encoded")&&part.at("base64Encoded").as_bool()?decode(part.at("data").as_string(),65536):part.at("data").as_string();
-        if(data.size()>artifact_limit-bytes)throw std::runtime_error("Trace exceeds 32 MiB artifact budget");
+        const auto data=part.contains("base64Encoded")&&part.at("base64Encoded").as_bool()?decode(part.at("data").as_string()):part.at("data").as_string();
         bytes+=data.size();out.write(data.data(),static_cast<std::streamsize>(data.size()));
         if(!out)throw std::runtime_error("Cannot write trace artifact");
         if(part.contains("eof")&&part.at("eof").as_bool())break;
       }
       out.close();if(!out)throw std::runtime_error("Cannot finish trace artifact");
       runtime.wire->call("IO.close",Json{{"handle",stream}},"",deadline);
-      const auto parsed=Json::parse(read_file(destination.spool/"trace.json",artifact_limit),{artifact_limit,64,524288,artifact_limit});
+      const auto parsed=Json::parse(read_file(destination.spool/"trace.json"));
       if(!parsed.is_object()||!parsed.contains("traceEvents")||!parsed.at("traceEvents").is_array())
         throw std::runtime_error("Chrome trace is missing traceEvents");
       cdp_check_active(deadline);destination.commit(destination.spool/"trace.json");
@@ -594,9 +566,9 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
   if(family=="profiler") {
     if(action=="status"){std::lock_guard lock(s.mutex);const auto it=s.profiles.find(page.session);return Json{{"active",it!=s.profiles.end()&&!it->second.expired},{"expired",it!=s.profiles.end()&&it->second.expired}};}
     if(action=="start") {
-      const auto interval=integer(fields,"samplingIntervalUs",1000,100,1000000);
+      const auto interval=integer(fields,"samplingIntervalUs",1000,1,std::numeric_limits<int>::max());
       const auto duration=integer(fields,"maxDurationMs",60000,1,600000);
-      {std::lock_guard lock(s.mutex);if(s.profiles.contains(page.session))throw std::runtime_error("Page CPU profiler is already active");if(s.profiles.size()>=16)throw std::runtime_error("CPU profiler session budget exceeded");s.profiles.emplace(page.session,Impl::Profile{Clock::time_point::max(),false});s.ensure_worker_locked();}
+      {std::lock_guard lock(s.mutex);if(s.profiles.contains(page.session))throw std::runtime_error("Page CPU profiler is already active");s.profiles.emplace(page.session,Impl::Profile{Clock::time_point::max(),false});s.ensure_worker_locked();}
       try{runtime.call(page,"Profiler.enable",Json::object{},deadline);runtime.call(page,"Profiler.setSamplingInterval",Json{{"interval",interval}},deadline);runtime.call(page,"Profiler.start",Json::object{},deadline);}
       catch(...){
         {CdpCleanupScope cleanup;const auto until=Clock::now()+std::chrono::milliseconds(250);
@@ -613,7 +585,7 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
     try {
       const auto profile=runtime.call(page,"Profiler.stop",Json::object{},deadline).at("profile");
       if(!profile.is_object()||!profile.contains("nodes")||!profile.at("nodes").is_array())throw std::runtime_error("Chrome CPU profile has no nodes");
-      const auto data=profile.dump({artifact_limit,64,524288,artifact_limit});
+      const auto data=profile.dump();
       write_file(destination.spool/"profile.cpuprofile",data+"\n");cdp_check_active(deadline);destination.commit(destination.spool/"profile.cpuprofile");
       {std::lock_guard lock(s.mutex);s.profiles.erase(page.session);}
       return Json{{"path",destination.path.string()},{"bytes",data.size()+1},{"nodes",profile.at("nodes").as_array().size()}};

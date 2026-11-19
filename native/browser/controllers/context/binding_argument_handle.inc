@@ -25,6 +25,6 @@ void BindingArgumentMetadata(int id,const std::string& wrapper,const std::string
       auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto value=result?result->GetDictionary("result"):nullptr;
       if(!ok||!result||result->HasKey("exceptionDetails")||!value||value->GetType("objectId")!=VTYPE_STRING){done(nullptr,json);return;}
       done(value);
-    },std::nullopt,false,1048576,true);
-  },std::nullopt,false,1048576,true);
+    },std::nullopt,false,true);
+  },std::nullopt,false,true);
 }

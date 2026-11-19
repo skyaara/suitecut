@@ -10,8 +10,6 @@
 
 namespace suitecut::runner {
 template<class Report>size_t ValidateCallbackAssertions(const Report& report,const std::map<uint64_t,const StepRecord*>& steps){
-  if(report.callback_assertions.size()>TestSteps::kRecords)
-    throw std::invalid_argument("Native callback assertion report capacity exceeded");
   if(report.callback_assertions.empty()){
     for(const auto& step:report.steps)if(step.callback_iteration||step.source_fence)
       throw std::invalid_argument("Native iteration step has no actual assertion owner");
@@ -34,7 +32,7 @@ template<class Report>size_t ValidateCallbackAssertions(const Report& report,con
     (void)CallbackAssertionStatusName(record.status);
     (void)CallbackAssertionReceiptName(record.receipt);
     const auto worker=workers.find(owner.worker_index);
-    if(!record.id||!record.request||!record.attempts||record.attempts>TestSteps::kRecords||
+    if(!record.id||!record.request||!record.attempts||
        record.last_invocation!=record.attempts||!owner.test_id||!owner.attempt_generation||
        !owner.scope||!owner.scope_generation||!owner.worker_index||owner.pid<=0||owner.pid>INT32_MAX||
        (owner.callback_kind!="body"&&owner.callback_kind!="beforeEach"&&owner.callback_kind!="afterEach")||
@@ -45,7 +43,7 @@ template<class Report>size_t ValidateCallbackAssertions(const Report& report,con
        worker==workers.end()||worker->second!=owner.pid||!std::isfinite(record.started)||record.started<0||
        !std::isfinite(record.deadline)||record.deadline<0||
        !std::isfinite(record.received)||record.received<record.started||
-       !JsonString(record.error_json,8192))
+       !JsonString(record.error_json))
       throw std::invalid_argument("Native callback assertion lacks actual owner, invocation or retirement metadata");
     if(record.own_deadline&&(!std::isfinite(*record.own_deadline)||*record.own_deadline<=record.started||record.deadline>*record.own_deadline))
       throw std::invalid_argument("Native callback assertion own deadline is invalid");
@@ -57,16 +55,10 @@ template<class Report>size_t ValidateCallbackAssertions(const Report& report,con
          !parent->second->received||*parent->second->received<record.received||parent->second->receipt==StepReceipt::NotInvoked)
         throw std::invalid_argument("Native callback assertion lacks actual parent physical ownership");
     }
-    const size_t bytes=record.error_json.size()+owner.callback_kind.size()+512;
-    if(bytes>TestSteps::kMetadata-metadata)
-      throw std::invalid_argument("Native callback assertion report metadata exceeded");
-    metadata+=bytes;
+    metadata+=record.error_json.size()+owner.callback_kind.size()+512;
   }
   for(const auto& step:report.steps){
-    const auto source_bytes=ValidateSourceCallbackIterationReceipt(step,report);
-    if(source_bytes>TestSteps::kMetadata-metadata)
-      throw std::invalid_argument("Native callback assertion report metadata exceeded");
-    metadata+=source_bytes;
+    metadata+=ValidateSourceCallbackIterationReceipt(step,report);
     if(!step.callback_iteration)continue;
     const auto& origin=*step.callback_iteration;
     const auto found=assertions.find(origin.assertion);

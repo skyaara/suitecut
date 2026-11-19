@@ -9,10 +9,9 @@ struct ReportSerialGroup {
 // Validate only native metadata against actual attempts/OS worker records. Never
 // invent missing member attempts or infer successful callback receipts.
 template<class Report>std::set<uint64_t> ValidateSerialGroupReports(const Report& report){
-  if(report.serial_groups.size()>256)throw std::invalid_argument("Native serial group report capacity256 exceeded");
-  std::set<uint64_t> ids,members;size_t omissions=0;
+  std::set<uint64_t> ids,members;
   for(const auto& group:report.serial_groups){
-    if(!group.id||!ids.insert(group.id).second||group.tests.empty()||group.tests.size()>4096||group.retries>100||
+    if(!group.id||!ids.insert(group.id).second||group.tests.empty()||
        (group.status!="passed"&&group.status!="failed"&&group.status!="interrupted"&&group.status!="notRun"))
       throw std::invalid_argument("Invalid native serial group report metadata");
     std::map<uint64_t,size_t> positions;std::optional<uint64_t> project;
@@ -46,8 +45,6 @@ template<class Report>std::set<uint64_t> ValidateSerialGroupReports(const Report
     if(group.status=="passed"&&(failed||interrupted))throw std::invalid_argument("Native passed serial group has unexpected final wave");
     if(group.status=="failed"&&(!any||!failed||interrupted||*retry!=group.retries))throw std::invalid_argument("Native failed serial group lacks exhausted actual failure");
     if(group.status=="notRun"&&any)throw std::invalid_argument("Native unrun serial group has actual attempts");
-    if(group.omissions.size()>8192-omissions)throw std::invalid_argument("Native serial group omission capacity8192 exceeded");
-    omissions+=group.omissions.size();
     std::set<std::pair<uint64_t,unsigned>> omitted;
     for(const auto& omission:group.omissions){
       if(!positions.contains(omission.test_id)||!positions.contains(omission.cause_test)||positions.at(omission.test_id)<=positions.at(omission.cause_test)||

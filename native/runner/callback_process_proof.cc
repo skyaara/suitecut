@@ -9,7 +9,7 @@
 #include <sstream>
 using namespace suitecut::runner;
 static std::string Json(const std::string& text){std::ostringstream out;out<<'"';for(unsigned char c:text){if(c=='"'||c=='\\')out<<'\\'<<c;else if(c<32)out<<"\\u"<<std::hex<<std::setw(4)<<std::setfill('0')<<int(c)<<std::dec;else out<<c;}out<<'"';return out.str();}
-static std::string Unhex(const std::string& h){if(h=="-")return{};assert(h.size()%2==0&&h.size()<=32768);std::string out;for(size_t i=0;i<h.size();i+=2)out.push_back(static_cast<char>(std::stoul(h.substr(i,2),nullptr,16)));return out;}
+static std::string Unhex(const std::string& h){if(h=="-")return{};assert(h.size()%2==0);std::string out;for(size_t i=0;i<h.size();i+=2)out.push_back(static_cast<char>(std::stoul(h.substr(i,2),nullptr,16)));return out;}
 int main(int argc,char** argv){
  assert(argc==5);const bool held=std::string(argv[4])=="held";std::ofstream journal(argv[3]);assert(journal);size_t journal_count=0;
  auto log=[&](std::string event,pid_t pid,uint64_t test,uint64_t generation,uint64_t token,const std::string& detail){journal<<"{\"event\":"<<Json(event)<<",\"pid\":"<<pid<<",\"test\":"<<test<<",\"generation\":"<<generation<<",\"token\":"<<token<<",\"monotonicMs\":"<<std::fixed<<std::setprecision(3)<<RealMilliseconds()<<",\"detail\":"<<Json(detail)<<"}\n";journal.flush();++journal_count;};

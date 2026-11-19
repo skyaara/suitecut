@@ -9,10 +9,9 @@ namespace suitecut::runner {
 // then perform the existing native cleanup without reaping another actor's PID.
 class ProjectDescendants {
  public:
-  static constexpr size_t kWorkers=8;
   bool CanEnroll()const{return !retiring_;}
   uint64_t Enroll(unsigned index,DedicatedHostProcess& host){
-    if(!index||index<=highest_worker_||retiring_||members_.size()>=kWorkers)throw std::runtime_error("Native descendant batch worker admission rejected");
+    if(!index||index<=highest_worker_||retiring_)throw std::runtime_error("Native descendant batch worker admission rejected");
     if(members_.empty()){if(generation_==UINT64_MAX)throw std::overflow_error("Native descendant batch generation exhausted");owner_.Begin(host);++generation_;first_=&host;}
     members_.emplace(index,Member{&host,host.Pid(),false});highest_worker_=index;return generation_;
   }
@@ -31,7 +30,7 @@ class ProjectDescendants {
   void Tick(double now){
     if(!retiring_)return;
     if(owner_.Tick(now)){
-      retired_=generation_;for(const auto& child:owner_.Exits())if(child.signaled||child.code!=0){if(errors_.size()>=256)throw std::runtime_error("Native descendant batch error capacity exceeded");errors_.push_back("Actual native descendant batch "+std::to_string(generation_)+" PID "+std::to_string(child.pid)+(child.signaled?" signal ":" exit ")+std::to_string(child.code)+(child.kill_requested?" after native cleanup SIGKILL":""));}
+      retired_=generation_;for(const auto& child:owner_.Exits())if(child.signaled||child.code!=0){errors_.push_back("Actual native descendant batch "+std::to_string(generation_)+" PID "+std::to_string(child.pid)+(child.signaled?" signal ":" exit ")+std::to_string(child.code)+(child.kill_requested?" after native cleanup SIGKILL":""));}
       members_.clear();first_=nullptr;retiring_=false;
     }else if(now>=physical_end_)throw std::runtime_error("Native descendant batch physical exit remains unconfirmed after SIGKILL");
   }

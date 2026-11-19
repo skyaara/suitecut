@@ -57,32 +57,27 @@ inline const StepLocation* StepErrorAttribution(const StepRecord& step){
 inline const char* StepErrorAttributionKind(const StepRecord& step){return step.box.caller?"boxedCaller":"boxedCallsite";}
 class TestSteps {
  public:
-  static constexpr size_t kPhysical=64,kRecords=8192,kOwners=64,kDepth=64,kMetadata=64*1024*1024;
-  struct Budget {uint64_t sequence=0;size_t records=0,physical=0,reserved=0;};
+  struct Budget {uint64_t sequence=0;size_t physical=0;};
   explicit TestSteps(Budget* budget=nullptr):budget_(budget){}
   struct Event {uint64_t id;bool abort;StepStatus status;};
-  struct State {size_t owners,physical,records,events,metadata_reserved;};
+  struct State {size_t owners,physical,records,events;};
   bool Open(const StepOwner& owner,double deadline,double now){
-    Time(now);if(!ValidOwner(owner)||!std::isfinite(deadline)||deadline<=0||owners_.contains(owner.Key())||owners_.size()>=kOwners)return false;
+    Time(now);if(!ValidOwner(owner)||!std::isfinite(deadline)||deadline<=0||owners_.contains(owner.Key()))return false;
     owners_.emplace(owner.Key(),Owner{deadline,true,0});return true;
   }
   std::optional<uint64_t> Begin(const StepOwner& owner,uint64_t parent,std::string title_json,uint64_t timeout,double now,std::optional<StepLocation> location=std::nullopt,StepBox box={}){
     Time(now);TickAt(now);const auto scope=owners_.find(owner.Key());
-    if(!ValidStepBoxLocation(box,location)||(location&&!ValidStepLocation(*location))||scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline||timeout>120000||!JsonString(title_json,4096)||physical_>=kPhysical||records_.size()>=kRecords||sequence_==UINT64_MAX||(budget_&&(budget_->sequence==UINT64_MAX||budget_->records>=kRecords||budget_->physical>=kPhysical)))return std::nullopt;
+    if(!ValidStepBoxLocation(box,location)||(location&&!ValidStepLocation(*location))||scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline||timeout>120000||!JsonString(title_json)||sequence_==UINT64_MAX||(budget_&&budget_->sequence==UINT64_MAX))return std::nullopt;
     unsigned depth=1;double deadline=scope->second.deadline;
     if(parent){const auto* actual=Find(parent);if(!actual||actual->owner!=owner||actual->status!=StepStatus::Running||actual->receipt!=StepReceipt::Pending)return std::nullopt;depth=actual->depth+1;deadline=std::min(deadline,actual->deadline);}
-    if(depth>kDepth)return std::nullopt;
-    // Reserve both maximum-sized actual error scalars before invoking author
-    // code; late physical receipt can never fail for lack of ledger memory.
-    const size_t reservation=title_json.size()+4*(8192*6+2)+800+(location?location->file_json.size()+64:0)+StepBoxMetadata(box);
-    if(reservation>kMetadata-reserved_||(budget_&&reservation>kMetadata-budget_->reserved))return std::nullopt;
+    if(!depth)return std::nullopt; // Nesting depth wrapped the unsigned counter.
     const double own=timeout?now+static_cast<double>(timeout):std::numeric_limits<double>::max();deadline=std::min(deadline,own);
     if(!std::isfinite(own)||!std::isfinite(deadline)||deadline<=now)return std::nullopt;
     const auto id=budget_?++budget_->sequence:++sequence_;
     records_.push_back(StepRecord{id,parent,owner,std::move(title_json),now,deadline,own,std::nullopt,std::nullopt,StepStatus::Running,StepReceipt::Pending,"\"\"","\"\"",depth,false,timeout});
     try{indices_.emplace(id,records_.size()-1);}catch(...){records_.pop_back();throw;}
     records_.back().location=std::move(location);records_.back().box=std::move(box);
-    ++physical_;++scope->second.physical;reserved_+=reservation;if(budget_){++budget_->physical;++budget_->records;budget_->reserved+=reservation;}return id;
+    ++physical_;++scope->second.physical;if(budget_)++budget_->physical;return id;
   }
   // Only the native retry controller uses this admission. One record denotes
   // one real author invocation, retaining the unchanged actual callback owner.
@@ -106,7 +101,7 @@ class TestSteps {
     step->source_fence=receipt;return true;
   }
   bool CancelCallbackIteration(const StepOwner& owner,uint64_t id,const std::string& error,double now){
-    Time(now);if(!JsonString(error,8192))return false;TickAt(now);auto* step=Mutable(id);
+    Time(now);if(!JsonString(error))return false;TickAt(now);auto* step=Mutable(id);
     if(!step||step->owner!=owner||!step->callback_iteration||step->receipt!=StepReceipt::Pending)return false;
     if(step->status==StepStatus::Running)Finish(*step,StepStatus::Interrupted,error,now,true);
     InterruptDescendants(id,now,error);return true;
@@ -124,7 +119,7 @@ class TestSteps {
   // Native raw ingress and joint physical settlement are separate receipts.
   // A real file fence can delay Complete without inventing a later callback.
   bool Receive(const StepOwner& owner,uint64_t id,bool ok,const std::string& error_json,double now,uint64_t test_skip=0,uint64_t local_skip=0,uint64_t originating_step=0){
-    Time(now);if(!JsonString(error_json,8192)||(ok&&error_json!="\"\""))return false;
+    Time(now);if(!JsonString(error_json)||(ok&&error_json!="\"\""))return false;
     TickAt(now);auto* step=Mutable(id);if(!step||step->owner!=owner||step->receipt!=StepReceipt::Pending||step->callback_received)return false;
     if(originating_step){
       if(ok||test_skip||local_skip||originating_step==id)return false;
@@ -143,14 +138,14 @@ class TestSteps {
     InterruptDescendants(id,now,"\"Native parent step callback settled before its descendant\"");return true;
   }
   bool NoteSoftFailure(const StepOwner& owner,uint64_t id,uint64_t error_id,const std::string& error,double now){
-    Time(now);if(!error_id||!JsonString(error,8192))return false;TickAt(now);
+    Time(now);if(!error_id||!JsonString(error))return false;TickAt(now);
     const auto* source=Find(id);if(!source||source->owner!=owner||source->status!=StepStatus::Running||source->receipt!=StepReceipt::Pending)return false;
     for(const auto* step=source;step;step=step->parent?Find(step->parent):nullptr)if(step->owner!=owner||step->status!=StepStatus::Running||step->receipt!=StepReceipt::Pending)return false;
     for(auto* step=Mutable(id);step;step=step->parent?Mutable(step->parent):nullptr)if(!step->soft_error_id){step->soft_error_id=error_id;step->soft_error_json=error;}
     return true;
   }
   bool Complete(const StepOwner& owner,uint64_t id,double now,const std::optional<std::string>& attachment_error=std::nullopt){
-    Time(now);if(attachment_error&&!JsonString(*attachment_error,8192))return false;
+    Time(now);if(attachment_error&&!JsonString(*attachment_error))return false;
     TickAt(now);auto* step=Mutable(id);if(!step||step->owner!=owner||step->receipt!=StepReceipt::Pending||!step->callback_received)return false;
     step->attachment_error_json=attachment_error;step->receipt=StepReceipt::Settled;step->received=now;
     step->receipt_ok=step->callback_ok;step->receipt_test_skip=step->callback_test_skip;step->receipt_step_skip=step->callback_step_skip;
@@ -170,14 +165,14 @@ class TestSteps {
     TickAt(now);return true;
   }
   bool Close(const StepOwner& owner,double now,const std::string& error_json="\"Native owning callback settled before its step\""){
-    Time(now);if(!JsonString(error_json,8192))return false;TickAt(now);const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||!scope->second.accepting)return false;scope->second.accepting=false;
+    Time(now);if(!JsonString(error_json))return false;TickAt(now);const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||!scope->second.accepting)return false;scope->second.accepting=false;
     for(auto& step:records_)if(step.owner==owner&&step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,error_json,now,true);
     return true;
   }
   // Called only after the runner has accepted this exact native test-skip
   // mutation. The cause closes admission; it does not acknowledge raw work.
   bool SkipTestCallback(const StepOwner& owner,uint64_t request,const std::string& reason_json,double now){
-    Time(now);if(!request||!JsonString(reason_json,8192))return false;TickAt(now);
+    Time(now);if(!request||!JsonString(reason_json))return false;TickAt(now);
     const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline)return false;
     scope->second.accepting=false;scope->second.test_skip=StepSkipCause{request,reason_json};
     for(auto& step:records_)if(step.owner==owner&&step.receipt==StepReceipt::Pending){step.test_skip=scope->second.test_skip;if(step.status==StepStatus::Running)Finish(step,StepStatus::Skipped,"\"\"",now,true);}
@@ -186,7 +181,7 @@ class TestSteps {
   // Native local-step skip never changes the owning test expectation or
   // sibling/ancestor admission. It cancels only this real admitted subtree.
   bool SkipStep(const StepOwner& owner,uint64_t id,uint64_t request,const std::string& reason_json,bool description_present,double now){
-    Time(now);if(!request||!JsonString(reason_json,8192)||(!description_present&&reason_json!="\"\""))return false;TickAt(now);
+    Time(now);if(!request||!JsonString(reason_json)||(!description_present&&reason_json!="\"\""))return false;TickAt(now);
     const auto scope=owners_.find(owner.Key());const auto* source=Find(id);
     if(scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline||!source||source->owner!=owner||source->status!=StepStatus::Running||source->receipt!=StepReceipt::Pending)return false;
     const LocalStepSkipCause cause{request,id,reason_json,description_present};
@@ -209,7 +204,7 @@ class TestSteps {
   const std::vector<StepRecord>& Records()const{return records_;}
   const StepRecord* Find(uint64_t id)const{const auto found=indices_.find(id);return found==indices_.end()?nullptr:&records_[found->second];}
   std::vector<Event> TakeEvents(){auto events=std::move(events_);events_.clear();return events;}
-  State Inspect()const{return{owners_.size(),physical_,records_.size(),events_.size(),reserved_};}
+  State Inspect()const{return{owners_.size(),physical_,records_.size(),events_.size()};}
  private:
   using Key=decltype(StepOwner{}.Key());struct Owner {double deadline;bool accepting;size_t physical;std::optional<StepSkipCause> test_skip=std::nullopt;};
   static bool ValidOwner(const StepOwner& owner){return owner.test_id&&owner.attempt_generation&&owner.scope&&owner.scope_generation&&owner.pid>0&&owner.pid<=INT32_MAX&&(owner.callback_kind=="body"||owner.callback_kind=="beforeEach"||owner.callback_kind=="afterEach"||owner.callback_kind=="beforeAll"||owner.callback_kind=="afterAll")&&(owner.callback_kind=="body"||owner.callback_token);}
@@ -227,6 +222,6 @@ class TestSteps {
   void InterruptDescendants(uint64_t parent,double now,const std::string& reason){for(auto& step:records_)if(step.parent==parent){if(step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,reason,now,true);InterruptDescendants(step.id,now,reason);}}
   std::map<Key,Owner> owners_;std::vector<StepRecord> records_;std::vector<Event> events_;
   Budget* budget_;std::map<uint64_t,size_t> indices_;
-  uint64_t sequence_=0;size_t physical_=0,reserved_=0;double last_now_=0;
+  uint64_t sequence_=0;size_t physical_=0;double last_now_=0;
 };
 } // namespace suitecut::runner

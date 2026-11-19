@@ -20,7 +20,7 @@ void NativeMediaRequest(int owner,const std::string& session,Dict params,DevTool
   auto latch=std::make_shared<NativeMediaLatch>();latch->release=[this]{--native_media_physical_;};
   devtools_.emplace(id,DevToolsCall{owner,[latch,callback=std::move(callback)](bool ok,const std::string& json)mutable{
     latch->Settle();callback(ok,json);
-  },session,true,65536,true});
+  },session,true,true});
   if(!SubmitDevTools(id,"Emulation.setEmulatedMedia",params,session)){
     auto found=devtools_.find(id);
     if(found!=devtools_.end()){auto callback=std::exchange(found->second.callback, nullptr);devtools_.erase(found);callback(false,"Native media command dispatch failed");}

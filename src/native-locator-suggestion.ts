@@ -115,7 +115,7 @@ export function decodeNativeLocatorSuggestions(value: UntrustedInput): z.infer<t
 
 /** Integer viewport CSS pixels in the actual requested frame. */
 export const NativeLocatorPickPointSchema = z.strictObject({
-  x: z.number().int().min(0).max(1_000_000),
-  y: z.number().int().min(0).max(1_000_000),
+  x: z.number().int().min(0),
+  y: z.number().int().min(0),
 })
 export type NativeLocatorPickPoint = z.infer<typeof NativeLocatorPickPointSchema>

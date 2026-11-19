@@ -194,7 +194,7 @@ void FormResolveNode(int id,uint64_t generation,Dict config,std::function<void(D
         auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto control=result?result->GetDictionary("result"):nullptr;
         if(!control||control->GetType("objectId")!=VTYPE_STRING){Complete(id,false,"Native checkbox node unavailable");return;}
         pinned->SetString("formControl",control->GetString("objectId"));done(pinned);
-      },std::nullopt,false,kMaxResponseBytes,true);
+      },std::nullopt,false,true);
     };
     evaluation_groups_[id].insert(operation_sessions_[id]);
     auto params=CefDictionaryValue::Create();params->SetBool("returnByValue",false);
@@ -212,7 +212,7 @@ void FormResolveNode(int id,uint64_t generation,Dict config,std::function<void(D
           auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto node=result?result->GetDictionary("object"):nullptr;
           if(!node||node->GetType("objectId")!=VTYPE_STRING){Complete(id,false,"Native DOM node unavailable");return;}
           params->SetString("objectId",node->GetString("objectId"));params->SetString("functionDeclaration","function(){return "+std::string(config->GetString("action")=="setChecked"?"this":"this instanceof HTMLLabelElement&&this.control?this.control:this")+";}");
-          DevTools(id,"Runtime.callFunctionOn",params,std::move(finish),std::nullopt,false,kMaxResponseBytes,true);
+          DevTools(id,"Runtime.callFunctionOn",params,std::move(finish),std::nullopt,false,true);
         });
       });
     }else{
@@ -223,7 +223,7 @@ void FormResolveNode(int id,uint64_t generation,Dict config,std::function<void(D
       if(QueryUsesMultipleWorlds(config)){
         QueryInspect(id,config,"if(nodes.length>1&&"+std::string(config->GetType("strict")==VTYPE_BOOL&&!config->GetBool("strict")?"false":"true")+")throw new Error('Strict locator matched multiple elements');let e=nodes[0];return "+std::string(config->GetString("action")=="setChecked"?"e":"e instanceof HTMLLabelElement&&e.control?e.control:e")+";",true,false,std::move(finish));return;
       }
-      if(!main){DevTools(id,"Runtime.evaluate",params,std::move(finish),std::nullopt,false,kMaxResponseBytes,true);return;}
+      if(!main){DevTools(id,"Runtime.evaluate",params,std::move(finish),std::nullopt,false,true);return;}
       DevTools(id,"Runtime.evaluate",params,[this,id,generation,config,context,selected,loader,session,finish=std::move(finish)](bool ok,const std::string& json) mutable {
         auto parsed=CefParseJSON(json,JSON_PARSER_RFC);auto result=parsed?parsed->GetDictionary():nullptr;auto remote=result?result->GetDictionary("result"):nullptr;
         if(!ok||!result||result->HasKey("exceptionDetails")||!remote||remote->GetType("objectId")!=VTYPE_STRING){finish(ok,json);return;}
@@ -232,7 +232,7 @@ void FormResolveNode(int id,uint64_t generation,Dict config,std::function<void(D
           [this,id,generation,config,context,selected,loader,session]{const auto frame=frame_states_.find(FrameId(config));return operations_.IsCurrent(id,generation)&&frame!=frame_states_.end()&&frame->second.context==selected&&frame->second.utility_context==context&&frame->second.loader==loader&&frame->second.session==session;},
           [this,id,generation](const std::string& error){if(operations_.IsCurrent(id,generation))Complete(id,false,error);},remote->GetString("objectId").ToString(),context,"suitecut-automation-"+std::to_string(id),
           [finish=std::move(finish)](Dict node) mutable {auto result=CefDictionaryValue::Create();result->SetDictionary("result",node);finish(true,Json(result));});
-      },std::nullopt,false,kMaxResponseBytes,true);
+      },std::nullopt,false,true);
     }
   },true);
 }
@@ -464,7 +464,7 @@ bool FormFileDialog(cef_file_dialog_mode_t mode,CefRefPtr<CefFileDialogCallback>
 void FormNativeControl(std::shared_ptr<FormNativeSelectionWork> work,const std::string& method,Dict params,DevToolsCallback callback) {
   const int wire=AllocateDevToolsId();
   if(!wire){callback(false,"Native file-selection control id exhausted");return;}
-  devtools_.emplace(wire,DevToolsCall{work->owner,suitecut::BindNativeLocatorHandlerAsync(std::move(callback)),work->session,true,65536,true});
+  devtools_.emplace(wire,DevToolsCall{work->owner,suitecut::BindNativeLocatorHandlerAsync(std::move(callback)),work->session,true,true});
   if(!SubmitDevTools(wire,method,params,work->session)){
     const auto found=devtools_.find(wire);if(found!=devtools_.end()){auto done=std::exchange(found->second.callback, nullptr);devtools_.erase(found);done(false,"Native file-selection control dispatch was refused");}
   }

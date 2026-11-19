@@ -9,7 +9,7 @@ struct StepLocation {
   std::string file_json;uint32_t line=0,column=0;bool explicit_location=false;
   bool operator==(const StepLocation&)const=default;
 };
-inline bool ValidStepLocation(const StepLocation& value){return JsonString(value.file_json,4096)&&value.file_json!="\"\""&&value.line&&value.column&&value.line<=2147483647&&value.column<=2147483647;}
+inline bool ValidStepLocation(const StepLocation& value){return JsonString(value.file_json)&&value.file_json!="\"\""&&value.line&&value.column&&value.line<=2147483647&&value.column<=2147483647;}
 inline std::optional<StepLocation> PrepareStepLocation(const std::string& file_wire,uint64_t line,uint64_t column,uint64_t origin){
   if(!origin){if(file_wire!="-"||line||column)throw std::invalid_argument("Absent native step location has metadata");return std::nullopt;}
   if(origin>2||line>2147483647||column>2147483647)throw std::invalid_argument("Invalid native step location bounds");

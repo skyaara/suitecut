@@ -8,7 +8,6 @@ namespace suitecut::runner {
 // receipts remain entirely in RunnerAttachments and do not wait in this ledger.
 class AttachmentViewReceipts {
  public:
-  static constexpr size_t kRecords=128;
   static constexpr double kCleanupGrace=6000;
   enum class End { Acknowledged, WorkerExited };
   struct Record {
@@ -19,14 +18,13 @@ class AttachmentViewReceipts {
     uint64_t mutation_request=0;bool accepted=false;
     AttachmentRetryProvenance callback_retry{};
   };
-  struct Budget {uint64_t sequence=0;size_t records=0,pending=0;};
+  struct Budget {uint64_t sequence=0;size_t pending=0;};
   struct Hooks {
     std::function<void(const Record&)> expired;
     std::function<void(const Record&)> close_owner;
   };
   explicit AttachmentViewReceipts(Hooks hooks,Budget* budget=nullptr):hooks_(std::move(hooks)),budget_(budget){
     if(!hooks_.expired||!hooks_.close_owner)throw std::invalid_argument("Native attachment view receipt hooks missing");
-    records_.reserve(kRecords);
   }
   static double OriginalDeadline(const AttachmentRecord& actual,double callback_deadline,const StepRecord* step=nullptr){
     ValidateNativeAttachment(actual);
@@ -40,15 +38,15 @@ class AttachmentViewReceipts {
   uint64_t Issue(const AttachmentRecord& actual,double original_deadline,double now){
     ValidateNativeAttachment(actual);Time(now);
     if(!std::isfinite(original_deadline)||original_deadline<=now||actual.received!=now||
-       !std::isfinite(original_deadline+kCleanupGrace)||records_.size()>=kRecords||sequence_==UINT64_MAX||
-       (budget_&&(budget_->records>=kRecords||budget_->pending>=kRecords||budget_->sequence==UINT64_MAX)))
+       !std::isfinite(original_deadline+kCleanupGrace)||sequence_==UINT64_MAX||
+       (budget_&&budget_->sequence==UINT64_MAX))
       throw std::invalid_argument("Native attachment view publication admission rejected");
     for(const auto& record:records_)if(record.artifact==actual.id)
       throw std::invalid_argument("Native attachment view publication already owns this artifact");
     Record next{budget_?budget_->sequence+1:sequence_+1,actual.id,actual.owner,actual.step_id,
                 now,original_deadline,original_deadline+kCleanupGrace,false,false,std::nullopt,std::nullopt,0,false,actual.callback_retry};
     records_.push_back(std::move(next));++sequence_;++pending_;
-    if(budget_){++budget_->sequence;++budget_->records;++budget_->pending;}
+    if(budget_){++budget_->sequence;++budget_->pending;}
     return records_.back().ticket;
   }
   const Record& Pending(uint64_t ticket,const StepOwner& actual,uint64_t artifact)const{

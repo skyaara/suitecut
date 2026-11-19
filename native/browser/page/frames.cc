@@ -520,8 +520,7 @@ auto Source::ResolveFramePath(int id, uint64_t generation, Dict message, size_t 
                        "nodes[0];",
                        true, false, std::move(callback));
         } else
-          DevTools(id, "Runtime.evaluate", params, std::move(callback), std::nullopt, false,
-                   kMaxResponseBytes, true);
+          DevTools(id, "Runtime.evaluate", params, std::move(callback), std::nullopt, false, true);
       },
       utility);
 }

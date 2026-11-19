@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 namespace suitecut::detail {
-// Observers only update bounded state. The backend's existing continuation
+// Observers only update in-memory state. The backend's existing continuation
 // worker calls drain; this helper never creates a thread or calls from observe.
 class BidiHar {
  public:

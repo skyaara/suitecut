@@ -7,24 +7,22 @@ import * as z from 'zod'
 const path = z
   .string()
   .min(1)
-  .max(16384)
   .refine(
     (value) =>
       isAbsolute(value) &&
       !value.includes('\0') &&
-      Buffer.byteLength(value) <= 16384 &&
       Buffer.from(value, 'utf8').toString('utf8') === value,
-    'Native discovery testDir requires bounded absolute scalar filesystem UTF8',
+    'Native discovery testDir requires an absolute scalar filesystem UTF8 path',
   )
-const pattern = z.union([z.string().max(4096), z.instanceof(RegExp)])
-const patterns = z.union([pattern, z.array(pattern).max(128)])
+const pattern = z.union([z.string(), z.instanceof(RegExp)])
+const patterns = z.union([pattern, z.array(pattern)])
 
 export const nativeDiscoveryShape = {
   /** Native C++ recursively enumerates this actual directory. */
   testDir: path.optional(),
   testMatch: patterns.optional(),
   testIgnore: patterns.optional(),
-  fileFilters: z.array(z.string().max(4096)).max(128).optional(),
+  fileFilters: z.array(z.string()).optional(),
 }
 
 export interface NativeSuiteDiscoveryOptions {

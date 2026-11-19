@@ -8,8 +8,6 @@ namespace suitecut::runner {
 // callbacks, so withdrawal cannot impersonate a physical completion receipt.
 class AttachmentMutations {
  public:
-  static constexpr size_t kSlots=256,kReferences=256,kChanges=512,kContexts=64;
-  static constexpr size_t kMetadata=16*1024*1024;
   enum class Kind { Declaration, Artifact };
   struct Reference {
     Kind kind=Kind::Declaration;uint64_t id=0;
@@ -25,17 +23,7 @@ class AttachmentMutations {
     uint64_t request=0,expected_revision=0,observed_revision=0;StepOwner owner;
     uint64_t step_id=0;double received=0;std::string error_json;
   };
-  // Shared by all journals whose metadata remains retained by the native run.
-  // Reservations never shrink on withdrawal/context retirement.
-  struct Budget {size_t metadata=0;};
-  explicit AttachmentMutations(const StepOwner& actual,Budget* budget=nullptr):attempt_(actual),budget_(budget){
-    ValidateOwner(actual);
-    entries_.reserve(kReferences);contexts_.reserve(kContexts);changes_.reserve(kChanges);rejections_.reserve(kChanges);
-    Reserve(entries_.capacity()*sizeof(Entry)+contexts_.capacity()*sizeof(Context)+
-            changes_.capacity()*sizeof(Change)+rejections_.capacity()*sizeof(Rejection)+
-            sizeof(*this)+attempt_.callback_kind.capacity()+1);
-  }
-  ~AttachmentMutations(){if(budget_)budget_->metadata-=reserved_;}
+  explicit AttachmentMutations(const StepOwner& actual):attempt_(actual){ValidateOwner(actual);}
   AttachmentMutations(const AttachmentMutations&)=delete;
   AttachmentMutations& operator=(const AttachmentMutations&)=delete;
   AttachmentMutations(AttachmentMutations&&)=delete;
@@ -43,9 +31,9 @@ class AttachmentMutations {
 
   void Open(const StepOwner& actual,double deadline,double now){
     Time(now);ValidateAttempt(actual);
-    if(!std::isfinite(deadline)||deadline<=now||contexts_.size()>=kContexts||FindContext(actual))
+    if(!std::isfinite(deadline)||deadline<=now||FindContext(actual))
       throw std::invalid_argument("Native attachment mutation context rejected");
-    Context next{actual,deadline,now,true,false};Reserve(next.owner.callback_kind.capacity()+1);
+    Context next{actual,deadline,now,true,false};
     contexts_.push_back(std::move(next));
   }
   void Amend(const StepOwner& actual,double deadline,double now){
@@ -105,7 +93,7 @@ class AttachmentMutations {
   void Reject(const StepOwner& actual,uint64_t request,uint64_t expected_revision,
               const std::string& error_json,double now,uint64_t actual_step_id=0){
     Time(now);const auto& context=Owned(actual);
-    if(!request||changes_.size()+rejections_.size()>=kChanges||!JsonString(error_json,8192))
+    if(!request||!JsonString(error_json))
       throw std::invalid_argument("Native attachment mutation rejection receipt rejected");
     if(now<context.opened||(!changes_.empty()&&now<changes_.back().accepted))
       throw std::invalid_argument("Native attachment mutation rejection time precedes admission");
@@ -114,7 +102,6 @@ class AttachmentMutations {
     for(const auto& old:rejections_)if(old.request==request)
       throw std::invalid_argument("Native attachment mutation request replay rejected");
     Rejection next{request,expected_revision,Revision(),actual,actual_step_id,now,error_json};
-    Reserve(next.owner.callback_kind.capacity()+next.error_json.capacity()+2);
     static_assert(std::is_nothrow_move_constructible_v<Rejection>);
     rejections_.push_back(std::move(next));
   }
@@ -139,7 +126,6 @@ class AttachmentMutations {
     for(const auto& entry:entries_)if(entry.reference==reference)return &entry;
     return nullptr;
   }
-  size_t ReservedMetadata()const{return reserved_;}
  private:
   uint64_t Commit(const StepOwner& actual,uint64_t request,uint64_t expected_revision,
                  const std::vector<Slot>& proposed,double now,const StepRecord* actual_step,const AttachmentRecord* publication){
@@ -149,9 +135,8 @@ class AttachmentMutations {
          (!changes_.empty()&&now<changes_.back().accepted))
         throw std::invalid_argument("Native attachment publication view original deadline expired");
     }else (void)Current(actual,now);
-    if(!request||expected_revision!=Revision()||changes_.size()+rejections_.size()>=kChanges||
-       proposed.size()>kSlots||Revision()==UINT64_MAX)
-      throw std::invalid_argument("Native attachment mutation revision or capacity rejected");
+    if(!request||expected_revision!=Revision()||Revision()==UINT64_MAX)
+      throw std::invalid_argument("Native attachment mutation revision rejected");
     for(const auto& old:changes_)if(old.request==request)
       throw std::invalid_argument("Native attachment mutation request replay rejected");
     for(const auto& old:rejections_)if(old.request==request)
@@ -165,12 +150,10 @@ class AttachmentMutations {
       if(slot->kind==Kind::Artifact&&!(publication&&publication->id==slot->id)&&!PublishedArtifact(slot->id))
         throw std::invalid_argument("Native attachment mutation artifact has no accepted publication view");
     }
-    // Every potentially throwing copy/allocation precedes reservation/commit.
-    // The staged snapshot itself is at most kSlots entries and one owner string.
+    // Every validation precedes commit; push_back leaves the history unchanged if it throws.
     Change next{Revision()+1,request,actual,publication?publication->step_id:actual_step?actual_step->id:0,now,proposed,publication?publication->id:0};
-    Reserve(next.slots.capacity()*sizeof(Slot)+next.owner.callback_kind.capacity()+1);
     static_assert(std::is_nothrow_move_constructible_v<Change>);
-    changes_.push_back(std::move(next)); // constructor reserved the complete history
+    changes_.push_back(std::move(next));
     return Revision();
   }
   struct Context {StepOwner owner;double deadline=0,opened=0;bool open=false,retired=false;};
@@ -203,17 +186,11 @@ class AttachmentMutations {
   }
   Reference Admit(Entry next){
     ValidateAttempt(next.owner);
-    if(!next.reference.id||!next.request||entries_.size()>=kReferences||Find(next.reference))
-      throw std::invalid_argument("Native attachment mutation admission is duplicate or full");
-    Reserve(next.owner.callback_kind.capacity()+1);
+    if(!next.reference.id||!next.request||Find(next.reference))
+      throw std::invalid_argument("Native attachment mutation admission is duplicate");
     const auto reference=next.reference;entries_.push_back(std::move(next));return reference;
   }
-  void Reserve(size_t bytes){
-    if(bytes>kMetadata-reserved_||(budget_&&(budget_->metadata>kMetadata||bytes>kMetadata-budget_->metadata)))
-      throw std::runtime_error("Native attachment mutation metadata capacity exceeded");
-    reserved_+=bytes;if(budget_)budget_->metadata+=bytes;
-  }
-  StepOwner attempt_;Budget* budget_;size_t reserved_=0;
+  StepOwner attempt_;
   std::vector<Entry> entries_;std::vector<Context> contexts_;std::vector<Change> changes_;std::vector<Rejection> rejections_;
 };
 } // namespace suitecut::runner

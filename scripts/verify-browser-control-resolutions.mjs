@@ -314,17 +314,17 @@ try {
     return result
   }
   await until(() => viewer.state().canResize, 'Scaled native geometry missing')
-  assert.deepEqual([viewer.state().maxWidth, viewer.state().maxHeight], [1920, 1080])
+  assert.equal('maxWidth' in viewer.state(), false)
   await scaledAction('takeover')
-  await scaledAction('resize', { width: 3840, height: 2160, mode: 'fixed' }, 400)
-  const clamped = await scaledAction('resize', { width: 3840, height: 2160, mode: 'auto' })
-  assert.deepEqual([clamped.width, clamped.height], [1920, 1080])
-  await scaledAction('release')
+  // Past the former 3840x2160 physical limit: the viewer no longer clamps or rejects it.
+  const fixed = await scaledAction('resize', { width: 3840, height: 2160, mode: 'fixed' })
+  assert.deepEqual([fixed.width, fixed.height], [3840, 2160])
   assert.deepEqual(
     await scaled.evaluate(() => [window.innerWidth, window.innerHeight, window.devicePixelRatio]),
-    [1920, 1080, 2],
+    [3840, 2160, 2],
   )
-  checks.push('DPR2-physical-limits-fixed-rejection-and-auto-clamp')
+  await scaledAction('release')
+  checks.push('DPR2-resize-past-former-physical-limit')
   await viewer.close()
   viewer = undefined
   const fractional = await browser.newPage({
@@ -334,8 +334,8 @@ try {
   await fractional.goto(app)
   viewer = await createBrowserViewer({ browser, page: fractional })
   await until(() => viewer.state().canResize, 'Fractional native geometry missing')
-  assert.deepEqual([viewer.state().maxWidth, viewer.state().maxHeight], [2560, 1440])
-  checks.push('fractional-DPR-exact-limits-despite-rounded-capture-dimensions')
+  assert.equal('maxWidth' in viewer.state(), false)
+  checks.push('fractional-DPR-no-viewer-limits')
   summary.status = 'PASS'
 } catch (error) {
   summary.status = 'FAIL'

@@ -19,11 +19,9 @@ const Nonnegative = z.union([z.literal('0'), UInt])
 const PathWire = z
   .string()
   .min(2)
-  .max(16384)
   .regex(/^(?:[a-f\d]{2})+$/u)
 const Segment = z
   .string()
-  .max(4096)
   .refine(
     (value) => !value.includes('\0') && !isAbsolute(value),
     'Native output path segments must be relative and contain no NUL',
@@ -73,16 +71,10 @@ export class NativeOutputCallbacks {
     const value: NativeTestOutput = Object.freeze({
       outputDir,
       outputPath: (...segments: readonly string[]) => {
-        const actual = z.array(Segment).max(32).parse(segments)
+        const actual = z.array(Segment).parse(segments)
         const path = resolve(outputDir, ...actual),
           suffix = relative(outputDir, path)
-        if (
-          path.length > 8192 ||
-          Buffer.byteLength(path) > 8192 ||
-          suffix === '..' ||
-          suffix.startsWith('..' + sep) ||
-          isAbsolute(suffix)
-        )
+        if (suffix === '..' || suffix.startsWith('..' + sep) || isAbsolute(suffix))
           throw new Error('Native outputPath must stay within the assigned native output directory')
         return path
       },

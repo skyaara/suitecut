@@ -90,15 +90,19 @@ describe('native selected fixture constants (controlled mapping receipts)', () =
     ])
       expect(() => new NativeFixtureBindings({ foo: { value: 1 } }).packet(packet)).toThrow()
   })
-  it('bounds flat raw declarations before sending any metadata or invoking a callback', () => {
+  it('serializes flat raw declarations past the former count and byte caps', () => {
     const callbacks = Object.fromEntries(
-      Array.from({ length: 257 }, (_, index) => [`item${index}`, { setup: () => undefined }]),
+      Array.from({ length: 1000 }, (_, index) => [`item${index}`, { setup: () => undefined }]),
     )
-    expect(() => new NativeFixtureBindings(callbacks)).toThrow('capacity')
+    expect(
+      new NativeFixtureBindings(callbacks).rows().filter(([kind]) => kind === 'FDECL'),
+    ).toHaveLength(1000)
     const data = Object.fromEntries(
-      Array.from({ length: 256 }, (_, index) => [`item${index}`, { value: 'x'.repeat(8190) }]),
+      Array.from({ length: 300 }, (_, index) => [`item${index}`, { value: 'x'.repeat(9000) }]),
     )
-    expect(() => new NativeFixtureBindings(data)).toThrow('capacity')
+    expect(
+      new NativeFixtureBindings(data).rows().filter(([kind]) => kind === 'FLITERAL'),
+    ).toHaveLength(300)
   })
   it('rejects duplicate, late and unmapped constants without admitting a fake callback', () => {
     const bindings = new NativeFixtureBindings({ foo: { value: 1 } })

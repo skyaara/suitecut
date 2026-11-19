@@ -131,8 +131,8 @@ void tamper() {
   write(file,original);
   check(vault.get("entry-one")==credential(),"Restoring authentic ciphertext failed");
 }
-// Independently encode authenticated boundary fixtures so entry-count limits
-// can be checked without hundreds of deliberately expensive password KDFs.
+// Independently encode authenticated fixtures so large entry counts can be
+// checked without hundreds of deliberately expensive password KDFs.
 void authenticated_fixture(const std::filesystem::path& path,const Json& payload) {
   const auto plaintext=payload.dump();
   std::vector<unsigned char> bytes(48+plaintext.size()+16);
@@ -165,26 +165,25 @@ void bounds() {
   CredentialVault vault(file.string(),password);
   const auto original=read(file);
   rejects([&]{vault.put("",credential());},"Empty credential name was accepted");
-  rejects([&]{vault.put(std::string(CredentialVault::max_name_bytes+1,'n'),credential());},"Oversized credential name was accepted");
   rejects([&]{vault.put("bad\nname",credential());},"Control character credential name was accepted");
-  rejects([&]{vault.put("entry-one",Json{{"password",std::string(CredentialVault::max_credential_bytes+1,'s')}});},"Oversized credential was accepted");
   check(read(file)==original,"Resource validation failure changed the vault");
+  // Formerly capped sizes (128-byte names, 64 KiB credentials, 256 entries, 1 MiB files) now pass through whole.
+  const std::string long_name(4096,'n');
+  const Json large{{"password",std::string(2*1024*1024,'s')}};
+  vault.put(long_name,large);
+  check(vault.get(long_name)==large,"Long credential name or large credential was not stored whole");
+  check(std::filesystem::file_size(file)>2*1024*1024,"Large vault file was not written whole");
   Json entries=Json::object{};
-  for (std::size_t i=0;i<CredentialVault::max_entries;++i) entries["entry-"+std::to_string(i)]=Json{{"token","test-token"}};
+  for (std::size_t i=0;i<1024;++i) entries["entry-"+std::to_string(i)]=Json{{"token","test-token"}};
   authenticated_fixture(file,entries);
-  const auto at_capacity=read(file);
-  rejects([&]{vault.put("overflow-entry",credential());},"Entry capacity was not enforced");
-  check(read(file)==at_capacity,"Entry overflow changed existing credentials");
-  check(vault.list().size()==CredentialVault::max_entries,"Valid capacity boundary was rejected");
-  entries["overflow-entry"]=credential(); authenticated_fixture(file,entries);
-  const auto overflow=read(file);
-  rejects([&]{CredentialVault invalid(file.string(),password);},"Authenticated entry overflow was accepted");
-  check(read(file)==overflow,"Authenticated oversized payload was rewritten");
+  vault.put("extra-entry",credential());
+  check(vault.list().size()==1025,"Entries past the former 256-entry cap were rejected");
+  check(vault.get("extra-entry")==credential(),"Entry past the former cap was not stored");
   const int fd=::open(file.c_str(),O_WRONLY|O_CLOEXEC);
-  check(fd>=0,"Cannot open oversized file fixture");
-  const int resized=::ftruncate(fd,CredentialVault::max_file_bytes+1); ::close(fd);
-  check(resized==0,"Cannot resize oversized file fixture");
-  rejects([&]{CredentialVault invalid(file.string(),password);},"Encrypted file byte limit was not enforced");
+  check(fd>=0,"Cannot open truncated file fixture");
+  const int resized=::ftruncate(fd,4); ::close(fd);
+  check(resized==0,"Cannot resize truncated file fixture");
+  rejects([&]{CredentialVault invalid(file.string(),password);},"Truncated encrypted file was accepted");
   rejects([&]{CredentialVault empty((directory.path/"empty.enc").string(),"");},"Empty master password was accepted");
 }
 void paths() {
@@ -272,8 +271,8 @@ void origins() {
       "http://::1/login","http://[::1/login","http://example.com:80:90/login"}) {
     rejects([&]{suitecut::detail::strict_origin(url);},"Unsafe or ambiguous credential URL origin was accepted");
   }
-  rejects([&]{suitecut::detail::strict_origin("https://"+std::string(64,'a')+".example/login");},"Oversized DNS label was accepted");
-  rejects([&]{suitecut::detail::strict_origin("https://example.com/"+std::string(8192,'x'));},"Oversized login URL was accepted");
+  check(suitecut::detail::strict_origin("https://"+std::string(64,'a')+".example/login")=="https://"+std::string(64,'a')+".example","Long DNS label was rejected");
+  check(suitecut::detail::strict_origin("https://example.com/"+std::string(8192,'x'))=="https://example.com","Long login URL was rejected");
 }
 } // namespace
 int main(int argc,char** argv) {

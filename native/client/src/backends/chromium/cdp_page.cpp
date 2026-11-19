@@ -280,9 +280,8 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   if (animations != "allow" && animations != "disabled")
     throw std::invalid_argument("Screenshot animations must be allow or disabled");
   const auto css = text(fields, "style") + (caret == "hide" ? "\n*{caret-color:transparent!important}" : "");
-  if (css.size() > 1048576) throw std::invalid_argument("Screenshot stylesheet exceeds 1 MiB");
   const auto mask_color = text(fields, "maskColor", "#FF00FF");
-  if (mask_color.size() > 4096 || !runtime.value(page,
+  if (!runtime.value(page,
       "CSS.supports('color'," + Json(mask_color).dump() + ")", deadline, true).as_bool())
     throw std::invalid_argument("Screenshot maskColor must be a valid CSS color");
   if (fields.contains("mask") && fields.contains("masks"))
@@ -290,8 +289,8 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   Json::array masks;
   if (fields.contains("mask") || fields.contains("masks")) {
     const auto& raw = fields.at(fields.contains("masks") ? "masks" : "mask");
-    if (!raw.is_array() || raw.as_array().size() > 1024)
-      throw std::invalid_argument("Screenshot masks must be an array of at most 1024 queries");
+    if (!raw.is_array())
+      throw std::invalid_argument("Screenshot masks must be an array of queries");
     for (const auto& mask : raw.as_array()) {
       if (mask.is_string()) masks.emplace_back(Json{{"selector", mask}});
       else if (mask.is_array()) masks.emplace_back(Json{{"query", mask}});
@@ -360,11 +359,8 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   // value so raw CDP overrides cannot silently break css-scale screenshots.
   const auto dpr = number(window, "dpr");
   if (!std::isfinite(dpr) || dpr <= 0) throw std::runtime_error("Invalid screenshot device scale");
-  const double pixels = scale == "css" ? 1 : dpr;
-  if (width <= 0 || height <= 0 || width * pixels > 32768 || height * pixels > 32768 ||
-      std::ceil(width * pixels) * std::ceil(height * pixels) > 64 * 1024 * 1024 ||
-      std::abs(x) > 100000000 || std::abs(y) > 100000000)
-    throw std::invalid_argument("Screenshot dimensions exceed the 64 megapixel capture limit");
+  if (width <= 0 || height <= 0)
+    throw std::invalid_argument("Screenshot dimensions must be positive");
   params["clip"] = Json{{"x", x}, {"y", y}, {"width", width}, {"height", height},
                          {"scale", scale == "css" ? 1 / dpr : 1}};
 
@@ -412,8 +408,8 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
       runtime.value(page,
         "(()=>{const m=globalThis.__suitecutCdpCapture1||(globalThis.__suitecutCdpCapture1=new Map());"
         "const resources={styles:[],overlays:[],carets:[],animations:[]};m.set(" + Json(style_id).dump() + ",resources);"
-        "const roots=[document];let visited=0;for(let i=0;i<roots.length;i++){"
-        "for(const e of roots[i].querySelectorAll('*')){if(++visited>100000)throw new Error('Screenshot DOM traversal exceeds 100000 elements');"
+        "const roots=[document];for(let i=0;i<roots.length;i++){"
+        "for(const e of roots[i].querySelectorAll('*')){"
         "if(e.shadowRoot)roots.push(e.shadowRoot);}}"
         "const disable=" + std::string(animations == "disabled" ? "true" : "false") + ";"
         "if(disable&&roots.some(r=>r.querySelector('iframe,frame')))throw new Error('Disabling screenshot animations across frame documents is unsupported');"
@@ -424,12 +420,11 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
         "resources.carets.push({element:e,hadStyle:e.hasAttribute('style'),value:e.style.getPropertyValue('caret-color'),priority:e.style.getPropertyPriority('caret-color')});"
         "e.style.setProperty('caret-color','transparent','important');}}}"
         "if(disable){const active=[...new Set(roots.flatMap(r=>r.getAnimations?.()??[]))];"
-        "if(active.length>10000)throw new Error('Screenshot animation limit exceeds 10000');"
         "for(const a of active){if(a.playState==='idle'||a.playState==='finished')continue;const t=a.effect?.getComputedTiming();"
         "if(!t)continue;resources.animations.push({animation:a,currentTime:a.currentTime,state:a.playState});"
         "a.pause();a.currentTime=Number.isFinite(t.endTime)&&a.playbackRate>=0?t.endTime:0;}}"
         "const rects=[];for(const mask of " + Json(masks).dump() + "){const elements=globalThis.__suitecutNativeChromeDOM1.all(mask);"
-        "for(const e of elements){if(rects.length>=8192)throw new Error('Screenshot mask rectangle limit exceeds 8192');"
+        "for(const e of elements){"
         "const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)rects.push({x:r.left+scrollX,y:r.top+scrollY,width:r.width,height:r.height});}}"
         "for(const r of rects){const e=document.createElement('div');e.setAttribute('aria-hidden','true');"
         "e.setAttribute('data-suitecut-capture'," + Json(style_id).dump() + ");"
@@ -468,8 +463,7 @@ Json pdf(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadli
         key == "api" || key == "id" || key == "version" || key == "framePath") continue;
     if (numbers.contains(key)) {
       const auto n = number(fields, key.c_str());
-      if (n < 0 || n > 200 || ((key == "paperWidth" || key == "paperHeight") && n == 0) ||
-          (key == "scale" && (n < 0.1 || n > 2)))
+      if (n < 0 || ((key == "paperWidth" || key == "paperHeight" || key == "scale") && n == 0))
         throw std::invalid_argument("Invalid PDF dimension: " + key);
       params[key] = n;
     } else if (booleans.contains(key)) {
@@ -477,10 +471,7 @@ Json pdf(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadli
       if (params.contains(name)) throw std::invalid_argument("Duplicate PDF option: " + name);
       params[name] = value.as_bool();
     } else if (strings.contains(key)) {
-      const auto& s = value.as_string();
-      if (s.size() > (key == "pageRanges" ? 4096u : 1048576u))
-        throw std::invalid_argument("PDF option is too long: " + key);
-      params[key] = s;
+      params[key] = value.as_string();
     } else throw std::invalid_argument("Unsupported Chromium PDF option: " + key);
   }
   auto result = runtime.call(page, "Page.printToPDF", std::move(params), deadline);
@@ -501,7 +492,7 @@ void download_scope(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
   }
 }
 bool safe_download_id(const std::string& id) {
-  return !id.empty() && id.size() <= 128 && std::all_of(id.begin(), id.end(), [](unsigned char c) {
+  return !id.empty() && std::all_of(id.begin(), id.end(), [](unsigned char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
            (c >= '0' && c <= '9') || c == '-' || c == '_';
   });
@@ -515,8 +506,6 @@ void sync_downloads(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
     const auto guid = begin.at("guid").as_string();
     if (!safe_download_id(guid)) throw std::runtime_error("Chromium returned an invalid download GUID");
     if (page.downloads.contains(guid)) continue;
-    if (page.downloads.size() >= 4096)
-      throw std::runtime_error("Chromium page download record budget exceeded");
     Json info{{"downloadId", guid}, {"guid", guid}, {"url", begin.at("url")},
       {"suggestedFilename", begin.at("suggestedFilename")}, {"state", "inProgress"},
       {"receivedBytes", 0}, {"totalBytes", 0}, {"path", Json{}}};
@@ -546,7 +535,7 @@ Json public_download(const Json& record) {
   return result;
 }
 std::filesystem::path absolute_path(const std::string& path, const char* description) {
-  if (path.empty() || path.size() > 4096 || path.find('\0') != std::string::npos ||
+  if (path.empty() || path.find('\0') != std::string::npos ||
       !std::filesystem::path(path).is_absolute())
     throw std::invalid_argument(std::string(description) + " must be an absolute filesystem path");
   return std::filesystem::path(path).lexically_normal();
@@ -670,17 +659,13 @@ Json emulate(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline de
     method = "Emulation.clearGeolocationOverride";
   } else if (action == "timezone") {
     allowed.insert("timezoneId");
-    const auto zone = fields.at("timezoneId").as_string();
-    if (zone.size() > 1024) throw std::invalid_argument("Emulated timezone ID is too long");
-    params["timezoneId"] = zone;
+    params["timezoneId"] = fields.at("timezoneId").as_string();
     method = "Emulation.setTimezoneOverride";
   } else if (action == "userAgent") {
     allowed.insert({"userAgent", "acceptLanguage", "platform"});
     for (const auto* key : {"userAgent", "acceptLanguage", "platform"}) {
       if (!fields.contains(key)) continue;
-      const auto value = fields.at(key).as_string();
-      if (value.size() > 8192) throw std::invalid_argument(std::string("Emulated ") + key + " is too long");
-      params[key] = value;
+      params[key] = fields.at(key).as_string();
     }
     if (!params.contains("userAgent")) throw std::invalid_argument("Emulation requires userAgent");
     method = "Emulation.setUserAgentOverride";
@@ -714,8 +699,8 @@ Json cdp_page_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, De
     return runtime.call(page, "Page.getNavigationHistory", Json::object{}, deadline);
   if (command == "viewport") {
     const auto width = fields.at("width").as_int(), height = fields.at("height").as_int();
-    if (width < 1 || height < 1 || width > 32768 || height > 32768)
-      throw std::invalid_argument("Viewport dimensions must be positive integers no greater than 32768");
+    if (width < 1 || height < 1)
+      throw std::invalid_argument("Viewport dimensions must be positive integers");
     return runtime.call(page, "Emulation.setDeviceMetricsOverride",
         Json{{"width", width}, {"height", height}, {"deviceScaleFactor", 1}, {"mobile", false}}, deadline);
   }

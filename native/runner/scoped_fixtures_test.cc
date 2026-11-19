@@ -110,12 +110,11 @@ int main() {
     Proof p({{"test", Scope::Test, {}}});
     assert(!p.pool.Open(1, 1, S::Test, {}, NAN, 0));
     assert(!p.pool.Open(1, 1, S::Test, {}, 10, INFINITY));
-    for (uint64_t id = 1; id <= 16; ++id) assert(p.pool.Open(id, id, S::AfterAll, {"test"}, 100, 0));
-    assert(!p.pool.Open(17, 17, S::AfterAll, {"test"}, 100, 0));
-    assert(p.pool.Inspect().physical == 16);
+    for (uint64_t id = 1; id <= 17; ++id) assert(p.pool.Open(id, id, S::AfterAll, {"test"}, 100, 0));
+    assert(p.pool.Inspect().physical == 17);
     p.pool.Retire(10, 1); p.pool.Tick(10);
-    assert(p.terminate.size() == 1 && p.pool.Inspect().physical == 16);
-    p.pool.WorkerClosed(); assert(p.closed.size() == 16 && p.pool.Inspect().physical == 0);
+    assert(p.terminate.size() == 1 && p.pool.Inspect().physical == 17);
+    p.pool.WorkerClosed(); assert(p.closed.size() == 17 && p.pool.Inspect().physical == 0);
   }
   {
     Proof p({{"worker", Scope::Worker, {}}});
@@ -131,9 +130,11 @@ int main() {
         i ? std::vector<std::string>{"f" + std::to_string(i - 1)} : std::vector<std::string>{}});
     Proof p(std::move(definitions));
     assert(p.pool.Open(1, 1, S::Test, {"f64"}, 100, 0));
+    // No native lease cap: the 65th dependent fixture setup is admitted.
     for (int i = 0; i < 64; ++i) p.Ready(p.Pop(K::Setup, "f" + std::to_string(i)), 1);
-    assert(p.terminate.size() == 1 && p.pool.Inspect().physical == 64 && p.commands.empty());
-    p.pool.WorkerClosed(); assert(p.pool.Inspect().physical == 0 && !p.closed[0].ok);
+    assert(p.terminate.empty() && p.pool.Inspect().physical == 65);
+    p.Ready(p.Pop(K::Setup, "f64"), 1);
+    p.pool.WorkerClosed(); assert(p.pool.Inspect().physical == 0);
   }
   {
     Proof p({{"test", Scope::Test, {}}, {"cleanup", Scope::Test, {"test"}}});
