@@ -1,6 +1,8 @@
 # Native browser playback codecs
 
-On macOS arm64 the pinned SDK is a codec-enabled build of CEF 156.0.30 (below) and plays H.264, AAC and HEVC. The official Linux CEF156 runtime still lacks H.264/AAC playback; the build profile here prepares a replacement Linux library and does not claim one has been compiled or installed. Recording and publishing use a separate FFmpeg encoder and do not add browser decoders.
+**macOS arm64 is the platform for proprietary-codec playback.** Its pinned SDK is a codec-enabled build of CEF 156.0.30 (below) and plays H.264, AAC and HEVC. Use macOS for anything that needs them.
+
+The official Linux CEF156 runtime lacks H.264/AAC playback, and no Linux codec build is planned for now: the source build needs a 500 GiB / 64 GiB host we don't have, and no CEF156 Linux codec prebuilt exists. The Linux profile below stays as the recipe if that changes; it has never been run. Recording and publishing use a separate FFmpeg encoder and do not add browser decoders.
 
 ## Build common web codecs
 

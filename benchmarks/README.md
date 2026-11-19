@@ -90,12 +90,12 @@ python3 -m venv .venv-bench && .venv-bench/bin/pip install browser-use
 
 Environment variables:
 
-| Variable             | Default                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `SUITECUT_BROWSER`   | `.suitecut/chrome-ui-2026-10-31/build/suitecut-browser.app/Contents/MacOS/suitecut-browser` |
-| `AGENT_BROWSER`      | `agent-browser` on `PATH`                                                                   |
-| `BROWSER_USE_PYTHON` | `python3` (use the venv's `python`)                                                         |
-| `CHROME`             | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (for browser-use)            |
+| Variable             | Default                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `SUITECUT_BROWSER`   | `.suitecut/cef-codecs-2026-11-19/build/suitecut-browser.app/Contents/MacOS/suitecut-browser` |
+| `AGENT_BROWSER`      | `agent-browser` on `PATH`                                                                    |
+| `BROWSER_USE_PYTHON` | `python3` (use the venv's `python`)                                                          |
+| `CHROME`             | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (for browser-use)             |
 
 `--tools suitecut,agent-browser` runs a subset, and `--out` writes somewhere else. The run
 stops if less than 2 GB of disk is free.

@@ -16,7 +16,7 @@ import { ACTION_MS, message, now, play, readConfig, refs, sleep, thrice } from '
 const config = readConfig()
 const executablePath = resolve(
   process.env.SUITECUT_BROWSER ??
-    '.suitecut/chrome-ui-2026-10-31/build/suitecut-browser.app/Contents/MacOS/suitecut-browser',
+    '.suitecut/cef-codecs-2026-11-19/build/suitecut-browser.app/Contents/MacOS/suitecut-browser',
 )
 /** @type {BenchRun} */
 const result = { tool: 'suitecut', sites: [], tasks: [] }

@@ -166,8 +166,9 @@ see [the native-default guide](BETA.md).
 ## Build
 
 For browser media playback, see [codec-enabled CEF builds and actual playback acceptance](CODECS.md).
-The official Linux SDK below does not provide H.264/AAC decoding; the pinned
-macOS arm64 SDK is a codec-enabled build of the same CEF tag. Output FFmpeg
+The official Linux SDK below does not provide H.264/AAC decoding, and no Linux
+codec build is planned; use macOS arm64, whose pinned SDK is a codec-enabled build
+of the same CEF tag, for H.264, AAC and HEVC playback. Output FFmpeg
 encoders and browser input decoders are separate.
 
 Use CEF **156.0.30+g6028375+chromium-156.0.8078.96 stable**, CMake 3.21+, Ninja, and a C++20
