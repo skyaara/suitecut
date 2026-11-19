@@ -60,6 +60,11 @@ The patch supplies the missing Alloy delegate method and forwards the real liste
 
 ## Exact inputs
 
+These patches were written and checked against the CEF 156.0.7 sources below. The
+project pin moved to `156.0.30+g6028375+chromium-156.0.8078.96` on 2026-11-19
+([`cef-build.json`](../cef-build.json)); the patches have not been rebased or
+rechecked against it.
+
 | Input | Pin |
 | --- | --- |
 | CEF source commit | `47dbc1df023e99f006fb9e850a8d83cc19b4fdd9` |

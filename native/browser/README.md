@@ -166,16 +166,22 @@ see [the native-default guide](BETA.md).
 ## Build
 
 For browser media playback, see [codec-enabled CEF builds and actual playback acceptance](CODECS.md).
-The stock binary SDK below does not provide H.264/AAC decoding. Output FFmpeg
+The official Linux SDK below does not provide H.264/AAC decoding; the pinned
+macOS arm64 SDK is a codec-enabled build of the same CEF tag. Output FFmpeg
 encoders and browser input decoders are separate.
 
-Use CEF **156.0.7+g47dbc1d+chromium-156.0.8078.17 beta**, CMake 3.21+, Ninja, and a C++20
-compiler. Obtain the matching minimal binary SDK from
-[CEF's build distribution](https://cef-builds.spotifycdn.com/index.html).
+Use CEF **156.0.30+g6028375+chromium-156.0.8078.96 stable**, CMake 3.21+, Ninja, and a C++20
+compiler. [`cef-build.json`](cef-build.json) pins two minimal binary SDKs by URL,
+byte length and SHA-256; verify the archive against that checksum before extracting it:
+
+- Linux x64: the official archive from [CEF's build distribution](https://cef-builds.spotifycdn.com/index.html).
+- macOS arm64 (`macosarm64`): the third-party
+  [OpenArch codec build](https://github.com/dpfaffenbauer/OpenArch/releases/tag/cef-156.0.30-codecs)
+  of the same tag, with H.264, AAC and HEVC playback. It is not an official CEF
+  build and carries no codec patent licence; see [CODECS.md](CODECS.md).
+
 Keep SDKs and outputs outside source control (for example under `.suitecut/`).
-The Linux x64 archive URL, byte length, and SHA-256 checksum are pinned in
-[`cef-build.json`](cef-build.json); verify the archive against that checksum before
-extracting it. CMake rejects an SDK whose CEF version differs from this pin.
+CMake rejects an SDK whose CEF version differs from this pin.
 Builds do not silently fetch or update Chromium. The 156 beta archive has been
 checksum-verified and builds/runs in this Linux workspace. See
 [the validation ledger](AUDIT.md) for exact scope, upstream failures, capture

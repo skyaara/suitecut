@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "profile": "linux-web",
   "platform": "linux64",
-  "cefCommit": "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9",
+  "cefCommit": "6028375a4532fb89d23b58635f5c0d3a82c93959",
   "cefBranch": "8078",
-  "chromiumRef": "refs/tags/156.0.8078.17",
+  "chromiumRef": "refs/tags/156.0.8078.96",
   "automateScript": {
-    "url": "https://raw.githubusercontent.com/chromiumembedded/cef/47dbc1df023e99f006fb9e850a8d83cc19b4fdd9/tools/automate/automate-git.py",
+    "url": "https://raw.githubusercontent.com/chromiumembedded/cef/6028375a4532fb89d23b58635f5c0d3a82c93959/tools/automate/automate-git.py",
     "sha256": "94d3ddd1e0d35482132f45dc101a593c9371b6eb2d8ff4af6cfe2734d2e48c6a"
   },
   "gnArgs": {

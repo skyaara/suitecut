@@ -53,7 +53,7 @@ await test('runtime packaging preserves execution, resources and originals, and 
     )
     assert.ok('cefVersion' in manifest.cefPin)
     assert.ok(manifest.packagedBytes < manifest.originalBytes)
-    assert.equal(manifest.cefPin.cefVersion, '156.0.7+g47dbc1d+chromium-156.0.8078.17')
+    assert.equal(manifest.cefPin.cefVersion, '156.0.30+g6028375+chromium-156.0.8078.96')
     assert.equal(spawnSync(path.join(output, 'suitecut-browser')).status, 37)
     assert.deepEqual(await readFile(path.join(source, 'suitecut-browser')), original)
     assert.deepEqual(

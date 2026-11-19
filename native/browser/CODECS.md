@@ -1,10 +1,10 @@
 # Native browser playback codecs
 
-The installed stock CEF156 runtime still lacks H.264/AAC playback. Recording and publishing use a separate FFmpeg encoder and do not add browser decoders. The code here prepares a replacement library build; it does not claim that a replacement has already been compiled or installed.
+On macOS arm64 the pinned SDK is a codec-enabled build of CEF 156.0.30 (below) and plays H.264, AAC and HEVC. The official Linux CEF156 runtime still lacks H.264/AAC playback; the build profile here prepares a replacement Linux library and does not claim one has been compiled or installed. Recording and publishing use a separate FFmpeg encoder and do not add browser decoders.
 
 ## Build common web codecs
 
-[`cef-codecs.json`](cef-codecs.json) pins a Linux x86-64 profile for the existing CEF **156.0.7+g47dbc1d+chromium-156.0.8078.17**, its Chromium/FFmpeg source revisions, relevant source hashes and GN options. The essential decoder options are:
+[`cef-codecs.json`](cef-codecs.json) pins a Linux x86-64 profile for the pinned CEF **156.0.30+g6028375+chromium-156.0.8078.96**, its Chromium/FFmpeg source revisions, relevant source hashes and GN options. The essential decoder options are:
 
 ```gn
 proprietary_codecs = true
@@ -46,7 +46,7 @@ Stock CEF was checked with this gate: **ten required open-codec cases passed; al
 
 On 2026-11-19 the [OpenArch `cef-156.0.30-codecs`](https://github.com/dpfaffenbauer/OpenArch/releases/tag/cef-156.0.30-codecs) minimal distribution was checked: `cef_binary_156.0.30+g6028375+chromium-156.0.8078.96_macosarm64_minimal.tar.bz2`, 135,597,207 bytes, SHA-256 `d9bcb24c64284be28dfd5ed99961fd2aa562308bad2d0ad79217fdec18542dcc`. It is built on GitHub Actions with `proprietary_codecs=true` and `ffmpeg_branding="Chrome"`; HEVC decodes through VideoToolbox. It is not an official CEF build and carries no codec patent licence.
 
-SuiteCut was built against it in a separate build directory (CMake's pin check was satisfied only for that configure; `cef-build.json` still pins 156.0.7) and run through `verify-browser-codec-runtime.mjs --profile web-hevc` beside the stock 156.0.7 build:
+It is the pinned macOS arm64 SDK (`macosarm64` in [`cef-build.json`](cef-build.json)) since 2026-11-19. SuiteCut was built against it and run through `verify-browser-codec-runtime.mjs --profile web-hevc` beside the stock 156.0.7 build:
 
 | Case | Stock 156.0.7 | OpenArch 156.0.30 |
 | ---- | ------------- | ----------------- |
@@ -58,8 +58,7 @@ SuiteCut was built against it in a separate build directory (CMake's pin check w
 | VP8/Opus, VP9/Opus (file and MediaSource), MP3, WAV, Ogg/Opus, FLAC | play | play |
 | VP8/Vorbis, AV1/Opus, Ogg/Vorbis | not generated: local ffmpeg lacks the encoders | not generated |
 
-Every generated case passed on the codec build (12/12; stock 7/12). The gate still reports `FAIL_CODEC_REQUIREMENTS` on both builds only because of the three ungenerated fixtures. Adopting this build means moving the pin to 156.0.30 and re-running the native test suite against it; neither has been done.
-
+Every generated case passed on the codec build (12/12; stock 7/12). The gate still reports `FAIL_CODEC_REQUIREMENTS` on both builds only because of the three ungenerated fixtures.
 After a replacement passes, package it separately:
 
 ```bash

@@ -259,7 +259,9 @@ TypeScript orchestration. The full automation/media contract remains incomplete.
 - Real CEF browser, recording and RTMP verifiers under `scripts/verify-native-*.mjs`.
 
 The current target is Linux x64 with CEF
-`156.0.7+g47dbc1d+chromium-156.0.8078.17` beta. The pinned archive's size,
+`156.0.30+g6028375+chromium-156.0.8078.96` stable (moved from
+`156.0.7+g47dbc1d+chromium-156.0.8078.17` beta on 2026-11-19; the evidence below
+was gathered on the earlier pin unless it says otherwise). The pinned archive's size,
 upstream SHA-1 and SHA-256 have been verified. The binary builds and runs with
 the sandbox enabled and explicit headless software rendering.
 

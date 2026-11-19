@@ -19,9 +19,9 @@ import tarfile
 import urllib.request
 
 
-CEF_REVISION = "47dbc1df023e99f006fb9e850a8d83cc19b4fdd9"
+CEF_REVISION = "6028375a4532fb89d23b58635f5c0d3a82c93959"
 GTEST_REVISION = "52eb8108c5bdec04579160ae17225d66034bd723"
-CEF_VERSION = "156.0.7+g47dbc1d+chromium-156.0.8078.17"
+CEF_VERSION = "156.0.30+g6028375+chromium-156.0.8078.96"
 INPUTS = {
     "parser_unittest.cc": (
         f"https://raw.githubusercontent.com/chromiumembedded/cef/{CEF_REVISION}/tests/ceftests/parser_unittest.cc",
