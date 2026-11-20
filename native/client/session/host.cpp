@@ -7,12 +7,40 @@
 
 #include <openssl/rand.h>
 
+#include <unistd.h>
+
 #include <algorithm>
 #include <climits>
+#include <filesystem>
+#include <system_error>
 
 namespace suitecut::session {
 namespace {
 using Clock = std::chrono::steady_clock;
+
+// Why |path| cannot answer a chooser in |mode|, or "". A path to read is
+// absolute, exists and is a readable regular file, or a directory for a
+// folder; a path to save to is absolute, in a writable directory, and not a
+// directory itself.
+std::string path_problem(const std::string& mode, const std::string& path) {
+  namespace fs = std::filesystem;
+  if (path.empty() || path.find('\0') != std::string::npos || !fs::path(path).is_absolute())
+    return "Not an absolute path: " + path;
+  std::error_code error;
+  const auto status = fs::status(path, error);
+  if (mode == "save") {
+    if (fs::is_directory(status)) return "A directory, not a file: " + path;
+    const auto parent = fs::path(path).parent_path();
+    if (!fs::is_directory(parent, error) || ::access(parent.c_str(), W_OK) != 0)
+      return "Not in a writable directory: " + path;
+    return "";
+  }
+  if (error || !fs::exists(status)) return "No such file: " + path;
+  if (mode == "openFolder" ? !fs::is_directory(status) : !fs::is_regular_file(status))
+    return (mode == "openFolder" ? "Not a directory: " : "Not a regular file: ") + path;
+  if (::access(path.c_str(), R_OK) != 0) return "Not readable: " + path;
+  return "";
+}
 }  // namespace
 
 const char* control_name(Control control) {
@@ -77,6 +105,14 @@ void Host::Close() {
     owners_.clear();
   }
   if (browser_) browser_->close();
+  // With the engine gone, a download still being saved fails at once.
+  std::vector<std::thread> savers;
+  {
+    std::lock_guard lock(savers_mutex_);
+    savers = std::move(savers_);
+  }
+  for (auto& saver : savers)
+    if (saver.joinable()) saver.join();
   browser_.reset();
 }
 
@@ -227,13 +263,14 @@ Json Host::Open(const std::string& owner, Control control, const std::optional<s
     Changed();
     EmitTab(page, tab);
   }
-  bool hold = false;
+  bool dialogs = false, person = false;
   {
     std::lock_guard lock(state_);
     const auto found = prompt_hosts_.find(owner);
-    hold = found != prompt_hosts_.end() && !found->second.empty();
+    dialogs = found != prompt_hosts_.end() && !found->second.empty();
+    person = PersonHost(owner);
   }
-  if (hold) HoldDialogs({page}, true);
+  if (dialogs || person) Hold({page}, dialogs ? 1 : -1, person ? 1 : -1);
   // Navigation runs without the agent lock: a slow page doesn't hold the
   // owner's agent calls. Its outcome is the tab's state, which watch reports.
   if (url) NavigateEngine(page, Json{{"command", "navigate"}, {"url", *url}});
@@ -266,7 +303,8 @@ Json Host::Navigate(const std::string& owner, int page, Json fields) {
   {
     std::lock_guard lock(state_);
     for (auto& [id, prompt] : prompts_)
-      if (prompt.page == page && prompt.outcome.empty() && prompt.info.at("dialog") != Json("beforeunload")) {
+      if (prompt.page == page && prompt.kind == "dialog" && prompt.outcome.empty() &&
+          prompt.info.at("dialog") != Json("beforeunload")) {
         prompt.outcome = "closed";
         dismiss.push_back(prompt.engine_id);
       }
@@ -450,7 +488,7 @@ Json Host::NextEvents(std::uint64_t reader, const std::string& owner, std::uint6
 }
 
 void Host::ReaderGone(std::uint64_t reader) {
-  std::vector<int> release;
+  std::vector<int> dialogs, person;
   {
     std::lock_guard lock(state_);
     for (auto& [owner, events] : events_) {
@@ -466,39 +504,66 @@ void Host::ReaderGone(std::uint64_t reader) {
       // back to default answers, and what they hold is dismissed.
       for (const auto& [id, tab] : tabs_)
         if (tab.owner == owner) {
-          release.push_back(id);
-          DropPrompts(id, "dismissed");
+          dialogs.push_back(id);
+          DropPrompts(id, "dismissed", "dialog");
+        }
+    }
+    for (auto& [owner, connections] : person_hosts_) {
+      if (!connections.erase(reader) || !connections.empty()) continue;
+      // And today's policy answers a person's prompts again.
+      for (const auto& [id, tab] : tabs_)
+        if (tab.owner == owner) {
+          person.push_back(id);
+          DropPrompts(id, "dismissed", "person");
         }
     }
   }
-  if (!release.empty()) HoldDialogs(release, false);
+  if (!dialogs.empty()) Hold(dialogs, 0, -1);
+  if (!person.empty()) Hold(person, -1, 0);
 }
 
-void Host::PromptHost(std::uint64_t connection, const std::string& owner) {
+void Host::PromptHost(std::uint64_t connection, const std::string& owner, bool person) {
   std::vector<int> pages;
+  bool dialogs = false, people = false;
   {
     std::lock_guard lock(state_);
     auto& connections = prompt_hosts_[owner];
-    if (!connections.insert(connection).second || connections.size() != 1) return;
+    dialogs = connections.insert(connection).second && connections.size() == 1;
+    if (person && host_events_) {
+      auto& hosts = person_hosts_[owner];
+      people = hosts.insert(connection).second && hosts.size() == 1;
+    }
+    if (!dialogs && !people) return;
     for (const auto& [id, tab] : tabs_)
       if (tab.owner == owner) pages.push_back(id);
   }
-  HoldDialogs(pages, true);
+  Hold(pages, dialogs ? 1 : -1, people ? 1 : -1);
 }
 
-void Host::HoldDialogs(const std::vector<int>& pages, bool hold) {
+bool Host::PersonHost(const std::string& owner) const {
+  const auto found = person_hosts_.find(owner);
+  return found != person_hosts_.end() && !found->second.empty();
+}
+
+void Host::Hold(const std::vector<int>& pages, int dialogs, int person) {
   for (const int page : pages) {
     try {
-      Engine(page, Json{{"command", "dialog"}, {"action", "subscribe"}, {"enabled", hold}}, std::chrono::milliseconds(5000));
+      if (dialogs >= 0)
+        Engine(page, Json{{"command", "dialog"}, {"action", "subscribe"}, {"enabled", dialogs > 0}},
+               std::chrono::milliseconds(5000));
+      if (person >= 0 && host_events_)
+        Engine(page, Json{{"command", "host"}, {"action", "prompts"}, {"enabled", person > 0}},
+               std::chrono::milliseconds(5000));
     } catch (...) {
       // A page that closed meanwhile holds nothing.
     }
   }
 }
 
-void Host::DropPrompts(int page, const std::string& outcome) {
+void Host::DropPrompts(int page, const std::string& outcome, const std::string& kinds) {
   for (auto it = prompts_.begin(); it != prompts_.end();) {
-    if (it->second.page != page) {
+    const bool dialog = it->second.kind == "dialog";
+    if (it->second.page != page || (kinds == "dialog" && !dialog) || (kinds == "person" && dialog)) {
       ++it;
       continue;
     }
@@ -511,7 +576,25 @@ void Host::DropPrompts(int page, const std::string& outcome) {
 }
 
 Json Host::AnswerPrompt(const std::string& owner, bool host, const std::string& prompt, const Json& answer) {
-  if (!answer.is_object() || !answer.contains("accept") || !answer.at("accept").is_bool())
+  if (!answer.is_object()) throw Refused("invalid_request", "An answer is an object");
+  if (!prompt.starts_with("dialog:")) {
+    Prompt held;
+    {
+      std::lock_guard lock(state_);
+      const auto found = prompts_.find(prompt);
+      if (found == prompts_.end() || found->second.owner != owner) {
+        for (const auto* kind : {"file:", "permission:", "auth:", "certificate:", "download:"})
+          if (found == prompts_.end() && prompt.starts_with(kind))
+            throw Refused("prompt_gone", "The prompt was answered or has closed");
+        throw Refused("unknown_prompt", "No such prompt");
+      }
+      if (!host) throw Refused("forbidden", "A person's prompt is answered by a host");
+      if (!found->second.outcome.empty()) throw Refused("prompt_gone", "The prompt was already answered");
+      held = found->second;
+    }
+    return AnswerPerson(prompt, std::move(held), answer);
+  }
+  if (!answer.contains("accept") || !answer.at("accept").is_bool())
     throw Refused("invalid_request", "A dialog's answer has accept: true or false");
   if (answer.contains("text") && !answer.at("text").is_string()) throw Refused("invalid_request", "text is a string");
   const bool accept = answer.at("accept").as_bool();
@@ -551,6 +634,111 @@ Json Host::AnswerPrompt(const std::string& owner, bool host, const std::string& 
     throw Refused("prompt_gone", error.what());
   }
   return Json{{"answered", true}};
+}
+
+// A person's answer, checked here and given to the engine. Nothing in an
+// answer is logged, kept or echoed: a password goes to the engine only.
+Json Host::AnswerPerson(const std::string& prompt, Prompt held, const Json& answer) {
+  const bool cancel = answer.contains("cancel") && answer.at("cancel") == Json(true);
+  Json given = Json::object{};
+  std::string outcome = cancel ? "dismissed" : "accepted", path;
+  const auto string = [&](const char* key) -> const std::string& {
+    if (!answer.contains(key) || !answer.at(key).is_string())
+      throw Refused("invalid_request", std::string("The answer has ") + key + ", or cancel: true");
+    return answer.at(key).as_string();
+  };
+  if (cancel) {
+    given["cancel"] = true;
+  } else if (held.kind == "file") {
+    if (!answer.contains("paths") || !answer.at("paths").is_array() || answer.at("paths").as_array().empty())
+      throw Refused("invalid_request", "A file chooser's answer has paths, or cancel: true");
+    const auto mode = held.info.at("mode").as_string();
+    if (mode != "openMultiple" && answer.at("paths").as_array().size() > 1)
+      throw Refused("invalid_request", "This file chooser takes one path");
+    for (const auto& item : answer.at("paths").as_array()) {
+      if (!item.is_string()) throw Refused("invalid_request", "Each path is a string");
+      if (const auto problem = path_problem(mode, item.as_string()); !problem.empty())
+        throw Refused("invalid_path", problem);
+    }
+    given["paths"] = answer.at("paths");
+  } else if (held.kind == "permission") {
+    if (!answer.contains("accept") || !answer.at("accept").is_bool())
+      throw Refused("invalid_request", "A permission's answer has accept: true or false");
+    given["accept"] = answer.at("accept");
+    outcome = answer.at("accept").as_bool() ? "accepted" : "dismissed";
+  } else if (held.kind == "auth") {
+    given["username"] = string("username");
+    given["password"] = string("password");
+  } else if (held.kind == "certificate") {
+    const auto count = held.info.at("certificates").as_array().size();
+    if (!answer.contains("index") || !answer.at("index").is_integer() || answer.at("index").as_int() < 0 ||
+        static_cast<std::size_t>(answer.at("index").as_int()) >= count)
+      throw Refused("invalid_request", "A certificate's answer has the index of one listed, or cancel: true");
+    given["index"] = answer.at("index");
+  } else if (held.kind == "download") {
+    path = string("path");
+    if (const auto problem = path_problem("save", path); !problem.empty()) throw Refused("invalid_path", problem);
+  }
+  {
+    std::lock_guard lock(state_);
+    const auto found = prompts_.find(prompt);
+    if (found == prompts_.end()) throw Refused("prompt_gone", "The prompt was answered or has closed");
+    if (!found->second.outcome.empty()) throw Refused("prompt_gone", "The prompt was already answered");
+    found->second.outcome = outcome;
+  }
+  if (held.kind == "download") {
+    if (cancel) {
+      try {
+        Engine(held.page, Json{{"command", "download"}, {"action", "cancel"}, {"downloadId", held.engine_id}});
+      } catch (...) {
+        // It finished or failed first; the person's no still stands.
+      }
+      std::lock_guard lock(state_);
+      if (const auto found = prompts_.find(prompt); found != prompts_.end()) {
+        Emit(held.owner, Json{{"type", "prompt.closed"}, {"prompt", prompt}, {"page", held.page}, {"outcome", outcome}});
+        prompts_.erase(found);
+      }
+      return Json{{"answered", true}};
+    }
+    // Saved once the download completes: prompt.closed says where, or why not.
+    std::lock_guard lock(savers_mutex_);
+    savers_.emplace_back([this, prompt, page = held.page, download = held.engine_id, path] {
+      SaveDownload(prompt, page, download, path);
+    });
+    return Json{{"answered", true}};
+  }
+  try {
+    Engine(held.page, Json{{"command", "host"}, {"action", "answer"}, {"prompt", held.engine_id}, {"answer", given}});
+  } catch (const std::exception& error) {
+    std::lock_guard lock(state_);
+    if (const auto found = prompts_.find(prompt); found != prompts_.end()) {
+      Emit(held.owner, Json{{"type", "prompt.closed"}, {"prompt", prompt}, {"page", held.page}, {"outcome", "closed"}});
+      prompts_.erase(found);
+    }
+    throw Refused("prompt_gone", error.what());
+  }
+  // The engine's report that it closed carries the outcome to prompt.closed.
+  return Json{{"answered", true}};
+}
+
+void Host::SaveDownload(const std::string& prompt, int page, std::string download, std::string path) {
+  Json closed{{"type", "prompt.closed"}, {"prompt", prompt}, {"page", page}};
+  try {
+    // The engine copies the file once the download completes. The wait is the
+    // transport's longest; the session adds no deadline of its own.
+    Engine(page, Json{{"command", "download"}, {"action", "saveAs"}, {"downloadId", download}, {"path", path}},
+           std::chrono::hours(24));
+    closed["outcome"] = "accepted";
+    closed["path"] = path;
+  } catch (const std::exception& error) {
+    closed["outcome"] = "failed";
+    closed["error"] = error.what();
+  }
+  std::lock_guard lock(state_);
+  const auto found = prompts_.find(prompt);
+  if (found == prompts_.end()) return;  // its tab closed and said so
+  Emit(found->second.owner, std::move(closed));
+  prompts_.erase(found);
 }
 
 std::string Host::AddGrant(Grant grant) {
@@ -647,6 +835,12 @@ std::string Host::Title(int page) {
 // Returns once the new document commits: the load's outcome, its title and
 // URL, reach viewers through watch as the engine reports them.
 void Host::NavigateEngine(int page, Json fields) {
+  // The engine's navigateFrame returns at commit; its older navigate command
+  // waited for the load's end whatever it was asked.
+  if (fields.at("command") == Json("navigate")) {
+    fields["command"] = "navigateFrame";
+    fields["api"] = "page.goto";
+  }
   fields["waitUntil"] = "commit";
   try {
     Engine(page, std::move(fields), std::chrono::milliseconds(30000));
@@ -744,7 +938,8 @@ void Host::Pump() {
       return;
     }
     if (!packet) continue;
-    std::vector<int> hold;  // popups whose dialogs a prompt host should see
+    std::vector<int> hold, hold_person;  // popups whose prompts a host should see
+    std::optional<std::pair<int, std::string>> policy;  // a held request today's policy answers
     try {
       const auto header = Json::parse(packet->header);
       const auto type = header.at("type").as_string();
@@ -752,8 +947,16 @@ void Host::Pump() {
         const int page = static_cast<int>(header.at("pageId").as_int());
         const auto body = Json::parse(std::string(packet->payload.begin(), packet->payload.end()));
         std::lock_guard lock(state_);
-        if (type == "host") HostPacket(page, body);
-        else DialogPacket(page, body);
+        if (type == "host") {
+          if (auto held = HostPacket(page, body)) policy.emplace(page, std::move(*held));
+        } else {
+          DialogPacket(page, body);
+        }
+      } else if (type == "download" && !packet->payload.empty()) {
+        const auto body = Json::parse(std::string(packet->payload.begin(), packet->payload.end()));
+        if (!body.contains("pageId") || !body.at("pageId").is_integer()) continue;
+        std::lock_guard lock(state_);
+        DownloadPacket(static_cast<int>(body.at("pageId").as_int()), body);
       } else if (type == "navigation" && header.contains("pageId")) {
         const int page = static_cast<int>(header.at("pageId").as_int());
         std::lock_guard lock(state_);
@@ -784,6 +987,7 @@ void Host::Pump() {
           EmitTab(page, placed);
           const auto hosts = prompt_hosts_.find(placed.owner);
           if (hosts != prompt_hosts_.end() && !hosts->second.empty()) hold.push_back(page);
+          if (PersonHost(placed.owner)) hold_person.push_back(page);
         } else if (name == "page-closed") {
           if (const auto found = tabs_.find(page); found != tabs_.end()) {
             const auto owner = found->second.owner;
@@ -799,15 +1003,62 @@ void Host::Pump() {
     } catch (...) {
       // A malformed or unexpected event changes no tab.
     }
-    if (!hold.empty()) HoldDialogs(hold, true);
+    if (!hold.empty()) Hold(hold, 1, -1);
+    if (!hold_person.empty()) Hold(hold_person, -1, 1);
+    if (policy) {
+      try {
+        Engine(policy->first, Json{{"command", "host"}, {"action", "answer"}, {"prompt", policy->second},
+                                   {"answer", Json{{"policy", true}}}});
+      } catch (...) {
+        // It went first.
+      }
+    }
   }
 }
 
 // With state_ held. Loading, progress and titles update the tab; cursors and
-// IME ranges go to the owner's windows as they come.
-void Host::HostPacket(int page, const Json& event) {
+// IME ranges go to the owner's windows as they come; a person's prompts
+// become prompts.
+std::optional<std::string> Host::HostPacket(int page, const Json& event) {
+  if (!event.contains("event") || !event.at("event").is_string()) return std::nullopt;
   const auto found = tabs_.find(page);
-  if (found == tabs_.end() || !event.contains("event") || !event.at("event").is_string()) return;
+  if (event.at("event") == Json("prompt") && event.contains("id") && event.at("id").is_string() &&
+      event.contains("kind") && event.at("kind").is_string()) {
+    const auto& engine_id = event.at("id").as_string();
+    const auto& kind = event.at("kind").as_string();
+    const auto id = kind + ":" + std::to_string(page) + ":" + engine_id;
+    const auto state = event.contains("state") && event.at("state").is_string() ? event.at("state").as_string() : "";
+    if (state == "opened") {
+      // Not a tab of an owner with a host, or an agent's tab where its own
+      // credentials answer: today's policy, with no prompt.
+      if (found == tabs_.end() || !PersonHost(found->second.owner)) return engine_id;
+      if (kind == "auth" && found->second.control == Control::agent && event.contains("agentCredentials") &&
+          event.at("agentCredentials") == Json(true))
+        return engine_id;
+      Prompt prompt;
+      prompt.owner = found->second.owner;
+      prompt.page = page;
+      prompt.kind = kind;
+      prompt.engine_id = engine_id;
+      prompt.info = Json{{"id", id}, {"page", page}, {"kind", kind}};
+      for (const auto& [key, value] : event.as_object())
+        if (key != "id" && key != "kind" && key != "state" && key != "event" && key != "agentCredentials")
+          prompt.info[key] = value;
+      Emit(prompt.owner, Json{{"type", "prompt.opened"}, {"prompt", prompt.info}});
+      prompts_[id] = std::move(prompt);
+    } else if (state == "closed") {
+      const auto held = prompts_.find(id);
+      if (held == prompts_.end()) return std::nullopt;
+      const auto reason = event.contains("reason") && event.at("reason").is_string() ? event.at("reason").as_string() : "";
+      const auto outcome = !held->second.outcome.empty() ? held->second.outcome
+                           : reason == "policy"          ? std::string("dismissed")
+                                                         : std::string("closed");
+      Emit(held->second.owner, Json{{"type", "prompt.closed"}, {"prompt", id}, {"page", page}, {"outcome", outcome}});
+      prompts_.erase(held);
+    }
+    return std::nullopt;
+  }
+  if (found == tabs_.end()) return std::nullopt;
   auto& tab = found->second;
   const auto& name = event.at("event").as_string();
   auto loading = [&] {
@@ -833,6 +1084,35 @@ void Host::HostPacket(int page, const Json& event) {
   } else if (name == "ime") {
     Emit(tab.owner, Json{{"type", "view.ime"}, {"view", page}, {"range", event.at("range")}, {"bounds", event.at("bounds")}});
   }
+  return std::nullopt;
+}
+
+// With state_ held. A download that starts on a tab the agent does not hold,
+// for an owner with a host, asks where to save it. Today's policy has already
+// started it into the profile's download directory; an answer copies it from
+// there once it completes, or cancels it.
+void Host::DownloadPacket(int page, const Json& download) {
+  if (!host_events_ || download.at("event") != Json("created") || !download.contains("id") ||
+      !download.at("id").is_string())
+    return;
+  if (download.contains("failure") && download.at("failure").is_string()) return;  // it never started
+  const auto found = tabs_.find(page);
+  if (found == tabs_.end() || found->second.control == Control::agent || !PersonHost(found->second.owner)) return;
+  const auto id = "download:" + std::to_string(page) + ":" + std::to_string(++download_prompts_);
+  Prompt prompt;
+  prompt.owner = found->second.owner;
+  prompt.page = page;
+  prompt.kind = "download";
+  prompt.engine_id = download.at("id").as_string();
+  auto text = [&](const char* key) {
+    return download.contains(key) && download.at(key).is_string() ? download.at(key).as_string() : std::string();
+  };
+  prompt.info = Json{{"id", id},     {"page", page}, {"kind", "download"}, {"url", text("url")},
+                     {"suggestedName", text("suggestedFilename")}, {"mimeType", text("mimeType")}};
+  if (download.contains("totalBytes") && download.at("totalBytes").is_number())
+    prompt.info["totalBytes"] = download.at("totalBytes");
+  Emit(prompt.owner, Json{{"type", "prompt.opened"}, {"prompt", prompt.info}});
+  prompts_[id] = std::move(prompt);
 }
 
 // With state_ held. The engine's held dialogs become prompts.
@@ -848,6 +1128,7 @@ void Host::DialogPacket(int page, const Json& dialog) {
     Prompt prompt;
     prompt.owner = found->second.owner;
     prompt.page = page;
+    prompt.kind = "dialog";
     prompt.engine_id = dialog.at("id").as_string();
     prompt.info = Json{{"id", id},          {"page", page},
                        {"kind", "dialog"},  {"dialog", text("type")},

@@ -73,7 +73,15 @@ typedef enum sc_session_role { SC_ROLE_HOST = 1, SC_ROLE_AGENT = 2 } sc_session_
  * as SC_EVENT_PROMPT_OPENED and wait for sc_prompt_answer_dialog. While no
  * connection of the owner sets it, the engine answers each dialog by default
  * (alerts and beforeunload accepted, confirm and prompt dismissed), as before.
- * A dialog nobody answers within the engine's 30 s is dismissed. */
+ * A dialog nobody answers within the engine's 30 s is dismissed.
+ *
+ * A host (SC_ROLE_HOST) that sets it, with an engine that has host events
+ * (the "prompts.person" capability), is also asked what only the person can
+ * answer: file choosers, permission requests, HTTP logins, client
+ * certificates, and where to save a download on a tab the agent does not
+ * hold. These wait with no deadline of the session's, until answered, the
+ * page drops them, or the last such host leaves; then the engine's policy
+ * answers them as it did before. */
 #define SC_SESSION_PROMPTS 2u
 typedef struct sc_session_options {
   size_t struct_size;
@@ -268,6 +276,33 @@ SC_API sc_status sc_view_edit(sc_view *view, sc_edit_command command, sc_error *
  * closed. Answering does not take the tab. */
 SC_API sc_status sc_prompt_answer_dialog(sc_session *session, const char *prompt, int accept, const char *text,
                                          sc_error *error);
+/* A person's prompts, answered only by a host. Each is refused with
+ * prompt_gone once answered or closed, and with invalid_path (naming the
+ * path) or invalid_request when the answer does not fit the prompt. */
+/* A "file" prompt: |count| absolute paths. Each must exist and be a readable
+ * regular file, or a directory for mode "openFolder"; for mode "save", one
+ * new or existing file in a writable directory. One path unless the mode is
+ * "openMultiple". */
+SC_API sc_status sc_prompt_answer_files(sc_session *session, const char *prompt, const char *const *paths,
+                                        size_t count, sc_error *error);
+/* A "permission" prompt: allow != 0 grants every permission it lists, for
+ * this request only; nothing is remembered. */
+SC_API sc_status sc_prompt_answer_permission(sc_session *session, const char *prompt, int allow, sc_error *error);
+/* An "auth" prompt. The password goes to the engine and is not kept,
+ * logged or echoed by the session. */
+SC_API sc_status sc_prompt_answer_login(sc_session *session, const char *prompt, const char *username,
+                                        const char *password, sc_error *error);
+/* A "certificate" prompt: the "index" of one it lists. */
+SC_API sc_status sc_prompt_answer_certificate(sc_session *session, const char *prompt, int32_t index,
+                                              sc_error *error);
+/* A "download" prompt: an absolute path in a writable directory. The prompt
+ * closes once the download has completed and been saved there ("path"), or
+ * with outcome "failed" and an "error". */
+SC_API sc_status sc_prompt_answer_download(sc_session *session, const char *prompt, const char *path,
+                                           sc_error *error);
+/* Refuses any prompt: a dialog is dismissed, a chooser or login cancelled, a
+ * permission denied, no certificate sent, a download cancelled. */
+SC_API sc_status sc_prompt_cancel(sc_session *session, const char *prompt, sc_error *error);
 
 /* ---- Agent calls ---- */
 /* {"tools":[{name, description, inputSchema}]} for this connection's grant. */
@@ -294,8 +329,16 @@ typedef enum sc_event_kind {
   SC_EVENT_VIEW_IME = 8,      /* {"view","range":[from,to],"bounds":[[x,y,w,h],...]}: CSS pixels */
   /* To an owner one of whose connections set SC_SESSION_PROMPTS: */
   SC_EVENT_PROMPT_OPENED = 9, /* {"prompt":{"id","page","kind":"dialog","dialog":"alert"|"confirm"|"prompt"|
-                               * "beforeunload","message","defaultValue","url","deadlineMs"}} */
-  SC_EVENT_PROMPT_CLOSED = 10 /* {"prompt","page","outcome":"accepted"|"dismissed"|"timeout"|"closed"} */
+                               * "beforeunload","message","defaultValue","url","deadlineMs"}}; to a host
+                               * with prompts.person also "kind":
+                               * "file" {"mode":"open"|"openMultiple"|"openFolder"|"save","title","defaultPath","accept"},
+                               * "permission" {"origin","permissions":[names]},
+                               * "auth" {"url","proxy","host","port","realm","scheme"},
+                               * "certificate" {"host","port","proxy","certificates":[{"index","subject","issuer",
+                               *   "validFrom","expires"}]} (ms since 1970),
+                               * "download" {"url","suggestedName","mimeType","totalBytes"?} */
+  SC_EVENT_PROMPT_CLOSED = 10 /* {"prompt","page","outcome":"accepted"|"dismissed"|"timeout"|"closed"|"failed",
+                               * "path"? (a saved download),"error"? (failed)} */
 } sc_event_kind;
 /* Long-polls; SC_TIMEOUT when nothing happened. The first event a session
  * returns is SC_EVENT_RESYNC. */

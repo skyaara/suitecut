@@ -48,12 +48,14 @@ struct Tab {
   double progress = 0;
 };
 
-// A question the page asked that a person, or for dialogs the agent driving
-// the tab, answers: today JavaScript dialogs.
+// A question the page asked. JavaScript dialogs ("dialog") go to a prompt
+// host, or to the agent driving the tab. A person's prompts ("file",
+// "permission", "auth", "certificate", "download") go only to a host.
 struct Prompt {
   std::string owner;
   int page = 0;
-  std::string engine_id;  // the engine's dialog id on that page
+  std::string kind;
+  std::string engine_id;  // the engine's id on that page: dialog, prompt or download
   Json info;              // what prompt.opened carries
   std::string outcome;    // set once answered through the session
 };
@@ -149,7 +151,13 @@ class Host {
   // deadline still applies); with none, dialogs get their default answers,
   // as before. |host| is false for an agent, which may answer only a dialog
   // on a tab it holds.
-  void PromptHost(std::uint64_t connection, const std::string& owner);
+  //
+  // With host events, while the owner has a host connection (|person|) that
+  // shows prompts, a person's prompts are held too, with no deadline of the
+  // session's: file choosers, permission requests, HTTP authentication,
+  // client certificates, and where to save a download on a tab the agent does
+  // not hold. When the last such host leaves, today's policy answers them.
+  void PromptHost(std::uint64_t connection, const std::string& owner, bool person);
   Json AnswerPrompt(const std::string& owner, bool host, const std::string& prompt, const Json& answer);
 
   // Grants: one owner, chosen tool groups, an optional lifetime.
@@ -184,12 +192,20 @@ class Host {
   Json Engine(int page, Json fields, std::chrono::milliseconds timeout = std::chrono::milliseconds(10000));
   Tab& Owned(const std::string& owner, int page);
   Json TabJson(int page, const Tab& tab, const std::string& title) const;
-  // Turns dialog holding on or off for |pages|, outside state_.
-  void HoldDialogs(const std::vector<int>& pages, bool hold);
-  // With state_ held: the page's prompts are gone, with |outcome|.
-  void DropPrompts(int page, const std::string& outcome);
-  void HostPacket(int page, const Json& event);
+  // Outside state_: turns holding on or off for |pages|. -1 leaves it.
+  void Hold(const std::vector<int>& pages, int dialogs, int person);
+  // With state_ held: the page's prompts are gone, with |outcome|. |kinds|
+  // is "dialog", "person" or empty for both.
+  void DropPrompts(int page, const std::string& outcome, const std::string& kinds = "");
+  // With state_ held: whether |owner| has a host that shows a person's prompts.
+  bool PersonHost(const std::string& owner) const;
+  // With state_ held. A held request the session answers by today's policy
+  // at once, outside state_, is returned as its engine prompt id.
+  std::optional<std::string> HostPacket(int page, const Json& event);
   void DialogPacket(int page, const Json& dialog);
+  void DownloadPacket(int page, const Json& download);
+  Json AnswerPerson(const std::string& prompt, Prompt held, const Json& answer);
+  void SaveDownload(const std::string& prompt, int page, std::string download, std::string path);
   // With state_ held: the change counter, and an event for |owner|.
   void Changed();
   void Emit(const std::string& owner, Json event);
@@ -221,6 +237,10 @@ class Host {
   bool host_events_ = false;
   std::map<std::string, Prompt> prompts_;
   std::map<std::string, std::set<std::uint64_t>> prompt_hosts_;  // owner -> connections that show prompts
+  std::map<std::string, std::set<std::uint64_t>> person_hosts_;  // owner -> such connections that are hosts
+  std::uint64_t download_prompts_ = 0;
+  std::mutex savers_mutex_;
+  std::vector<std::thread> savers_;  // downloads being saved where a person chose
 
   std::atomic<bool> stopping_{false}, closed_{false}, engine_lost_{false};
   std::thread pump_;

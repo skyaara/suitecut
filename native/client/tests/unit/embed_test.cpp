@@ -420,7 +420,8 @@ void session_flow() {
     check(sc_view_edit(typing, static_cast<sc_edit_command>(99), &error) == SC_INVALID_ARGUMENT, "an unknown edit is invalid");
     std::vector<std::string> ops;
     for (const auto& command : commands(profile))
-      if (command.at("command") == Json("host") && command.at("pageId") == Json(loaded.page))
+      if (command.at("command") == Json("host") && command.at("pageId") == Json(loaded.page) &&
+          command.at("action") != Json("prompts"))
         ops.push_back(command.at("action").as_string() + ":" +
                       (command.contains("op") ? command.at("op").as_string()
                        : command.contains("edit") ? command.at("edit").as_string() : ""));
@@ -461,6 +462,69 @@ void session_flow() {
     }
     check(closed, "the answered dialog is SC_EVENT_PROMPT_CLOSED, dismissed");
     check(sc_prompt_answer_dialog(host, nullptr, 1, nullptr, &error) == SC_INVALID_ARGUMENT, "a prompt is named");
+
+    // A person's prompts (item 5), held because the prompts host is a host.
+    const auto next_person = [&](const char* expression, const char* kind) {
+      const std::string arguments = std::string(R"({"expression":")") + expression + "\"}";
+      sc_json* raised = nullptr;
+      require(sc_agent_call(host, loaded.page, "evaluate", arguments.data(), arguments.size(), 0, 0, &raised, &error) ==
+                  SC_OK,
+              std::string("raise ") + expression + ": " + error.message);
+      sc_json_destroy(raised);
+      std::string found;
+      while (found.empty() && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
+        if (sc_event_kind_of(event) == SC_EVENT_PROMPT_OPENED && sc_event_page(event) == loaded.page) {
+          size_t size = 0;
+          const char* data = sc_event_json(event, &size);  // before reading size
+          const auto body = Json::parse(std::string_view(data, size));
+          if (body.at("prompt").at("kind") == Json(kind)) found = body.at("prompt").at("id").as_string();
+        }
+        sc_event_destroy(event);
+      }
+      return found;
+    };
+    const auto last_answer = [&] {
+      Json found;
+      for (const auto& command : commands(profile))
+        if (command.at("command") == Json("host") && command.at("action") == Json("answer")) found = command;
+      return found;
+    };
+    const auto chosen = root / "chosen.txt";
+    std::ofstream(chosen) << "chosen";
+    const auto chosen_path = chosen.string();
+    auto person = next_person("file:open", "file");
+    require(!person.empty(), "a file chooser is SC_EVENT_PROMPT_OPENED");
+    const char* relative[] = {"chosen.txt"};
+    check(sc_prompt_answer_files(host, person.c_str(), relative, 1, &error) == SC_REFUSED &&
+              refusal(error) == "invalid_path",
+          "sc_prompt_answer_files refuses a relative path");
+    check(sc_prompt_answer_files(host, person.c_str(), nullptr, 0, &error) == SC_INVALID_ARGUMENT, "no paths is invalid");
+    const char* paths[] = {chosen_path.c_str()};
+    check(sc_prompt_answer_files(host, person.c_str(), paths, 1, &error) == SC_OK &&
+              last_answer().at("answer").at("paths") == Json(Json::array{Json(chosen_path)}),
+          "sc_prompt_answer_files");
+    person = next_person("permission:camera", "permission");
+    check(sc_prompt_answer_permission(host, person.c_str(), 1, &error) == SC_OK &&
+              last_answer().at("answer").at("accept") == Json(true),
+          "sc_prompt_answer_permission");
+    person = next_person("certificate", "certificate");
+    check(sc_prompt_answer_certificate(host, person.c_str(), 0, &error) == SC_OK &&
+              last_answer().at("answer").at("index") == Json(0),
+          "sc_prompt_answer_certificate");
+    person = next_person("auth", "auth");
+    check(sc_prompt_answer_login(host, person.c_str(), "ann", nullptr, &error) == SC_INVALID_ARGUMENT,
+          "a login has a password");
+    check(sc_prompt_answer_login(host, person.c_str(), "ann", "pw", &error) == SC_OK &&
+              last_answer().at("answer").at("username") == Json("ann"),
+          "sc_prompt_answer_login");
+    person = next_person("file:save", "file");
+    check(sc_prompt_cancel(host, person.c_str(), &error) == SC_OK &&
+              last_answer().at("answer") == Json(Json{{"cancel", true}}),
+          "sc_prompt_cancel cancels a person's prompt");
+    check(sc_prompt_answer_download(host, person.c_str(), nullptr, &error) == SC_INVALID_ARGUMENT,
+          "a download answer has a path");
+    check(sc_prompt_answer_permission(host, person.c_str(), 1, &error) == SC_REFUSED && refusal(error) == "prompt_gone",
+          "an answered prompt is prompt_gone");
     sc_session_close(prompts.session, 0, &error);
     sc_session_destroy(prompts.session);
     check(sc_tab_close(host, loaded.page, &error) == SC_OK, "close the host events tab");

@@ -48,6 +48,13 @@ int main(void) {
   EXPECT(sc_error_refusal(&error, code, sizeof code) == 16 && strcmp(code, "human_in_control") == 0);
   error.code = SC_ERROR;
   EXPECT(sc_error_refusal(&error, code, sizeof code) == 0 && code[0] == 0);
+  /* The answers for a person's prompts link and check their arguments. */
+  EXPECT(sc_prompt_answer_files(NULL, "file:2:1", NULL, 0, &error) == SC_INVALID_ARGUMENT);
+  EXPECT(sc_prompt_answer_login(NULL, "auth:2:1", "a", NULL, &error) == SC_INVALID_ARGUMENT);
+  EXPECT(sc_prompt_answer_download(NULL, "download:2:1", NULL, &error) == SC_INVALID_ARGUMENT);
+  EXPECT(sc_prompt_cancel(NULL, NULL, &error) == SC_INVALID_ARGUMENT);
+  EXPECT(sc_prompt_answer_permission(NULL, NULL, 1, &error) == SC_INVALID_ARGUMENT);
+  EXPECT(sc_prompt_answer_certificate(NULL, "", 0, &error) == SC_INVALID_ARGUMENT);
   EXPECT(sc_session_open(&session, NULL, &error) == SC_INVALID_ARGUMENT);
   session.abi_version = 99;
   {

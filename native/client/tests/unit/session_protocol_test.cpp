@@ -6,7 +6,9 @@
 // service against the session fake engine; nothing here is a browser.
 //
 // usage: session_protocol_test SERVICE FAKE_ENGINE
+#include <fstream>
 #include <set>
+#include <sstream>
 
 #include "session_harness.hpp"
 
@@ -662,6 +664,239 @@ void host_events(Service& service) {
   host.call("tabs.close", Json{{"page", page}});
 }
 
+// Item 5: a person's prompts. They are held only for a host that shows
+// prompts, go only to a host, and are answered by today's policy when it
+// leaves.
+void person_prompts(Service& service) {
+  const std::string owner = "people";
+  Client host(service, Client::host(owner));
+  Reader reader(service, owner);
+  std::set<std::string> capabilities;
+  for (const auto& name : host.hello().at("result").at("capabilities").as_array()) capabilities.insert(name.as_string());
+  check(capabilities.contains("prompts.person"), "with host events, hello lists prompts.person");
+  const int page = page_of(host.result("tabs.open", Json{{"url", "https://people.test/"}}));
+  const auto evaluate = [&](int on, const std::string& expression) {
+    return host.call("agent.call", Json{{"page", on}, {"tool", "evaluate"}, {"arguments", Json{{"expression", expression}}}});
+  };
+  const auto person_holds = [&](int on, bool enabled) {
+    for (const auto& command : commands_named(service, "host"))
+      if (command.at("pageId") == Json(on) && command.at("action") == Json("prompts") &&
+          command.at("enabled") == Json(enabled))
+        return true;
+    return false;
+  };
+  const auto opened_kind = [&](const char* kind, Clock::duration timeout = 5s) {
+    return reader.wait_for([&](const Json& event) {
+      return is(event, "prompt.opened") && event.at("prompt").at("kind") == Json(kind) && event.at("prompt").at("page") == Json(page);
+    }, timeout);
+  };
+  const auto closed_of = [&](const std::string& id, Clock::duration timeout = 5s) {
+    return reader.wait_for([&](const Json& event) { return is(event, "prompt.closed") && event.at("prompt") == Json(id); }, timeout);
+  };
+  const auto last_answer = [&] {
+    const auto host_commands = commands_named(service, "host");
+    for (auto it = host_commands.rbegin(); it != host_commands.rend(); ++it)
+      if (it->at("action") == Json("answer")) return *it;
+    return Json{};
+  };
+
+  // With nobody to ask, nothing is held.
+  evaluate(page, "file:open");
+  check(!opened_kind("file", 600ms).is_object() && !person_holds(page, true), "no host with prompts: no file prompt");
+  // An agent that lists prompts answers dialogs, not a person's prompts.
+  {
+    auto params = Client::agent(owner);
+    params["capabilities"] = Json::array{Json("prompts")};
+    Client agent_prompts(service, params);
+    require(ok(agent_prompts.hello()), "an agent that answers prompts says hello");
+    check(eventually([&] {
+            for (const auto& held : commands_named(service, "dialog"))
+              if (held.at("pageId") == Json(page) && held.at("enabled") == Json(true)) return true;
+            return false;
+          }),
+          "an agent with prompts holds dialogs");
+    check(!person_holds(page, true), "an agent with prompts holds none of a person's prompts");
+  }
+  auto params = Client::host(owner);
+  params["capabilities"] = Json::array{Json("prompts")};
+  auto prompting = std::make_unique<Client>(service, params);
+  require(ok(prompting->hello()), "a host that shows prompts says hello");
+  check(eventually([&] { return person_holds(page, true); }), "a host with prompts holds a person's prompts");
+  Client agent(service, Client::agent(owner));
+
+  // File choosers.
+  char scratch[] = "/tmp/sc-person-XXXXXX";
+  require(::mkdtemp(scratch) != nullptr, "a scratch directory");
+  const std::string dir = scratch, file = dir + "/notes.txt";
+  std::ofstream(file) << "notes";
+  evaluate(page, "file:open");
+  auto opened = opened_kind("file");
+  require(opened.is_object(), "a page's file chooser is prompt.opened");
+  auto id = opened.at("prompt").at("id").as_string();
+  check(id.starts_with("file:") && opened.at("prompt").at("mode") == Json("open") &&
+            opened.at("prompt").at("accept") == Json(Json::array{Json(".txt")}) &&
+            !opened.at("prompt").contains("deadlineMs") && !opened.at("prompt").contains("state"),
+        "prompt.opened describes the file chooser, with no deadline");
+  check(code(agent.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(file)}}})) == "forbidden",
+        "an agent may not answer a person's prompt");
+  const auto refused = host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json("notes.txt")}}});
+  check(code(refused) == "invalid_path" && refused.at("error").at("message").as_string().find("notes.txt") != std::string::npos,
+        "a relative path is invalid_path, naming it");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(dir + "/missing.txt")}}})) == "invalid_path",
+        "a missing file is invalid_path");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(dir)}}})) == "invalid_path",
+        "a directory is invalid_path for a file");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(file), Json(file)}}})) == "invalid_request",
+        "a single chooser takes one path");
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(file)}}})), "a readable file answers it");
+  check(last_answer().at("answer").at("paths") == Json(Json::array{Json(file)}), "the paths reach the engine");
+  auto closed = closed_of(id);
+  check(closed.is_object() && closed.at("outcome") == Json("accepted"), "an answered chooser is prompt.closed, accepted");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"cancel", true}})) == "prompt_gone", "a second answer is prompt_gone");
+  evaluate(page, "file:openFolder");
+  id = opened_kind("file").at("prompt").at("id").as_string();
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(file)}}})) == "invalid_path",
+        "a file does not answer a folder chooser");
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(dir)}}})), "a directory answers it");
+  evaluate(page, "file:save");
+  id = opened_kind("file").at("prompt").at("id").as_string();
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json("/no/such/dir/out.txt")}}})) ==
+            "invalid_path",
+        "saving outside a writable directory is invalid_path");
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"paths", Json::array{Json(dir + "/new.txt")}}})),
+        "a new file in a writable directory answers a save chooser");
+  evaluate(page, "file:openMultiple");
+  id = opened_kind("file").at("prompt").at("id").as_string();
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"cancel", true}})) &&
+            last_answer().at("answer") == Json(Json{{"cancel", true}}),
+        "cancel answers a chooser");
+  check(closed_of(id).at("outcome") == Json("dismissed"), "a cancelled chooser is dismissed");
+  // A navigation drops a held chooser.
+  evaluate(page, "file:open");
+  id = opened_kind("file").at("prompt").at("id").as_string();
+  host.call("tabs.navigate", Json{{"page", page}, {"url", "https://people.test/next"}});
+  check(closed_of(id).at("outcome") == Json("closed"), "a navigation closes a held chooser");
+  host.call("tabs.release", Json{{"page", page}});
+
+  // Permissions.
+  evaluate(page, "permission:geolocation");
+  opened = opened_kind("permission");
+  require(opened.is_object(), "a permission request is prompt.opened");
+  id = opened.at("prompt").at("id").as_string();
+  check(opened.at("prompt").at("permissions") == Json(Json::array{Json("geolocation")}) &&
+            opened.at("prompt").at("origin") == Json("https://fake.test"),
+        "prompt.opened names the permission and origin");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"accept", "yes"}})) == "invalid_request", "accept is a boolean");
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"accept", false}})) &&
+            last_answer().at("answer") == Json(Json{{"accept", false}}),
+        "a denial reaches the engine");
+  check(closed_of(id).at("outcome") == Json("dismissed"), "a denied permission is dismissed");
+
+  // Client certificates.
+  evaluate(page, "certificate");
+  opened = opened_kind("certificate");
+  require(opened.is_object(), "a certificate request is prompt.opened");
+  id = opened.at("prompt").at("id").as_string();
+  const auto& certificate = opened.at("prompt").at("certificates").at(0);
+  check(certificate.at("index") == Json(0) && certificate.at("subject") == Json("Person") &&
+            certificate.at("issuer") == Json("Fake CA") && certificate.contains("expires"),
+        "prompt.opened lists the certificates");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"index", 3}})) == "invalid_request", "an index must be listed");
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"index", 0}})) && last_answer().at("answer").at("index") == Json(0),
+        "a chosen certificate reaches the engine");
+
+  // HTTP authentication. On the agent's tab its own credentials answer, with
+  // no prompt; on the person's tab, the person is asked.
+  check(control(tab_of(host, page)) == "agent", "the agent holds the tab");
+  evaluate(page, "auth:agent");
+  check(eventually([&] { return last_answer().is_object() && last_answer().at("answer") == Json(Json{{"policy", true}}); }),
+        "on the agent's tab its credentials answer");
+  check(!opened_kind("auth", 600ms).is_object(), "and nobody is asked");
+  evaluate(page, "auth");
+  opened = opened_kind("auth");
+  check(opened.is_object() && !opened.at("prompt").contains("agentCredentials"),
+        "on the agent's tab without its credentials, the person is asked");
+  id = opened.at("prompt").at("id").as_string();
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"cancel", true}})), "the person can cancel a login");
+  const std::string secret = "pw-k3y-9817-not-logged";
+  host.call("tabs.navigate", Json{{"page", page}, {"url", "https://people.test/auth-agent"}});
+  check(control(tab_of(host, page)) == "human", "the person holds the tab");
+  opened = opened_kind("auth");
+  require(opened.is_object(), "on the person's tab the agent's credentials do not answer: the person is asked");
+  id = opened.at("prompt").at("id").as_string();
+  check(opened.at("prompt").at("realm") == Json("Fake") && opened.at("prompt").at("scheme") == Json("basic") &&
+            opened.at("prompt").at("url") == Json("https://people.test/auth-agent"),
+        "prompt.opened describes the challenge");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"username", "ann"}})) == "invalid_request",
+        "a login has a password");
+  const auto answered = host.call("prompt.answer", Json{{"prompt", id}, {"username", "ann"}, {"password", secret}});
+  check(ok(answered), "a login answers it");
+  check(last_answer().at("answer").at("username") == Json("ann") &&
+            last_answer().at("answer").at("password") == Json("<redacted>"),
+        "the login reached the engine (the fake engine logs no password)");
+  closed = closed_of(id);
+  check(closed.is_object() && closed.at("outcome") == Json("accepted"), "an answered login is accepted");
+
+  // Downloads: on the agent's tab, the agent's policy; on the person's tab,
+  // the person says where.
+  host.call("tabs.release", Json{{"page", page}});
+  evaluate(page, "download");
+  check(!opened_kind("download", 600ms).is_object(), "a download on the agent's tab asks nobody");
+  host.call("tabs.navigate", Json{{"page", page}, {"url", "https://people.test/download"}});
+  opened = opened_kind("download");
+  require(opened.is_object(), "a download on the person's tab asks where");
+  id = opened.at("prompt").at("id").as_string();
+  check(id.starts_with("download:") && opened.at("prompt").at("suggestedName") == Json("report.pdf") &&
+            opened.at("prompt").at("mimeType") == Json("application/pdf") && opened.at("prompt").at("totalBytes") == Json(3),
+        "prompt.opened describes the download");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"path", "report.pdf"}})) == "invalid_path",
+        "a relative download path is invalid_path");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"path", dir}})) == "invalid_path",
+        "a directory is no download path");
+  const auto saved = dir + "/report.pdf";
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"path", saved}})), "a path answers it");
+  closed = closed_of(id);
+  check(closed.is_object() && closed.at("outcome") == Json("accepted") && closed.at("path") == Json(saved),
+        "the download's prompt closes once it is saved there");
+  std::string contents;
+  std::getline(std::ifstream(saved), contents);
+  check(contents == "pdf", "the file is where the person chose");
+  host.call("tabs.navigate", Json{{"page", page}, {"url", "https://people.test/download"}});
+  id = opened_kind("download").at("prompt").at("id").as_string();
+  check(ok(host.call("prompt.answer", Json{{"prompt", id}, {"cancel", true}})), "cancel answers a download");
+  check(closed_of(id).at("outcome") == Json("dismissed") &&
+            commands_named(service, "download").back().at("action") == Json("cancel"),
+        "a cancelled download is dismissed, and cancelled in the engine");
+
+  // The password went to the engine and nowhere else: no event, reply,
+  // status or file of the service carries it.
+  bool leaked = answered.dump().find(secret) != std::string::npos ||
+                host.result("session.status").dump().find(secret) != std::string::npos ||
+                service.control("status").dump().find(secret) != std::string::npos;
+  for (const auto& event : reader.seen()) leaked = leaked || event.dump().find(secret) != std::string::npos;
+  const auto root = std::filesystem::path(service.profile()).parent_path();
+  for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+    if (!entry.is_regular_file()) continue;
+    std::ifstream in(entry.path(), std::ios::binary);
+    std::stringstream text;
+    text << in.rdbuf();
+    leaked = leaked || text.str().find(secret) != std::string::npos;
+  }
+  check(!leaked, "an answered password is in no event, reply, status or file of the service");
+
+  // The last host with prompts leaves: what is held is dismissed, and the
+  // engine answers by today's policy again.
+  host.call("tabs.release", Json{{"page", page}});
+  evaluate(page, "permission:notifications");
+  const auto left = opened_kind("permission").at("prompt").at("id").as_string();
+  prompting.reset();
+  check(closed_of(left).at("outcome") == Json("dismissed"), "a host leaving dismisses a person's prompts");
+  check(eventually([&] { return person_holds(page, false); }), "and the engine answers them by policy again");
+  host.call("tabs.close", Json{{"page", page}});
+  std::error_code ignored;
+  std::filesystem::remove_all(dir, ignored);
+}
+
 void close_and_protocol0_off() {
   Service service(binary, engine, "only-one", {"--protocol-0", "off"});
   require(ok(service.start()), "start a protocol 1 only service");
@@ -762,6 +997,8 @@ int main(int argc, char** argv) {
       views_and_input(service);
       std::cerr << "-- host_events\n";
       host_events(service);
+      std::cerr << "-- person_prompts\n";
+      person_prompts(service);
     }
     std::cerr << "-- close_and_protocol0_off\n";
     close_and_protocol0_off();

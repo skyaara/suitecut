@@ -14,11 +14,20 @@
 //                held for an answer and reported, otherwise answered by default
 //   cursor:NAME  report a cursor change (host events only)
 //   ime          report an IME composition range (host events only)
+//   file:MODE    a page's file chooser (open, openMultiple, openFolder, save)
+//   permission:NAME, auth, auth:agent (the context has credentials for it),
+//   certificate  a person's prompt; with host events and the page's prompts
+//                subscribed it is held and reported, as the engine does
+//   download     start a download; it is reported created at once
 //   anything else answers 42
 // With --suitecut-host-events=1 it reports hostEvents in ready, sends host
 // packets (loading, progress, title) around each navigation, takes host
 // commands, and reports held dialogs closed when a navigation resets them.
-// Navigating to a URL containing "fail" answers with an engine error. A
+// A host answer's password is written to commands.log as "<redacted>", so
+// tests can look for the real one anywhere else.
+// Navigating to a URL containing "fail" answers with an engine error; one
+// ending in /auth or /auth-agent then asks for a login (as auth, auth:agent),
+// and one ending in /download starts a download. A
 // command for a page that is not open fails, as it does in the engine.
 //
 // On macOS, surfaceOutput with a bootstrap name sends a real 420f IOSurface
@@ -161,6 +170,9 @@ void respond(std::int64_t id, bool ok, const std::string& error, const Json& res
 void context_event(const Json& event) { packet(Json{{"type", "context"}}, event.dump()); }
 void host_event(int page, const Json& event) { packet(Json{{"type", "host"}, {"pageId", page}}, event.dump()); }
 void dialog_event(int page, const Json& dialog) { packet(Json{{"type", "dialog"}, {"pageId", page}}, dialog.dump()); }
+void download_event(int page, const Json& download) {
+  packet(Json{{"type", "download"}, {"pageId", page}}, download.dump());
+}
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -175,6 +187,13 @@ int main(int argc, char** argv) {
     if (argument == "--suitecut-host-events=1") host_events = true;
   }
   std::map<int, std::pair<int, int>> viewports;  // CSS size per page
+  std::map<int, bool> person;                    // a person's prompts held, per page
+  struct Held {
+    int page;
+    Json opened;
+  };
+  std::map<std::string, Held> held;  // a person's prompts: engine id -> page, opened event
+  int prompt_sequence = 0, download_sequence = 0;
   std::map<int, std::string> outputs;            // bootstrap name per page with a view
   std::ofstream log;
   if (!profile.empty()) log.open(profile + "/commands.log", std::ios::app);
@@ -205,8 +224,16 @@ int main(int argc, char** argv) {
     std::vector<std::thread> slow;
     std::string line;
     while (std::getline(std::cin, line)) {
-      if (log) log << line << '\n' << std::flush;
       const auto request = Json::parse(line);
+      if (log) {
+        if (request.contains("answer") && request.at("answer").is_object() && request.at("answer").contains("password")) {
+          auto redacted = request;
+          redacted["answer"]["password"] = "<redacted>";
+          log << redacted.dump() << '\n' << std::flush;
+        } else {
+          log << line << '\n' << std::flush;
+        }
+      }
       const auto id = request.at("id").as_int();
       const auto command = request.at("command").as_string();
       const int page = request.contains("pageId") ? static_cast<int>(request.at("pageId").as_int()) : 0;
@@ -246,6 +273,15 @@ int main(int argc, char** argv) {
         } else {
           titles[page] = "Title of " + url;
           reset_dialogs(page, after_dialogs);
+          // A navigation drops a file chooser, as the engine's reset does.
+          for (auto it = held.begin(); it != held.end();) {
+            if (it->second.page != page || it->second.opened.at("kind") != Json("file")) {
+              ++it;
+              continue;
+            }
+            host_event(page, Json{{"event", "prompt"}, {"id", it->first}, {"kind", "file"}, {"state", "closed"}, {"reason", "reset"}});
+            it = held.erase(it);
+          }
           for (auto& [on, closed] : after_dialogs) dialog_event(on, closed);
           after_dialogs.clear();
           if (host_events) {
@@ -253,6 +289,25 @@ int main(int argc, char** argv) {
             host_event(page, Json{{"event", "progress"}, {"progress", 0.5}});
           }
           packet(Json{{"type", "navigation"}, {"pageId", page}, {"url", url}});
+          if (url.ends_with("/auth") || url.ends_with("/auth-agent")) {
+            if (host_events && person[page]) {
+              const auto engine_id = std::to_string(++prompt_sequence);
+              Json opened{{"event", "prompt"}, {"id", engine_id}, {"state", "opened"}, {"kind", "auth"},
+                          {"url", url}, {"proxy", false}, {"host", "fake.test"}, {"port", 443},
+                          {"realm", "Fake"}, {"scheme", "basic"}, {"agentCredentials", url.ends_with("/auth-agent")}};
+              held[engine_id] = Held{page, opened};
+              after_host.emplace_back(page, std::move(opened));
+            }
+          } else if (url.ends_with("/download")) {
+            download_event(page, Json{{"event", "created"},
+                                      {"id", "download-" + std::to_string(++download_sequence)},
+                                      {"pageId", page},
+                                      {"url", url},
+                                      {"suggestedFilename", "report.pdf"},
+                                      {"mimeType", "application/pdf"},
+                                      {"totalBytes", 3},
+                                      {"failure", Json{}}});
+          }
           if (host_events) {
             host_event(page, Json{{"event", "title"}, {"title", titles[page]}});
             host_event(page, Json{{"event", "progress"}, {"progress", 1.0}});
@@ -298,6 +353,50 @@ int main(int argc, char** argv) {
           }
         } else if (expression.starts_with("cursor:") && host_events) {
           after_host.emplace_back(page, Json{{"event", "cursor"}, {"cursor", expression.substr(7)}});
+        } else if (host_events && (expression.starts_with("file:") || expression.starts_with("permission:") ||
+                                   expression.starts_with("auth") || expression == "certificate")) {
+          if (person[page]) {
+            const auto engine_id = std::to_string(++prompt_sequence);
+            Json opened{{"event", "prompt"}, {"id", engine_id}, {"state", "opened"}};
+            if (expression.starts_with("file:")) {
+              opened["kind"] = "file";
+              opened["mode"] = expression.substr(5);
+              opened["title"] = "";
+              opened["defaultPath"] = "";
+              opened["accept"] = Json::array{".txt"};
+            } else if (expression.starts_with("permission:")) {
+              opened["kind"] = "permission";
+              opened["origin"] = "https://fake.test";
+              opened["permissions"] = Json::array{expression.substr(11)};
+            } else if (expression.starts_with("auth")) {
+              opened["kind"] = "auth";
+              opened["url"] = "https://fake.test/private";
+              opened["proxy"] = false;
+              opened["host"] = "fake.test";
+              opened["port"] = 443;
+              opened["realm"] = "Fake";
+              opened["scheme"] = "basic";
+              opened["agentCredentials"] = expression == "auth:agent";
+            } else {
+              opened["kind"] = "certificate";
+              opened["host"] = "fake.test";
+              opened["port"] = 443;
+              opened["proxy"] = false;
+              opened["certificates"] = Json::array{
+                  Json{{"index", 0}, {"subject", "Person"}, {"issuer", "Fake CA"}, {"validFrom", 0}, {"expires", 4102444800000.0}}};
+            }
+            held[engine_id] = Held{page, opened};
+            after_host.emplace_back(page, std::move(opened));
+          }
+        } else if (expression == "download") {
+          download_event(page, Json{{"event", "created"},
+                                    {"id", "download-" + std::to_string(++download_sequence)},
+                                    {"pageId", page},
+                                    {"url", "https://fake.test/report.pdf"},
+                                    {"suggestedFilename", "report.pdf"},
+                                    {"mimeType", "application/pdf"},
+                                    {"totalBytes", 3},
+                                    {"failure", Json{}}});
         } else if (expression == "ime" && host_events) {
           after_host.emplace_back(page, Json{{"event", "ime"}, {"range", Json::array{0, 3}},
                                              {"bounds", Json::array{Json::array{10, 20, 30, 40}}}});
@@ -342,11 +441,55 @@ int main(int argc, char** argv) {
         if (!host_events) {
           ok = false;
           error = "Unexpected session-fake command: host";
+        } else if (action == "prompts") {
+          person[page] = request.at("enabled").as_bool();
+          // As the engine: unsubscribing answers each held prompt by policy.
+          if (!person[page])
+            for (auto it = held.begin(); it != held.end();) {
+              if (it->second.page != page) {
+                ++it;
+                continue;
+              }
+              after_host.emplace_back(page, Json{{"event", "prompt"}, {"id", it->first}, {"kind", it->second.opened.at("kind")},
+                                                 {"state", "closed"}, {"reason", "policy"}});
+              it = held.erase(it);
+            }
+        } else if (action == "answer") {
+          const auto found = held.find(request.at("prompt").as_string());
+          const auto& answer = request.at("answer");
+          if (found == held.end() || found->second.page != page) {
+            ok = false;
+            error = "The prompt was answered or has closed";
+          } else if (found->second.opened.at("kind") == Json("auth") && !answer.contains("policy") &&
+                     !answer.contains("cancel") &&
+                     (!answer.contains("password") || !answer.at("password").is_string())) {
+            ok = false;
+            error = "An authentication answer has username and password, or cancel";
+          } else {
+            const bool policy = answer.contains("policy");
+            after_host.emplace_back(page, Json{{"event", "prompt"}, {"id", found->first}, {"kind", found->second.opened.at("kind")},
+                                               {"state", "closed"}, {"reason", policy ? "policy" : "answered"}});
+            held.erase(found);
+          }
         } else if (action != "stop" && action != "ime" && action != "edit") {
           ok = false;
-          error = "A host command is stop, ime or edit";
+          error = "A host command is stop, ime, edit, prompts or answer";
         } else if (action == "stop") {
           after_host.emplace_back(page, Json{{"event", "loading"}, {"loading", false}, {"canGoBack", true}, {"canGoForward", false}});
+        }
+      } else if (command == "download") {
+        // saveAs writes the file where asked; cancel succeeds.
+        const auto action = request.at("action").as_string();
+        if (action == "saveAs") {
+          std::ofstream saved(request.at("path").as_string(), std::ios::binary);
+          saved << "pdf";
+          if (!saved) {
+            ok = false;
+            error = "Native download could not be saved";
+          }
+        } else if (action != "cancel") {
+          ok = false;
+          error = "Unsupported native download action";
         }
       } else if (command != "viewport" && command != "input" && command != "surfaceOutput" &&
                  command != "frameSubscription" && command != "bringToFront" && command != "cancel") {

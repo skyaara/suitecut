@@ -379,7 +379,8 @@ Json Protocols::Protocol1(control::Peer& peer, const Json& message) {
 #endif
       capabilities.push_back("prompts");
       if (host_.HostEvents())
-        for (const auto* name : {"tabs.stop", "tab.loading", "tab.title", "view.cursor", "input.ime", "input.edit"})
+        for (const auto* name : {"tabs.stop", "tab.loading", "tab.title", "view.cursor", "input.ime", "input.edit",
+                                 "prompts.person"})
           capabilities.push_back(name);
       Json::array groups;
       for (std::size_t begin = 0; begin <= bound.groups.size();) {
@@ -401,7 +402,9 @@ Json Protocols::Protocol1(control::Peer& peer, const Json& message) {
                     {"capabilities", std::move(capabilities)}};
       const bool prompts = bound.prompts;
       connection = std::move(bound);
-      if (prompts) host_.PromptHost(peer.id, owner);
+      // A person's prompts (files, permissions, logins, certificates,
+      // downloads) are held only for a host, which can ask the person.
+      if (prompts) host_.PromptHost(peer.id, owner, connection.role == Role::host);
       return reply1(id, std::move(result));
     }
     if (!connection.greeted) throw Refused("hello_required", "A protocol 1 connection begins with hello");

@@ -459,6 +459,13 @@ Json ime_params(const sc_ime_composition* composition, bool selection) {
       params["selection"] = std::move(*selected);
   return params;
 }
+sc_status answer_prompt(sc_session* session, const char* prompt, Json params, sc_error* error) {
+  return boundary(error, [&] {
+    if (!prompt || !*prompt) throw std::invalid_argument("Name the prompt");
+    params["prompt"] = prompt;
+    core_of(session).Request("prompt.answer", std::move(params));
+  });
+}
 }  // namespace
 
 extern "C" {
@@ -990,6 +997,46 @@ sc_status sc_prompt_answer_dialog(sc_session* session, const char* prompt, int a
     if (text) params["text"] = text;
     core_of(session).Request("prompt.answer", std::move(params));
   });
+}
+
+sc_status sc_prompt_answer_files(sc_session* session, const char* prompt, const char* const* paths, size_t count,
+                                 sc_error* error) {
+  Json::array list;
+  for (size_t i = 0; paths && i < count; ++i) {
+    if (!paths[i]) return boundary(error, [] { throw std::invalid_argument("A path is NULL"); });
+    list.push_back(paths[i]);
+  }
+  if (list.empty()) {
+    return boundary(error, [] { throw std::invalid_argument("Give at least one path, or cancel the prompt"); });
+  }
+  return answer_prompt(session, prompt, Json{{"paths", std::move(list)}}, error);
+}
+
+sc_status sc_prompt_answer_permission(sc_session* session, const char* prompt, int allow, sc_error* error) {
+  return answer_prompt(session, prompt, Json{{"accept", allow != 0}}, error);
+}
+
+sc_status sc_prompt_answer_login(sc_session* session, const char* prompt, const char* username, const char* password,
+                                 sc_error* error) {
+  if (!username || !password)
+    return boundary(error, [] { throw std::invalid_argument("A login has a username and a password"); });
+  return answer_prompt(session, prompt, Json{{"username", username}, {"password", password}}, error);
+}
+
+sc_status sc_prompt_answer_certificate(sc_session* session, const char* prompt, int32_t index, sc_error* error) {
+  return answer_prompt(session, prompt, Json{{"index", index}}, error);
+}
+
+sc_status sc_prompt_answer_download(sc_session* session, const char* prompt, const char* path, sc_error* error) {
+  if (!path || !*path) return boundary(error, [] { throw std::invalid_argument("Give the path to save to"); });
+  return answer_prompt(session, prompt, Json{{"path", path}}, error);
+}
+
+sc_status sc_prompt_cancel(sc_session* session, const char* prompt, sc_error* error) {
+  // A dialog is dismissed; every other kind takes cancel.
+  if (prompt && std::string_view(prompt).starts_with("dialog:"))
+    return answer_prompt(session, prompt, Json{{"accept", false}}, error);
+  return answer_prompt(session, prompt, Json{{"cancel", true}}, error);
 }
 
 // ---- Agent calls ----
