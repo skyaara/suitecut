@@ -732,6 +732,14 @@ items").
    `network.credentials` apply only on tabs the agent holds. The password
    may cross the session socket in an answer. The service never logs, echoes
    or writes it to disk.
+
+   *Refined 2026-11-21 with the parent session:* on a tab the agent holds,
+   its matching `network.credentials` answer first, and a prompt host is
+   asked only when they are missing or the server rejects them. They are
+   tried at most once per challenge; then the person is asked, and asked
+   again while their answers are rejected. Tabs the agent does not hold
+   always ask a prompt host. With no prompt host, today's policy is
+   unchanged.
 5. **Client certificates.** `prompt.opened` lists the certificates, and the
    answer is `{index}` or `{cancel:true}`.
 6. **File choosers.** The answer is `{paths:[ABS]}`. The service checks each
@@ -757,7 +765,7 @@ switch nothing changes.
   |---|---|---|---|---|
   | `file` | `OnFileDialog`, unless the agent's file chooser tool is waiting for it | `mode` (`open`, `openMultiple`, `openFolder`, `save`), `title`, `defaultPath`, `accept` | `{paths:[ABS]}` or `{cancel:true}` | cancel, as today with nothing pending |
   | `permission` | `OnShowPermissionPrompt` and `OnRequestMediaAccessPermission`, only for what the context would not allow | `origin`, `permissions` (Chromium's names, or `microphone`, `camera`, `display-audio`, `display`) | `{accept:true\|false}` (all or none) or `{cancel:true}` | the context's allowed set |
-  | `auth` | `GetAuthCredentials`, on a tab the agent does not hold or without matching agent credentials | `url`, `host`, `port`, `realm`, `scheme`, `proxy` | `{username, password}` or `{cancel:true}` | the agent's `network.credentials` if they match, else cancel |
+  | `auth` | `GetAuthCredentials`, on a tab the agent does not hold, or without matching agent credentials, or after they were rejected | `url`, `host`, `port`, `realm`, `scheme`, `proxy` | `{username, password}` or `{cancel:true}` | the agent's `network.credentials` if they match, else cancel |
   | `certificate` | `OnSelectClientCertificate` with at least one certificate | `host`, `port`, `proxy`, `certificates:[{index, subject, issuer, validFrom, expires}]` (Unix ms) | `{index}` or `{cancel:true}` | `Select(nullptr)`: send none |
   | `download` | a download starts on a tab the agent does not hold, for an owner with a host | `url`, `suggestedName`, `mimeType`, `totalBytes?` | `{path:ABS}` or `{cancel:true}` | it stays where today's policy saved it |
 
@@ -780,7 +788,13 @@ switch nothing changes.
   cancels the download.
 - **HTTP auth on an agent's tab.** When the agent holds the tab and its
   `network.credentials` match, the session answers `{policy:true}` itself,
-  so no prompt reaches the host. The engine's Fetch auth handler defers to
+  so no prompt reaches the host. The engine
+  (`SuiteCutAgentAuthTries`) remembers that try by proxy, host, port,
+  scheme and realm. The same challenge again before a main-frame document
+  commits means the server rejected them, so the engine reports it without
+  `agentCredentials` and the person is asked. The record clears at the main
+  frame's load start. A subresource that asks again for a realm that already
+  succeeded on the page goes to the person too. The engine's Fetch auth handler defers to
   `GetAuthCredentials` while prompts are on, so every challenge comes
   there. A proxy with credentials configured gets them at once.
 - **A navigation** drops the document's file choosers and media requests,
