@@ -161,7 +161,9 @@ class Host {
   void Changed();
   void Emit(const std::string& owner, Json event);
   void EmitTab(int page, const Tab& tab);
-  void AdoptPending(const std::string& owner, OwnerAgent& agent);
+  // With the owner's call lock held: its driver drops the pages the engine
+  // closed and takes a handle for each new popup.
+  void SyncPages(const std::string& owner, OwnerAgent& agent);
   void Pump();
 
   HostOptions options_;
@@ -180,6 +182,9 @@ class Host {
   std::uint64_t version_ = 1;
   std::map<std::string, Events> events_;
   std::map<std::string, Grant> grants_;
+  // Pages the engine closed that an owner's driver still holds, until
+  // SyncPages drops them.
+  std::map<std::string, std::vector<int>> gone_;
 
   std::atomic<bool> stopping_{false}, closed_{false}, engine_lost_{false};
   std::thread pump_;

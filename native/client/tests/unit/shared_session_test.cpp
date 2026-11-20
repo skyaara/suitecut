@@ -278,6 +278,47 @@ void popups(Service& service) {
   check(ok(connection.call(tool(owner, popup, "evaluate", Json{{"expression", "1"}}))), "the agent drives the popup");
   check(ok(connection.call(tool(owner, popup, "evaluate", Json{{"expression", "close-self"}}))), "the popup closes itself");
   check(eventually([&] { return !tab_of(connection, owner, popup).is_object(); }), "a page the engine closed leaves the list");
+  // The owner's agent lets go of the page on its next call: its handle's
+  // close reaches the engine, which no longer knows the page.
+  const auto closes_of = [&](int id) {
+    int count = 0;
+    for (const auto& command : service.commands())
+      if (command.at("command") == Json("context") && command.at("action") == Json("closePage") &&
+          command.at("params").at("pageId") == Json(id))
+        ++count;
+    return count;
+  };
+  check(closes_of(popup) == 0, "nothing closed the popup before the agent's next call");
+  check(ok(connection.call(tool(owner, page, "evaluate", Json{{"expression", "1"}}))), "the agent goes on with the opener");
+  check(closes_of(popup) == 1, "the agent's driver forgets the page the engine closed");
+
+  // No page limit of the service's own: more popups than the driver's old
+  // cap of 128 all stay the owner's and drivable.
+  const int many = 140;
+  for (int i = 0; i < many; ++i)
+    require(ok(connection.call(tool(owner, page, "evaluate", Json{{"expression", "popup"}}))), "open a popup");
+  std::vector<int> popups;
+  check(eventually([&] {
+          popups.clear();
+          const auto all = listed(connection, owner);
+          for (const auto& tab : all.at("tabs").as_array())
+            if (tab.at("page").as_int() != page) popups.push_back(static_cast<int>(tab.at("page").as_int()));
+          return static_cast<int>(popups.size()) == many;
+        }),
+        "every popup is listed");
+  require(static_cast<int>(popups.size()) == many, std::to_string(popups.size()) + " of " + std::to_string(many) + " popups listed");
+  check(ok(connection.call(tool(owner, popups.back(), "evaluate", Json{{"expression", "1"}}))),
+        "the agent drives the last of " + std::to_string(many) + " popups");
+  check(static_cast<int>(listed(connection, owner).at("tabs").as_array().size()) == many + 1,
+        "adopting them all closed none");
+  for (const int id : popups)
+    require(ok(connection.call(tool(owner, id, "evaluate", Json{{"expression", "close-self"}}))), "a popup closes itself");
+  check(eventually([&] { return listed(connection, owner).at("tabs").as_array().size() == 1; }),
+        "the closed popups leave the list");
+  check(ok(connection.call(tool(owner, page, "evaluate", Json{{"expression", "1"}}))), "the agent goes on after they close");
+  int forgotten = 0;
+  for (const int id : popups) forgotten += closes_of(id) == 1;
+  check(forgotten == many, "the driver forgets every page the engine closed");
   connection.call(tabs(owner, Json{{"op", "close"}, {"page", page}}));
 }
 

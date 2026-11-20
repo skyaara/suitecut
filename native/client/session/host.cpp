@@ -124,7 +124,7 @@ Host::CallResult Host::Agent(const std::string& owner, int page, const std::stri
   // set of refs. Viewer input and navigation never wait for it.
   std::lock_guard calls(agent.mutex);
   if (!agent.driver) throw Refused("engine_exited", "The shared browser is closing");
-  AdoptPending(owner, agent);
+  SyncPages(owner, agent);
   std::uint64_t held = 0;
   {
     std::lock_guard lock(state_);
@@ -208,7 +208,7 @@ Json Host::Open(const std::string& owner, Control control, const std::optional<s
   {
     std::lock_guard calls(agent.mutex);
     if (!agent.driver) throw Refused("engine_exited", "The shared browser is closing");
-    AdoptPending(owner, agent);
+    SyncPages(owner, agent);
     const auto created = agent.driver->call("pages", Json{{"action", "new"}});
     page = static_cast<int>(created.at("pageId").as_int());
     std::lock_guard lock(state_);
@@ -228,7 +228,7 @@ void Host::CloseTab(const std::string& owner, int page) {
   auto& agent = AgentOf(owner);
   std::lock_guard calls(agent.mutex);
   if (!agent.driver) throw Refused("engine_exited", "The shared browser is closing");
-  AdoptPending(owner, agent);
+  SyncPages(owner, agent);
   {
     std::lock_guard lock(state_);
     Owned(owner, page);
@@ -544,16 +544,21 @@ void Host::EmitTab(int page, const Tab& tab) {
   Emit(tab.owner, Json{{"type", "tab.changed"}, {"tab", TabJson(page, tab, "")}});
 }
 
-void Host::AdoptPending(const std::string& owner, OwnerAgent& agent) {
-  std::vector<int> pending;
+void Host::SyncPages(const std::string& owner, OwnerAgent& agent) {
+  std::vector<int> pending, gone;
   {
     std::lock_guard lock(state_);
+    if (const auto found = gone_.find(owner); found != gone_.end()) {
+      gone = std::move(found->second);
+      gone_.erase(found);
+    }
     for (auto& [id, tab] : tabs_)
       if (!tab.adopted && tab.owner == owner) {
         pending.push_back(id);
         tab.adopted = true;
       }
   }
+  for (const int id : gone) agent.driver->forget_page(id);
   for (const int id : pending) {
     try {
       agent.driver->call("pages", Json{{"action", "adopt"}, {"pageId", id}});
@@ -621,6 +626,7 @@ void Host::Pump() {
         } else if (name == "page-closed") {
           if (const auto found = tabs_.find(page); found != tabs_.end()) {
             const auto owner = found->second.owner;
+            if (found->second.adopted) gone_[owner].push_back(page);
             tabs_.erase(found);
             views_.erase(page);
             Changed();

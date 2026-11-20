@@ -321,8 +321,8 @@ void serve_shared_session(const SessionOptions& options,int listener,int ready,i
           touch();
           Json result;
           const auto tool=request.contains("request")&&request.at("request").contains("tool")?request.at("request").at("tool").as_string():std::string{};
-          if(tool=="_session_status")result=Json{{"ok",true},{"result",shared->status}};
-          else if(tool=="_session_close") {
+          if(peer.session_requests&&tool=="_session_status")result=Json{{"ok",true},{"result",shared->status}};
+          else if(peer.session_requests&&tool=="_session_close") {
             {std::lock_guard lock(shared->mutex);shared->close_requested=true;}
             result=Json{{"ok",true},{"result",Json{{"closed",true},{"session",shared->status.at("session")}}}};
           } else {

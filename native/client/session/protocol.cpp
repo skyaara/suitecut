@@ -161,8 +161,12 @@ void host_only(const Connection& connection, const std::string& op) {
 
 Json Protocols::Handle(control::Peer& peer, const Json& message) {
   auto& connection = connection_of(peer);
-  if (connection.protocol < 0)
+  if (connection.protocol < 0) {
     connection.protocol = options_.protocol1 && message.is_object() && message.contains("v") ? 1 : 0;
+    // On protocol 1, session.close is for hosts: a protocol 0 close
+    // envelope on the same connection must not get round that.
+    if (connection.protocol == 1) peer.session_requests = false;
+  }
   if (connection.protocol == 1) return Protocol1(peer, message);
   if (!options_.protocol0)
     return error0("protocol_unsupported", "This session speaks protocol 1 only; begin with hello");

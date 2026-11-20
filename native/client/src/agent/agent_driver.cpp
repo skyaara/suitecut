@@ -166,6 +166,21 @@ AgentDriver::~AgentDriver() {
     (void)unused; try { transport_->cancel(id); } catch (...) {}
   }
 }
+void AgentDriver::forget_page(int id) {
+  if (id == 1) throw std::invalid_argument("The main page stays until the owning Browser closes");
+  const auto found = pages_.find(id);
+  if (found == pages_.end()) return;
+  // The engine already closed it; the page's own closePage then finds no page
+  // and is answered at once. Engine page IDs are never reused, so a stale ID
+  // cannot reach another page.
+  pages_.erase(found);
+  snapshots_.erase(id);
+  if (const auto context = contexts_.find(id); context != contexts_.end()) {
+    try { context->second.close(); } catch (...) {}
+    contexts_.erase(context);
+  }
+  if (active_ == id) active_ = 1;
+}
 void AgentDriver::set_credential_vault(std::shared_ptr<CredentialVault> vault) { vault_=std::move(vault); }
 Json AgentDriver::tools() {
   const auto str = schema("string"), obj = schema("object"),
@@ -600,7 +615,6 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
       const auto requested = args.at("pageId").as_int();
       if (requested < 2 || requested > std::numeric_limits<int>::max()) throw std::invalid_argument("Invalid page ID");
       const int id = static_cast<int>(requested);
-      if (pages_.size() >= 128) throw std::runtime_error("Agent page capacity exceeded");
       if (!pages_.contains(id)) pages_.emplace(id,browser_.page(id));
       return Json{{"pageId",id}};
     }

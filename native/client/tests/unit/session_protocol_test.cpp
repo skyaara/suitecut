@@ -415,6 +415,14 @@ void close_and_protocol0_off() {
   check(host.result("session.status").at("protocols") == Json(Json::array{Json(1)}), "status lists protocol 1 only");
   Client agent(service, Client::agent("closer"));
   check(code(agent.call("session.close")) == "forbidden", "an agent may not close the session");
+  // Nor with protocol 0's close envelope on its protocol 1 connection, which
+  // the socket layer used to answer before the protocol saw it.
+  for (const auto* tool : {"_session_close", "_session_status"}) {
+    const auto refused = agent.raw().call(Json{{"request", Json{{"tool", tool}}}});
+    check(refused.contains("v") && code(refused) == "invalid_request",
+          std::string("a protocol 1 connection's ") + tool + " envelope is refused");
+  }
+  check(service.control("status").at("result").at("running") == Json(true), "the agent did not close the session");
   check(host.result("session.close").at("closed") == Json(true), "the host closes the session");
   check(eventually([&] { return !std::filesystem::exists(service.socket()); }, 10s), "the session withdraws its socket");
   service.mark_stopped();

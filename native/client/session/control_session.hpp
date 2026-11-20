@@ -29,6 +29,10 @@ struct Peer {
   std::uint64_t id=0;            // unique for the worker's lifetime
   std::shared_ptr<void> state;   // whatever the handler keeps per connection
   bool close_session=false;      // set by the handler: close once this reply is sent
+  // While true, the socket layer answers `_session_status` and
+  // `_session_close` itself. A handler clears it for a connection whose
+  // protocol decides those (protocol 1 closes for hosts only).
+  bool session_requests=true;
 };
 using PeerCall=std::function<Json(Peer&,const Json&)>;
 using PeerClosed=std::function<void(Peer&)>;
@@ -40,7 +44,8 @@ using PeerClosed=std::function<void(Peer&)>;
 // |alive|, when given, is polled; once it returns false the worker withdraws
 // and exits as if closed, so the next start launches a fresh one.
 // `_session_status` and `_session_close` requests ({"request":{"tool":...}})
-// are answered here, before |call|.
+// are answered here, before |call|, unless the handler cleared the
+// connection's Peer::session_requests.
 void serve_shared_session(const SessionOptions&,int listener,int ready,int connections,
                           const std::function<Json(const Json&)>& call,
                           const std::function<void()>& close,
