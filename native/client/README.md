@@ -144,7 +144,9 @@ cmake --install build/native-client --prefix "$PWD/build/native-client-install"
 Use `-DBUILD_SHARED_LIBS=ON` for a shared library. A downstream CMake application
 can use `find_package(SuiteCutClient CONFIG REQUIRED)` and link `SuiteCut::Client`.
 Headers are installed under `include/suitecut`, and the C ABI is declared in
-`suitecut/client.h`. C programs may need to select the C++ linker when linking
+`suitecut/client.h`. `suitecut/embed.h`, in the same library, adds sessions,
+tabs, views, input and events for apps that embed a SuiteCut runtime (see
+[the embedding design](../../docs/embedding/api-design.md)). C programs may need to select the C++ linker when linking
 the static library manually. For a static CMake consumer, enable both `C` and
 `CXX` in `project(... LANGUAGES C CXX)`; the imported target selects the linker.
 The shared C ABI also works in a C-only project.

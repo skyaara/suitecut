@@ -62,7 +62,7 @@ def main():
     pin = json.loads(args.media_pin.read_text())
     if sha256(args.media_archive) != pin['sha256']:
         raise ValueError('Media archive checksum does not match its pin')
-    for relative in ['include/suitecut/client.h', 'lib/libsuitecut_client.a',
+    for relative in ['include/suitecut/client.h', 'include/suitecut/embed.h', 'lib/libsuitecut_client.a',
                      'bin/suitecut-native-control', 'bin/suitecut-native-record']:
         if not (args.sdk / relative).is_file():
             raise ValueError(f'Missing native SDK input: {relative}')

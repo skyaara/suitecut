@@ -82,6 +82,10 @@ def main():
                 if str(source) in data or str(build) in data or 'suitecut_sdk_' in data:
                     raise ValueError(f'Private build path/target leaked into export: {path}')
             expected_headers = {p.name for p in (source / 'include/suitecut').iterdir() if p.is_file()}
+            # The two C headers are the SDK's ABI; name them so the inventory cannot lose them together.
+            for header in ('client.h', 'embed.h'):
+                if header not in expected_headers or not (relocated / 'include/suitecut' / header).is_file():
+                    raise ValueError(f'Installed SDK is missing include/suitecut/{header}')
             if {p.name for p in (relocated / 'include/suitecut').iterdir()} != expected_headers:
                 raise ValueError('Installed public header inventory differs from authored inventory')
             for c_only in ((False, True) if shared else (False,)):

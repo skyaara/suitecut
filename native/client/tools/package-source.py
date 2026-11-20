@@ -20,7 +20,7 @@ def main():
     files = [ROOT / 'LICENSE', ROOT / 'THIRD_PARTY_NOTICES.md', ROOT / 'native/README.md']
     files += [SDK / name for name in ('CMakeLists.txt', 'CMakePresets.json', 'README.md',
                                      'VALIDATION.md', 'ARCHITECTURE.md')]
-    for directory in ('src', 'include', 'cmake', 'examples', 'tests', 'tools', 'skills'):
+    for directory in ('src', 'include', 'session', 'cmake', 'examples', 'tests', 'tools', 'skills'):
         files += [p for p in (SDK / directory).rglob('*') if p.is_file()
                   and '__pycache__' not in p.parts and p.suffix != '.pyc']
     files += list((SDK.parent / 'shared').glob('*.h'))
