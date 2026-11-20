@@ -6,7 +6,9 @@
 // layer. With a runtime that has host events it also follows the tab's title,
 // loading state and cursor, stops loads, shows the page's JavaScript dialogs
 // as sheets, takes text from input methods, and sends the Edit menu's
-// commands to the page.
+// commands to the page. What only the person can answer comes as sheets too:
+// an open or save panel for a file chooser or a download, and an alert for a
+// permission, a login or a client certificate.
 //
 // usage: suitecut-embed-sample --runtime /path/SuiteCut.app [--signing-requirement REQ]
 //          [--session NAME] [--session-dir DIR] [--profile DIR] [--url URL]
@@ -29,6 +31,7 @@
 #include <sys/stat.h>
 #include <thread>
 #include <unistd.h>
+#include <vector>
 
 #include "suitecut/embed.h"
 
@@ -353,6 +356,7 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   bool _first;
   bool _loading;  // the reload button stops while the tab loads
   NSAlert* _dialog;
+  NSWindow* _sheet;        // the sheet showing the prompt _dialog_id
   std::string _dialog_id;
 }
 - (NSButton*)button:(NSString*)title action:(SEL)action {
@@ -562,13 +566,13 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
     return;
   }
   if (kind == SC_EVENT_PROMPT_OPENED) {
-    [self showDialog:body[@"prompt"]];
+    [self showPrompt:body[@"prompt"]];
     return;
   }
   if (kind == SC_EVENT_PROMPT_CLOSED) {
     // Answered elsewhere, timed out, or the page moved on.
-    if (_dialog && [body[@"prompt"] isKindOfClass:NSString.class] && _dialog_id == [body[@"prompt"] UTF8String])
-      [_window endSheet:_dialog.window returnCode:NSModalResponseAbort];
+    if (_sheet && [body[@"prompt"] isKindOfClass:NSString.class] && _dialog_id == [body[@"prompt"] UTF8String])
+      [_window endSheet:_sheet returnCode:NSModalResponseAbort];
     return;
   }
   if (kind == SC_EVENT_TAB_CLOSED) {
@@ -592,7 +596,7 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
 // A page's alert, confirm, prompt or beforeunload, as a sheet on the window.
 - (void)showDialog:(NSDictionary*)prompt {
   if (![prompt isKindOfClass:NSDictionary.class] || ![prompt[@"kind"] isEqual:@"dialog"]) return;
-  if (_dialog) [_window endSheet:_dialog.window returnCode:NSModalResponseAbort];
+  if (_sheet) [_window endSheet:_sheet returnCode:NSModalResponseAbort];
   NSString* type = prompt[@"dialog"];
   NSAlert* alert = [NSAlert new];
   alert.messageText = [type isEqual:@"beforeunload"] ? @"Leave this page?" : @"The page says";
@@ -606,12 +610,14 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
     alert.accessoryView = field;
   }
   _dialog = alert;
+  _sheet = alert.window;
   _dialog_id = [prompt[@"id"] UTF8String];
   const std::string id = _dialog_id;
   [alert beginSheetModalForWindow:_window
                 completionHandler:^(NSModalResponse response) {
                   if (_dialog == alert) {
                     _dialog = nil;
+                    _sheet = nil;
                     _dialog_id.clear();
                   }
                   if (response == NSModalResponseAbort) return;  // closed without the person
@@ -619,6 +625,121 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
                   const int accept = response == NSAlertFirstButtonReturn;
                   const char* text = field ? field.stringValue.UTF8String : nullptr;
                   if (sc_prompt_answer_dialog(session, id.c_str(), accept, text, &error) != SC_OK) fail("dialog", error);
+                }];
+}
+// What only the person answers. A sheet closed by prompt.closed (the page
+// moved on) sends nothing; one the person dismissed refuses the prompt.
+- (void)showPrompt:(NSDictionary*)prompt {
+  if (![prompt isKindOfClass:NSDictionary.class]) return;
+  NSString* kind = prompt[@"kind"];
+  if ([kind isEqual:@"dialog"]) {
+    [self showDialog:prompt];
+    return;
+  }
+  if (_sheet) [_window endSheet:_sheet returnCode:NSModalResponseAbort];
+  _dialog_id = [prompt[@"id"] UTF8String];
+  const std::string id = _dialog_id;
+  auto finished = ^(NSWindow* sheet) {
+    if (_sheet == sheet) {
+      _sheet = nil;
+      _dialog_id.clear();
+    }
+  };
+  auto refuse = ^{
+    sc_error error;
+    if (sc_prompt_cancel(session, id.c_str(), &error) != SC_OK) fail("prompt", error);
+  };
+  if ([kind isEqual:@"file"] || [kind isEqual:@"download"]) {
+    NSString* mode = [kind isEqual:@"download"] ? @"save" : prompt[@"mode"];
+    NSSavePanel* panel;
+    if ([mode isEqual:@"save"]) {
+      panel = [NSSavePanel savePanel];
+      NSString* name = [kind isEqual:@"download"] ? prompt[@"suggestedName"] : [prompt[@"defaultPath"] lastPathComponent];
+      if ([name isKindOfClass:NSString.class]) panel.nameFieldStringValue = name;
+    } else {
+      NSOpenPanel* open = [NSOpenPanel openPanel];
+      open.canChooseDirectories = [mode isEqual:@"openFolder"];
+      open.canChooseFiles = ![mode isEqual:@"openFolder"];
+      open.allowsMultipleSelection = [mode isEqual:@"openMultiple"];
+      panel = open;
+    }
+    if ([prompt[@"title"] isKindOfClass:NSString.class] && [prompt[@"title"] length]) panel.message = prompt[@"title"];
+    _sheet = panel;
+    [panel beginSheetModalForWindow:_window
+                  completionHandler:^(NSModalResponse response) {
+                    finished(panel);
+                    if (response == NSModalResponseAbort) return;
+                    if (response != NSModalResponseOK) return refuse();
+                    sc_error error;
+                    if ([kind isEqual:@"download"]) {
+                      if (sc_prompt_answer_download(session, id.c_str(), panel.URL.path.UTF8String, &error) != SC_OK)
+                        fail("download", error);
+                      return;
+                    }
+                    std::vector<std::string> chosen;
+                    if ([panel isKindOfClass:NSOpenPanel.class])
+                      for (NSURL* url in ((NSOpenPanel*)panel).URLs) chosen.push_back(url.path.UTF8String);
+                    else
+                      chosen.push_back(panel.URL.path.UTF8String);
+                    std::vector<const char*> paths;
+                    for (const auto& path : chosen) paths.push_back(path.c_str());
+                    if (sc_prompt_answer_files(session, id.c_str(), paths.data(), paths.size(), &error) != SC_OK)
+                      fail("files", error);
+                  }];
+    return;
+  }
+  NSAlert* alert = [NSAlert new];
+  NSTextField* user = nil;
+  NSSecureTextField* password = nil;
+  NSPopUpButton* certificates = nil;
+  if ([kind isEqual:@"permission"]) {
+    NSArray* names = [prompt[@"permissions"] isKindOfClass:NSArray.class] ? prompt[@"permissions"] : @[];
+    alert.messageText = [NSString stringWithFormat:@"%@ wants to use your %@", prompt[@"origin"],
+                                                   [names componentsJoinedByString:@" and "]];
+    [alert addButtonWithTitle:@"Allow"];
+    [alert addButtonWithTitle:@"Block"];
+  } else if ([kind isEqual:@"auth"]) {
+    alert.messageText = [NSString stringWithFormat:@"Log in to %@", prompt[@"host"]];
+    alert.informativeText = [prompt[@"realm"] isKindOfClass:NSString.class] ? prompt[@"realm"] : @"";
+    NSView* fields = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 260, 56)];
+    user = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 32, 260, 24)];
+    user.placeholderString = @"Username";
+    password = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 260, 24)];
+    password.placeholderString = @"Password";
+    [fields addSubview:user];
+    [fields addSubview:password];
+    alert.accessoryView = fields;
+    [alert addButtonWithTitle:@"Log In"];
+    [alert addButtonWithTitle:@"Cancel"];
+  } else if ([kind isEqual:@"certificate"]) {
+    alert.messageText = [NSString stringWithFormat:@"%@ asks for a certificate", prompt[@"host"]];
+    certificates = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 300, 26) pullsDown:NO];
+    for (NSDictionary* row in prompt[@"certificates"])
+      [certificates addItemWithTitle:[NSString stringWithFormat:@"%@ (%@)", row[@"subject"], row[@"issuer"]]];
+    alert.accessoryView = certificates;
+    [alert addButtonWithTitle:@"Send"];
+    [alert addButtonWithTitle:@"Don't Send"];
+  } else {
+    _dialog_id.clear();
+    return;  // a kind this sample does not know: the engine's policy answers when it quits
+  }
+  _sheet = alert.window;
+  [alert beginSheetModalForWindow:_window
+                completionHandler:^(NSModalResponse response) {
+                  finished(alert.window);
+                  if (response == NSModalResponseAbort) return;
+                  if (response != NSAlertFirstButtonReturn) return refuse();
+                  sc_error error;
+                  sc_status status = SC_OK;
+                  if (user)
+                    status = sc_prompt_answer_login(session, id.c_str(), user.stringValue.UTF8String,
+                                                    password.stringValue.UTF8String, &error);
+                  else if (certificates)
+                    status = sc_prompt_answer_certificate(session, id.c_str(),
+                                                          static_cast<int32_t>(certificates.indexOfSelectedItem), &error);
+                  else
+                    status = sc_prompt_answer_permission(session, id.c_str(), 1, &error);
+                  if (status != SC_OK) fail("prompt", error);
                 }];
 }
 - (void)go:(id)sender {
