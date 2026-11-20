@@ -3,6 +3,7 @@
 #include <map>
 
 #include "context_menus.h"
+#include "person_prompts.h"
 #include "network_request_rows.h"
 #include "page/window_mode.h"
 #include "runtime/engine.h"
@@ -145,6 +146,22 @@ class Source : public CefClient,
                                     const RectList& bounds) override;
   void HostEvent(const char* name, Dict fields);
   void HostCommand(int id, Dict message);
+  // Prompts that go to the person (page/person_prompts.cc), host events only.
+  void PersonPromptsCreate();
+  bool PersonPromptsOn() const;
+  bool FilePrompt(cef_file_dialog_mode_t mode, const CefString& title, const CefString& default_path,
+                  const std::vector<CefString>& filters, CefRefPtr<CefFileDialogCallback> callback);
+  bool PermissionPrompt(uint64_t prompt_id, const CefString& origin, uint32_t requested,
+                        CefRefPtr<CefPermissionPromptCallback> callback);
+  bool MediaPrompt(const CefString& origin, uint32_t requested, CefRefPtr<CefMediaAccessCallback> callback);
+  void OnDismissPermissionPrompt(CefRefPtr<CefBrowser>, uint64_t prompt_id,
+                                 cef_permission_request_result_t result) override;
+  bool OnSelectClientCertificate(CefRefPtr<CefBrowser>, bool proxy, const CefString& host, int port,
+                                 const X509CertificateList& certificates,
+                                 CefRefPtr<CefSelectClientCertificateCallback> callback) override;
+  void AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_credentials,
+                  CefRefPtr<CefAuthCallback> callback, std::function<void()> policy);
+  void PersonPromptCommand(int id, const std::string& action, Dict message);
   void OnLoadStart(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, TransitionType) override;
   void OnRenderViewReady(CefRefPtr<CefBrowser>) override;
   void OnRenderProcessTerminated(CefRefPtr<CefBrowser>, TerminationStatus, int,
@@ -581,6 +598,7 @@ class Source : public CefClient,
   std::string private_response_error_;
   std::unique_ptr<suitecut::NetworkControls> network_;
   std::unique_ptr<SuiteCutDialogControls> dialogs_;
+  std::unique_ptr<SuiteCutPersonPrompts> person_prompts_;
   std::map<int, NetworkCall> network_calls_;
 #include "controllers/context/credential_source.inc"
 #include "controllers/context/context_geolocation_source.inc"

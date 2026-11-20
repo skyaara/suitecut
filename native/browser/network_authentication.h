@@ -94,7 +94,8 @@ class NativeNetworkAuthentication {
   static bool Valid(Dict decision){
     if(!decision||decision->GetType("response")!=VTYPE_STRING)return false;
     const auto response=decision->GetString("response").ToString();
-    if(response=="CancelAuth")return true;
+    // Default hands the challenge to CEF's GetAuthCredentials (a person's prompt).
+    if(response=="CancelAuth"||response=="Default")return true;
     return response=="ProvideCredentials"&&decision->GetType("username")==VTYPE_STRING&&decision->GetType("password")==VTYPE_STRING;
   }
   void Fail(const std::string&error){if(disposed_||failed_)return;failed_=true;failure_(error);}

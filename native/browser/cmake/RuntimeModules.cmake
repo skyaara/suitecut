@@ -31,7 +31,7 @@ suitecut_browser_module(runtime runtime/tasks.cc runtime/accessors.cc runtime/en
 suitecut_browser_module(page page/lifecycle.cc page/bootstrap.cc page/capture.cc
   page/navigation.cc page/devtools.cc page/events.cc page/frames.cc page/handles.cc
   page/input.cc page/operations.cc page/dom.cc page/network.cc page/commands.cc
-  page/host_events.cc)
+  page/host_events.cc page/person_prompts.cc)
 suitecut_browser_module(process process/app.cc process/main.cc process/standalone.cc
   process/prototype_tabs.cc)
 

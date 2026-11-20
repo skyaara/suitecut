@@ -120,6 +120,8 @@ auto Source::OnFileDialog(CefRefPtr<CefBrowser> browser, FileDialogMode mode,
   if (auto tab = AdoptedTab(browser))
     return tab->OnFileDialog(browser, mode, routed_arg2, routed_arg3, routed_arg4, routed_arg5,
                              routed_arg6, callback);
+  // The agent's own folder pick goes first; a page's own chooser can go to a person.
+  if (!folder_operation_ && FilePrompt(mode, routed_arg2, routed_arg3, routed_arg4, callback)) return true;
   return FormFileDialog(mode, callback);
 }
 
@@ -129,9 +131,10 @@ auto Source::OnShowPermissionPrompt(CefRefPtr<CefBrowser> browser, uint64_t rout
   if (auto tab = AdoptedTab(browser))
     return tab->OnShowPermissionPrompt(browser, routed_arg1, origin, requested, callback);
   const auto granted = engine_.contexts()->AllowedPermissions(page_id_, origin.ToString());
-  callback->Continue(suitecut::NativePermissionRequestGranted(requested, granted)
-                         ? CEF_PERMISSION_RESULT_ACCEPT
-                         : CEF_PERMISSION_RESULT_DENY);
+  const bool allowed = suitecut::NativePermissionRequestGranted(requested, granted);
+  // What the context grants needs nobody; what it would deny can go to a person.
+  if (!allowed && PermissionPrompt(routed_arg1, origin, requested, callback)) return true;
+  callback->Continue(allowed ? CEF_PERMISSION_RESULT_ACCEPT : CEF_PERMISSION_RESULT_DENY);
   return true;
 }
 
@@ -141,8 +144,9 @@ auto Source::OnRequestMediaAccessPermission(CefRefPtr<CefBrowser> browser,
                                             CefRefPtr<CefMediaAccessCallback> callback) -> bool {
   if (auto tab = AdoptedTab(browser))
     return tab->OnRequestMediaAccessPermission(browser, routed_arg1, origin, requested, callback);
-  callback->Continue(requested &
-                     engine_.contexts()->AllowedMediaPermissions(page_id_, origin.ToString()));
+  const auto allowed = requested & engine_.contexts()->AllowedMediaPermissions(page_id_, origin.ToString());
+  if (allowed != requested && MediaPrompt(origin, requested, callback)) return true;
+  callback->Continue(allowed);
   return true;
 }
 
@@ -271,6 +275,7 @@ auto Source::OnResetDialogState(CefRefPtr<CefBrowser> browser) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnResetDialogState(browser);
   // With host events on, a window may be showing these as prompts: say so.
   if (dialogs_) HostEventsEnabled() ? dialogs_->Reset() : dialogs_->Clear();
+  if (person_prompts_) person_prompts_->Reset();
 }
 
 auto Source::OnDialogClosed(CefRefPtr<CefBrowser> browser) -> void {
@@ -356,6 +361,7 @@ auto Source::OnAfterCreated(CefRefPtr<CefBrowser> browser) -> void {
       if (event == name) waiters.push_back(id);
     for (const int id : waiters) Complete(id, true, "", json);
   });
+  PersonPromptsCreate();
   sockets_ = std::make_unique<suitecut::NativeWebSocketControls>(
       [this](Dict info, const std::vector<uint8_t>& bytes) {
         auto header = Header("websocket");
@@ -740,6 +746,7 @@ auto Source::OnBeforeClose(CefRefPtr<CefBrowser> actual_browser) -> void {
   devtools_dispatch_.clear();
   devtools_dispatch_bytes_ = 0;
   if (dialogs_) dialogs_->Clear();
+  if (person_prompts_) person_prompts_->Clear();
   if (artifact_view_owner_) ArtifactReleaseView(artifact_view_owner_);
   if (artifacts_) artifacts_->Clear();
   NativeMediaClear();

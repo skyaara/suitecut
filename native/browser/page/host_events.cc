@@ -212,7 +212,11 @@ auto Source::HostCommand(int id, Dict message) -> void {
     Complete(id, true);
     return;
   }
-  Complete(id, false, "A host command is stop, ime or edit");
+  if (action == "prompts" || action == "answer") {
+    PersonPromptCommand(id, action, message);
+    return;
+  }
+  Complete(id, false, "A host command is stop, ime, edit, prompts or answer");
 }
 
 }  // namespace suitecut::browser

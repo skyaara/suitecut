@@ -140,7 +140,7 @@ void SettingsAuthenticate(){
     [self=CefRefPtr<Source>(this)](suitecut::NativeContextAuthenticationControls::Value,suitecut::NativeContextAuthenticationControls::Result done){
       if(self->closing_page_||!self->network_){done(false,"Native authentication page is closed");return;}
       auto provider=suitecut::NativeContextAuthentication(self->context_settings_,self->authentication_snapshot_);
-      if(provider){auto original=std::move(provider);provider=[source=self.get(),original=std::move(original)](Dict input){if(source->context_auth_open_.load())return original(input);auto canceled=CefDictionaryValue::Create();canceled->SetString("response","CancelAuth");return canceled;};}
+      if(provider){auto original=std::move(provider);provider=[source=self.get(),original=std::move(original)](Dict input){if(source->PersonPromptsOn()){auto deferred=CefDictionaryValue::Create();deferred->SetString("response","Default");return deferred;}if(source->context_auth_open_.load())return original(input);auto canceled=CefDictionaryValue::Create();canceled->SetString("response","CancelAuth");return canceled;};}
       self->network_->SetAuthentication(std::move(provider),std::move(done));
     },[self=CefRefPtr<Source>(this)](bool ok,const std::string&error){
       if(self->closing_page_)return;
@@ -160,8 +160,17 @@ void SettingsChild(const std::string&session,suitecut::ContextSettingsPage::Resu
 
 // CEF invokes auth on IO. context_settings_ is an immutable constructor-owned
 // snapshot, published with the actual CefClient and never reset on page close.
-bool GetAuthCredentials(CefRefPtr<CefBrowser>,const CefString&url,bool proxy,const CefString&,int,const CefString&,const CefString&,CefRefPtr<CefAuthCallback>callback)override{
-  return suitecut::NativeContextAuthenticationCallback(context_settings_,authentication_snapshot_,context_auth_open_.load(),url,proxy,std::move(callback));
+bool GetAuthCredentials(CefRefPtr<CefBrowser>browser,const CefString&url,bool proxy,const CefString&host,int port,const CefString&realm,const CefString&scheme,CefRefPtr<CefAuthCallback>callback)override{
+  if(!HostEventsEnabled())return suitecut::NativeContextAuthenticationCallback(context_settings_,authentication_snapshot_,context_auth_open_.load(),url,proxy,std::move(callback));
+  // With host events a person may answer it: decide on UI, where prompts live.
+  // A configured proxy login is the profile's, never a person's question.
+  const auto config=context_settings_;const auto snapshot=authentication_snapshot_;const bool open=context_auth_open_.load();
+  const auto chosen=suitecut::NativeContextAuthenticationChoice(config,snapshot,open,url,proxy);
+  auto policy=[config,snapshot,open,url=url.ToString(),proxy,callback]{suitecut::NativeContextAuthenticationCallback(config,snapshot,open,url,proxy,callback);};
+  if(proxy&&chosen){policy();return true;}
+  auto info=CefDictionaryValue::Create();info->SetString("url",url);info->SetBool("proxy",proxy);info->SetString("host",host);info->SetInt("port",port);info->SetString("realm",realm);info->SetString("scheme",scheme);
+  CefPostTask(TID_UI,new Task([self=CefRefPtr<Source>(this),browser,info,agent=chosen.has_value(),callback,policy=std::move(policy)]()mutable{self->AuthPrompt(browser,info,agent,callback,std::move(policy));}));
+  return true;
 }
 bool OnCertificateError(CefRefPtr<CefBrowser>,cef_errorcode_t,const CefString&,CefRefPtr<CefSSLInfo>,CefRefPtr<CefCallback>callback)override{
   if(!context_settings_||!context_settings_->ignore_https_errors.value_or(false))return false;
