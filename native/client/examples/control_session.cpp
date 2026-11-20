@@ -47,6 +47,17 @@ struct Fd {
   Fd(const Fd&)=delete;Fd& operator=(const Fd&)=delete;
 };
 [[noreturn]] void fail(const std::string& why){throw std::runtime_error(why+": "+std::strerror(errno));}
+// True when the peer on a connected Unix socket runs as this user. Linux has
+// SO_PEERCRED; macOS and the BSDs have getpeereid, which glibc lacks.
+bool peer_is_same_user(int fd) {
+#if defined(__linux__)
+  ucred peer{};socklen_t bytes=sizeof(peer);
+  return ::getsockopt(fd,SOL_SOCKET,SO_PEERCRED,&peer,&bytes)==0&&peer.uid==::getuid();
+#else
+  uid_t uid=0;gid_t gid=0;
+  return ::getpeereid(fd,&uid,&gid)==0&&uid==::getuid();
+#endif
+}
 void ready_io(int fd,short events,Deadline deadline) {
   for(;;) {
     const auto left=std::chrono::ceil<std::chrono::milliseconds>(deadline-Clock::now()).count();
@@ -246,10 +257,7 @@ void serve_session(const SessionOptions& options,int listener,int ready,
       if(!rc)continue;
       Fd client(::accept(listener,nullptr,nullptr));if(client.value<0){if(errno==EINTR)continue;fail("Session accept failed");}
       ::fcntl(client.value,F_SETFD,FD_CLOEXEC);::fcntl(client.value,F_SETFL,::fcntl(client.value,F_GETFL)|O_NONBLOCK);
-#ifdef __linux__
-      ucred peer{};socklen_t bytes=sizeof(peer);
-      if(::getsockopt(client.value,SOL_SOCKET,SO_PEERCRED,&peer,&bytes)<0||peer.uid!=::getuid())continue;
-#endif
+      if(!peer_is_same_user(client.value))continue;
       Json result;
       try {
         const auto request=receive_json(client.value,Clock::now()+std::chrono::seconds(2));
@@ -341,8 +349,7 @@ void serve_shared_session(const SessionOptions& options,int listener,int ready,i
       if(!rc)continue;
       Fd client(::accept(listener,nullptr,nullptr));if(client.value<0){if(errno==EINTR)continue;fail("Session accept failed");}
       ::fcntl(client.value,F_SETFD,FD_CLOEXEC);::fcntl(client.value,F_SETFL,::fcntl(client.value,F_GETFL)|O_NONBLOCK);
-      uid_t peer_uid=0;gid_t peer_gid=0;
-      if(::getpeereid(client.value,&peer_uid,&peer_gid)<0||peer_uid!=::getuid())continue;
+      if(!peer_is_same_user(client.value))continue;
       {
         std::lock_guard lock(shared->mutex);
         if(connections&&shared->active>=connections) {
