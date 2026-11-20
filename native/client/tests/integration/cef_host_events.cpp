@@ -50,8 +50,9 @@ const char kPage[] =
     "</style><input id=box autocomplete=off><a id=pop href=/page?popup target=_blank>popup</a><div id=busy></div>"
     "<script>setTimeout(()=>{document.title='Changed'},300)</script>";
 
-// Serves the page, and /slow: headers and a little HTML, then nothing for a
-// long while, so the load stays in progress until it is stopped.
+// Serves the page; /stall, a page whose image is /slow; and /slow, headers
+// and then nothing for a long while. So /stall commits at once but stays
+// loading until it is stopped.
 class PageServer {
  public:
   PageServer() {
@@ -101,12 +102,13 @@ class PageServer {
     const auto n = ::recv(client, request, sizeof request - 1, 0);
     const std::string head = n > 0 ? std::string(request, static_cast<std::size_t>(n)) : "";
     if (head.starts_with("GET /slow")) {
-      Send(client, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n"
-                   "<!doctype html><title>Slow</title><p>still loading");
+      Send(client, "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n");
       // Hold the load open, but let the server stop promptly.
       for (int i = 0; i < 300 && !stopped_; ++i) std::this_thread::sleep_for(100ms);
     } else {
-      const std::string body = head.starts_with("GET /page") ? kPage : "<!doctype html><title>other</title>";
+      const std::string body = head.starts_with("GET /page")    ? kPage
+                               : head.starts_with("GET /stall") ? "<!doctype html><title>Stalled</title><img src=/slow>"
+                                                                : "<!doctype html><title>other</title>";
       Send(client, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nCache-Control: no-store\r\n"
                    "Connection: close\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body);
     }
@@ -312,8 +314,8 @@ int host_events_main(int argc, char** argv) {
     // 2. Stopping a slow load.
     run.stage("stop");
     events->mark();
-    if (sc_tab_navigate(session, page, pages.Url("/slow").c_str(), &tab, &error) != SC_OK)
-      throw std::runtime_error(std::string("navigate slow: ") + error.message);
+    if (sc_tab_navigate(session, page, pages.Url("/stall").c_str(), &tab, &error) != SC_OK)
+      throw std::runtime_error(std::string("navigate to a stalling page: ") + error.message);
     const auto slow = events->wait([&](sc_event_kind kind, const Json& event) {
       return on(SC_EVENT_TAB_LOADING)(kind, event) && event.at("loading") == Json(true);
     });
