@@ -120,6 +120,7 @@ class NetworkControls {
     return NativeURLGlobMatches(pattern,url);
   }
   using AuthProvider=NativeNetworkAuthentication::Provider;
+  void SetAuthenticationAsker(NativeNetworkAuthentication::Asker asker){authentication_->SetAsker(std::move(asker));}
   void SetAuthentication(AuthProvider provider,Result done) {
     if(disposed_||authentication_->failed()||authentication_->pending()){done(false,"Native authentication owner is closed or has pending challenges");return;}
     authentication_->Set(std::move(provider));

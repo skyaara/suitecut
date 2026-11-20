@@ -8,9 +8,40 @@
 
 #include "context_auth_policy.h"
 #include "context_permissions.h"
+#include "include/cef_parser.h"
+
+#include <cstdlib>
 
 namespace suitecut::browser {
 namespace {
+
+// A person's answer to a Fetch.authRequired challenge, as CEF's auth callback.
+class FetchAuthCallback : public CefAuthCallback {
+ public:
+  explicit FetchAuthCallback(std::function<void(CefRefPtr<CefDictionaryValue>)> answer) : answer_(std::move(answer)) {}
+  void Continue(const CefString& username, const CefString& password) override {
+    auto decision = CefDictionaryValue::Create();
+    decision->SetString("response", "ProvideCredentials");
+    decision->SetString("username", username);
+    decision->SetString("password", password);
+    Send(decision);
+  }
+  void Cancel() override {
+    auto decision = CefDictionaryValue::Create();
+    decision->SetString("response", "CancelAuth");
+    Send(decision);
+  }
+
+ private:
+  void Send(CefRefPtr<CefDictionaryValue> decision) {
+    if (!answer_) return;
+    auto answer = std::move(answer_);
+    answer_ = nullptr;
+    answer(decision);
+  }
+  std::function<void(CefRefPtr<CefDictionaryValue>)> answer_;
+  IMPLEMENT_REFCOUNTING(FetchAuthCallback);
+};
 
 // Names a permission request's bits as the SDK's grant names.
 CefRefPtr<CefListValue> PermissionNames(uint32_t requested) {
@@ -247,6 +278,41 @@ auto Source::AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_cre
   };
   hold.cancel = [callback] { callback->Cancel(); };
   if (!person_prompts_->Show("auth", info, std::move(hold))) policy();
+}
+
+auto Source::FetchAuthPrompt(Dict input, Dict today, std::function<void(Dict)> answer) -> void {
+  const auto request = input ? input->GetDictionary("request") : nullptr;
+  const auto challenge = input ? input->GetDictionary("authChallenge") : nullptr;
+  CefRefPtr<CefAuthCallback> callback = new FetchAuthCallback(std::move(answer));
+  const bool provides = today && today->GetType("response") == VTYPE_STRING &&
+                        today->GetString("response") == "ProvideCredentials";
+  auto policy = [callback, today, provides] {
+    if (provides)
+      callback->Continue(today->GetString("username"), today->GetString("password"));
+    else
+      callback->Cancel();
+  };
+  if (!request || !challenge || !browser_) {
+    policy();
+    return;
+  }
+  auto info = CefDictionaryValue::Create();
+  info->SetString("url", request->GetString("url"));
+  info->SetBool("proxy", challenge->GetString("source") == "Proxy");
+  CefURLParts parts;
+  int port = 0;
+  std::string host;
+  if (CefParseURL(challenge->GetString("origin"), parts)) {
+    host = CefString(&parts.host).ToString();
+    const auto port_text = CefString(&parts.port).ToString();
+    const auto scheme = CefString(&parts.scheme).ToString();
+    port = !port_text.empty() ? std::atoi(port_text.c_str()) : scheme == "https" ? 443 : 80;
+  }
+  info->SetString("host", host);
+  info->SetInt("port", port);
+  info->SetString("realm", challenge->GetString("realm"));
+  info->SetString("scheme", challenge->GetString("scheme"));
+  AuthPrompt(browser_, info, provides, callback, std::move(policy));
 }
 
 // {"command":"host","action":"prompts","enabled":bool} and

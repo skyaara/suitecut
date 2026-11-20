@@ -140,7 +140,14 @@ void SettingsAuthenticate(){
     [self=CefRefPtr<Source>(this)](suitecut::NativeContextAuthenticationControls::Value,suitecut::NativeContextAuthenticationControls::Result done){
       if(self->closing_page_||!self->network_){done(false,"Native authentication page is closed");return;}
       auto provider=suitecut::NativeContextAuthentication(self->context_settings_,self->authentication_snapshot_);
-      if(provider){auto original=std::move(provider);provider=[source=self.get(),original=std::move(original)](Dict input){if(source->PersonPromptsOn()){auto deferred=CefDictionaryValue::Create();deferred->SetString("response","Default");return deferred;}if(source->context_auth_open_.load())return original(input);auto canceled=CefDictionaryValue::Create();canceled->SetString("response","CancelAuth");return canceled;};}
+      // With a person's prompts on, a challenge is the person's unless a
+      // configured proxy login answers it; today's answer is the policy.
+      if(provider){auto original=std::make_shared<suitecut::NativeNetworkAuthentication::Provider>(std::move(provider));
+        auto today=[source=self.get(),original](Dict input){if(source->context_auth_open_.load())return (*original)(input);auto canceled=CefDictionaryValue::Create();canceled->SetString("response","CancelAuth");return canceled;};
+        provider=[source=self.get(),today](Dict input){if(!source->PersonPromptsOn())return today(input);auto decision=today(input);const auto challenge=input?input->GetDictionary("authChallenge"):nullptr;
+          if(challenge&&challenge->GetString("source")=="Proxy"&&decision&&decision->GetString("response")=="ProvideCredentials")return decision;
+          auto ask=CefDictionaryValue::Create();ask->SetString("response","Ask");return ask;};
+        self->network_->SetAuthenticationAsker([source=self.get(),today](Dict input,std::function<void(Dict)>answer){source->FetchAuthPrompt(input,today(input),std::move(answer));});}
       self->network_->SetAuthentication(std::move(provider),std::move(done));
     },[self=CefRefPtr<Source>(this)](bool ok,const std::string&error){
       if(self->closing_page_)return;

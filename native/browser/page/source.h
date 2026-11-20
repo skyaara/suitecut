@@ -161,6 +161,9 @@ class Source : public CefClient,
                                  CefRefPtr<CefSelectClientCertificateCallback> callback) override;
   void AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_credentials,
                   CefRefPtr<CefAuthCallback> callback, std::function<void()> policy);
+  // A Fetch.authRequired challenge that a person answers: |today| is what
+  // today's policy would send, |answer| sends a Fetch decision.
+  void FetchAuthPrompt(Dict input, Dict today, std::function<void(Dict)> answer);
   void PersonPromptCommand(int id, const std::string& action, Dict message);
   void OnLoadStart(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, TransitionType) override;
   void OnRenderViewReady(CefRefPtr<CefBrowser>) override;
