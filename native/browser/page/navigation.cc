@@ -84,6 +84,9 @@ auto Source::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> fram
     }
     ClearConsoleRawArguments(true);
     handles_.clear();
+    // The old document's file choosers and media requests go with it.
+    // Chromium resets dialog state only once a page has shown a dialog.
+    if (person_prompts_) person_prompts_->Reset();
   }
 }
 
