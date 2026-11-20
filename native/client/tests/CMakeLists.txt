@@ -170,3 +170,22 @@ endforeach()
 add_custom_target(client-cef-binaries DEPENDS native-client-real-browser
   suitecut-native-cross_browser_features suitecut-native-cef_artifact_workflows
   suitecut-native-cef_restricted_bootstrap suitecut-native-cef_media_workflows)
+# Real-engine frames through embed.h, macOS only. It needs a SuiteCut runtime
+# (an .app or a directory with suitecut-browser and suitecut-session), so the
+# test exists only when one is named:
+#   cmake -DSUITECUT_EMBED_RUNTIME=/path/to/SuiteCut.app ... && ctest -L embed-frames
+# It starts its own session ("embed-frames") with a fresh folder and profile.
+# Not in tests/cef/manifests/cpp.json, whose cases have no platform field.
+if(APPLE)
+  add_executable(suitecut-native-cef_embed_frames integration/cef_embed_frames.cpp)
+  target_include_directories(suitecut-native-cef_embed_frames PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(suitecut-native-cef_embed_frames PRIVATE SuiteCut::Client "-framework IOSurface")
+  add_dependencies(client-cef-binaries suitecut-native-cef_embed_frames)
+  set(SUITECUT_EMBED_RUNTIME "" CACHE PATH "A SuiteCut runtime for the opt-in embed frame test")
+  if(SUITECUT_EMBED_RUNTIME)
+    add_test(NAME cef_embed_frames COMMAND suitecut-native-cef_embed_frames "${SUITECUT_EMBED_RUNTIME}"
+      "${CMAKE_CURRENT_BINARY_DIR}/cef_embed_frames")
+    set_tests_properties(cef_embed_frames PROPERTIES TIMEOUT 240 LABELS "cef;embed-frames"
+      RUN_SERIAL TRUE)
+  endif()
+endif()
