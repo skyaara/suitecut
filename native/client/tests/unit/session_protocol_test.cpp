@@ -401,6 +401,253 @@ void views_and_input(Service& service) {
   host.call("tabs.close", Json{{"page", page}});
 }
 
+// Reads one owner's events from a cursor, keeping what it has seen.
+class Reader {
+ public:
+  Reader(const Service& service, const std::string& owner) : client_(service, Client::host(owner)) {
+    cursor_ = client_.result("events.next", Json{{"cursor", 0}, {"timeoutMs", 0}}).at("cursor").as_int();
+  }
+  // The first event, from now on, that |match| accepts; null after |timeout|.
+  Json wait_for(const std::function<bool(const Json&)>& match, Clock::duration timeout = 5s) {
+    const auto deadline = Clock::now() + timeout;
+    for (;;) {
+      for (; next_ < seen_.size(); ++next_)
+        if (match(seen_[next_])) return seen_[next_++];
+      const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now()).count();
+      if (left <= 0) return Json{};
+      const auto reply = client_.result("events.next", Json{{"cursor", cursor_}, {"timeoutMs", std::min<std::int64_t>(left, 1000)}});
+      cursor_ = reply.at("cursor").as_int();
+      for (const auto& event : reply.at("events").as_array()) seen_.push_back(event);
+    }
+  }
+  const std::vector<Json>& seen() const { return seen_; }
+
+ private:
+  Client client_;
+  std::int64_t cursor_ = 0;
+  std::vector<Json> seen_;
+  std::size_t next_ = 0;
+};
+
+bool is(const Json& event, const char* type) { return event.at("type") == Json(type); }
+std::vector<Json> commands_named(const Service& service, const std::string& name) {
+  std::vector<Json> out;
+  for (const auto& command : service.commands())
+    if (command.at("command") == Json(name)) out.push_back(command);
+  return out;
+}
+
+// Phase 3: loading, titles, stop, cursor, IME and edit commands, dialogs as
+// prompts, popups with their opener, and protocol 0 unchanged.
+void host_events(Service& service) {
+  const std::string owner = "hosting";
+  Client host(service, Client::host(owner));
+  std::set<std::string> capabilities;
+  for (const auto& name : host.hello().at("result").at("capabilities").as_array()) capabilities.insert(name.as_string());
+  check(capabilities.contains("tabs.stop") && capabilities.contains("tab.loading") && capabilities.contains("tab.title") &&
+            capabilities.contains("view.cursor") && capabilities.contains("input.ime") &&
+            capabilities.contains("input.edit") && capabilities.contains("prompts"),
+        "with host events, hello lists them");
+  Reader reader(service, owner);
+
+  // Loading state and title.
+  const int page = page_of(host.result("tabs.open", Json{{"url", "https://host.test/"}}));
+  const auto on_page = [page](const char* type) {
+    return [page, type](const Json& event) {
+      return is(event, type) && ((event.contains("page") && event.at("page") == Json(page)) ||
+                                 (event.contains("view") && event.at("view") == Json(page)) ||
+                                 (event.contains("tab") && event.at("tab").at("page") == Json(page)));
+    };
+  };
+  const auto started = reader.wait_for([&](const Json& event) { return on_page("tab.loading")(event) && event.at("loading") == Json(true); });
+  check(started.is_object() && started.at("progress").as_double() == 0, "a load start is tab.loading");
+  bool tab_first = false;
+  for (const auto& event : reader.seen()) {
+    if (on_page("tab.changed")(event)) { tab_first = true; break; }
+    if (on_page("tab.loading")(event)) break;
+  }
+  check(tab_first, "a new tab's tab.changed comes before its loading events");
+  const auto progress = reader.wait_for([&](const Json& event) { return on_page("tab.loading")(event) && event.at("progress").as_double() == 0.5; });
+  check(progress.is_object() && progress.at("loading") == Json(true), "progress is tab.loading with the progress");
+  const auto title = reader.wait_for(on_page("tab.title"));
+  check(title.is_object() && title.at("title") == Json("Title of https://host.test/"), "a title change is tab.title");
+  const auto stopped = reader.wait_for([&](const Json& event) { return on_page("tab.loading")(event) && event.at("loading") == Json(false); });
+  check(stopped.is_object() && stopped.at("canGoBack") == Json(true) && stopped.at("progress").as_double() == 1,
+        "a finished load is tab.loading with history");
+  const auto listed = tab_of(host, page);
+  check(listed.at("loading") == Json(false) && listed.at("canGoBack") == Json(true) && listed.at("canGoForward") == Json(false),
+        "tabs.list carries loading and history");
+
+  // Stop.
+  check(ok(host.call("tabs.stop", Json{{"page", page}})) && control(tab_of(host, page)) == "human",
+        "tabs.stop answers and, as navigating, takes the tab");
+  check(!commands_named(service, "host").empty() && commands_named(service, "host").back().at("action") == Json("stop"),
+        "tabs.stop reaches the engine");
+  host.call("tabs.release", Json{{"page", page}});
+
+  // IME and edit commands.
+  check(ok(host.call("input.ime.cancel", Json{{"view", page}})) && control(tab_of(host, page)) == "unclaimed",
+        "cancelling a composition does not take the tab");
+  check(ok(host.call("input.ime.set", Json{{"view", page}, {"text", "かな"}, {"selection", Json::array{1, 2}}})) &&
+            control(tab_of(host, page)) == "human",
+        "setting a composition takes the tab");
+  const auto set = commands_named(service, "host").back();
+  check(set.at("action") == Json("ime") && set.at("op") == Json("set") && set.at("text") == Json("かな") &&
+            set.at("selection") == Json(Json::array{1, 2}) && !set.contains("replacement"),
+        "input.ime.set reaches the engine");
+  check(ok(host.call("input.ime.commit", Json{{"view", page}, {"text", "仮名"}, {"replacement", Json::array{0, 2}}})),
+        "input.ime.commit answers");
+  const auto commit = commands_named(service, "host").back();
+  check(commit.at("op") == Json("commit") && commit.at("replacement") == Json(Json::array{0, 2}) && !commit.contains("selection"),
+        "input.ime.commit reaches the engine");
+  check(code(host.call("input.ime.set", Json{{"view", page}, {"text", "x"}, {"selection", Json::array{2, 1}}})) == "invalid_input",
+        "a backwards range is invalid_input");
+  check(code(host.call("input.ime.commit", Json{{"view", page}})) == "invalid_input", "a commit has text");
+  host.call("tabs.release", Json{{"page", page}});
+  check(ok(host.call("input.edit", Json{{"view", page}, {"command", "copy"}})) && control(tab_of(host, page)) == "unclaimed",
+        "copy does not take the tab");
+  check(ok(host.call("input.edit", Json{{"view", page}, {"command", "paste"}})) && control(tab_of(host, page)) == "human",
+        "paste takes the tab");
+  check(commands_named(service, "host").back().at("edit") == Json("paste"), "input.edit reaches the engine");
+  check(code(host.call("input.edit", Json{{"view", page}, {"command", "format"}})) == "invalid_input",
+        "an unknown edit is invalid_input");
+  host.call("tabs.release", Json{{"page", page}});
+
+  // Cursor and IME placement, raised here through the fake engine. The
+  // agent call claims the tab for the agent.
+  const auto evaluate = [&](Client& client, int on, const std::string& expression) {
+    return client.call("agent.call", Json{{"page", on}, {"tool", "evaluate"}, {"arguments", Json{{"expression", expression}}}});
+  };
+  check(ok(evaluate(host, page, "cursor:pointer")), "raise a cursor change");
+  const auto cursor = reader.wait_for(on_page("view.cursor"));
+  check(cursor.is_object() && cursor.at("cursor") == Json("pointer"), "a cursor change is view.cursor");
+  evaluate(host, page, "ime");
+  const auto ime = reader.wait_for(on_page("view.ime"));
+  check(ime.is_object() && ime.at("range") == Json(Json::array{0, 3}) &&
+            ime.at("bounds") == Json(Json::array{Json::array{10, 20, 30, 40}}),
+        "a composition range is view.ime");
+
+  // Dialogs: without a connection that answers prompts, the engine answers.
+  check(commands_named(service, "dialog").empty(), "no dialogs are held while nobody answers prompts");
+  const auto prompt_on = [](int on) {
+    return [on](const Json& event) { return is(event, "prompt.opened") && event.at("prompt").at("page") == Json(on); };
+  };
+  evaluate(host, page, "dialog:alert:unseen");
+  check(!reader.wait_for(prompt_on(page), 600ms).is_object(), "an unheld dialog is no prompt");
+
+  auto prompting = std::make_unique<Client>(service, [&] {
+    auto params = Client::host(owner);
+    params["capabilities"] = Json::array{Json("prompts")};
+    return params;
+  }());
+  require(ok(prompting->hello()), "a host that answers prompts says hello");
+  check(eventually([&] {
+          const auto held = commands_named(service, "dialog");
+          return !held.empty() && held.back().at("action") == Json("subscribe") && held.back().at("enabled") == Json(true) &&
+                 held.back().at("pageId") == Json(page);
+        }),
+        "a prompt host holds its owner's dialogs");
+  Client agent(service, Client::agent(owner));
+  require(ok(agent.hello()), "an agent of the owner says hello");
+
+  evaluate(host, page, "dialog:confirm:Sure?");
+  const auto opened = reader.wait_for(prompt_on(page));
+  require(opened.is_object(), "a held dialog is prompt.opened");
+  const auto& prompt = opened.at("prompt");
+  const auto id = prompt.at("id").as_string();
+  check(prompt.at("kind") == Json("dialog") && prompt.at("dialog") == Json("confirm") && prompt.at("message") == Json("Sure?") &&
+            prompt.at("deadlineMs") == Json(30000) && id.starts_with("dialog:"),
+        "prompt.opened describes the dialog");
+  check(control(tab_of(host, page)) == "agent", "the agent holds the tab that opened the dialog");
+  check(code(agent.call("prompt.answer", Json{{"prompt", id}})) == "invalid_request", "an answer says accept");
+  check(ok(agent.call("prompt.answer", Json{{"prompt", id}, {"accept", true}})), "the agent answers on a tab it holds");
+  const auto answer = commands_named(service, "dialog").back();
+  check(answer.at("action") == Json("answer") && answer.at("accept") == Json(true) && answer.at("promptText") == Json(""),
+        "the answer reaches the engine");
+  const auto closed = reader.wait_for([&](const Json& event) { return is(event, "prompt.closed") && event.at("prompt") == Json(id); });
+  check(closed.is_object() && closed.at("outcome") == Json("accepted") && closed.at("page") == Json(page),
+        "an answered dialog is prompt.closed, accepted");
+  check(code(host.call("prompt.answer", Json{{"prompt", id}, {"accept", false}})) == "prompt_gone",
+        "a second answer is prompt_gone");
+  check(code(host.call("prompt.answer", Json{{"prompt", "nope"}, {"accept", true}})) == "unknown_prompt",
+        "an unknown prompt is unknown_prompt");
+
+  const auto next_prompt = [&] {
+    const auto event = reader.wait_for([&](const Json& e) { return is(e, "prompt.opened"); });
+    require(event.is_object(), "a dialog is prompt.opened");
+    return event.at("prompt").at("id").as_string();
+  };
+  // The person holds the tab: the agent may not answer, the host may.
+  evaluate(host, page, "dialog:prompt:Name?");
+  const auto named = next_prompt();
+  host.call("tabs.take", Json{{"page", page}});
+  check(code(agent.call("prompt.answer", Json{{"prompt", named}, {"accept", true}})) == "forbidden",
+        "an agent may not answer on a tab the person holds");
+  {
+    Client stranger(service, Client::host("someone-else"));
+    check(code(stranger.call("prompt.answer", Json{{"prompt", named}, {"accept", true}})) == "unknown_prompt",
+          "another owner's prompt is unknown_prompt");
+  }
+  check(ok(host.call("prompt.answer", Json{{"prompt", named}, {"accept", true}})) && control(tab_of(host, page)) == "human",
+        "the host answers; answering does not change control");
+  check(commands_named(service, "dialog").back().at("promptText") == Json("default"),
+        "a prompt answered without text keeps its default");
+  check(reader.wait_for([&](const Json& e) { return is(e, "prompt.closed") && e.at("prompt") == Json(named); }).is_object(),
+        "the host's answer closes the prompt");
+  host.call("tabs.release", Json{{"page", page}});
+
+  // A navigation resets a held dialog: it closes, unanswered.
+  evaluate(host, page, "dialog:alert:soon gone");
+  const auto reset = next_prompt();
+  host.call("tabs.navigate", Json{{"page", page}, {"url", "https://host.test/next"}});
+  const auto reset_closed = reader.wait_for([&](const Json& e) { return is(e, "prompt.closed") && e.at("prompt") == Json(reset); });
+  check(reset_closed.is_object() && reset_closed.at("outcome") == Json("closed"), "a navigation closes a held dialog");
+  check(code(host.call("prompt.answer", Json{{"prompt", reset}, {"accept", true}})) == "prompt_gone",
+        "a closed prompt is prompt_gone");
+  host.call("tabs.release", Json{{"page", page}});
+
+  // A popup has its opener, and its dialogs are held too.
+  evaluate(host, page, "popup");
+  const auto popup_event = reader.wait_for([&](const Json& e) {
+    return is(e, "tab.changed") && e.at("tab").contains("opener") && e.at("tab").at("opener") == Json(page);
+  });
+  require(popup_event.is_object(), "a popup is tab.changed with its opener");
+  const int popup = page_of(popup_event.at("tab"));
+  check(tab_of(host, popup).at("opener") == Json(page), "tabs.list carries a popup's opener");
+  check(eventually([&] {
+          for (const auto& held : commands_named(service, "dialog"))
+            if (held.at("pageId") == Json(popup) && held.at("enabled") == Json(true)) return true;
+          return false;
+        }),
+        "a popup's dialogs are held while a prompt host is connected");
+
+  // Protocol 0 keeps its tab fields.
+  {
+    Connection old(service.socket());
+    const auto reply = old.call(Json{{"owner", owner}, {"tabs", Json{{"op", "list"}}}});
+    bool plain = ok(reply);
+    for (const auto& tab : plain ? reply.at("result").at("tabs").as_array() : Json::array{})
+      plain = plain && !tab.contains("opener") && !tab.contains("loading") && !tab.contains("canGoBack") &&
+              !tab.contains("canGoForward") && tab.contains("title");
+    check(plain, "protocol 0 tabs carry only the fields they always had");
+  }
+
+  // The last prompt host leaves: what it held is dismissed, and dialogs go
+  // back to default answers.
+  evaluate(host, page, "dialog:confirm:left open");
+  const auto left = next_prompt();
+  prompting.reset();
+  const auto dismissed = reader.wait_for([&](const Json& e) { return is(e, "prompt.closed") && e.at("prompt") == Json(left); });
+  check(dismissed.is_object() && dismissed.at("outcome") == Json("dismissed"), "a prompt host leaving dismisses its prompts");
+  check(eventually([&] {
+          const auto held = commands_named(service, "dialog");
+          return !held.empty() && held.back().at("action") == Json("subscribe") && held.back().at("enabled") == Json(false);
+        }),
+        "with no prompt host, dialogs are answered by default again");
+  host.call("tabs.close", Json{{"page", popup}});
+  host.call("tabs.close", Json{{"page", page}});
+}
+
 void close_and_protocol0_off() {
   Service service(binary, engine, "only-one", {"--protocol-0", "off"});
   require(ok(service.start()), "start a protocol 1 only service");
@@ -499,6 +746,8 @@ int main(int argc, char** argv) {
       reader_resync(service);
       std::cerr << "-- views_and_input\n";
       views_and_input(service);
+      std::cerr << "-- host_events\n";
+      host_events(service);
     }
     std::cerr << "-- close_and_protocol0_off\n";
     close_and_protocol0_off();

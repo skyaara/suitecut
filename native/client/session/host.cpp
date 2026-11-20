@@ -37,6 +37,15 @@ Host::Host(HostOptions options)
     : options_(std::move(options)),
       browser_(std::make_unique<Browser>(Browser::launch(options_.launch))),
       transport_(browser_->transport()) {
+  // An engine that sends host events says so when it is ready; an older one
+  // ignores the switch and this session offers none of them.
+  try {
+    const auto ready = Json::parse(transport_->ready().header);
+    host_events_ = ready.contains("capabilities") && ready.at("capabilities").is_object() &&
+                   ready.at("capabilities").contains("hostEvents") &&
+                   ready.at("capabilities").at("hostEvents") == Json(true);
+  } catch (...) {
+  }
   // Page 1 is the engine's main page; it stays blank and belongs to nobody.
   // Every owner's tab is a page made for it.
   const auto catalog = agent_tool_catalog(options_.tools);
@@ -218,6 +227,13 @@ Json Host::Open(const std::string& owner, Control control, const std::optional<s
     Changed();
     EmitTab(page, tab);
   }
+  bool hold = false;
+  {
+    std::lock_guard lock(state_);
+    const auto found = prompt_hosts_.find(owner);
+    hold = found != prompt_hosts_.end() && !found->second.empty();
+  }
+  if (hold) HoldDialogs({page}, true);
   // Navigation runs without the agent lock: a slow page doesn't hold the
   // owner's agent calls. Its outcome is the tab's state, which watch reports.
   if (url) NavigateEngine(page, Json{{"command", "navigate"}, {"url", *url}});
@@ -243,6 +259,13 @@ void Host::CloseTab(const std::string& owner, int page) {
 Json Host::Navigate(const std::string& owner, int page, Json fields) {
   Take(owner, page);
   NavigateEngine(page, std::move(fields));
+  return Describe(page);
+}
+
+Json Host::Stop(const std::string& owner, int page) {
+  if (!host_events_) throw Refused("unsupported", "This engine cannot stop a load for a host");
+  Take(owner, page);
+  Engine(page, Json{{"command", "host"}, {"action", "stop"}});
   return Describe(page);
 }
 
@@ -381,34 +404,132 @@ Json Host::NextEvents(std::uint64_t reader, const std::string& owner, std::uint6
     latest = events.sequence;
   }
   // A tab.changed carries the tab as it is now, with its title read from
-  // the page; several changes to one tab in a reply read as one.
+  // the page; several changes to one tab in a reply read as one, where the
+  // first was, so a tab still comes before its other events.
   Json::array out;
-  std::set<int> described;
-  for (auto it = picked.rbegin(); it != picked.rend(); ++it) {
-    auto event = *it;
+  std::map<int, std::size_t> described;  // page -> its tab.changed in out
+  for (auto& event : picked) {
     if (event.at("type") == Json("tab.changed")) {
       const int page = static_cast<int>(event.at("tab").at("page").as_int());
-      if (!described.insert(page).second) continue;
-      try {
-        event["tab"]["title"] = Title(page);
-      } catch (...) {
+      if (const auto found = described.find(page); found != described.end()) {
+        out[found->second] = std::move(event);
+        continue;
       }
+      described.emplace(page, out.size());
     }
     out.push_back(std::move(event));
   }
-  std::reverse(out.begin(), out.end());
+  for (const auto& [page, at] : described) {
+    try {
+      out[at]["tab"]["title"] = Title(page);
+    } catch (...) {
+    }
+  }
   return Json{{"events", std::move(out)}, {"cursor", static_cast<std::int64_t>(latest)}};
 }
 
 void Host::ReaderGone(std::uint64_t reader) {
-  std::lock_guard lock(state_);
-  for (auto& [owner, events] : events_) {
-    (void)owner;
-    if (!events.readers.erase(reader) || !events.readers.empty()) continue;
-    // With nobody reading, only state is kept: the next reader resyncs.
-    events.kept.clear();
-    events.floor = events.sequence;
+  std::vector<int> release;
+  {
+    std::lock_guard lock(state_);
+    for (auto& [owner, events] : events_) {
+      (void)owner;
+      if (!events.readers.erase(reader) || !events.readers.empty()) continue;
+      // With nobody reading, only state is kept: the next reader resyncs.
+      events.kept.clear();
+      events.floor = events.sequence;
+    }
+    for (auto& [owner, connections] : prompt_hosts_) {
+      if (!connections.erase(reader) || !connections.empty()) continue;
+      // The last window that shows this owner's prompts went: its pages go
+      // back to default answers, and what they hold is dismissed.
+      for (const auto& [id, tab] : tabs_)
+        if (tab.owner == owner) {
+          release.push_back(id);
+          DropPrompts(id, "dismissed");
+        }
+    }
   }
+  if (!release.empty()) HoldDialogs(release, false);
+}
+
+void Host::PromptHost(std::uint64_t connection, const std::string& owner) {
+  std::vector<int> pages;
+  {
+    std::lock_guard lock(state_);
+    auto& connections = prompt_hosts_[owner];
+    if (!connections.insert(connection).second || connections.size() != 1) return;
+    for (const auto& [id, tab] : tabs_)
+      if (tab.owner == owner) pages.push_back(id);
+  }
+  HoldDialogs(pages, true);
+}
+
+void Host::HoldDialogs(const std::vector<int>& pages, bool hold) {
+  for (const int page : pages) {
+    try {
+      Engine(page, Json{{"command", "dialog"}, {"action", "subscribe"}, {"enabled", hold}}, std::chrono::milliseconds(5000));
+    } catch (...) {
+      // A page that closed meanwhile holds nothing.
+    }
+  }
+}
+
+void Host::DropPrompts(int page, const std::string& outcome) {
+  for (auto it = prompts_.begin(); it != prompts_.end();) {
+    if (it->second.page != page) {
+      ++it;
+      continue;
+    }
+    Emit(it->second.owner, Json{{"type", "prompt.closed"},
+                                {"prompt", it->first},
+                                {"page", page},
+                                {"outcome", it->second.outcome.empty() ? outcome : it->second.outcome}});
+    it = prompts_.erase(it);
+  }
+}
+
+Json Host::AnswerPrompt(const std::string& owner, bool host, const std::string& prompt, const Json& answer) {
+  if (!answer.is_object() || !answer.contains("accept") || !answer.at("accept").is_bool())
+    throw Refused("invalid_request", "A dialog's answer has accept: true or false");
+  if (answer.contains("text") && !answer.at("text").is_string()) throw Refused("invalid_request", "text is a string");
+  const bool accept = answer.at("accept").as_bool();
+  std::string text;
+  int page = 0;
+  std::string engine_id;
+  {
+    std::lock_guard lock(state_);
+    const auto found = prompts_.find(prompt);
+    if (found == prompts_.end()) {
+      if (prompt.starts_with("dialog:")) throw Refused("prompt_gone", "The prompt was answered or has closed");
+      throw Refused("unknown_prompt", "No such prompt");
+    }
+    auto& held = found->second;
+    if (held.owner != owner) throw Refused("unknown_prompt", "No such prompt");
+    if (!held.outcome.empty()) throw Refused("prompt_gone", "The prompt was already answered");
+    if (!host) {
+      const auto tab = tabs_.find(held.page);
+      if (tab == tabs_.end() || tab->second.control != Control::agent)
+        throw Refused("forbidden", "An agent answers a dialog only on a tab it holds");
+    }
+    held.outcome = accept ? "accepted" : "dismissed";
+    // A prompt dialog answered without text keeps its default value.
+    text = answer.contains("text") ? answer.at("text").as_string() : held.info.at("defaultValue").as_string();
+    page = held.page;
+    engine_id = held.engine_id;
+  }
+  try {
+    Engine(page, Json{{"command", "dialog"}, {"action", "answer"}, {"dialogId", engine_id}, {"accept", accept},
+                      {"promptText", text}});
+  } catch (const std::exception& error) {
+    std::lock_guard lock(state_);
+    if (const auto found = prompts_.find(prompt); found != prompts_.end()) {
+      found->second.outcome.clear();
+      DropPrompts(page, "closed");
+    }
+    throw Refused("prompt_gone", error.what());
+  }
+  return Json{{"answered", true}};
 }
 
 std::string Host::AddGrant(Grant grant) {
@@ -468,16 +589,25 @@ Json Host::Describe(int page) {
   return TabJson(page, tab, Title(page));
 }
 
-Json Host::TabJson(int page, const Tab& tab, const std::string& title) {
-  return Json{{"page", page},
-              {"url", tab.url},
-              {"title", title},
-              {"control", control_name(tab.control)},
-              {"generation", static_cast<std::int64_t>(tab.generation)}};
+Json Host::TabJson(int page, const Tab& tab, const std::string& title) const {
+  Json out{{"page", page},
+           {"url", tab.url},
+           {"title", title},
+           {"control", control_name(tab.control)},
+           {"generation", static_cast<std::int64_t>(tab.generation)}};
+  // Protocol 1 only; protocol 0 replies leave these out.
+  if (tab.opener) out["opener"] = tab.opener;
+  if (host_events_) {
+    out["loading"] = tab.loading;
+    out["canGoBack"] = tab.can_go_back;
+    out["canGoForward"] = tab.can_go_forward;
+  }
+  return out;
 }
 
-// Titles are read when asked for rather than tracked: the engine reports
-// navigations but not title changes. A page that can't answer has none.
+// Listings read document.title when asked, as protocol 0 always has; a page
+// that can't answer has none. Host events' tab.title carries the engine's own
+// title instead, which for a page without one may be its URL.
 std::string Host::Title(int page) {
   try {
     const auto reply = Engine(page, Json{{"command", "devtools"}, {"method", "Runtime.evaluate"},
@@ -593,10 +723,17 @@ void Host::Pump() {
       return;
     }
     if (!packet) continue;
+    std::vector<int> hold;  // popups whose dialogs a prompt host should see
     try {
       const auto header = Json::parse(packet->header);
       const auto type = header.at("type").as_string();
-      if (type == "navigation" && header.contains("pageId")) {
+      if ((type == "host" || type == "dialog") && header.contains("pageId") && !packet->payload.empty()) {
+        const int page = static_cast<int>(header.at("pageId").as_int());
+        const auto body = Json::parse(std::string(packet->payload.begin(), packet->payload.end()));
+        std::lock_guard lock(state_);
+        if (type == "host") HostPacket(page, body);
+        else DialogPacket(page, body);
+      } else if (type == "navigation" && header.contains("pageId")) {
         const int page = static_cast<int>(header.at("pageId").as_int());
         std::lock_guard lock(state_);
         if (auto found = tabs_.find(page); found != tabs_.end()) {
@@ -620,15 +757,19 @@ void Host::Pump() {
           tab.owner = found->second.owner;
           tab.control = found->second.control;
           tab.adopted = false;
+          tab.opener = opener;
           const auto& placed = tabs_.emplace(page, std::move(tab)).first->second;
           Changed();
           EmitTab(page, placed);
+          const auto hosts = prompt_hosts_.find(placed.owner);
+          if (hosts != prompt_hosts_.end() && !hosts->second.empty()) hold.push_back(page);
         } else if (name == "page-closed") {
           if (const auto found = tabs_.find(page); found != tabs_.end()) {
             const auto owner = found->second.owner;
             if (found->second.adopted) gone_[owner].push_back(page);
             tabs_.erase(found);
             views_.erase(page);
+            DropPrompts(page, "closed");
             Changed();
             Emit(owner, Json{{"type", "tab.closed"}, {"page", page}});
           }
@@ -637,6 +778,75 @@ void Host::Pump() {
     } catch (...) {
       // A malformed or unexpected event changes no tab.
     }
+    if (!hold.empty()) HoldDialogs(hold, true);
+  }
+}
+
+// With state_ held. Loading, progress and titles update the tab; cursors and
+// IME ranges go to the owner's windows as they come.
+void Host::HostPacket(int page, const Json& event) {
+  const auto found = tabs_.find(page);
+  if (found == tabs_.end() || !event.contains("event") || !event.at("event").is_string()) return;
+  auto& tab = found->second;
+  const auto& name = event.at("event").as_string();
+  auto loading = [&] {
+    return Json{{"type", "tab.loading"}, {"page", page}, {"loading", tab.loading}, {"progress", tab.progress},
+                {"canGoBack", tab.can_go_back}, {"canGoForward", tab.can_go_forward}};
+  };
+  if (name == "loading") {
+    tab.loading = event.at("loading").as_bool();
+    tab.can_go_back = event.at("canGoBack").as_bool();
+    tab.can_go_forward = event.at("canGoForward").as_bool();
+    if (tab.loading) tab.progress = 0;
+    Emit(tab.owner, loading());
+  } else if (name == "progress") {
+    tab.progress = event.at("progress").as_double();
+    Emit(tab.owner, loading());
+  } else if (name == "title") {
+    Emit(tab.owner, Json{{"type", "tab.title"}, {"page", page}, {"title", event.at("title")}});
+  } else if (name == "cursor") {
+    Json out{{"type", "view.cursor"}, {"view", page}, {"cursor", event.at("cursor")}};
+    for (const auto* key : {"hotspotX", "hotspotY", "width", "height"})
+      if (event.contains(key)) out[key] = event.at(key);
+    Emit(tab.owner, std::move(out));
+  } else if (name == "ime") {
+    Emit(tab.owner, Json{{"type", "view.ime"}, {"view", page}, {"range", event.at("range")}, {"bounds", event.at("bounds")}});
+  }
+}
+
+// With state_ held. The engine's held dialogs become prompts.
+void Host::DialogPacket(int page, const Json& dialog) {
+  const auto found = tabs_.find(page);
+  if (found == tabs_.end() || !dialog.contains("id") || !dialog.at("id").is_string()) return;
+  const auto id = "dialog:" + std::to_string(page) + ":" + dialog.at("id").as_string();
+  const auto state = dialog.contains("state") && dialog.at("state").is_string() ? dialog.at("state").as_string() : "";
+  if (state == "opened") {
+    auto text = [&](const char* key) {
+      return dialog.contains(key) && dialog.at(key).is_string() ? dialog.at(key).as_string() : std::string();
+    };
+    Prompt prompt;
+    prompt.owner = found->second.owner;
+    prompt.page = page;
+    prompt.engine_id = dialog.at("id").as_string();
+    prompt.info = Json{{"id", id},          {"page", page},
+                       {"kind", "dialog"},  {"dialog", text("type")},
+                       {"message", text("message")}, {"defaultValue", text("defaultValue")},
+                       {"url", text("url")},
+                       {"deadlineMs", 30000}};  // the engine's, dialog_controls.h
+    Emit(prompt.owner, Json{{"type", "prompt.opened"}, {"prompt", prompt.info}});
+    prompts_[id] = std::move(prompt);
+  } else if (state == "closed") {
+    const auto held = prompts_.find(id);
+    if (held == prompts_.end()) return;
+    // Unanswered, it closed at the engine's deadline, or a navigation reset it.
+    const bool reset = dialog.contains("reason") && dialog.at("reason") == Json("reset");
+    Emit(held->second.owner, Json{{"type", "prompt.closed"},
+                                  {"prompt", id},
+                                  {"page", page},
+                                  {"outcome", !held->second.outcome.empty() ? held->second.outcome
+                                              : reset                      ? "closed"
+                                                                           : "timeout"}});
+    prompts_.erase(held);
   }
 }
 

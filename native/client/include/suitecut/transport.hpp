@@ -39,6 +39,10 @@ struct LaunchOptions {
   std::size_t max_pending = 0;
   std::size_t max_event_bytes = 0;
   std::size_t max_payload_bytes = 0;
+  // SuiteCut engine only: also send "host" packets (loading state, title,
+  // cursor, IME composition range) for a window that shows its pages. Off by
+  // default, so a client that does not read them never receives them.
+  bool host_events = false;
 };
 struct Packet {
   std::string header;

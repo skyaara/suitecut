@@ -22,6 +22,7 @@ int main(void) {
   sc_frame frame;
   sc_tab tab;
   sc_pointer_event pointer;
+  sc_ime_composition composition;
   sc_error error;
   char code[32];
   sc_runtime_options_init(&runtime);
@@ -31,6 +32,11 @@ int main(void) {
   sc_frame_init(&frame);
   sc_tab_init(&tab);
   sc_pointer_event_init(&pointer);
+  sc_ime_composition_init(&composition);
+  EXPECT(composition.struct_size == sizeof composition && composition.abi_version == SC_EMBED_ABI_VERSION);
+  EXPECT(composition.selection_start == -1 && composition.selection_end == -1 && composition.replace_start == -1 &&
+         composition.replace_end == -1 && composition.text == NULL && composition.size == 0);
+  EXPECT(SC_SESSION_PROMPTS == 2u && SC_EVENT_PROMPT_CLOSED == 10 && SC_EDIT_DELETE == 7);
   EXPECT(sc_embed_abi_version() == SC_EMBED_ABI_VERSION && sc_abi_version() == SC_ABI_VERSION);
   EXPECT(runtime.struct_size == sizeof runtime && runtime.abi_version == SC_EMBED_ABI_VERSION);
   EXPECT(runtime.protocol_min == 1 && runtime.protocol_max == 1);

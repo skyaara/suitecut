@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
     suitecut::session::HostOptions host;
     host.launch.backend = suitecut::BrowserBackend::cef;
     host.launch.scale = 2;
+    host.launch.host_events = true;  // loading, titles, cursors and IME for hosts' windows
     suitecut::session::ServiceOptions service;
     suitecut::control::SessionOptions session;
     session.idle_ms = 30 * 60 * 1000;

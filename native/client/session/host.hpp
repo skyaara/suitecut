@@ -42,6 +42,20 @@ struct Tab {
   std::uint64_t generation = 1;
   std::string url = "about:blank";
   bool adopted = true;  // false until the owner's agent has a handle for a popup
+  int opener = 0;       // the page that opened this popup, if any
+  // From the engine's host events (protocol 1 only).
+  bool loading = false, can_go_back = false, can_go_forward = false;
+  double progress = 0;
+};
+
+// A question the page asked that a person, or for dialogs the agent driving
+// the tab, answers: today JavaScript dialogs.
+struct Prompt {
+  std::string owner;
+  int page = 0;
+  std::string engine_id;  // the engine's dialog id on that page
+  Json info;              // what prompt.opened carries
+  std::string outcome;    // set once answered through the session
 };
 
 // |maximum| 0 means any length.
@@ -89,6 +103,8 @@ class Host {
   void CloseTab(const std::string& owner, int page);
   // A person's navigation: fields are the engine command and its arguments.
   Json Navigate(const std::string& owner, int page, Json fields);
+  // Stops the tab's load; a person's action, so it takes the tab.
+  Json Stop(const std::string& owner, int page);
   Json Take(const std::string& owner, int page);
   // Lets go of a tab held as |from|; a tab held otherwise is left as it is.
   Json Release(const std::string& owner, int page, Control from);
@@ -125,6 +141,17 @@ class Host {
                   std::chrono::milliseconds timeout);
   void ReaderGone(std::uint64_t reader);
 
+  // Whether the engine sends host events (loading, titles, cursors, IME).
+  bool HostEvents() const { return host_events_; }
+
+  // Prompts. While an owner has a connection that said it shows prompts,
+  // that owner's pages hold their dialogs for an answer (the engine's 30 s
+  // deadline still applies); with none, dialogs get their default answers,
+  // as before. |host| is false for an agent, which may answer only a dialog
+  // on a tab it holds.
+  void PromptHost(std::uint64_t connection, const std::string& owner);
+  Json AnswerPrompt(const std::string& owner, bool host, const std::string& prompt, const Json& answer);
+
   // Grants: one owner, chosen tool groups, an optional lifetime.
   struct Grant {
     std::string owner;
@@ -156,7 +183,13 @@ class Host {
   void TakeLocked(int page, Tab& tab);
   Json Engine(int page, Json fields, std::chrono::milliseconds timeout = std::chrono::milliseconds(10000));
   Tab& Owned(const std::string& owner, int page);
-  static Json TabJson(int page, const Tab& tab, const std::string& title);
+  Json TabJson(int page, const Tab& tab, const std::string& title) const;
+  // Turns dialog holding on or off for |pages|, outside state_.
+  void HoldDialogs(const std::vector<int>& pages, bool hold);
+  // With state_ held: the page's prompts are gone, with |outcome|.
+  void DropPrompts(int page, const std::string& outcome);
+  void HostPacket(int page, const Json& event);
+  void DialogPacket(int page, const Json& dialog);
   // With state_ held: the change counter, and an event for |owner|.
   void Changed();
   void Emit(const std::string& owner, Json event);
@@ -185,6 +218,9 @@ class Host {
   // Pages the engine closed that an owner's driver still holds, until
   // SyncPages drops them.
   std::map<std::string, std::vector<int>> gone_;
+  bool host_events_ = false;
+  std::map<std::string, Prompt> prompts_;
+  std::map<std::string, std::set<std::uint64_t>> prompt_hosts_;  // owner -> connections that show prompts
 
   std::atomic<bool> stopping_{false}, closed_{false}, engine_lost_{false};
   std::thread pump_;

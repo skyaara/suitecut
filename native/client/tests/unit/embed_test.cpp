@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <sys/un.h>
 #include <fstream>
+#include <set>
 #include <thread>
 
 #include "session_harness.hpp"
@@ -118,7 +119,7 @@ struct Opened {
   sc_error error{};
 };
 Opened open(const sc_runtime_info* runtime, const std::string& owner, sc_session_role role = SC_ROLE_HOST,
-            const char* grant = nullptr, bool start = false) {
+            const char* grant = nullptr, bool start = false, uint32_t flags = 0) {
   static const auto dir = (root / "run").string(), profile = (root / "profile").string();
   sc_session_options options;
   sc_session_options_init(&options);
@@ -132,7 +133,7 @@ Opened open(const sc_runtime_info* runtime, const std::string& owner, sc_session
   options.client_name = "embed_test";
   options.scale = 2;
   options.timeout_ms = 10000;
-  if (start) options.flags = SC_SESSION_START;
+  options.flags = flags | (start ? SC_SESSION_START : 0u);
   Opened opened;
   opened.status = sc_session_open(&options, &opened.session, &opened.error);
   return opened;
@@ -360,6 +361,107 @@ void session_flow() {
   sink.name = "com.example.receiver";
   check(sc_view_attach(host, &view_options, &view, &error) == SC_UNSUPPORTED, "Mach sinks are macOS only");
 #endif
+
+  // Host events and prompts (phase 3).
+  {
+    check(open(nullptr, "host", SC_ROLE_HOST, nullptr, false, 4u).status == SC_INVALID_ARGUMENT,
+          "an unknown session flag is refused");
+    auto prompts = open(nullptr, "host", SC_ROLE_HOST, nullptr, false, SC_SESSION_PROMPTS);
+    require(prompts.status == SC_OK, std::string("a host that answers prompts joins: ") + prompts.error.message);
+    sc_json* described = nullptr;
+    require(sc_session_describe(host, &described, &error) == SC_OK, "describe");
+    const auto hello = Json::parse(text(described));
+    std::set<std::string> capabilities;
+    for (const auto& name : hello.at("capabilities").as_array()) capabilities.insert(name.as_string());
+    check(capabilities.contains("tabs.stop") && capabilities.contains("input.ime") && capabilities.contains("prompts"),
+          "the session lists host events");
+    // Drain to now, so what follows is this section's.
+    while (sc_session_next_event(host, 100, &event, &error) == SC_OK) sc_event_destroy(event);
+    sc_tab loaded;
+    sc_tab_init(&loaded);
+    require(sc_tab_open(host, "https://embed.test/", 0, &loaded, &error) == SC_OK, std::string("open: ") + error.message);
+    bool finished = false, titled = false;
+    while ((!finished || !titled) && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
+      if (sc_event_page(event) == loaded.page) {
+        size_t size = 0;
+        const auto body = Json::parse(std::string_view(sc_event_json(event, &size), size));
+        if (sc_event_kind_of(event) == SC_EVENT_TAB_LOADING && body.at("loading") == Json(false)) finished = true;
+        if (sc_event_kind_of(event) == SC_EVENT_TAB_TITLE && body.at("title") == Json("Title of https://embed.test/"))
+          titled = true;
+      }
+      sc_event_destroy(event);
+    }
+    check(finished && titled, "loading and title arrive as SC_EVENT_TAB_LOADING and SC_EVENT_TAB_TITLE");
+    check(sc_tab_stop(host, loaded.page, &loaded, &error) == SC_OK && loaded.control == SC_CONTROL_HUMAN,
+          "sc_tab_stop answers and takes the tab");
+    sc_tab_release(host, loaded.page, &loaded, &error);
+
+    sc_view_options ime_options;
+    sc_view_options_init(&ime_options);
+    ime_options.page = loaded.page;
+    sc_view* typing = nullptr;
+    require(sc_view_attach(host, &ime_options, &typing, &error) == SC_OK, "an input view for IME");
+    sc_ime_composition composition;
+    sc_ime_composition_init(&composition);
+    composition.text = "\xe3\x81\x8b";  // か
+    composition.size = 3;
+    composition.selection_start = composition.selection_end = 1;
+    check(sc_view_ime_set(typing, &composition, &error) == SC_OK, std::string("sc_view_ime_set: ") + error.message);
+    composition.replace_start = 0;
+    composition.replace_end = 1;
+    check(sc_view_ime_commit(typing, &composition, &error) == SC_OK, "sc_view_ime_commit");
+    check(sc_view_ime_cancel(typing, &error) == SC_OK, "sc_view_ime_cancel");
+    composition.selection_start = 2;
+    composition.selection_end = 1;
+    check(sc_view_ime_set(typing, &composition, &error) == SC_INVALID_ARGUMENT, "a backwards selection is invalid");
+    check(sc_view_edit(typing, SC_EDIT_SELECT_ALL, &error) == SC_OK && sc_view_edit(typing, SC_EDIT_COPY, &error) == SC_OK,
+          "sc_view_edit");
+    check(sc_view_edit(typing, static_cast<sc_edit_command>(99), &error) == SC_INVALID_ARGUMENT, "an unknown edit is invalid");
+    std::vector<std::string> ops;
+    for (const auto& command : commands(profile))
+      if (command.at("command") == Json("host") && command.at("pageId") == Json(loaded.page))
+        ops.push_back(command.at("action").as_string() + ":" +
+                      (command.contains("op") ? command.at("op").as_string()
+                       : command.contains("edit") ? command.at("edit").as_string() : ""));
+    check(ops == std::vector<std::string>{"stop:", "ime:set", "ime:commit", "ime:cancel", "edit:selectAll", "edit:copy"},
+          "stop, IME and edits reach the engine in order");
+    sc_view_destroy(typing);
+    sc_tab_release(host, loaded.page, &loaded, &error);
+
+    // A dialog, held because a prompt host is connected, answered by the host.
+    const char raise[] = R"({"expression":"dialog:confirm:Proceed?"})";
+    sc_json* called = nullptr;
+    require(sc_agent_call(host, loaded.page, "evaluate", raise, sizeof raise - 1, 0, 0, &called, &error) == SC_OK,
+            std::string("raise a dialog: ") + error.message);
+    sc_json_destroy(called);
+    std::string id;
+    while (id.empty() && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
+      if (sc_event_kind_of(event) == SC_EVENT_PROMPT_OPENED && sc_event_page(event) == loaded.page) {
+        size_t size = 0;
+        const auto body = Json::parse(std::string_view(sc_event_json(event, &size), size));
+        if (body.at("prompt").at("message") == Json("Proceed?")) id = body.at("prompt").at("id").as_string();
+      }
+      sc_event_destroy(event);
+    }
+    require(!id.empty(), "the dialog is SC_EVENT_PROMPT_OPENED");
+    check(sc_prompt_answer_dialog(host, id.c_str(), 0, nullptr, &error) == SC_OK, "sc_prompt_answer_dialog");
+    check(sc_prompt_answer_dialog(host, id.c_str(), 1, nullptr, &error) == SC_REFUSED && refusal(error) == "prompt_gone",
+          "a second answer is prompt_gone");
+    bool closed = false;
+    while (!closed && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
+      if (sc_event_kind_of(event) == SC_EVENT_PROMPT_CLOSED && sc_event_page(event) == loaded.page) {
+        size_t size = 0;
+        const auto body = Json::parse(std::string_view(sc_event_json(event, &size), size));
+        closed = body.at("prompt") == Json(id) && body.at("outcome") == Json("dismissed");
+      }
+      sc_event_destroy(event);
+    }
+    check(closed, "the answered dialog is SC_EVENT_PROMPT_CLOSED, dismissed");
+    check(sc_prompt_answer_dialog(host, nullptr, 1, nullptr, &error) == SC_INVALID_ARGUMENT, "a prompt is named");
+    sc_session_close(prompts.session, 0, &error);
+    sc_session_destroy(prompts.session);
+    check(sc_tab_close(host, loaded.page, &error) == SC_OK, "close the host events tab");
+  }
 
   // Closing: the agent may not shut the session down; the host may.
   check(sc_session_close(agent.session, 1, &error) == SC_REFUSED && refusal(error) == "forbidden",

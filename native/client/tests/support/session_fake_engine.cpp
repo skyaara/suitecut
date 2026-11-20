@@ -9,7 +9,15 @@
 //   popup        open a popup: a page-created event whose opener is this page
 //   close-self   report this page closed, as if the page called window.close()
 //   exit         stop the engine without answering
+//   dialog:TYPE:MESSAGE  open a JavaScript dialog (alert, confirm, prompt or
+//                beforeunload); while the page's dialogs are subscribed it is
+//                held for an answer and reported, otherwise answered by default
+//   cursor:NAME  report a cursor change (host events only)
+//   ime          report an IME composition range (host events only)
 //   anything else answers 42
+// With --suitecut-host-events=1 it reports hostEvents in ready, sends host
+// packets (loading, progress, title) around each navigation, takes host
+// commands, and reports held dialogs closed when a navigation resets them.
 // Navigating to a URL containing "fail" answers with an engine error. A
 // command for a page that is not open fails, as it does in the engine.
 //
@@ -137,17 +145,22 @@ void packet(Json header, const std::string& data = {}) {
   std::cout.write(prefix, 4).write(text.data(), static_cast<std::streamsize>(text.size()));
   std::cout.write(data.data(), static_cast<std::streamsize>(data.size())).flush();
 }
+bool host_events = false;
 void ready(int page) {
+  Json capabilities{{"frameSubscription", true}};
+  if (host_events) capabilities["hostEvents"] = true;
   packet(Json{{"type", "ready"},
               {"pageId", page},
               {"cefVersion", "session-fake"},
               {"timestampMs", 1},
-              {"capabilities", Json{{"frameSubscription", true}}}});
+              {"capabilities", std::move(capabilities)}});
 }
 void respond(std::int64_t id, bool ok, const std::string& error, const Json& result) {
   packet(Json{{"type", "response"}, {"id", id}, {"ok", ok}, {"error", error}}, result.dump());
 }
 void context_event(const Json& event) { packet(Json{{"type", "context"}}, event.dump()); }
+void host_event(int page, const Json& event) { packet(Json{{"type", "host"}, {"pageId", page}}, event.dump()); }
+void dialog_event(int page, const Json& dialog) { packet(Json{{"type", "dialog"}, {"pageId", page}}, dialog.dump()); }
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -159,6 +172,7 @@ int main(int argc, char** argv) {
     if (argument.starts_with("--suitecut-scale=")) scale = std::stoi(argument.substr(17));
     if (argument.starts_with("--suitecut-width=")) width = std::stoi(argument.substr(17));
     if (argument.starts_with("--suitecut-height=")) height = std::stoi(argument.substr(18));
+    if (argument == "--suitecut-host-events=1") host_events = true;
   }
   std::map<int, std::pair<int, int>> viewports;  // CSS size per page
   std::map<int, std::string> outputs;            // bootstrap name per page with a view
@@ -168,6 +182,26 @@ int main(int argc, char** argv) {
     ready(1);
     int next_page = 1;
     std::map<int, std::string> titles{{1, ""}};
+    std::map<int, bool> subscribed;                // dialogs held for an answer, per page
+    std::map<std::string, std::pair<int, Json>> dialogs;  // held: id -> page, opened event
+    int dialog_sequence = 0;
+    // As the engine's reset on navigation: each held dialog is dropped, and
+    // with host events reported closed.
+    auto reset_dialogs = [&](int on, std::vector<std::pair<int, Json>>& out) {
+      for (auto it = dialogs.begin(); it != dialogs.end();) {
+        if (it->second.first != on) {
+          ++it;
+          continue;
+        }
+        if (host_events) {
+          auto closed = it->second.second;
+          closed["state"] = "closed";
+          closed["reason"] = "reset";
+          out.emplace_back(on, std::move(closed));
+        }
+        it = dialogs.erase(it);
+      }
+    };
     std::vector<std::thread> slow;
     std::string line;
     while (std::getline(std::cin, line)) {
@@ -181,6 +215,7 @@ int main(int argc, char** argv) {
       std::string error;
       int child_ready = 0, frames_for = 0;
       std::vector<Json> after;
+      std::vector<std::pair<int, Json>> after_dialogs, after_host;
       if (command != "context" && !titles.contains(page)) {
         ok = false;
         error = "No page " + std::to_string(page);
@@ -210,7 +245,19 @@ int main(int argc, char** argv) {
           error = "net::ERR_NAME_NOT_RESOLVED";
         } else {
           titles[page] = "Title of " + url;
+          reset_dialogs(page, after_dialogs);
+          for (auto& [on, closed] : after_dialogs) dialog_event(on, closed);
+          after_dialogs.clear();
+          if (host_events) {
+            host_event(page, Json{{"event", "loading"}, {"loading", true}, {"canGoBack", false}, {"canGoForward", false}});
+            host_event(page, Json{{"event", "progress"}, {"progress", 0.5}});
+          }
           packet(Json{{"type", "navigation"}, {"pageId", page}, {"url", url}});
+          if (host_events) {
+            host_event(page, Json{{"event", "title"}, {"title", titles[page]}});
+            host_event(page, Json{{"event", "progress"}, {"progress", 1.0}});
+            host_event(page, Json{{"event", "loading"}, {"loading", false}, {"canGoBack", true}, {"canGoForward", false}});
+          }
         }
       } else if (command == "historyBack" || command == "historyForward" || command == "reload") {
         // History is not modelled: the page stays where it is.
@@ -237,6 +284,23 @@ int main(int argc, char** argv) {
         } else if (expression == "close-self") {
           titles.erase(page);
           after.push_back(Json{{"event", "page-closed"}, {"pageId", page}});
+        } else if (expression.starts_with("dialog:")) {
+          const auto rest = expression.substr(7);
+          const auto colon = rest.find(':');
+          const auto type = rest.substr(0, colon);
+          const auto message = colon == std::string::npos ? std::string() : rest.substr(colon + 1);
+          if (subscribed[page]) {
+            const auto dialog_id = std::to_string(++dialog_sequence);
+            Json opened{{"id", dialog_id}, {"type", type}, {"url", "https://fake.test/"}, {"message", message},
+                        {"defaultValue", type == "prompt" ? "default" : ""}, {"state", "opened"}};
+            dialogs[dialog_id] = {page, opened};
+            after_dialogs.emplace_back(page, std::move(opened));
+          }
+        } else if (expression.starts_with("cursor:") && host_events) {
+          after_host.emplace_back(page, Json{{"event", "cursor"}, {"cursor", expression.substr(7)}});
+        } else if (expression == "ime" && host_events) {
+          after_host.emplace_back(page, Json{{"event", "ime"}, {"range", Json::array{0, 3}},
+                                             {"bounds", Json::array{Json::array{10, 20, 30, 40}}}});
         }
         result = Json{{"result", Json{{"type", "number"}, {"value", 42}}}};
       } else if (command == "artifact") {
@@ -250,6 +314,40 @@ int main(int argc, char** argv) {
         else
           outputs.erase(page);
         frames_for = page;
+      } else if (command == "dialog") {
+        const auto action = request.at("action").as_string();
+        if (action == "subscribe") {
+          subscribed[page] = request.at("enabled").as_bool();
+          // As the engine: unsubscribing dismisses what is held, unreported.
+          if (!subscribed[page])
+            for (auto it = dialogs.begin(); it != dialogs.end();)
+              it = it->second.first == page ? dialogs.erase(it) : std::next(it);
+        } else if (action == "answer") {
+          const auto found = dialogs.find(request.at("dialogId").as_string());
+          if (found == dialogs.end() || found->second.first != page) {
+            ok = false;
+            error = "Dialog is already handled or was canceled";
+          } else {
+            auto closed = found->second.second;
+            closed["state"] = "closed";
+            after_dialogs.emplace_back(page, std::move(closed));
+            dialogs.erase(found);
+          }
+        } else {
+          ok = false;
+          error = "Invalid native dialog command";
+        }
+      } else if (command == "host") {
+        const auto action = request.at("action").as_string();
+        if (!host_events) {
+          ok = false;
+          error = "Unexpected session-fake command: host";
+        } else if (action != "stop" && action != "ime" && action != "edit") {
+          ok = false;
+          error = "A host command is stop, ime or edit";
+        } else if (action == "stop") {
+          after_host.emplace_back(page, Json{{"event", "loading"}, {"loading", false}, {"canGoBack", true}, {"canGoForward", false}});
+        }
       } else if (command != "viewport" && command != "input" && command != "surfaceOutput" &&
                  command != "frameSubscription" && command != "bringToFront" && command != "cancel") {
         ok = false;
@@ -264,6 +362,8 @@ int main(int argc, char** argv) {
 #endif
       if (child_ready) ready(child_ready);
       for (const auto& event : after) context_event(event);
+      for (const auto& [on, dialog] : after_dialogs) dialog_event(on, dialog);
+      for (const auto& [on, event] : after_host) host_event(on, event);
     }
     for (auto& thread : slow) thread.join();
     return 0;

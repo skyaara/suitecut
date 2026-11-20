@@ -442,6 +442,23 @@ void input(sc_view* view, const std::string& op, Json params, bool is_move) {
     send_input(*view, "input.pointer", std::move(*next));
   }
 }
+
+Json ime_params(const sc_ime_composition* composition, bool selection) {
+  check_struct(composition, "IME composition");
+  if (!composition->text && composition->size) throw std::invalid_argument("The composition's text is null");
+  Json params{{"text", std::string(composition->text ? composition->text : "", composition->size)}};
+  auto range = [](int32_t start, int32_t end, const char* what) -> std::optional<Json> {
+    if (start < 0 && end < 0) return std::nullopt;
+    if (start < 0 || end < start) throw std::invalid_argument(std::string(what) + " is start <= end, or -1 for none");
+    return Json::array{Json(start), Json(end)};
+  };
+  if (auto replace = range(composition->replace_start, composition->replace_end, "The replaced range"))
+    params["replacement"] = std::move(*replace);
+  if (selection)
+    if (auto selected = range(composition->selection_start, composition->selection_end, "The selection"))
+      params["selection"] = std::move(*selected);
+  return params;
+}
 }  // namespace
 
 extern "C" {
@@ -557,7 +574,7 @@ sc_status sc_session_open(const sc_session_options* options, sc_session** out, s
     if (!options->directory || !std::filesystem::path(options->directory).is_absolute())
       throw std::invalid_argument("The session directory is absolute");
     if (options->role != SC_ROLE_HOST && options->role != SC_ROLE_AGENT) throw std::invalid_argument("Unknown role");
-    if (options->flags & ~SC_SESSION_START) throw std::invalid_argument("Unknown session flags");
+    if (options->flags & ~(SC_SESSION_START | SC_SESSION_PROMPTS)) throw std::invalid_argument("Unknown session flags");
     auto core = std::make_shared<SessionCore>();
     core->socket_path = std::string(options->directory) + "/" + options->name + ".sock";
     // AF_UNIX paths are short (sun_path is 104 bytes on macOS, 108 on Linux,
@@ -589,6 +606,9 @@ sc_status sc_session_open(const sc_session_options* options, sc_session** out, s
     Json hello{{"protocols", Json::array{Json(1)}}, {"owner", options->owner},
                {"role", options->role == SC_ROLE_AGENT ? "agent" : "host"}};
     if (options->grant) hello["grant"] = options->grant;
+    // Each of this handle's connections says so: the session holds dialogs
+    // while any of them is open.
+    if (options->flags & SC_SESSION_PROMPTS) hello["capabilities"] = Json::array{Json("prompts")};
     Json client{{"name", options->client_name ? options->client_name : "suitecut-embed"},
                 {"version", options->client_version ? options->client_version : ""}};
     hello["client"] = std::move(client);
@@ -731,6 +751,13 @@ sc_status sc_tab_release(sc_session* session, int32_t page, sc_tab* out, sc_erro
   return boundary(error, [&] {
     if (out) check_struct(out, "tab");
     fill_tab(core_of(session).Request("tabs.release", Json{{"page", page}}), out);
+  });
+}
+
+sc_status sc_tab_stop(sc_session* session, int32_t page, sc_tab* out, sc_error* error) {
+  return boundary(error, [&] {
+    if (out) check_struct(out, "tab");
+    fill_tab(core_of(session).Request("tabs.stop", Json{{"page", page}}), out);
   });
 }
 
@@ -921,6 +948,50 @@ sc_status sc_view_text(sc_view* view, const char* utf8, size_t size, sc_error* e
   });
 }
 
+// ---- Text input methods and edit commands ----
+
+void sc_ime_composition_init(sc_ime_composition* composition) {
+  if (!composition) return;
+  *composition = sc_ime_composition{};
+  composition->struct_size = sizeof *composition;
+  composition->abi_version = SC_EMBED_ABI_VERSION;
+  composition->selection_start = composition->selection_end = -1;
+  composition->replace_start = composition->replace_end = -1;
+}
+
+
+sc_status sc_view_ime_set(sc_view* view, const sc_ime_composition* composition, sc_error* error) {
+  return boundary(error, [&] { input(view, "input.ime.set", ime_params(composition, true), false); });
+}
+
+sc_status sc_view_ime_commit(sc_view* view, const sc_ime_composition* composition, sc_error* error) {
+  return boundary(error, [&] { input(view, "input.ime.commit", ime_params(composition, false), false); });
+}
+
+sc_status sc_view_ime_cancel(sc_view* view, sc_error* error) {
+  return boundary(error, [&] { input(view, "input.ime.cancel", Json::object{}, false); });
+}
+
+sc_status sc_view_edit(sc_view* view, sc_edit_command command, sc_error* error) {
+  return boundary(error, [&] {
+    static const char* const names[] = {nullptr, "copy", "cut", "paste", "undo", "redo", "selectAll", "delete"};
+    if (command < SC_EDIT_COPY || command > SC_EDIT_DELETE) throw std::invalid_argument("Unknown edit command");
+    input(view, "input.edit", Json{{"command", names[command]}}, false);
+  });
+}
+
+// ---- Prompts ----
+
+sc_status sc_prompt_answer_dialog(sc_session* session, const char* prompt, int accept, const char* text,
+                                  sc_error* error) {
+  return boundary(error, [&] {
+    if (!prompt || !*prompt) throw std::invalid_argument("Name the prompt");
+    Json params{{"prompt", prompt}, {"accept", accept != 0}};
+    if (text) params["text"] = text;
+    core_of(session).Request("prompt.answer", std::move(params));
+  });
+}
+
 // ---- Agent calls ----
 
 sc_status sc_agent_catalog(sc_session* session, sc_json** out, sc_error* error) {
@@ -992,6 +1063,12 @@ sc_event_kind sc_event_kind_of(const sc_event* event) {
   if (type == "tab.closed") return SC_EVENT_TAB_CLOSED;
   if (type == "resync") return SC_EVENT_RESYNC;
   if (type == "engine.exited") return SC_EVENT_ENGINE_EXITED;
+  if (type == "tab.loading") return SC_EVENT_TAB_LOADING;
+  if (type == "tab.title") return SC_EVENT_TAB_TITLE;
+  if (type == "view.cursor") return SC_EVENT_VIEW_CURSOR;
+  if (type == "view.ime") return SC_EVENT_VIEW_IME;
+  if (type == "prompt.opened") return SC_EVENT_PROMPT_OPENED;
+  if (type == "prompt.closed") return SC_EVENT_PROMPT_CLOSED;
   return SC_EVENT_OTHER;
 }
 
@@ -999,7 +1076,10 @@ int32_t sc_event_page(const sc_event* event) {
   if (!event) return 0;
   try {
     if (event->event.contains("page")) return static_cast<int32_t>(event->event.at("page").as_int());
+    if (event->event.contains("view")) return static_cast<int32_t>(event->event.at("view").as_int());
     if (event->event.contains("tab")) return static_cast<int32_t>(event->event.at("tab").at("page").as_int());
+    if (event->event.contains("prompt") && event->event.at("prompt").is_object())
+      return static_cast<int32_t>(event->event.at("prompt").at("page").as_int());
   } catch (...) {
   }
   return 0;

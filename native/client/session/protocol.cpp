@@ -134,6 +134,7 @@ struct Connection {
   std::set<std::string> tools;
   std::optional<std::string> grant;
   std::optional<std::size_t> max_bytes;
+  bool prompts = false;  // it answers its owner's dialogs
 };
 
 Connection& connection_of(control::Peer& peer) {
@@ -155,6 +156,30 @@ Json error1(const Json& id, const std::string& code, const std::string& message)
 
 void host_only(const Connection& connection, const std::string& op) {
   if (connection.role != Role::host) throw Refused("forbidden", "An agent may not use " + op);
+}
+
+// Protocol 0 replies keep the tab fields they always had.
+void strip_tab0(Json& tab) {
+  if (!tab.is_object()) return;
+  for (const auto* key : {"opener", "loading", "canGoBack", "canGoForward"}) tab.as_object().erase(key);
+}
+Json strip0(Json result) {
+  if (result.is_object() && result.contains("tabs") && result.at("tabs").is_array()) {
+    for (auto& tab : result["tabs"].as_array()) strip_tab0(tab);
+  } else if (result.is_object() && result.contains("page") && result.contains("control")) {
+    strip_tab0(result);
+  }
+  return result;
+}
+
+// An IME range: [start, end] in UTF-16 code units.
+Json ime_range(const Json& params, const char* key) {
+  const auto& range = params.at(key);
+  if (!range.is_array() || range.as_array().size() != 2 || !range.as_array()[0].is_integer() ||
+      !range.as_array()[1].is_integer() || range.as_array()[0].as_int() < 0 ||
+      range.as_array()[1].as_int() < range.as_array()[0].as_int())
+    throw Refused("invalid_input", std::string(key) + " is [start, end] with 0 <= start <= end");
+  return range;
 }
 
 }  // namespace
@@ -196,7 +221,7 @@ Json Protocols::Protocol0(const Json& envelope) {
       if (!arguments.is_object()) throw Refused("invalid_request", "Tool arguments are an object");
       result = host_.Agent(owner, page, tool, arguments, Claim::after, std::nullopt).result;
     } else if (envelope.contains("tabs"))
-      result = Tabs0(owner, envelope.at("tabs"));
+      result = strip0(Tabs0(owner, envelope.at("tabs")));
     else if (envelope.contains("view"))
       result = View0(owner, envelope.at("view"));
     else if (envelope.contains("watch")) {
@@ -207,7 +232,7 @@ Json Protocols::Protocol0(const Json& envelope) {
       const auto timeout = watch.is_object() && watch.contains("timeoutMs") && watch.at("timeoutMs").is_integer()
                                ? std::clamp<std::int64_t>(watch.at("timeoutMs").as_int(), 0, 25000)
                                : 20000;
-      result = host_.Watch(owner, cursor, std::chrono::milliseconds(timeout));
+      result = strip0(host_.Watch(owner, cursor, std::chrono::milliseconds(timeout)));
     } else if (envelope.contains("catalog"))
       result = host_.Catalog(host_.Tools());
     else
@@ -335,12 +360,27 @@ Json Protocols::Protocol1(control::Peer& peer, const Json& message) {
         if (!limit.is_integer() || limit.as_int() < 1) throw Refused("invalid_request", "maxMessageBytes is a positive integer");
         bound.max_bytes = static_cast<std::size_t>(limit.as_int());
       }
+      // What the client can do: a connection that lists "prompts" answers
+      // the dialogs on its owner's pages (a host by asking the person, an
+      // agent on the tabs it holds). While none is connected, the engine
+      // answers them by default, as before.
+      if (params.contains("capabilities")) {
+        if (!params.at("capabilities").is_array()) throw Refused("invalid_request", "capabilities lists strings");
+        for (const auto& capability : params.at("capabilities").as_array()) {
+          if (!capability.is_string()) throw Refused("invalid_request", "capabilities lists strings");
+          if (capability.as_string() == "prompts") bound.prompts = true;
+        }
+      }
       bound.protocol = 1;
       bound.greeted = true;
       Json::array capabilities{"tabs", "views", "input.pointer", "input.key", "input.text", "events", "agent.call", "grants"};
 #ifdef __APPLE__
       capabilities.insert(capabilities.begin() + 2, Json("view.sink.mach-bootstrap"));
 #endif
+      capabilities.push_back("prompts");
+      if (host_.HostEvents())
+        for (const auto* name : {"tabs.stop", "tab.loading", "tab.title", "view.cursor", "input.ime", "input.edit"})
+          capabilities.push_back(name);
       Json::array groups;
       for (std::size_t begin = 0; begin <= bound.groups.size();) {
         const auto end = bound.groups.find(',', begin);
@@ -359,7 +399,9 @@ Json Protocols::Protocol1(control::Peer& peer, const Json& message) {
                     {"tools", std::move(groups)},
                     {"engine", std::move(engine)},
                     {"capabilities", std::move(capabilities)}};
+      const bool prompts = bound.prompts;
       connection = std::move(bound);
+      if (prompts) host_.PromptHost(peer.id, owner);
       return reply1(id, std::move(result));
     }
     if (!connection.greeted) throw Refused("hello_required", "A protocol 1 connection begins with hello");
@@ -545,6 +587,42 @@ Json Protocols::Protocol1(control::Peer& peer, const Json& message) {
                     true);
       }
       result = Json::object{};
+    } else if (op == "tabs.stop") {
+      host_only(connection, op);
+      result = host_.Stop(owner, page_of(params));
+    } else if (op == "input.ime.set" || op == "input.ime.commit" || op == "input.ime.cancel") {
+      host_only(connection, op);
+      if (!host_.HostEvents()) throw Refused("unsupported", "This session's engine has no IME composition");
+      const int view = page_of(params, "view");
+      host_.TabOf(owner, view);
+      const auto what = op.substr(std::string("input.ime.").size());
+      Json fields{{"command", "host"}, {"action", "ime"}, {"op", what}};
+      if (what != "cancel") {
+        if (!params.contains("text") || !params.at("text").is_string())
+          throw Refused("invalid_input", "A composition's text is a string");
+        fields["text"] = params.at("text");
+        if (params.contains("replacement")) fields["replacement"] = ime_range(params, "replacement");
+        if (what == "set" && params.contains("selection")) fields["selection"] = ime_range(params, "selection");
+      }
+      // Composing and committing text edit the page, so they take the tab.
+      host_.Input(owner, view, std::move(fields), what != "cancel");
+      result = Json::object{};
+    } else if (op == "input.edit") {
+      host_only(connection, op);
+      if (!host_.HostEvents()) throw Refused("unsupported", "This session's engine has no edit commands");
+      const int view = page_of(params, "view");
+      host_.TabOf(owner, view);
+      static const std::set<std::string> edits{"copy", "cut", "paste", "undo", "redo", "selectAll", "delete"};
+      const auto command = text_in(params, "command");
+      if (!edits.contains(command))
+        throw Refused("invalid_input", "An edit command is copy, cut, paste, undo, redo, selectAll or delete");
+      // Copying leaves the page as it is; the rest change it, so take the tab.
+      host_.Input(owner, view, Json{{"command", "host"}, {"action", "edit"}, {"edit", command}}, command != "copy");
+      result = Json::object{};
+    } else if (op == "prompt.answer") {
+      const auto prompt = text_in(params, "prompt");
+      if (prompt.empty()) throw Refused("invalid_request", "Name the prompt");
+      result = host_.AnswerPrompt(owner, connection.role == Role::host, prompt, params);
     } else if (op == "agent.call") {
       const auto tool = text_in(params, "tool");
       if (tool.empty()) throw Refused("invalid_request", "A tool call names its tool");

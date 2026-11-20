@@ -444,6 +444,7 @@ struct Transport::Impl {
       std::vector<std::string> args{options.executable};
       args.insert(args.end(), options.arguments.begin(), options.arguments.end());
       args.push_back("--suitecut-width=" + std::to_string(options.width));
+      if (options.host_events) args.push_back("--suitecut-host-events=1");
       args.push_back("--suitecut-height=" + std::to_string(options.height));
       args.push_back("--suitecut-scale=" + std::to_string(options.scale));
       args.push_back("--suitecut-fps=" + std::to_string(static_cast<int>(options.frames_per_second)));

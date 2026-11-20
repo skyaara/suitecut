@@ -69,6 +69,12 @@ SC_API sc_status sc_runtime_inspect(const sc_runtime_options *options, sc_runtim
 /* ---- Session: start or join one as an owner. ---- */
 typedef enum sc_session_role { SC_ROLE_HOST = 1, SC_ROLE_AGENT = 2 } sc_session_role;
 #define SC_SESSION_START 1u /* start the service when it is not running */
+/* This app answers the JavaScript dialogs on its owner's tabs: they arrive
+ * as SC_EVENT_PROMPT_OPENED and wait for sc_prompt_answer_dialog. While no
+ * connection of the owner sets it, the engine answers each dialog by default
+ * (alerts and beforeunload accepted, confirm and prompt dismissed), as before.
+ * A dialog nobody answers within the engine's 30 s is dismissed. */
+#define SC_SESSION_PROMPTS 2u
 typedef struct sc_session_options {
   size_t struct_size;
   uint32_t abi_version;
@@ -115,7 +121,9 @@ typedef struct sc_tab {
   uint64_t generation; /* grows each time control changes hands */
 } sc_tab;
 SC_API void sc_tab_init(sc_tab *tab);
-/* {"tabs":[{page, control, generation, url, title}], "cursor"} */
+/* {"tabs":[{page, control, generation, url, title}], "cursor"}. With host
+ * events (capability "tab.loading"), each tab also has loading, canGoBack
+ * and canGoForward, and a popup its opener's page as "opener". */
 SC_API sc_status sc_tab_list(sc_session *session, sc_json **out, sc_error *error);
 /* |url| NULL opens a blank tab. A host's tab opens unclaimed unless
  * for_agent != 0; an agent's opens held by the agent. */
@@ -126,6 +134,10 @@ SC_API sc_status sc_tab_navigate(sc_session *session, int32_t page, const char *
 SC_API sc_status sc_tab_history(sc_session *session, int32_t page, sc_history step, sc_tab *out, sc_error *error);
 SC_API sc_status sc_tab_take(sc_session *session, int32_t page, sc_tab *out, sc_error *error);
 SC_API sc_status sc_tab_release(sc_session *session, int32_t page, sc_tab *out, sc_error *error);
+/* Host role. Stops the tab's load and, as navigating does, takes the tab
+ * for the person. SC_UNSUPPORTED unless the session has host events
+ * (capability "tabs.stop"). */
+SC_API sc_status sc_tab_stop(sc_session *session, int32_t page, sc_tab *out, sc_error *error);
 /* Writes a PNG of the tab to the absolute |path|. Does not take the tab. */
 SC_API sc_status sc_tab_screenshot(sc_session *session, int32_t page, const char *path, sc_error *error);
 
@@ -214,6 +226,49 @@ SC_API sc_status sc_view_key(sc_view *view, const sc_key_event *event, sc_error 
 /* Inserts typed text at the focus. */
 SC_API sc_status sc_view_text(sc_view *view, const char *utf8, size_t size, sc_error *error);
 
+/* ---- Text input methods and edit commands ----
+ * SC_UNSUPPORTED unless the session has host events (capabilities
+ * "input.ime" and "input.edit"). They go in order with the view's other
+ * input. Ranges count UTF-16 code units. SC_EVENT_VIEW_IME says where the
+ * composition is drawn, for placing the input method's candidate window. */
+typedef struct sc_ime_composition {
+  size_t struct_size;
+  uint32_t abi_version;
+  const char *text; /* UTF-8 */
+  size_t size;
+  int32_t selection_start, selection_end; /* within the composition; -1 puts the caret at its end */
+  int32_t replace_start, replace_end;     /* existing text the composition replaces; -1 for none */
+} sc_ime_composition;
+SC_API void sc_ime_composition_init(sc_ime_composition *composition);
+/* Sets the marked text; takes the tab for the person. */
+SC_API sc_status sc_view_ime_set(sc_view *view, const sc_ime_composition *composition, sc_error *error);
+/* Commits |text| in place of the marked text (the selection is not used);
+ * takes the tab for the person. */
+SC_API sc_status sc_view_ime_commit(sc_view *view, const sc_ime_composition *composition, sc_error *error);
+/* Drops the marked text. */
+SC_API sc_status sc_view_ime_cancel(sc_view *view, sc_error *error);
+typedef enum sc_edit_command {
+  SC_EDIT_COPY = 1,
+  SC_EDIT_CUT = 2,
+  SC_EDIT_PASTE = 3,
+  SC_EDIT_UNDO = 4,
+  SC_EDIT_REDO = 5,
+  SC_EDIT_SELECT_ALL = 6,
+  SC_EDIT_DELETE = 7
+} sc_edit_command;
+/* On the focused frame, with the engine's clipboard. Every command but copy
+ * takes the tab for the person. */
+SC_API sc_status sc_view_edit(sc_view *view, sc_edit_command command, sc_error *error);
+
+/* ---- Prompts: dialogs a page opened, for the person or the agent ---- */
+/* Answers the dialog |prompt| (its "id" from SC_EVENT_PROMPT_OPENED).
+ * accept != 0 presses OK. |text| is a prompt dialog's answer; NULL keeps its
+ * default value. A host answers any of its owner's prompts; an agent only
+ * on a tab it holds. Refused with prompt_gone once it was answered or
+ * closed. Answering does not take the tab. */
+SC_API sc_status sc_prompt_answer_dialog(sc_session *session, const char *prompt, int accept, const char *text,
+                                         sc_error *error);
+
 /* ---- Agent calls ---- */
 /* {"tools":[{name, description, inputSchema}]} for this connection's grant. */
 SC_API sc_status sc_agent_catalog(sc_session *session, sc_json **out, sc_error *error);
@@ -225,19 +280,29 @@ SC_API sc_status sc_agent_call(sc_session *session, int32_t page, const char *to
                                sc_json **out, sc_error *error);
 
 /* ---- Events for this owner, from the session's cursor ---- */
+/* Kinds are added over time; treat any you do not know as SC_EVENT_OTHER. */
 typedef enum sc_event_kind {
   SC_EVENT_OTHER = 0,         /* a kind this library does not name; read its JSON */
   SC_EVENT_TAB_CHANGED = 1,   /* {"tab":{...}} */
   SC_EVENT_TAB_CLOSED = 2,    /* {"page"} */
   SC_EVENT_RESYNC = 3,        /* events were missed: list the tabs again */
-  SC_EVENT_ENGINE_EXITED = 4  /* the session's engine is gone; open the session again */
+  SC_EVENT_ENGINE_EXITED = 4, /* the session's engine is gone; open the session again */
+  /* With host events: */
+  SC_EVENT_TAB_LOADING = 5,   /* {"page","loading","progress" 0..1,"canGoBack","canGoForward"} */
+  SC_EVENT_TAB_TITLE = 6,     /* {"page","title"}: the engine's title, which may be the URL */
+  SC_EVENT_VIEW_CURSOR = 7,   /* {"view","cursor"}: a CSS cursor name; "custom" adds hotspotX/Y, width, height */
+  SC_EVENT_VIEW_IME = 8,      /* {"view","range":[from,to],"bounds":[[x,y,w,h],...]}: CSS pixels */
+  /* To an owner one of whose connections set SC_SESSION_PROMPTS: */
+  SC_EVENT_PROMPT_OPENED = 9, /* {"prompt":{"id","page","kind":"dialog","dialog":"alert"|"confirm"|"prompt"|
+                               * "beforeunload","message","defaultValue","url","deadlineMs"}} */
+  SC_EVENT_PROMPT_CLOSED = 10 /* {"prompt","page","outcome":"accepted"|"dismissed"|"timeout"|"closed"} */
 } sc_event_kind;
 /* Long-polls; SC_TIMEOUT when nothing happened. The first event a session
  * returns is SC_EVENT_RESYNC. */
 SC_API sc_status sc_session_next_event(sc_session *session, uint32_t wait_timeout_ms, sc_event **out,
                                        sc_error *error);
 SC_API sc_event_kind sc_event_kind_of(const sc_event *event);
-/* The event's page, or 0. */
+/* The event's page (a view event's view), or 0. */
 SC_API int32_t sc_event_page(const sc_event *event);
 SC_API const char *sc_event_json(const sc_event *event, size_t *size);
 SC_API void sc_event_destroy(sc_event *event);
