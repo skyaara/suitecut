@@ -45,6 +45,10 @@ target_include_directories(suitecut_client PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_link_libraries(suitecut_client PRIVATE Threads::Threads OpenSSL::SSL OpenSSL::Crypto ZLIB::ZLIB)
+if(APPLE)
+  # embed.h's frame receiver and runtime signature check.
+  target_link_libraries(suitecut_client PRIVATE "-framework CoreFoundation" "-framework IOSurface" "-framework Security" bsm)
+endif()
 if(WIN32)
   target_link_libraries(suitecut_client PRIVATE ws2_32)
   if(BUILD_SHARED_LIBS)

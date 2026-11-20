@@ -7,6 +7,7 @@ add_subdirectory(transport)
 add_subdirectory(browser)
 add_subdirectory(agent)
 add_subdirectory(c_api)
+add_subdirectory(embed)
 get_property(suitecut_client_modules GLOBAL PROPERTY suitecut_client_modules)
 # Discovery checks the explicit inventories; it never selects compilation inputs.
 get_property(declared GLOBAL PROPERTY suitecut_client_sources)

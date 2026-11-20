@@ -11,7 +11,7 @@ MODULES = {
     'backends/chromium': ['wire', 'shared'],
     'backends/firefox': ['wire', 'shared'],
     'transport': ['backends/chromium', 'backends/firefox'],
-    'browser': [], 'agent': [], 'c_api': [],
+    'browser': [], 'agent': [], 'c_api': [], 'embed': [],
 }
 PUBLIC = {
     'core': {'json.hpp', 'credentials.hpp', 'image.hpp'},
@@ -23,6 +23,7 @@ PUBLIC = {
     'agent': {'json.hpp', 'transport.hpp', 'browser.hpp', 'agent.hpp', 'agent_driver.hpp',
               'simple_agent.hpp', 'agent_tools.hpp', 'credentials.hpp', 'image.hpp', 'observation.hpp'},
     'c_api': {'client.h', 'json.hpp', 'transport.hpp'},
+    'embed': {'embed.h', 'client.h', 'json.hpp'},
 }
 INCLUDE = re.compile(r'^\s*#\s*include\s*([<"])([^">]+)[">]', re.MULTILINE)
 PUBLIC_STANDARD = {'chrono', 'concepts', 'cstddef', 'cstdint', 'future', 'functional',
