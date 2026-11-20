@@ -311,11 +311,27 @@ int host_events_main(int argc, char** argv) {
                        entry.at("title") == Json("Changed");
     run.check(listed_state, "the tab lists as loaded", tabs);
 
-    // 2. Stopping a slow load.
+    // Agent calls claim the tab, so the person lets it go first.
+    const auto evaluate = [&](const std::string& expression) {
+      sc_tab released;
+      sc_tab_init(&released);
+      sc_tab_release(session, page, &released, &error);
+      const auto arguments = Json{{"expression", expression}}.dump();
+      sc_json* reply = nullptr;
+      if (sc_agent_call(session, page, "evaluate", arguments.data(), arguments.size(), 0, 0, &reply, &error) != SC_OK)
+        throw std::runtime_error("evaluate " + expression + ": " + error.message);
+      return text_of(reply);
+    };
+    const auto value_is = [&](const std::string& expression, const std::string& expected) {
+      return evaluate("String(" + expression + ")").find("\"" + expected + "\"") != std::string::npos;
+    };
+
+    // 2. Stopping a slow load. The page starts it itself: tabs.navigate
+    // waits for a commit the engine reports only at load end, so it would
+    // not return while the image hangs.
     run.stage("stop");
     events->mark();
-    if (sc_tab_navigate(session, page, pages.Url("/stall").c_str(), &tab, &error) != SC_OK)
-      throw std::runtime_error(std::string("navigate to a stalling page: ") + error.message);
+    evaluate("location.href='/stall';1");
     const auto slow = events->wait([&](sc_event_kind kind, const Json& event) {
       return on(SC_EVENT_TAB_LOADING)(kind, event) && event.at("loading") == Json(true);
     });
@@ -331,21 +347,6 @@ int host_events_main(int argc, char** argv) {
     const auto stop_ms = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - stop_at).count();
     run.check(stopped.is_object() && stopped.at("canGoBack") == Json(true) && stop_ms < 5000,
               "stopping ends the load at once, well before the server would", Json{{"ms", stop_ms}, {"event", stopped}});
-
-    // Agent calls claim the tab, so the person lets it go first.
-    const auto evaluate = [&](const std::string& expression) {
-      sc_tab released;
-      sc_tab_init(&released);
-      sc_tab_release(session, page, &released, &error);
-      const auto arguments = Json{{"expression", expression}}.dump();
-      sc_json* reply = nullptr;
-      if (sc_agent_call(session, page, "evaluate", arguments.data(), arguments.size(), 0, 0, &reply, &error) != SC_OK)
-        throw std::runtime_error("evaluate " + expression + ": " + error.message);
-      return text_of(reply);
-    };
-    const auto value_is = [&](const std::string& expression, const std::string& expected) {
-      return evaluate("String(" + expression + ")").find("\"" + expected + "\"") != std::string::npos;
-    };
 
     // 3. Dialogs as prompts.
     run.stage("dialogs");
