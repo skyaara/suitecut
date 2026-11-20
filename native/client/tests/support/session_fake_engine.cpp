@@ -478,9 +478,12 @@ int main(int argc, char** argv) {
           after_host.emplace_back(page, Json{{"event", "loading"}, {"loading", false}, {"canGoBack", true}, {"canGoForward", false}});
         }
       } else if (command == "download") {
-        // saveAs writes the file where asked; cancel succeeds.
+        // failure says it settled without one; saveAs writes the file where
+        // asked; cancel succeeds.
         const auto action = request.at("action").as_string();
-        if (action == "saveAs") {
+        if (action == "failure") {
+          result = Json{{"failure", nullptr}};
+        } else if (action == "saveAs") {
           std::ofstream saved(request.at("path").as_string(), std::ios::binary);
           saved << "pdf";
           if (!saved) {

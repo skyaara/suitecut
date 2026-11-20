@@ -724,10 +724,29 @@ Json Host::AnswerPerson(const std::string& prompt, Prompt held, const Json& answ
 void Host::SaveDownload(const std::string& prompt, int page, std::string download, std::string path) {
   Json closed{{"type", "prompt.closed"}, {"prompt", prompt}, {"page", page}};
   try {
-    // The engine copies the file once the download completes. The wait is the
-    // transport's longest; the session adds no deadline of its own.
-    Engine(page, Json{{"command", "download"}, {"action", "saveAs"}, {"downloadId", download}, {"path", path}},
-           std::chrono::hours(24));
+    // Wait for the download to settle, however long it takes: the engine's
+    // wait is a read that ends within its longest command (120 s), so it is
+    // asked again until the download finishes or the prompt goes. Then the
+    // engine copies the file, once.
+    for (;;) {
+      try {
+        const auto settled = Engine(page,
+                                    Json{{"command", "download"}, {"action", "failure"}, {"downloadId", download},
+                                         {"timeoutMs", 110000}},
+                                    std::chrono::milliseconds(120000));
+        if (settled.contains("failure") && settled.at("failure").is_string())
+          throw std::runtime_error(settled.at("failure").as_string());
+        break;
+      } catch (const std::runtime_error& error) {
+        if (std::string(error.what()).find("Native operation timed out") == std::string::npos) throw;
+        std::lock_guard lock(state_);
+        if (!prompts_.contains(prompt)) return;  // its tab closed and said so
+      }
+    }
+    Engine(page,
+           Json{{"command", "download"}, {"action", "saveAs"}, {"downloadId", download}, {"path", path},
+                {"timeoutMs", 120000}},
+           std::chrono::milliseconds(125000));
     closed["outcome"] = "accepted";
     closed["path"] = path;
   } catch (const std::exception& error) {
