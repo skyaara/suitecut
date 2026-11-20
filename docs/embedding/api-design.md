@@ -1,8 +1,9 @@
 # Embedding API and session protocol design
 
-Status: **draft for review**, 2026-11-20. It specifies what the
-[direction document](direction.md) proposes. Nothing in "Proposed" sections is
-implemented. `client.h` is unchanged; the header below is a sketch.
+Status: **draft for review**, 2026-11-20. It specifies the
+[direction document](direction.md), whose open questions were decided by
+delegation on 2026-11-20 (the user can revisit them). Nothing in "Proposed"
+sections is implemented unless it says so. `client.h` is unchanged; the header below is a sketch.
 
 Part 1 records what exists today, checked against the code at `48ab856`
 (`claude/napdock-156`). Part 2 specifies the versioned contract. Napdock
@@ -607,10 +608,12 @@ capabilities `tab.loading` and `tab.history` it adds
 - The first answer wins; later ones get `prompt_gone`. An unanswered prompt
   takes the engine's default when its deadline passes (dialogs: 30 s today,
   `dialog_controls.h:34`), and `prompt.closed` says `timeout`.
-- When an agent holds the tab, the default policy is that the host answers
-  `permission`, `file` and `auth`, and the agent may answer `dialog`
-  (through its tools, as today). That is open question 6 in the direction
-  document.
+- When an agent holds the tab, the agent may answer `dialog` (through its
+  tools, as today). The person, through the host, answers `permission`
+  (camera, microphone, location, notifications), `file` choosers that read
+  the person's files, `auth` (HTTP authentication and client certificates)
+  and `download` to disk. This was decided by delegation on 2026-11-20
+  (decision 6 in the direction document).
 - The engine work: permissions are answered by policy today
   (`lifecycle.cc:126-147`); file dialogs with nothing pending fall through to
   CEF (`form_controller.inc:455-463`); downloads and auth are policy; dialogs
@@ -677,7 +680,7 @@ on Linux). It extends the existing `runtime-manifest.json`
 ```json
 {"formatVersion":2,"name":"SuiteCutRuntime","version":"0.2.0",
  "protocols":{"session":[0,1]},"embedAbi":1,
- "cef":{"version":"156.0.30+g6028375+chromium-156.0.8078.96","codecs":"proprietary"},
+ "cef":{"version":"156.0.30+g6028375+chromium-156.0.8078.96","codecs":"none"},
  "platform":"macos","architecture":"arm64","minimumOS":"14.0",
  "programs":{"engine":"Contents/MacOS/suitecut-browser","service":"Contents/MacOS/suitecut-session"},
  "notarized":true}
@@ -685,6 +688,11 @@ on Linux). It extends the existing `runtime-manifest.json`
 
 `suitecut-session --version --json` prints the same fields for hosts that
 prefer to ask a program.
+
+`codecs` is `"none"` for a distributed runtime: it defaults to the official CEF
+build without H.264 and AAC (decision 3). A local build from the codec SDK
+reports `"proprietary"`. FFmpeg is not in the bundle; a host that wants
+recording passes its own FFmpeg path (decision 4).
 
 ### C ABI additions (sketch)
 
@@ -1128,6 +1136,5 @@ For the Napdock side to pick up; this design changes nothing there.
 - Whether one `AgentDriver` per owner can share one `Browser` (rule 9).
 - Per-view scale in the engine.
 - Whether `view.focus` is needed separately from input for caret and IME.
-- The prompt policy when an agent holds a tab.
 - Whether a shared per-machine runtime later needs a broker process above
   sessions. With per-app pinned runtimes it does not.

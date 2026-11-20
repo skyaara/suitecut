@@ -1,8 +1,10 @@
 # SuiteCut as an embeddable browser runtime
 
-Status: **proposed**, 2026-11-20. Nothing here is built yet beyond what
-"Today" says. The protocol and C API are drafted in the
-[embedding API design](api-design.md).
+Status: **accepted direction**, 2026-11-20. The open questions were decided
+on the user's behalf by delegation on 2026-11-20 (see
+[Decisions](#decisions)); the user can revisit any of them. Nothing is built
+beyond what "Today" says and what phase 1 adds. The protocol and C API are
+drafted in the [embedding API design](api-design.md).
 
 ## What SuiteCut becomes
 
@@ -36,12 +38,13 @@ C library that finds the runtime, checks its signature and version, starts or
 joins a session, and receives frames as GPU surfaces. This is close to how
 Microsoft's WebView2 works, and unlike linking CEF into every app.
 
-**Recommendation (not yet confirmed): separate process only, with no
-in-process library.** The reasons:
+**Decided: separate process only, with no in-process library.** An
+in-process library could come later. The reasons:
 
 - Chromium is about 350 MB as a macOS bundle (Napdock's decision record)
-  and gets security fixes every few weeks. Linked into each app, every app ships and patches its own copy,
-  and a crash in a page or in CEF takes the app down with it.
+  and gets security fixes every few weeks. Linked into each app, every app
+  ships and patches its own copy, and a crash in a page or in CEF takes the
+  app down with it.
 - CEF owns its process: its message loop, its sandbox and helper
   executables, and on macOS its bundle layout and signing. An app that links
   it has to adopt all of that.
@@ -223,15 +226,22 @@ code already does this.
   codecs (H.264, AAC, HEVC). It is downloaded from a personal GitHub release
   and carries no codec patent licence
   ([cef-build.json](../../native/browser/cef-build.json)). Linux uses the
-  official build without them. A runtime other people ship needs an explicit
-  decision here (see open questions). Its security updates also depend on
-  that third party rebuilding each CEF release.
+  official build without them. Its security updates also depend on that
+  third party rebuilding each CEF release. **Decided:** a runtime meant for
+  other people to ship defaults to the official CEF build, without H.264 and
+  AAC. The codec build stays for local development, recording and
+  benchmarks. It does not become the distributed default until the user has
+  a legal read on the patent question or a codec build of their own. This is
+  phase 4 work; `cef-build.json` does not change before then.
 - **Media tools.** Every engine recording needs an FFmpeg executable at an
   absolute path. Napdock's bundle has none, so the `recording` tool the
-  shared session offers its agents cannot work there.
-- **Pinned per app or shared.** **Recommendation (not yet confirmed): each
-  app pins and installs its own runtime version first; a shared per-machine
-  runtime can come later.** A pinned runtime lets an app ship knowing exactly
+  shared session offers its agents cannot work there. **Decided:** FFmpeg is
+  not bundled. Recording is optional, and the host supplies the FFmpeg path.
+  An AVFoundation writer on macOS in place of FFmpeg is a later option, not
+  planned.
+- **Pinned per app or shared.** **Decided: each app pins and installs its
+  own runtime version; a shared per-machine runtime stays a later option,
+  which the handshake keeps possible.** A pinned runtime lets an app ship knowing exactly
   which protocol and Chromium it gets, and nobody else's update can break
   it. The costs: disk (about 350 MB per app), one engine per app instead of
   one per Mac, and each app must ship Chromium security updates itself. A
@@ -275,11 +285,11 @@ Each phase ends with its tests passing and its documents updated.
 
 | Phase | Work | Done when |
 | ----- | ---- | --------- |
-| 0. Land what exists | Merge `claude/napdock-156` into `main` after review. Add the first tests for the session tool. Confirm whether the session code builds on Linux. | The branch is on `main`, and the session's framing, ownership and control rules have unit tests against a fake engine. |
+| 0. Land what exists | Merge `claude/napdock-156` into `main` after review (waits for the user). Add the first tests for the session tool. Make the session code portable to Linux. | The branch is on `main`, and the session's framing, ownership and control rules have unit tests against a fake engine. |
 | 1. Session protocol v1 and product target | Move the session out of `examples/` as `suitecut-session`, add the versioned handshake, request ids, typed errors, grants and event cursor. Keep the current unversioned protocol working. | Today's installed Napdock helper works unchanged against the new service, and a v1 client detects an old service. |
 | 2. Embedding library and a second host | The `suitecut/embed.h` C API (runtime check, session, tabs, views, input, events, control) and a minimal macOS sample app. | The sample app shows and drives a tab using only the public API, and Napdock's helper has a written path onto it. |
 | 3. Host events | Engine and session work for dialogs, file choosers, downloads, permission prompts, HTTP auth, loading state, titles, cursor, IME, edit commands and audio playback. | Each event has an engine test and appears in the sample app. |
-| 4. A generic runtime | Bundle dependencies, one minimum macOS, hardened runtime and notarization readiness, a runtime manifest with protocol versions, and a decision on codecs and FFmpeg. | A relocated bundle passes the verifier on a Mac without Homebrew, and the manifest is read by the C library. |
+| 4. A generic runtime | Bundle dependencies, one minimum macOS, hardened runtime and notarization readiness, a runtime manifest with protocol versions, the official CEF build as the distributed default (decision 3), and recording that takes the host's FFmpeg path (decision 4). | A relocated bundle passes the verifier on a Mac without Homebrew, and the manifest is read by the C library. |
 | 5. MCP in a session | `suitecut-native-control --mcp` joins a session as an owner with a grant. | An agent driven through it is refused on a person's tab, and Napdock could drop its Swift MCP server. |
 | 6. Linux embedding | GPU frames as dmabuf (after a spike), the session on glibc, and a sample host. | A Linux sample host shows a tab with no CPU copy, or the spike documents why it cannot. |
 | 7. Windows | An engine port, then Direct3D shared textures. | Scoped separately. |
@@ -288,23 +298,39 @@ The recommended first piece of work is phase 0 and the start of phase 1.
 Every later phase depends on a contract that has tests, and the session has
 none today.
 
-## Open questions
+## Decisions
 
-1. **Process model.** Confirm separate process only (recommended), or keep
-   an in-process library on the table.
-2. **Pinned or shared runtime.** Confirm per-app pinned installs first
-   (recommended).
-3. **Codecs.** Ship the third-party codec build, ship the official build
-   without H.264/AAC, build our own codec CEF (it needs a much larger build
-   host), or offer both. This also decides who rebuilds for each Chromium
-   security release on macOS.
-4. **FFmpeg.** Bundle it in the runtime (licence review needed), make
-   recording optional, or require the host to supply it.
-5. **Names.** The service's name (proposed `suitecut-session`) and the
-   runtime bundle's name and identifier.
-6. **Who answers prompts.** When an agent holds a tab and the page opens a
-   dialog or asks for a permission, may the agent answer, or must the
-   person?
-7. **Per-agent control.** Today all agents of an owner count as one
-   "agent". Should two agents in one owner hold separate tabs?
-8. **Pushing `claude/napdock-156`.** It exists only on this Mac.
+The user asked the Napdock session that started this work to make the
+open decisions for them. These were made by that delegation on 2026-11-20,
+and the user can revisit any of them.
+
+1. **Process model: decided.** Separate process only. An in-process library
+   could come later.
+2. **Pinned or shared runtime: decided.** Each app pins and installs its own
+   runtime version. A shared per-machine runtime stays a later option, which
+   the handshake keeps possible.
+3. **Codecs: decided.** A runtime for others to ship defaults to the official
+   CEF build, without H.264 and AAC. The third-party codec build stays for
+   local development, recording and benchmarks. It does not become the
+   distributed default until the user has a legal read on the patent
+   question or a codec build of their own. This is phase 4 work.
+4. **FFmpeg: decided.** Not bundled. Recording is optional, and the host
+   supplies the FFmpeg path. An AVFoundation writer on macOS is a later
+   option.
+5. **Names: decided.** The service is `suitecut-session`, with
+   `suitecut-shared-session` kept beside it so the installed Napdock helper
+   keeps working. The runtime bundle keeps `SuiteCut.app` and
+   `com.suitecut.browser` for now; renaming is a phase 4 question.
+6. **Who answers prompts: decided** (phase 3 builds it).
+   - An agent holding a tab may answer JavaScript dialogs, as it can today.
+   - These go to the person:
+     - permission prompts (camera, microphone, location, notifications);
+     - file choosers that read the person's files;
+     - HTTP authentication and client certificates;
+     - downloads to disk.
+   - With no host that supports prompts, today's policies apply.
+7. **Per-agent control: open.** One "agent" per owner for now. Whether two
+   agents in one owner should hold separate tabs is still to decide.
+8. **Pushing `claude/napdock-156`: open.** The repository is public, so a
+   push publishes the Napdock work and these documents. Until the user
+   answers, nothing is pushed or merged into `main`.

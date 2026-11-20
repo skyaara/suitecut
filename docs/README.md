@@ -21,11 +21,11 @@ Start with the [guide](guide.md). Component READMEs live next to their code:
 | [CEF real-browser regression suite](cef-regressions.md)                   |
 | [Playwright feature matching specification](playwright-feature-parity.md) |
 
-## Embedding (proposed)
+## Embedding
 
 SuiteCut as a browser runtime other apps embed, share with an AI agent and
-control. Both documents are drafts for review; nothing in them is built yet
-beyond what they mark as existing.
+control. The direction's decisions were made by delegation on 2026-11-20;
+the API design marks what is built and what is still proposed.
 
 | Document                                                             |
 | -------------------------------------------------------------------- |
