@@ -346,8 +346,14 @@ Progress, 2026-11-20:
 - Phase 2's checks are in place: installed SDKs are checked to ship
   `embed.h`; an opt-in real-engine frame test covers size, `420f`, held
   surfaces, resizing and detaching; and a script drives the sample and
-  compares its snapshot with a checked-in reference. Phase 3 (host events,
-  with engine work) has not started.
+  compares its snapshot with a checked-in reference.
+- Phase 3 is built there except its item 5. The engine sends host events
+  behind a switch only the new session passes. Protocol 1 and `embed.h`
+  carry loading, titles, stop, the cursor, IME and edit commands, popups'
+  openers, and JavaScript dialogs as prompts that a host or an agent
+  answers. Protocol 0 and the ABI version are unchanged. File choosers,
+  downloads, permissions, HTTP auth and client certificates wait on the
+  questions under "Built in phase 3" in the [API design](api-design.md).
 
 ## Decisions
 

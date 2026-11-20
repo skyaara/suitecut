@@ -540,7 +540,8 @@ the header is what was built:
   `OTHER`, with their JSON.
 - **Not in `embed.h` yet:** `sc_view_set_focus`, IME, edit commands,
   prompts, the cursor, loading and title events, and the C++ classes. Those
-  come with phase 3. The header has no stubs for them.
+  come with phase 3. The header has no stubs for them. (Phase 3 added all
+  but `sc_view_set_focus` and the C++ classes; see "Built in phase 3".)
 - **Connections.**
   - Requests use a pool: a call takes an idle connection or opens one, so
     calls from several threads do not wait for each other.
@@ -594,6 +595,156 @@ Two checks now repeat this; both are opt-in because they need a runtime:
   - **Results:** two runs against the reference had 0 differing pixels. A
     negative control against a different page's snapshot failed, with 18.5%
     differing.
+
+### Built in phase 3 (2026-11-21)
+
+Phase 3 built host events and prompts on the same branch, in the order the
+decision record's prompt rule settles. It keeps protocol 0 and the ABI:
+`SC_EMBED_ABI_VERSION` is still 1, and `embed.h` only gained names.
+
+- **Engine switch.** The engine sends host events only when launched with
+  `--suitecut-host-events=1` (`page/host_events.cc`). `suitecut-session`
+  passes it through a new `LaunchOptions::host_events`. Other clients never
+  see the new `host` packet type, so their decoders, which refuse unknown
+  types, keep working. The engine's `ready` packet says `hostEvents:true`
+  only then, because the TypeScript SDK's capability schema is strict.
+- **1. Loading.** `OnLoadingStateChange` and `OnLoadingProgressChange`
+  become `tab.loading {page, loading, progress, canGoBack, canGoForward}`.
+  `tabs.stop` (host, `sc_tab_stop`) calls `StopLoad`. Like a navigation, it
+  takes the tab for the person. `OnTitleChange` becomes
+  `tab.title {page, title}`: the engine's title, which is the URL for a page
+  without one. `tabs.list` still reads `document.title`, as protocol 0 always
+  has. With host events, a protocol 1 `Tab` adds `loading`, `canGoBack` and
+  `canGoForward`.
+- **2. Dialogs.** A connection whose `hello` lists `capabilities:["prompts"]`
+  (`SC_SESSION_PROMPTS`) makes the session hold its owner's dialogs. It
+  subscribes each of the owner's pages, and popups as they open, to the
+  engine's existing dialog controls.
+  - A held dialog is `prompt.opened {prompt:{id, page, kind:"dialog",
+    dialog, message, defaultValue, url, deadlineMs:30000}}`. Its id is
+    `dialog:PAGE:N`.
+  - `prompt.answer {prompt, accept, text?}` answers it
+    (`sc_prompt_answer_dialog`). A host may answer any of its owner's
+    prompts, and an agent only on a tab it holds. Answering does not change
+    control. A prompt dialog answered without text keeps its default.
+  - `prompt.closed {prompt, page, outcome}` follows. The outcome is
+    `accepted`, `dismissed`, `timeout` (the engine's 30 s deadline) or
+    `closed` (a navigation ended it, or its page closed). Under the switch,
+    `OnResetDialogState` reports each dialog it drops closed, with
+    `reason:"reset"`.
+  - A page showing a dialog is blocked in it, so a navigation would wait
+    for the dialog's deadline. A host's `tabs.navigate` therefore first
+    dismisses the page's held alerts, confirms and prompts, reported
+    `closed`. A `beforeunload` is left for the person, since it asks about
+    that navigation.
+  - When the owner's last such connection closes, what it held is
+    `dismissed`, and its pages go back to the engine's default answers.
+    While none is connected, nothing changes from before.
+  - An agent connection may also list `prompts`, to answer dialogs on the
+    tabs it drives.
+- **3. Popups.** A popup's `Tab` now carries `opener`, on protocol 1 only,
+  and its `tab.changed` is the new-window event. The window's disposition
+  and features are not reported (see "Open items").
+- **4. Cursor.** `OnCursorChange` becomes `view.cursor {view, cursor}` with
+  a CSS cursor name. `custom` adds the hotspot and size but not the image
+  yet. Under the switch the engine returns true, so CEF does not set a
+  native cursor of its own.
+- **5. File choosers, downloads, permissions, HTTP auth and client
+  certificates.** Not built: they need decisions first. See "Prompts that
+  go to the person" below.
+- **6. IME and edit commands.**
+  - `input.ime.set {view, text, selection?, replacement?}`,
+    `input.ime.commit {view, text, replacement?}` and
+    `input.ime.cancel {view}` call CEF's `Ime*` methods. Ranges are UTF-16
+    `[start, end]`.
+  - `OnImeCompositionRangeChanged` becomes
+    `view.ime {view, range, bounds:[[x, y, w, h]...]}`, for placing the
+    candidate window.
+  - `input.edit {view, command}` runs `copy`, `cut`, `paste`, `undo`,
+    `redo`, `selectAll` or `delete` on the focused frame.
+  - IME set and commit, and every edit but `copy`, take the tab.
+  - In `embed.h` they are `sc_view_ime_set`, `sc_view_ime_commit`,
+    `sc_view_ime_cancel` (with `sc_ime_composition`) and `sc_view_edit`
+    (`sc_edit_command`). They go in order with the view's other input.
+- **`hello`.** It now lists `prompts`, and with host events also
+  `tabs.stop`, `tab.loading`, `tab.title`, `view.cursor`, `input.ime` and
+  `input.edit`.
+- **Events.** `sc_event_kind` adds `TAB_LOADING` 5, `TAB_TITLE` 6,
+  `VIEW_CURSOR` 7, `VIEW_IME` 8, `PROMPT_OPENED` 9 and `PROMPT_CLOSED` 10.
+  `sc_event_page` reads `view` and `prompt.page` too. When a reply merges
+  several `tab.changed` for one tab, the merged one now stays where the first
+  was, so a new tab comes before its loading events.
+- **Protocol 0.** Its replies drop the new tab fields, and it gets no new
+  events. `shared_session_test` passes unchanged.
+- **The sample host** shows the tab's title and loading state, stops loads,
+  follows the history buttons, sets the page's cursor, shows dialogs as
+  sheets, composes through `NSTextInputClient`, and sends the Edit menu's
+  commands to the page. It was compiled on the Mac but has not been run
+  against an engine with host events, since no macOS engine with them has
+  been built.
+
+**Checked against the real engine** on the devbox (2026-11-21: Linux x64,
+headless, the official CEF 156.0.30 build, engine and client at `e71a2c9`).
+`suitecut-native-cef_host_events` passed all 40 checks:
+
+- `hello` lists the host events, so the switch reached the engine.
+- The first load: start, progress to 1, finish, with `canGoBack` true
+  because a new tab starts at `about:blank`. Its title and a script's later
+  title change both arrive, and `tabs.list` agrees.
+- Stopping a page whose image hangs ends the load at once.
+- Dialogs: a confirm accepted (the page got `true`), a prompt answered with
+  text (the page got it), a confirm dismissed (`false`), and a second answer
+  refused. An alert open during a host navigation is closed, and the
+  navigation completes.
+- The cursor over an input, a link, `cursor:wait` and the page:
+  `text`, `pointer`, `wait` and `default`.
+- IME: the composition shows in the input while composing, `view.ime`
+  gives its range and two character boxes, commit puts the text in, and
+  cancel leaves nothing. Select all with delete, undo and redo do what they
+  say. The clipboard works headless too: cut, then paste twice, gave the
+  text twice.
+- A click on a `target=_blank` link opens a popup with its `opener`, and the
+  popup reports its own loading.
+- The engine exits when the session closes.
+
+The first runs found the test's own mistakes (history after `about:blank`,
+an argument-order bug, a dangling loop over a temporary). They also found
+two engine behaviours, one fixed in the session (dismissing dialogs before a
+host navigation) and one left open (a navigation's commit; see "Open
+items").
+
+#### Prompts that go to the person
+
+Item 5 is not built. Each kind needs the engine to hold a CEF callback that
+today's policy answers at once, and each raises a question the decision
+record does not settle:
+
+- **Deadline.** Dialogs keep the engine's 30 s. A file chooser or an
+  authentication prompt that waits on a person can take longer. "No limits
+  of SuiteCut's own" suggests holding them until they are answered, the page
+  goes away, or the last prompt host leaves. Is that right, or should they
+  share the dialog deadline?
+- **Downloads.** The agent's `download` tool already sets a directory and
+  saves files by policy. When a person is asked "save where?", does the
+  person's answer override the agent's directory, or does an agent-held tab
+  keep the agent's policy?
+- **Permissions.** Should a grant be remembered per origin for the profile
+  (Chromium's content settings), or only for that request? Today's policy
+  answers each request.
+- **HTTP auth.** The answer carries a password over the session socket. The
+  socket is private to the user, but this is the first secret to cross it.
+  The agent's `network.credentials` path also exists. Which one wins when
+  both are set?
+- **Client certificates.** No answer shape is designed. A proposal:
+  `prompt.opened` lists the certificates (subject, issuer, expiry, an index),
+  and the answer is `{index}` or `{cancel:true}`.
+- **File choosers.** The proposal: `{paths:[ABS]}` from the person's own
+  picker. Should paths be checked as existing and readable, or passed to CEF
+  as given?
+
+Once these are answered, each kind follows the dialog pattern: hold the
+callback under the switch, `prompt.opened`, `prompt.answer`,
+`prompt.closed`, and today's policy when no prompt host is connected.
 
 ### Rules for all of it
 
@@ -1278,11 +1429,15 @@ What it proves:
 - A host can receive frames directly, with no relay process.
 - Owners are the host's own strings.
 
-Phase 3 adds to it: `NSTextInputClient` for IME, Cmd+C/V/X/Z as edit
-commands, dialogs as `NSAlert`, file prompts as `NSOpenPanel`, the cursor,
-and a menu item that mints a grant and prints the
-`suitecut-native-control --mcp --join …` command. It is also the place to
-run the phase 3 event tests by hand.
+Phase 3 added to it (compiled on the Mac, not yet run against an engine
+with host events): the window title from `tab.title`; the reload button
+stopping a load, and back and forward following `canGoBack` and
+`canGoForward`; the page's cursor as an `NSCursor`; dialogs as `NSAlert`
+sheets answered with `sc_prompt_answer_dialog` (session flag
+`SC_SESSION_PROMPTS`); `NSTextInputClient` for IME; and an Edit menu whose
+commands go to `sc_view_edit`. Still to add: file prompts as `NSOpenPanel`
+once item 5 is decided, and a menu item that mints a grant and prints the
+`suitecut-native-control --mcp --join …` command.
 
 ### What Napdock's helper would change
 
@@ -1338,7 +1493,7 @@ handling and frame validation from the helper.
 | 0 | **Built**: `shared_session_test` against a new `tests/support/session_fake_engine.cpp`, with the Napdock envelope replay in the same file; the Linux build is still to do. **Planned**: `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
 | 1 | **Built**: `session_protocol_test` in `native/client/tests/unit`; still to do: the golden fixtures as files, the script, and the real-engine workflow. **Planned**: **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
 | 2 | **Built**: `embed_test` in `native/client/tests/unit`, against `session_fake_engine`, which on macOS now sends real `420f` IOSurface frames at the viewport times the scale, then a forged frame from another process. It covers: runtime inspect (symlinked directory, an old service, missing, relative, a signing requirement, a wrong ABI), joining before start, owner isolation, `invalid_url`, navigation, history, take and release, screenshots, grants and revocation, `human_in_control`, `stale_generation`, the agent catalog, events (`resync`, `tab.changed`, timeout), an input-only view with every input kind and four threads of moves, library frames (size, format, use count, the forged frame dropped, resize, `view_busy`, `replace`, detach, an unsafe bootstrap name), host-only shutdown, idempotent close and `engine.exited`. `embed_header_test.c` compiles the header as C and checks the init functions and `sc_error_refusal`; `c_abi_test.c` is unchanged. Both pass on macOS and on Linux, where frames and signing requirements are `SC_UNSUPPORTED`. **Sample**: built, and run by hand against the real engine with `--click`, `--type` and `--snapshot`. **Packages**: `tests/consumer` compiles `embed.h` first and alone as C++, and `c_embed_consumer.c` includes only `embed.h` and calls it, in the C-only shared consumer too. `tools/verify-package.py` requires `client.h` and `embed.h` by name. `scripts/package-native-runtime.py` requires `embed.h` among its SDK inputs. `tools/package-source.py` now archives `native/client/session/`, which the source archive had lacked since phase 1. On Linux (the devbox, 2026-11-21), `verify-package.py --source-archive` passed from the exported archive. That covered static and shared builds, unit and architecture tests, relocated installs, and four consumers: static C++, shared C++, shared C-only and an embedding parent. `installed_embed_c_abi` passed in each. On macOS, the static install's consumer passed, with `embed.h` compiled alone. **Real engine, opt-in**: `suitecut-native-cef_embed_frames` (`ctest -L embed-frames` with `SUITECUT_EMBED_RUNTIME`) and `scripts/verify-embed-sample-macos.py`; see "Built in phase 2". |
-| 3 | One real-engine test per host event, in the `tests/cef` C++ workflows: `alert`, `confirm` and `prompt` answered and timed out; `beforeunload`; a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth (the fixture server under `tests/cef/fixtures`); cursor changes; IME composition and commit; copy and paste; title and loading events; audio audible while not recording. |
+| 3 | **Built**: `session_protocol_test`'s `host_events` section, against `session_fake_engine`, which now models host events and held dialogs with `--suitecut-host-events=1`. It covers: the capabilities in `hello`; `tab.loading` (start, progress, finish, history) and `tab.title`; a new tab's `tab.changed` before its loading events; `tabs.list` fields; `tabs.stop` taking the tab; IME set, commit and cancel, with ranges and which of them take the tab; the edit commands; `view.cursor` and `view.ime`; no prompt without a prompt host; a prompt host holding its owner's dialogs; `prompt.opened` fields; agent answers on its own tab, refusal on the person's; another owner's prompt; a second answer; a prompt's default text; a host navigation dismissing a held alert, and a `beforeunload` left to the engine's reset; a popup's `opener`, with its dialogs held; protocol 0's tab fields unchanged; and the last prompt host leaving. `embed_test` adds `SC_SESSION_PROMPTS`, an unknown flag, the loading and title kinds, `sc_tab_stop`, the IME and edit calls in order, bad ranges and commands, and a dialog answered through `sc_prompt_answer_dialog`. `embed_header_test.c` checks `sc_ime_composition_init` and the new constants. The engine's `suitecut-page-before-unload-test` checks the dialog reset report. **Real engine, opt-in**: `suitecut-native-cef_host_events` (`ctest -L embed-host-events` with `SUITECUT_EMBED_RUNTIME`), Linux and macOS, headless; see "Built in phase 3". **Still to do**, once item 5 is decided: a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth; a dialog left to time out (30 s); `beforeunload` with a user gesture; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
 | 5 | **MCP**: a join-mode test with a fake session (in the style of `control_cli_test.cpp`): grant narrowing, `--simple`, `human_in_control` as a tool error, opening the first tab. **Fuzzing**: `scripts/fuzz-native-control.py` extended to `--join`. |
 | 6 | **Linux spike**: half done on a machine without a GPU (2026-11-20, `suitecut-accelerated-paint-probe`): shared textures need GBM and give no frames without a render node; CPU frames work. **Still to do**: the same probe on a named GPU and driver, recording planes, formats and modifiers, then the frame workflow ported. |
@@ -1368,3 +1523,18 @@ handling and frame validation from the helper.
 - Whether `view.focus` is needed separately from input for caret and IME.
 - Whether a shared per-machine runtime later needs a broker process above
   sessions. With per-app pinned runtimes it does not.
+- **Prompts that go to the person** (phase 3's item 5): the questions under
+  "Built in phase 3".
+- **A navigation's commit.** `tabs.navigate` waits for `commit`, but the
+  engine marks a main frame committed only at its load end. A page that is
+  still loading, such as one whose image hangs or a document that stalls
+  mid-body, makes `tabs.navigate` fail with `navigation_failed` after 30 s,
+  although the page did commit. Found on the box in phase 3 and not fixed
+  there, since it predates it (`page/navigation.cc`, `page/frames.cc`).
+- **Popup disposition.** A popup's `tab.changed` carries `opener` but not
+  whether it asked for a tab, a window or a popup, nor its size.
+- **Custom cursors.** `view.cursor` says `custom` with the hotspot and
+  size, but not the image.
+- **A popup's first dialog** can come before the session subscribes the
+  popup's dialogs, and then gets the engine's default answer.
+- **Dialog deadline.** The engine's 30 s applies when a person answers too.
