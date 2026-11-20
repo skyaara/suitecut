@@ -384,7 +384,8 @@ void session_flow() {
     while ((!finished || !titled) && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
       if (sc_event_page(event) == loaded.page) {
         size_t size = 0;
-        const auto body = Json::parse(std::string_view(sc_event_json(event, &size), size));
+        const char* data = sc_event_json(event, &size);  // before reading size
+        const auto body = Json::parse(std::string_view(data, size));
         if (sc_event_kind_of(event) == SC_EVENT_TAB_LOADING && body.at("loading") == Json(false)) finished = true;
         if (sc_event_kind_of(event) == SC_EVENT_TAB_TITLE && body.at("title") == Json("Title of https://embed.test/"))
           titled = true;
@@ -438,7 +439,8 @@ void session_flow() {
     while (id.empty() && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
       if (sc_event_kind_of(event) == SC_EVENT_PROMPT_OPENED && sc_event_page(event) == loaded.page) {
         size_t size = 0;
-        const auto body = Json::parse(std::string_view(sc_event_json(event, &size), size));
+        const char* data = sc_event_json(event, &size);  // before reading size
+        const auto body = Json::parse(std::string_view(data, size));
         if (body.at("prompt").at("message") == Json("Proceed?")) id = body.at("prompt").at("id").as_string();
       }
       sc_event_destroy(event);
@@ -451,7 +453,8 @@ void session_flow() {
     while (!closed && sc_session_next_event(host, 3000, &event, &error) == SC_OK) {
       if (sc_event_kind_of(event) == SC_EVENT_PROMPT_CLOSED && sc_event_page(event) == loaded.page) {
         size_t size = 0;
-        const auto body = Json::parse(std::string_view(sc_event_json(event, &size), size));
+        const char* data = sc_event_json(event, &size);  // before reading size
+        const auto body = Json::parse(std::string_view(data, size));
         closed = body.at("prompt") == Json(id) && body.at("outcome") == Json("dismissed");
       }
       sc_event_destroy(event);
