@@ -441,9 +441,33 @@ built behaviour is what the rest of Part 2 now says:
   Cursors start at 1, and 0 always means a first read.
 - **`--allow-schemes`** applies to tab opens and a person's navigations.
   The agents' `navigate` tool is not checked yet.
-- **Still open:** any same-user client can send protocol 0's
-  `_session_close`. It is answered on every connection, whatever the
-  protocol flags, because the CLI's `status` and `close` use it.
+- **`_session_close`.** The socket layer answers protocol 0's
+  `_session_status` and `_session_close` only on a connection that has not
+  spoken protocol 1, so an agent's protocol 1 connection cannot get round
+  the host-only `session.close` that way. Any other same-user client can
+  still send it, whatever the protocol flags, because the CLI's `status`
+  and `close` use it. Closing it further needs a decision; see "Open items".
+- **Pages the engine closed** leave the owner's agent driver on its next
+  call, and the driver no longer caps how many pages it holds.
+
+### Checked against the real engine (2026-11-20)
+
+The service from this branch ran against the CEF 156 engine Napdock ships,
+with a throwaway session, directory and profile, and pages served locally.
+It answered every protocol 0 envelope Napdock's helper sends, and the
+protocol 1 `hello`, `agent.call`, `view.screenshot` to a file and
+`events.next`. A screenshot came back as a 1280×800 PNG, and the tab stayed
+open and could still navigate. The bundle built from it is the one Napdock
+now runs.
+
+Three things the fake engine hides:
+
+- `view` `attach` to a bootstrap name nobody has checked in fails ("No
+  receiver is checked in under the surface port name"). The fake engine
+  accepts any name. Napdock's helper checks its port in first, so this is
+  correct, but frames to a real receiver are not tested here.
+- Right after a reload the title reads `""` until the page loads.
+- A popup is listed with `about:blank` until its first navigation event.
 
 ### Rules for all of it
 
@@ -1083,7 +1107,7 @@ suitecut-native-control --mcp --join example --session-dir /abs/run --owner chat
 | `tabs.open` defaults to `by:"agent"` (`:221`) | Decided by the role |
 | Default directory `/tmp/suitecut-control-<uid>` (`control_session.cpp:94`) | Unchanged for compatibility; hosts pass `--session-dir` |
 | `getpeereid` | `getpeereid` on macOS, `SO_PEERCRED` on Linux |
-| Every same-user client may close the session | `session.close` is host-only; protocol 0's `_session_close` is still open to any same-user client |
+| Every same-user client may close the session | `session.close` is host-only, and a protocol 1 connection cannot send `_session_close`; a protocol 0 connection still can |
 | One lock for every owner's agent calls | Per owner (rule 9), built |
 | No tests | Built: see "Tests" |
 
@@ -1172,11 +1196,17 @@ For the Napdock side to pick up; this design changes nothing there.
 
 ### Open items for this design
 
-- The agent driver refuses to adopt a 129th page ("Agent page capacity
-  exceeded", `agent_driver.cpp`). That is a SuiteCut limit, which the
-  repository's rules do not allow, and pages the engine closed are never
-  dropped from it. Now it is per owner, not per session.
-- A real-engine run of the session tests, and the Linux build.
+- **Who may close a session.** A protocol 0 connection, which is any
+  same-user process, can still send `_session_close`. Refusing it is not a
+  security boundary: a same-user process can also signal the worker. It
+  guards against mistakes. The choices are:
+  - keep it, as now;
+  - have the CLI's `close` speak protocol 1 as a host, and stop answering
+    `_session_close` when `--protocol-0 off`;
+  - stop answering it altogether once Napdock's helper no longer relies on
+    the CLI's `close`.
+- **The Linux frame path** (see "How frames reach the app" in the
+  [direction](direction.md)).
 - Per-view scale in the engine.
 - Whether `view.focus` is needed separately from input for caret and IME.
 - Whether a shared per-machine runtime later needs a broker process above

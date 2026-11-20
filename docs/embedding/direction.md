@@ -301,12 +301,16 @@ none today.
 Progress, 2026-11-20:
 
 - Phase 0 is done on branch `claude/embeddable-runtime-2343a7`, except
-  that nothing has landed on `main`, and the Linux build has not been
-  run. That wait is on the push decision below.
-- Phase 1 has started there: the service is the `suitecut-session` product
+  that nothing has landed on `main`. The client, with the three session
+  tests, builds and passes on Linux (Ubuntu 24.04, x86_64), so the
+  `SO_PEERCRED` path compiles and runs there.
+- Phase 1 is built there: the service is the `suitecut-session` product
   target with protocol 1, and the installed helper's protocol 0 passes
-  unchanged against it. See "Built in phase 1" in the
-  [API design](api-design.md).
+  unchanged against it, with the fake engine and with the real engine. See
+  "Built in phase 1" in the [API design](api-design.md).
+- Napdock's installed browser bundle now carries the new service, so a
+  composer screenshot no longer closes the tab. The bundle it replaced is
+  kept beside it as `SuiteCut.app.backup-2026-11-20`.
 
 ## Decisions
 
@@ -341,6 +345,8 @@ and the user can revisit any of them.
    - With no host that supports prompts, today's policies apply.
 7. **Per-agent control: open.** One "agent" per owner for now. Whether two
    agents in one owner should hold separate tabs is still to decide.
-8. **Pushing `claude/napdock-156`: open.** The repository is public, so a
-   push publishes the Napdock work and these documents. Until the user
-   answers, nothing is pushed or merged into `main`.
+8. **Pushing: answered for two heads.** The user approved pushing
+   `claude/napdock-156` at `48ab856` and `claude/embeddable-runtime-2343a7`
+   at `743bed7`, and both are on `origin`. The repository is public, so
+   that published the Napdock work and these documents. Later commits are
+   not pushed until the user says so, and nothing is merged into `main`.
