@@ -258,6 +258,27 @@ void Host::CloseTab(const std::string& owner, int page) {
 
 Json Host::Navigate(const std::string& owner, int page, Json fields) {
   Take(owner, page);
+  // A page showing a dialog is blocked in it, so a navigation would wait for
+  // the dialog's deadline. The person navigating has moved on: dismiss its
+  // alerts, confirms and prompts, as closed. A beforeunload stays theirs to
+  // answer, since it is about this very navigation.
+  std::vector<std::string> dismiss;
+  {
+    std::lock_guard lock(state_);
+    for (auto& [id, prompt] : prompts_)
+      if (prompt.page == page && prompt.outcome.empty() && prompt.info.at("dialog") != Json("beforeunload")) {
+        prompt.outcome = "closed";
+        dismiss.push_back(prompt.engine_id);
+      }
+  }
+  for (const auto& engine_id : dismiss) {
+    try {
+      Engine(page, Json{{"command", "dialog"}, {"action", "answer"}, {"dialogId", engine_id}, {"accept", false},
+                        {"promptText", ""}});
+    } catch (...) {
+      // It closed meanwhile; its prompt.closed comes from the engine.
+    }
+  }
   NavigateEngine(page, std::move(fields));
   return Describe(page);
 }

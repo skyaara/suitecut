@@ -596,14 +596,28 @@ void host_events(Service& service) {
         "the host's answer closes the prompt");
   host.call("tabs.release", Json{{"page", page}});
 
-  // A navigation resets a held dialog: it closes, unanswered.
+  // A host's navigation dismisses the page's held alert first, as closed:
+  // the page is blocked in it and would not navigate.
   evaluate(host, page, "dialog:alert:soon gone");
   const auto reset = next_prompt();
   host.call("tabs.navigate", Json{{"page", page}, {"url", "https://host.test/next"}});
   const auto reset_closed = reader.wait_for([&](const Json& e) { return is(e, "prompt.closed") && e.at("prompt") == Json(reset); });
   check(reset_closed.is_object() && reset_closed.at("outcome") == Json("closed"), "a navigation closes a held dialog");
+  const auto dismissal = commands_named(service, "dialog").back();
+  check(dismissal.at("action") == Json("answer") && dismissal.at("accept") == Json(false),
+        "the session dismissed it before navigating");
   check(code(host.call("prompt.answer", Json{{"prompt", reset}, {"accept", true}})) == "prompt_gone",
         "a closed prompt is prompt_gone");
+  host.call("tabs.release", Json{{"page", page}});
+  // A beforeunload is left to the person; the engine's reset closes it here.
+  evaluate(host, page, "dialog:beforeunload:Leave?");
+  const auto leaving = next_prompt();
+  const auto answers_before = commands_named(service, "dialog").size();
+  host.call("tabs.navigate", Json{{"page", page}, {"url", "https://host.test/after"}});
+  const auto left_closed = reader.wait_for([&](const Json& e) { return is(e, "prompt.closed") && e.at("prompt") == Json(leaving); });
+  check(left_closed.is_object() && left_closed.at("outcome") == Json("closed") &&
+            commands_named(service, "dialog").size() == answers_before,
+        "a beforeunload is not dismissed for the person; a reset closes it");
   host.call("tabs.release", Json{{"page", page}});
 
   // A popup has its opener, and its dialogs are held too.
