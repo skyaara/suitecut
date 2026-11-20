@@ -398,10 +398,23 @@ int host_events_main(int argc, char** argv) {
     events->mark();
     evaluate("setTimeout(()=>{alert('Interrupted')},0);1");
     const auto interrupted = prompt_opened("alert", "Interrupted");
-    if (sc_tab_navigate(session, page, pages.Url("/page?again").c_str(), &tab, &error) != SC_OK)
-      throw std::runtime_error(std::string("navigate during a dialog: ") + error.message);
+    // The navigation runs on its own thread, so the dialog's closing is seen
+    // whether or not the navigation returns.
+    std::atomic<int> navigated{-1};
+    std::string navigate_error;
+    std::thread navigating([&] {
+      sc_tab moved;
+      sc_tab_init(&moved);
+      sc_error failure;
+      const auto status = sc_tab_navigate(session, page, pages.Url("/page?again").c_str(), &moved, &failure);
+      if (status != SC_OK) navigate_error = failure.message;
+      navigated = status;
+    });
     const auto reset = prompt_closed(interrupted.at("id").as_string());
+    navigating.join();
+    run.note("navigating while a dialog is open", Json{{"status", navigated.load()}, {"error", navigate_error}});
     run.check(reset.is_object() && reset.at("outcome") == Json("closed"), "a navigation closes an open dialog", reset);
+    run.check(navigated == SC_OK, "and the navigation completes", navigate_error);
     events->wait([&](sc_event_kind kind, const Json& event) {
       return on(SC_EVENT_TAB_LOADING)(kind, event) && event.at("loading") == Json(false);
     });
