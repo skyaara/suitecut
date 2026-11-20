@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
-add_executable(suitecut-native-control control.cpp control_cli.cpp control_session.cpp)
-add_executable(suitecut-shared-session shared_session.cpp control_session.cpp)
+add_executable(suitecut-native-control control.cpp control_cli.cpp)
 add_executable(suitecut-native-record record.cpp)
 add_executable(suitecut-native-chromium chromium.cpp)
 add_executable(suitecut-native-agent agent.cpp)
 add_executable(suitecut-native-command raw.c)
 add_executable(suitecut-native-read-window read_window.cpp)
-target_link_libraries(suitecut-native-control PRIVATE OpenSSL::Crypto)
-set(client_examples suitecut-native-control suitecut-shared-session suitecut-native-record suitecut-native-chromium
+# The session socket code lives with the session service (../session).
+target_link_libraries(suitecut-native-control PRIVATE suitecut_session_socket OpenSSL::Crypto)
+set(client_examples suitecut-native-control suitecut-native-record suitecut-native-chromium
   suitecut-native-agent suitecut-native-command suitecut-native-read-window)
 foreach(example IN LISTS client_examples)
   target_link_libraries(${example} PRIVATE SuiteCut::Client)

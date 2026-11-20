@@ -5,7 +5,11 @@
 // the helper fails here first. They run the service against the session fake
 // engine; nothing here is a browser.
 //
-// usage: shared_session_test SERVICE FAKE_ENGINE
+// usage: shared_session_test SERVICE FAKE_ENGINE [SERVICE_FLAGS...]
+//
+// Run with --protocol-1 off, the service behaves as the protocol 0 service
+// Napdock shipped with. The same checks passed against that program itself
+// (examples/shared_session.cpp at commit cb24c74).
 #include <set>
 
 #include "session_harness.hpp"
@@ -14,6 +18,8 @@ using namespace session_test;
 
 namespace {
 std::string binary, engine;
+std::vector<std::string> flags;
+bool protocol1 = true;
 
 Json tabs(const std::string& owner, Json op) { return Json{{"owner", owner}, {"tabs", std::move(op)}}; }
 Json view(const std::string& owner, int page, const std::string& op, Json fields = Json::object{}) {
@@ -50,7 +56,7 @@ int open(Connection& connection, const std::string& owner, const std::string& by
 }
 
 void lifecycle_and_framing() {
-  Service service(binary, engine, "framing");
+  Service service(binary, engine, "framing", flags);
   const auto started = service.start();
   check(ok(started) && started.at("result").at("running") == Json(true), "start reports a running session");
   check(service.control("status").at("result").at("running") == Json(true), "status sees the running session");
@@ -109,13 +115,23 @@ void envelopes_and_isolation(Service& service) {
         "only http and https open");
   check(code(connection.call(tool("a", 2, "pages"))) == "unknown_tool", "the service keeps tabs to itself");
 
-  // A protocol 1 client's first message, to this service: it reads as an
-  // unversioned envelope with no owner. The reply carries no "v", which is how
-  // a protocol 1 client knows the service is protocol 0 only.
-  const auto hello = connection.call(Json{{"v", 1}, {"id", 1}, {"op", "hello"},
-                                          {"params", Json{{"protocols", Json::array{1}}, {"owner", "a"}}}});
-  check(!ok(hello) && !hello.contains("v") && code(hello) == "invalid_owner",
-        "hello to a protocol 0 service is refused as a missing owner, with no v");
+  // A protocol 1 client's first message. To a protocol 0 service it reads as
+  // an unversioned envelope with no owner, and the reply carries no "v": that
+  // is how a protocol 1 client knows the service is protocol 0 only. It needs
+  // its own connection: a connection keeps the protocol of its first message.
+  {
+    Connection fresh(service.socket());
+    const auto hello = fresh.call(Json{{"v", 1}, {"id", 1}, {"op", "hello"},
+                                       {"params", Json{{"protocols", Json::array{Json(1)}}, {"owner", "a"}}}});
+    if (protocol1)
+      check(ok(hello) && hello.at("v") == Json(1) && hello.at("id") == Json(1), "hello gets a protocol 1 reply");
+    else
+      check(!ok(hello) && !hello.contains("v") && code(hello) == "invalid_owner",
+            "hello to a protocol 0 service is refused as a missing owner, with no v");
+  }
+  // On a protocol 0 connection, a versioned message is still protocol 0.
+  const auto late = connection.call(Json{{"v", 1}, {"id", 2}, {"op", "hello"}, {"params", Json::object{}}});
+  check(!late.contains("v") && code(late) == "invalid_owner", "a protocol 0 connection stays protocol 0");
 
   // Ownership: an owner never sees or touches another's tabs.
   const int page = open(connection, "owner-a", "human", "https://a.test/");
@@ -361,8 +377,38 @@ void napdock_replay(Service& service) {
           "helper close");
 }
 
+// Rule 9: agent calls of different owners do not wait for each other. Each
+// owner has its own agent; one owner's calls still run one at a time.
+void owners_in_parallel(Service& service) {
+  Connection setup(service.socket());
+  const int slow_page = open(setup, "slow-owner", "agent");
+  const int quick_page = open(setup, "quick-owner", "agent");
+  std::atomic<bool> slow_done{false};
+  std::thread slow([&] {
+    Connection connection(service.socket());
+    connection.call(tool("slow-owner", slow_page, "evaluate", Json{{"expression", "slow:3000"}}));
+    slow_done = true;
+  });
+  std::this_thread::sleep_for(300ms);
+  const auto start = Clock::now();
+  const auto quick = setup.call(tool("quick-owner", quick_page, "evaluate", Json{{"expression", "1"}}));
+  const auto took = Clock::now() - start;
+  check(ok(quick) && took < 1500ms && !slow_done, "another owner's agent call does not wait for a slow one");
+  const int other_tab = open(setup, "quick-owner", "agent");
+  check(!slow_done, "another owner opens a tab while the slow call runs");
+  // The same owner's next call waits for its own running call.
+  const auto same_start = Clock::now();
+  Connection same(service.socket());
+  const auto queued = same.call(tool("slow-owner", slow_page, "evaluate", Json{{"expression", "1"}}));
+  check(ok(queued) && Clock::now() - same_start > 1000ms, "the same owner's calls run one at a time");
+  slow.join();
+  for (const auto& [owner, page] : {std::pair{std::string("slow-owner"), slow_page}, {"quick-owner", quick_page},
+                                    {"quick-owner", other_tab}})
+    setup.call(tabs(owner, Json{{"op", "close"}, {"page", page}}));
+}
+
 void engine_exit() {
-  Service service(binary, engine, "exit");
+  Service service(binary, engine, "exit", flags);
   require(ok(service.start()), "start");
   Connection connection(service.socket());
   const int page = open(connection, "a", "agent");
@@ -378,17 +424,20 @@ void engine_exit() {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    std::cerr << "usage: shared_session_test SERVICE FAKE_ENGINE\n";
+  if (argc < 3) {
+    std::cerr << "usage: shared_session_test SERVICE FAKE_ENGINE [SERVICE_FLAGS...]\n";
     return 2;
   }
   binary = argv[1];
   engine = argv[2];
+  for (int i = 3; i < argc; ++i) flags.push_back(argv[i]);
+  for (std::size_t i = 0; i + 1 < flags.size(); ++i)
+    if (flags[i] == "--protocol-1" && flags[i + 1] == "off") protocol1 = false;
   try {
     std::cerr << "-- lifecycle_and_framing\n";
     lifecycle_and_framing();
     {
-      Service service(binary, engine, "shared");
+      Service service(binary, engine, "shared", flags);
       require(ok(service.start()), "start");
       std::cerr << "-- envelopes_and_isolation\n";
       envelopes_and_isolation(service);
@@ -402,6 +451,8 @@ int main(int argc, char** argv) {
       view_ops(service);
       std::cerr << "-- napdock_replay\n";
       napdock_replay(service);
+      std::cerr << "-- owners_in_parallel\n";
+      owners_in_parallel(service);
     }
     std::cerr << "-- engine_exit\n";
     engine_exit();

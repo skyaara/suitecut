@@ -81,7 +81,8 @@ add_test(NAME c_abi_test COMMAND c_abi_test)
 set_tests_properties(c_abi_test PROPERTIES TIMEOUT 60 LABELS "client;unit;abi")
 
 # The session service against a fake engine: protocol 0 as embedding apps
-# send it today. It needs the service binary, so it is built with it.
+# send it today, and protocol 1. They need the service, so they are built
+# with it.
 if(NOT WIN32 AND TARGET suitecut-shared-session)
   add_executable(session_fake_engine support/session_fake_engine.cpp)
   target_link_libraries(session_fake_engine PRIVATE SuiteCut::Client)
@@ -92,7 +93,18 @@ if(NOT WIN32 AND TARGET suitecut-shared-session)
   add_dependencies(shared_session_test session_fake_engine suitecut-shared-session)
   add_test(NAME shared_session_test COMMAND shared_session_test
     $<TARGET_FILE:suitecut-shared-session> $<TARGET_FILE:session_fake_engine>)
-  set_tests_properties(shared_session_test PROPERTIES TIMEOUT 120 LABELS "client;unit;session")
+  # The same checks with protocol 1 off: the service as Napdock shipped it.
+  add_test(NAME shared_session_protocol0_only_test COMMAND shared_session_test
+    $<TARGET_FILE:suitecut-shared-session> $<TARGET_FILE:session_fake_engine> --protocol-1 off)
+  add_executable(session_protocol_test unit/session_protocol_test.cpp)
+  target_include_directories(session_protocol_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(session_protocol_test PRIVATE SuiteCut::Client)
+  target_compile_options(session_protocol_test PRIVATE -UNDEBUG)
+  add_dependencies(session_protocol_test session_fake_engine suitecut-session)
+  add_test(NAME session_protocol_test COMMAND session_protocol_test
+    $<TARGET_FILE:suitecut-session> $<TARGET_FILE:session_fake_engine>)
+  set_tests_properties(shared_session_test shared_session_protocol0_only_test session_protocol_test
+    PROPERTIES TIMEOUT 180 LABELS "client;unit;session")
 endif()
 
 set(client_integration_sources
