@@ -172,13 +172,28 @@ with no pixel copy.
   NV12 and sends it as an IOSurface in a 64-byte Mach message, to a port the
   receiver registered. A slow receiver misses frames and never sees a torn
   one.
-- **Linux (unknown).** CEF 156 describes an accelerated paint on Linux as up
-  to four dmabuf file descriptors. Yet the same header still says shared
-  textures for windowless rendering are "currently only supported on
-  Windows". SuiteCut never turns them on outside macOS, so its Linux engine
-  paints into CPU memory today. Whether Linux GPU frames work in this CEF
-  version, on which drivers, and in which formats needs a spike before any
-  promise. The proposal is to pass dmabuf descriptors over a Unix socket.
+- **Linux (partly settled, 2026-11-20).** CEF 156 does implement shared
+  textures for off-screen rendering on Linux, although its header says
+  "currently only supported on Windows". With them on and a GPU process
+  running, Chromium allocates each frame from GBM, a dmabuf that needs a
+  DRM render node (`/dev/dri/renderD*`). On a machine without one, such as
+  the boxes.dev devbox, it logs "Can't create buffer -- gbm device is
+  missing", and the view gets no frames at all: neither accelerated nor CPU.
+  With the GPU process off (`--disable-gpu`, which the engine's headless
+  mode passes), CEF ignores the setting and paints into CPU memory as
+  before. So:
+  - A machine without a GPU can show the session's tabs only as CPU
+    frames. The Linux engine paints those today, headless with the sandbox
+    on, as the devbox run showed. No view sink hands them to an app yet; a
+    shared-memory one is phase 6 work.
+  - GPU frames need a render node and a working GBM driver. The engine
+    must turn shared textures on only where it has checked one, never with
+    SwiftShader, or the view goes blank.
+  - Not yet seen: a real dmabuf from CEF on a machine with a GPU, its plane
+    count, formats and modifiers, and whether its descriptors survive
+    `SCM_RIGHTS` into a host that imports them into EGL or Vulkan. That
+    needs a machine with a GPU. `suitecut-accelerated-paint-probe` (built with
+    `-DSUITECUT_ACCELERATED_PAINT_PROBE=ON`) prints those for each frame.
 - **Windows (unknown, blocked).** CEF hands over a Direct3D 11 shared texture
   handle that is valid only during the paint callback. There is no Windows
   SuiteCut engine yet, so this waits for an engine port. The proposal is
@@ -308,6 +323,11 @@ Progress, 2026-11-20:
   target with protocol 1, and the installed helper's protocol 0 passes
   unchanged against it, with the fake engine and with the real engine. See
   "Built in phase 1" in the [API design](api-design.md).
+- The engine builds on Linux again (clang 18 against the official CEF
+  156.0.30 linux64 archive, after two Linux-only compile fixes), and the
+  session service runs against it headless on the devbox: every protocol 0
+  envelope Napdock sends, the protocol 1 handshake, and a screenshot that
+  keeps the tab. Renderers run in Chromium's namespace and seccomp sandbox.
 - Napdock's installed browser bundle now carries the new service, so a
   composer screenshot no longer closes the tab. The bundle it replaced is
   kept beside it as `SuiteCut.app.backup-2026-11-20`.

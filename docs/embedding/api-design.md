@@ -360,7 +360,9 @@ launcher. This was not built here; it needs a Linux build to confirm.
   `plane_count`, a `uint64_t modifier`, `format` (`cef_color_type_t`: RGBA or
   BGRA 8888) and `extra`. The `shared_texture_enabled` doc in the same
   header still says shared textures are "currently only supported on
-  Windows". Whether 156 delivers dmabufs off screen is unknown.
+  Windows". A run on Linux (see "How frames reach the app" in the
+  [direction](direction.md)) shows 156 does try: it allocates GBM buffers,
+  and without a render node it delivers no frames at all.
 - **Windows.** `shared_texture_handle` is a `HANDLE`, opened with D3D11
   `OpenSharedResource1` or D3D12 `OpenSharedHandle`, and has no keyed mutex.
 - **All platforms.** The handle or fds "cannot be cached and cannot be
@@ -468,6 +470,14 @@ Three things the fake engine hides:
   correct, but frames to a real receiver are not tested here.
 - Right after a reload the title reads `""` until the page loads.
 - A popup is listed with `about:blank` until its first navigation event.
+
+The same checks passed on Linux (Ubuntu 24.04, x86_64, no GPU) against the
+engine built from the official CEF 156.0.30 archive, headless, with
+renderers in Chromium's sandbox. There, protocol 0's `view` `attach` and
+`detach` answer `failed` with "Unknown native command", because the
+surface output exists only on macOS. A Linux host has no view to attach
+until phase 6. Detach could answer as a no-op there instead; nothing
+depends on it yet.
 
 ### Rules for all of it
 
@@ -1033,10 +1043,14 @@ in a name; the frame message is as in Part 1. Additions:
 - The host checks `SO_PEERCRED` against the engine's pid.
 - The engine must copy CEF's planes into buffers it allocates (GBM or
   Vulkan), because CEF's fds are valid only during the callback.
-- Unknowns for the spike: whether CEF 156 delivers accelerated paint off
-  screen on Linux at all; which formats and modifiers; whether a GPU process
-  is available on the target machines; and how to fence (implicit sync or
-  sync files).
+- CEF 156 allocates Linux off-screen frames from GBM when shared textures
+  are on. Without a render node it delivers nothing, so the engine turns
+  them on only after checking for one, and uses CPU frames otherwise. No
+  sink in this contract carries CPU frames yet; a shared-memory sink for
+  Linux machines without a GPU is phase 6 work.
+- Still unknown, for a machine with a GPU: which formats and modifiers;
+  whether the descriptors import in another process; and how to fence
+  (implicit sync or sync files).
 
 **Windows (proposal, untested; needs an engine port first).**
 
@@ -1192,7 +1206,7 @@ For the Napdock side to pick up; this design changes nothing there.
 | 3 | One real-engine test per host event, in the `tests/cef` C++ workflows: `alert`, `confirm` and `prompt` answered and timed out; `beforeunload`; a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth (the fixture server under `tests/cef/fixtures`); cursor changes; IME composition and commit; copy and paste; title and loading events; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
 | 5 | **MCP**: a join-mode test with a fake session (in the style of `control_cli_test.cpp`): grant narrowing, `--simple`, `human_in_control` as a tool error, opening the first tab. **Fuzzing**: `scripts/fuzz-native-control.py` extended to `--join`. |
-| 6 | **Linux spike**: a recorded check that accelerated paint delivers dmabufs off screen on a named GPU and driver, then the frame workflow ported. |
+| 6 | **Linux spike**: half done on a machine without a GPU (2026-11-20, `suitecut-accelerated-paint-probe`): shared textures need GBM and give no frames without a render node; CPU frames work. **Still to do**: the same probe on a named GPU and driver, recording planes, formats and modifiers, then the frame workflow ported. |
 
 ### Open items for this design
 
