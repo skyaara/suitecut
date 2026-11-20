@@ -730,12 +730,9 @@ void Host::SaveDownload(const std::string& prompt, int page, std::string downloa
     // engine copies the file, once.
     for (;;) {
       try {
-        const auto settled = Engine(page,
-                                    Json{{"command", "download"}, {"action", "failure"}, {"downloadId", download},
-                                         {"timeoutMs", 110000}},
-                                    std::chrono::milliseconds(120000));
-        if (settled.contains("failure") && settled.at("failure").is_string())
-          throw std::runtime_error(settled.at("failure").as_string());
+        // path waits for it to settle; a failed download is its error.
+        Engine(page, Json{{"command", "download"}, {"action", "path"}, {"downloadId", download}, {"timeoutMs", 110000}},
+               std::chrono::milliseconds(120000));
         break;
       } catch (const std::runtime_error& error) {
         if (std::string(error.what()).find("Native operation timed out") == std::string::npos) throw;
