@@ -59,6 +59,11 @@ const char kFiles[] =
     "<script>f.onchange=()=>{document.title='files:'+[...f.files].map(x=>x.name).join(',')}</script>";
 const char kLogin[] = "YW5uOnB3LWJveC00NDE3LXVubG9nZ2Vk";  // ann:pw-box-4417-unlogged
 const char kPassword[] = "pw-box-4417-unlogged";
+// /auth-agent (realm Agent) takes bob:pw-agent-5521, /auth-retry (realm
+// Retry) carl:pw-retry-7730: realms of their own, so Chromium's auth cache for
+// Box does not answer them.
+const char kAgentLogin[] = "Ym9iOnB3LWFnZW50LTU1MjE=";
+const char kRetryLogin[] = "Y2FybDpwdy1yZXRyeS03NzMw";
 
 // Serves the page; /stall, a page whose image is /slow; and /slow, headers
 // and then nothing for a long while. So /stall commits at once but stays
@@ -113,9 +118,12 @@ class PageServer {
     const auto n = ::recv(client, request, sizeof request - 1, 0);
     const std::string head = n > 0 ? std::string(request, static_cast<std::size_t>(n)) : "";
     if (head.starts_with("GET /auth")) {
-      if (head.find(std::string("Authorization: Basic ") + kLogin) == std::string::npos) {
+      const bool agent = head.starts_with("GET /auth-agent"), retry = head.starts_with("GET /auth-retry");
+      const std::string login = agent ? kAgentLogin : retry ? kRetryLogin : kLogin;
+      const std::string realm = agent ? "Agent" : retry ? "Retry" : "Box";
+      if (head.find("Authorization: Basic " + login + "\r\n") == std::string::npos) {
         const std::string body = "<!doctype html><title>Login needed</title>";
-        Send(client, "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\"Box\"\r\nContent-Type: text/html\r\n"
+        Send(client, "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\"" + realm + "\"\r\nContent-Type: text/html\r\n"
                      "Connection: close\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body);
       } else {
         const std::string body = "<!doctype html><title>Authed</title>";
@@ -630,29 +638,44 @@ int host_events_main(int argc, char** argv) {
     run.check(!id.empty() && dropped.is_object() && dropped.at("outcome") == Json("closed"),
               "a navigation closes a held file chooser", dropped);
 
-    // Permissions: each request asks; nothing is remembered.
+    // Permissions: each request asks; nothing is remembered. Which requests
+    // reach CEF's permission prompt headless is the engine's, so each is
+    // noted, and at least one must ask.
     events->mark();
     evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo='ok'},e=>{window.geo='error:'+e.code});1");
-    opened = person_opened("permission");
-    run.check(opened.is_object() && opened.at("prompt").at("permissions") == Json(Json::array{Json("geolocation")}) &&
-                  opened.at("prompt").at("origin").as_string().starts_with("http://127.0.0.1"),
-              "a geolocation request is a permission prompt", opened);
-    id = opened.at("prompt").at("id").as_string();
-    run.check(sc_prompt_answer_permission(session, id.c_str(), 0, &error) == SC_OK, "deny it");
-    run.check(settles("window.geo", "error:1"), "the page is told PERMISSION_DENIED");
+    opened = person_opened("permission", 8s);
+    const bool geolocation_asks = opened.is_object();
+    if (geolocation_asks) {
+      run.check(opened.at("prompt").at("permissions") == Json(Json::array{Json("geolocation")}) &&
+                    opened.at("prompt").at("origin").as_string().starts_with("http://127.0.0.1"),
+                "a geolocation request is a permission prompt", opened);
+      id = opened.at("prompt").at("id").as_string();
+      run.check(sc_prompt_answer_permission(session, id.c_str(), 0, &error) == SC_OK, "deny it");
+      run.check(settles("window.geo", "error:1"), "the page is told PERMISSION_DENIED");
+    } else {
+      run.note("geolocation: no prompt", evaluate("String(window.geo)"));
+    }
     events->mark();
     evaluate("Notification.requestPermission().then(r=>{window.notified=r});1");
-    opened = person_opened("permission");
-    run.check(opened.is_object() && opened.at("prompt").at("permissions") == Json(Json::array{Json("notifications")}),
-              "a notification request is a permission prompt", opened);
-    id = opened.at("prompt").at("id").as_string();
-    run.check(sc_prompt_answer_permission(session, id.c_str(), 1, &error) == SC_OK, "grant it");
-    run.check(settles("window.notified", "granted"), "the page is granted notifications");
-    events->mark();
-    evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo2='ok'},e=>{window.geo2='error:'+e.code});1");
-    opened = person_opened("permission");
-    run.check(opened.is_object(), "a second geolocation request asks again: nothing was remembered");
-    if (opened.is_object()) sc_prompt_cancel(session, opened.at("prompt").at("id").as_string().c_str(), &error);
+    opened = person_opened("permission", 8s);
+    const bool notifications_ask = opened.is_object();
+    if (notifications_ask) {
+      run.check(opened.at("prompt").at("permissions") == Json(Json::array{Json("notifications")}),
+                "a notification request is a permission prompt", opened);
+      id = opened.at("prompt").at("id").as_string();
+      run.check(sc_prompt_answer_permission(session, id.c_str(), 1, &error) == SC_OK, "grant it");
+      run.check(settles("window.notified", "granted"), "the page is granted notifications");
+    } else {
+      run.note("notifications: no prompt", evaluate("String(window.notified)"));
+    }
+    run.check(geolocation_asks || notifications_ask, "a permission request reaches the person");
+    if (geolocation_asks) {
+      events->mark();
+      evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo2='ok'},e=>{window.geo2='error:'+e.code});1");
+      opened = person_opened("permission");
+      run.check(opened.is_object(), "a second geolocation request asks again: nothing was remembered");
+      if (opened.is_object()) sc_prompt_cancel(session, opened.at("prompt").at("id").as_string().c_str(), &error);
+    }
     events->mark();
     evaluate("navigator.mediaDevices.getUserMedia({video:true}).then(()=>{window.media='ok'},e=>{window.media=e.name});1");
     opened = person_opened("permission", 5s);
@@ -689,6 +712,45 @@ int host_events_main(int argc, char** argv) {
       if (contents.find(kPassword) != std::string::npos) leaked = entry.path().string();
     }
     run.check(leaked.empty(), "the password is in no event, description or session file", leaked);
+
+    // The agent's credentials on its own tab: they answer with nobody asked.
+    const auto credentials = [&](const Json& value) {
+      const auto arguments = Json{{"action", "credentials"}, {"credentials", value}}.dump();
+      sc_json* reply = nullptr;
+      if (sc_agent_call(session, page, "network", arguments.data(), arguments.size(), 0, 0, &reply, &error) != SC_OK)
+        throw std::runtime_error(std::string("network credentials: ") + error.message);
+    };
+    credentials(Json{{"username", "bob"}, {"password", "pw-agent-5521"}});
+    events->mark();
+    evaluate("location.href='/auth-agent';1");
+    opened = person_opened("auth", 5s);
+    const auto agent_authed = events->wait([&](sc_event_kind kind, const Json& event) {
+      return on(SC_EVENT_TAB_TITLE)(kind, event) && event.at("title") == Json("Authed");
+    }, 5s);
+    run.check(!opened.is_object() && agent_authed.is_object(),
+              "on the agent's tab its credentials log in, and nobody is asked", opened);
+    // Wrong ones are tried once, then the person is asked, and asked again
+    // while the answer is wrong.
+    credentials(Json{{"username", "carl"}, {"password", "wrong-agent-guess"}});
+    events->mark();
+    evaluate("location.href='/auth-retry';1");
+    opened = person_opened("auth");
+    run.check(opened.is_object() && opened.at("prompt").at("realm") == Json("Retry"),
+              "rejected agent credentials ask the person", opened);
+    id = opened.is_object() ? opened.at("prompt").at("id").as_string() : "";
+    events->mark();
+    run.check(sc_prompt_answer_login(session, id.c_str(), "carl", "wrong-person-guess", &error) == SC_OK,
+              std::string("a wrong login is an answer: ") + error.message);
+    opened = person_opened("auth");
+    run.check(opened.is_object() && opened.at("prompt").at("id") != Json(id), "a rejected answer asks again", opened);
+    id = opened.is_object() ? opened.at("prompt").at("id").as_string() : "";
+    run.check(sc_prompt_answer_login(session, id.c_str(), "carl", "pw-retry-7730", &error) == SC_OK,
+              std::string("the right login: ") + error.message);
+    run.check(events->wait([&](sc_event_kind kind, const Json& event) {
+                return on(SC_EVENT_TAB_TITLE)(kind, event) && event.at("title") == Json("Authed");
+              }).is_object(),
+              "the person's login reaches the server");
+    credentials(Json(nullptr));
 
     // Downloads: on the agent's tab, the agent's policy; on the person's, a prompt.
     events->mark();

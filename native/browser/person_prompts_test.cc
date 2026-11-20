@@ -84,6 +84,16 @@ int main() {
   const auto count = events.size();
   prompts.Clear();
   assert(events.size() == count && calls.cancel == 3 && calls.policy == 2);
+  // The agent's credentials: one try per challenge until a document commits.
+  SuiteCutAgentAuthTries tries;
+  const auto key = SuiteCutAgentAuthTries::Key(false, "box.test", 443, "Box", "basic");
+  assert(tries.Untried(key));
+  tries.Tried(key);
+  assert(!tries.Untried(key));
+  assert(tries.Untried(SuiteCutAgentAuthTries::Key(true, "box.test", 443, "Box", "basic")));
+  assert(tries.Untried(SuiteCutAgentAuthTries::Key(false, "box.test", 443, "Other", "basic")));
+  tries.Reset();
+  assert(tries.Untried(key));
   std::cout << "person_prompts_test: all checks passed\n";
   return 0;
 }

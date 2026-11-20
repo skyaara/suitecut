@@ -599,6 +599,7 @@ class Source : public CefClient,
   std::unique_ptr<suitecut::NetworkControls> network_;
   std::unique_ptr<SuiteCutDialogControls> dialogs_;
   std::unique_ptr<SuiteCutPersonPrompts> person_prompts_;
+  SuiteCutAgentAuthTries agent_auth_tries_;
   std::map<int, NetworkCall> network_calls_;
 #include "controllers/context/credential_source.inc"
 #include "controllers/context/context_geolocation_source.inc"

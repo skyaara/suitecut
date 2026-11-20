@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -137,4 +138,24 @@ class SuiteCutPersonPrompts {
   bool on_ = false;
   std::uint64_t sequence_ = 0;
   std::map<std::string, Pending> pending_;
+};
+
+// On a tab the agent holds, its matching network.credentials answer an HTTP
+// authentication challenge first, once. The same challenge again before a
+// document commits means the server rejected them, so a person is asked
+// instead, and asked again while their answers are rejected. UI thread only.
+class SuiteCutAgentAuthTries {
+ public:
+  static std::string Key(bool proxy, const std::string& host, int port, const std::string& realm,
+                         const std::string& scheme) {
+    return std::string(proxy ? "proxy|" : "server|") + host + "|" + std::to_string(port) + "|" + scheme + "|" + realm;
+  }
+  // Whether the agent's credentials have not yet been tried on this challenge.
+  bool Untried(const std::string& key) const { return !tried_.contains(key); }
+  void Tried(const std::string& key) { tried_.insert(key); }
+  // A main-frame document committed: what was tried no longer says anything.
+  void Reset() { tried_.clear(); }
+
+ private:
+  std::set<std::string> tried_;
 };

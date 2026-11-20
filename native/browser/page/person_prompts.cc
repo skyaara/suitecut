@@ -222,7 +222,12 @@ auto Source::AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_cre
     policy();
     return;
   }
-  info->SetBool("agentCredentials", agent_credentials);
+  // The agent's credentials answer a challenge once; if it comes again they
+  // were rejected, and the person is asked.
+  const auto key = SuiteCutAgentAuthTries::Key(info->GetBool("proxy"), info->GetString("host"), info->GetInt("port"),
+                                               info->GetString("realm"), info->GetString("scheme"));
+  const bool agent = agent_credentials && agent_auth_tries_.Untried(key);
+  info->SetBool("agentCredentials", agent);
   SuiteCutPersonPrompts::Hold hold;
   hold.answer = [callback](Dict answer) -> std::string {
     if (Canceled(answer)) {
@@ -234,7 +239,12 @@ auto Source::AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_cre
     callback->Continue(answer->GetString("username"), answer->GetString("password"));
     return "";
   };
-  hold.policy = policy;
+  // The session answers {"policy":true} for the agent's tab when |agent|:
+  // that is the agent's try.
+  hold.policy = [this, policy, agent, key] {
+    if (agent) agent_auth_tries_.Tried(key);
+    policy();
+  };
   hold.cancel = [callback] { callback->Cancel(); };
   if (!person_prompts_->Show("auth", info, std::move(hold))) policy();
 }
