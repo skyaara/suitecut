@@ -294,7 +294,8 @@ int host_events_main(int argc, char** argv) {
     });
     run.check(changed.is_object(), "a script's title change is SC_EVENT_TAB_TITLE");
     double best = 0;
-    for (const auto& event : events->all().as_array())
+    const auto so_far = events->all();  // named: a temporary would end before the loop
+    for (const auto& event : so_far.as_array())
       if (event.at("type") == Json("tab.loading") && event.at("page") == Json(page))
         best = std::max(best, event.at("progress").as_double());
     run.check(best == 1, "progress reaches 1", best);
