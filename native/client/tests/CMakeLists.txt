@@ -80,6 +80,21 @@ target_link_libraries(c_abi_test PRIVATE SuiteCut::Client)
 add_test(NAME c_abi_test COMMAND c_abi_test)
 set_tests_properties(c_abi_test PROPERTIES TIMEOUT 60 LABELS "client;unit;abi")
 
+# The session service against a fake engine: protocol 0 as embedding apps
+# send it today. It needs the service binary, so it is built with it.
+if(NOT WIN32 AND TARGET suitecut-shared-session)
+  add_executable(session_fake_engine support/session_fake_engine.cpp)
+  target_link_libraries(session_fake_engine PRIVATE SuiteCut::Client)
+  add_executable(shared_session_test unit/shared_session_test.cpp)
+  target_include_directories(shared_session_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(shared_session_test PRIVATE SuiteCut::Client)
+  target_compile_options(shared_session_test PRIVATE -UNDEBUG)
+  add_dependencies(shared_session_test session_fake_engine suitecut-shared-session)
+  add_test(NAME shared_session_test COMMAND shared_session_test
+    $<TARGET_FILE:suitecut-shared-session> $<TARGET_FILE:session_fake_engine>)
+  set_tests_properties(shared_session_test PROPERTIES TIMEOUT 120 LABELS "client;unit;session")
+endif()
+
 set(client_integration_sources
   integration/cef_artifact_workflows.cpp
   integration/cef_media_workflows.cpp
