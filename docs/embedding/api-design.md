@@ -510,8 +510,11 @@ the header is what was built:
   - `sc_session_close` is idempotent. With `shutdown` it sends
     `session.close`, which only a host may do. Calls after it return
     `SC_CLOSED`.
-  - The socket path must fit in `sun_path` (104 bytes on macOS), so a host
-    keeps `directory` short. The sample uses `/tmp/suitecut-sample-<uid>`.
+  - The socket path, `directory/name.sock`, must fit in `sun_path`: at most
+    103 bytes on macOS and 107 on Linux. `sc_session_open` refuses a longer
+    one with `SC_INVALID_ARGUMENT`, naming its length and the limit, before
+    it starts anything. A host keeps `directory` short; the sample uses
+    `/tmp/suitecut-sample-<uid>`.
 - **Tabs.**
   - `sc_tab` carries `page`, `control` and `generation`. URLs and titles
     come from `sc_tab_list`'s JSON.
@@ -554,6 +557,43 @@ served locally:
 - a click sent at CSS (200, 75) reached the page at (200, 75);
 - the typed text reached the focused input;
 - the session shut down when the app quit.
+
+Two checks now repeat this; both are opt-in because they need a runtime:
+
+- **`suitecut-native-cef_embed_frames`** (`native/client/tests/integration`,
+  macOS only). Configure with `-DSUITECUT_EMBED_RUNTIME=/path/to/SuiteCut.app`
+  and run `ctest -L embed-frames`; `SUITECUT_EMBED_SIGNING_REQUIREMENT` adds a
+  signature check. It starts session `embed-frames` with a short `mkdtemp`
+  folder and a fresh profile, removes both, and writes `results.json` in the
+  `tests/cef` evidence shape. Against a copy of the signed CEF 156 runtime
+  (2026-11-21, 3 runs, all passed), it checked:
+  - frames at the view's size times 2, `420f`, two planes, and in use until
+    released;
+  - page content by luma: 200 and 32 for the two grey pages, both exact;
+  - a held frame kept its content and was not sent again while about 64
+    frames a second arrived;
+  - frames at the new size after a resize, and none in the 3 s after
+    detach;
+  - frames again after a new attach;
+  - the engine exiting when the session closed.
+
+  It is not in `tests/cef/manifests/cpp.json`, because those cases have no
+  platform field and the full suite also runs on Linux.
+- **`scripts/verify-embed-sample-macos.py`**. It drives the sample against a
+  fixed local page with its own session name, short folder and profile,
+  clicking and typing. It checks a clean exit: exit 0, no process left with
+  the profile, and the socket removed. It then checks four probe points:
+  the click, the text, the page's script and the background. Last, it
+  compares the snapshot with
+  `native/client/examples/embed-macos/reference/snapshot.png`:
+  - **Tolerance:** both images are scaled to CSS size, and at most 0.5% of
+    pixels may differ by more than 40 of 255 in any channel.
+  - **Regenerating:** run with `--update-reference` on a Mac whose run you
+    have checked. The probes must pass before the reference is replaced.
+    Commit it with the macOS and runtime versions.
+  - **Results:** two runs against the reference had 0 differing pixels. A
+    negative control against a different page's snapshot failed, with 18.5%
+    differing.
 
 ### Rules for all of it
 
@@ -1297,7 +1337,7 @@ handling and frame validation from the helper.
 | ----- | ----- |
 | 0 | **Built**: `shared_session_test` against a new `tests/support/session_fake_engine.cpp`, with the Napdock envelope replay in the same file; the Linux build is still to do. **Planned**: `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
 | 1 | **Built**: `session_protocol_test` in `native/client/tests/unit`; still to do: the golden fixtures as files, the script, and the real-engine workflow. **Planned**: **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
-| 2 | **Built**: `embed_test` in `native/client/tests/unit`, against `session_fake_engine`, which on macOS now sends real `420f` IOSurface frames at the viewport times the scale, then a forged frame from another process. It covers: runtime inspect (symlinked directory, an old service, missing, relative, a signing requirement, a wrong ABI), joining before start, owner isolation, `invalid_url`, navigation, history, take and release, screenshots, grants and revocation, `human_in_control`, `stale_generation`, the agent catalog, events (`resync`, `tab.changed`, timeout), an input-only view with every input kind and four threads of moves, library frames (size, format, use count, the forged frame dropped, resize, `view_busy`, `replace`, detach, an unsafe bootstrap name), host-only shutdown, idempotent close and `engine.exited`. `embed_header_test.c` compiles the header as C and checks the init functions and `sc_error_refusal`; `c_abi_test.c` is unchanged. Both pass on macOS and on Linux, where frames and signing requirements are `SC_UNSUPPORTED`. **Sample**: built, and run by hand against the real engine with `--click`, `--type` and `--snapshot`. **Still to do**: `embed.h` in `tests/consumer` and `tools/verify-package.py`; a real-engine frame workflow in `tests/cef` (`420f`, even sides, timestamps, a held surface never redrawn); `scripts/verify-embed-sample-macos.py` to drive the sample and compare its snapshot. |
+| 2 | **Built**: `embed_test` in `native/client/tests/unit`, against `session_fake_engine`, which on macOS now sends real `420f` IOSurface frames at the viewport times the scale, then a forged frame from another process. It covers: runtime inspect (symlinked directory, an old service, missing, relative, a signing requirement, a wrong ABI), joining before start, owner isolation, `invalid_url`, navigation, history, take and release, screenshots, grants and revocation, `human_in_control`, `stale_generation`, the agent catalog, events (`resync`, `tab.changed`, timeout), an input-only view with every input kind and four threads of moves, library frames (size, format, use count, the forged frame dropped, resize, `view_busy`, `replace`, detach, an unsafe bootstrap name), host-only shutdown, idempotent close and `engine.exited`. `embed_header_test.c` compiles the header as C and checks the init functions and `sc_error_refusal`; `c_abi_test.c` is unchanged. Both pass on macOS and on Linux, where frames and signing requirements are `SC_UNSUPPORTED`. **Sample**: built, and run by hand against the real engine with `--click`, `--type` and `--snapshot`. **Packages**: `tests/consumer` compiles `embed.h` first and alone as C++, and `c_embed_consumer.c` includes only `embed.h` and calls it, in the C-only shared consumer too. `tools/verify-package.py` requires `client.h` and `embed.h` by name. `scripts/package-native-runtime.py` requires `embed.h` among its SDK inputs. `tools/package-source.py` now archives `native/client/session/`, which the source archive had lacked since phase 1. On Linux (the devbox, 2026-11-21), `verify-package.py --source-archive` passed from the exported archive. That covered static and shared builds, unit and architecture tests, relocated installs, and four consumers: static C++, shared C++, shared C-only and an embedding parent. `installed_embed_c_abi` passed in each. On macOS, the static install's consumer passed, with `embed.h` compiled alone. **Real engine, opt-in**: `suitecut-native-cef_embed_frames` (`ctest -L embed-frames` with `SUITECUT_EMBED_RUNTIME`) and `scripts/verify-embed-sample-macos.py`; see "Built in phase 2". |
 | 3 | One real-engine test per host event, in the `tests/cef` C++ workflows: `alert`, `confirm` and `prompt` answered and timed out; `beforeunload`; a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth (the fixture server under `tests/cef/fixtures`); cursor changes; IME composition and commit; copy and paste; title and loading events; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
 | 5 | **MCP**: a join-mode test with a fake session (in the style of `control_cli_test.cpp`): grant narrowing, `--simple`, `human_in_control` as a tool error, opening the first tab. **Fuzzing**: `scripts/fuzz-native-control.py` extended to `--join`. |
@@ -1321,8 +1361,10 @@ handling and frame validation from the helper.
 - Per-view scale in the engine.
 - The engine's pid version in `hello`, so receivers can check it as well as
   the pid.
-- Whether `embed.h` should take a socket path, or a shorter directory
-  layout, so that long session directories fit `sun_path`.
+- Whether `embed.h` should also take a socket path directly. Today a long
+  session directory is refused with the limit named (see "Built in phase 2").
+- A platform field for `tests/cef` cases, so macOS-only workflows such as
+  `cef_embed_frames` can join `manifests/cpp.json`.
 - Whether `view.focus` is needed separately from input for caret and IME.
 - Whether a shared per-machine runtime later needs a broker process above
   sessions. With per-app pinned runtimes it does not.

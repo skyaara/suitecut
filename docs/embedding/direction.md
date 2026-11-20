@@ -343,6 +343,11 @@ Progress, 2026-11-20:
   Napdock's helper has a written path onto it ("What Napdock's helper would
   change" in the [API design](api-design.md)). See "Built in phase 2" there
   for where the header differs from the draft.
+- Phase 2's checks are in place: installed SDKs are checked to ship
+  `embed.h`; an opt-in real-engine frame test covers size, `420f`, held
+  surfaces, resizing and detaching; and a script drives the sample and
+  compares its snapshot with a checked-in reference. Phase 3 (host events,
+  with engine work) has not started.
 
 ## Decisions
 
