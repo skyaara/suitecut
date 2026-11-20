@@ -347,13 +347,15 @@ Progress, 2026-11-20:
   `embed.h`; an opt-in real-engine frame test covers size, `420f`, held
   surfaces, resizing and detaching; and a script drives the sample and
   compares its snapshot with a checked-in reference.
-- Phase 3 is built there except its item 5. The engine sends host events
+- Phase 3 is built there, item 5 included. The engine sends host events
   behind a switch only the new session passes. Protocol 1 and `embed.h`
   carry loading, titles, stop, the cursor, IME and edit commands, popups'
   openers, and JavaScript dialogs as prompts that a host or an agent
-  answers. Protocol 0 and the ABI version are unchanged. File choosers,
-  downloads, permissions, HTTP auth and client certificates wait on the
-  questions under "Built in phase 3" in the [API design](api-design.md).
+  answers. A host also answers a person's file choosers, permission
+  requests, HTTP auth, client certificates and downloads, held with no
+  deadline of SuiteCut's own (decided 2026-11-21; see "Prompts that go to
+  the person" in the [API design](api-design.md)). Protocol 0 and the ABI
+  version are unchanged.
 
 ## Decisions
 

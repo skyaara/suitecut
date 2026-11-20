@@ -72,8 +72,8 @@ const char* FileMode(cef_file_dialog_mode_t mode) {
     case FILE_DIALOG_OPEN_MULTIPLE: return "openMultiple";
     case FILE_DIALOG_OPEN_FOLDER: return "openFolder";
     case FILE_DIALOG_SAVE: return "save";
+    default: return "open";
   }
-  return "open";
 }
 }  // namespace
 

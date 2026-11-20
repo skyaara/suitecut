@@ -836,8 +836,9 @@ std::string Host::Title(int page) {
 // URL, reach viewers through watch as the engine reports them.
 void Host::NavigateEngine(int page, Json fields) {
   // The engine's navigateFrame returns at commit; its older navigate command
-  // waited for the load's end whatever it was asked.
-  if (fields.at("command") == Json("navigate")) {
+  // waited for the load's end whatever it was asked. Without host events the
+  // older command stays, so protocol 0 clients see today's timing and history.
+  if (host_events_ && fields.at("command") == Json("navigate")) {
     fields["command"] = "navigateFrame";
     fields["api"] = "page.goto";
   }

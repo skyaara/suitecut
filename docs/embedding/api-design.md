@@ -650,8 +650,8 @@ decision record's prompt rule settles. It keeps protocol 0 and the ABI:
   yet. Under the switch the engine returns true, so CEF does not set a
   native cursor of its own.
 - **5. File choosers, downloads, permissions, HTTP auth and client
-  certificates.** Not built: they need decisions first. See "Prompts that
-  go to the person" below.
+  certificates.** Built after the decisions; see "Prompts that go to the
+  person" below.
 - **6. IME and edit commands.**
   - `input.ime.set {view, text, selection?, replacement?}`,
     `input.ime.commit {view, text, replacement?}` and
@@ -715,36 +715,109 @@ items").
 
 #### Prompts that go to the person
 
-Item 5 is not built. Each kind needs the engine to hold a CEF callback that
-today's policy answers at once, and each raises a question the decision
-record does not settle:
+**Decided 2026-11-21 by the user on my recommendation:**
 
-- **Deadline.** Dialogs keep the engine's 30 s. A file chooser or an
-  authentication prompt that waits on a person can take longer. "No limits
-  of SuiteCut's own" suggests holding them until they are answered, the page
-  goes away, or the last prompt host leaves. Is that right, or should they
-  share the dialog deadline?
-- **Downloads.** The agent's `download` tool already sets a directory and
-  saves files by policy. When a person is asked "save where?", does the
-  person's answer override the agent's directory, or does an agent-held tab
-  keep the agent's policy?
-- **Permissions.** Should a grant be remembered per origin for the profile
-  (Chromium's content settings), or only for that request? Today's policy
-  answers each request.
-- **HTTP auth.** The answer carries a password over the session socket. The
-  socket is private to the user, but this is the first secret to cross it.
-  The agent's `network.credentials` path also exists. Which one wins when
-  both are set?
-- **Client certificates.** No answer shape is designed. A proposal:
-  `prompt.opened` lists the certificates (subject, issuer, expiry, an index),
-  and the answer is `{index}` or `{cancel:true}`.
-- **File choosers.** The proposal: `{paths:[ABS]}` from the person's own
-  picker. Should paths be checked as existing and readable, or passed to CEF
-  as given?
+1. **Deadline.** A person's prompt is held until it is answered, its page or
+   tab goes away, or the owner's last connection that listed `prompts`
+   leaves. Then today's policy answers it. There is no deadline of
+   SuiteCut's own. Dialogs keep the engine's 30 s.
+2. **Downloads.** On a tab the agent holds, the agent's `download` policy and
+   directory apply, and nobody is asked. On a person's tab or an unclaimed
+   one, a prompt host is asked where to save. With no prompt host, today's
+   policy applies.
+3. **Permissions.** Each request is answered on its own. Nothing is
+   remembered in the profile's content settings. Remembering per origin is a
+   later option.
+4. **HTTP auth.** A prompt host's answer wins. The agent's
+   `network.credentials` apply only on tabs the agent holds. The password
+   may cross the session socket in an answer. The service never logs, echoes
+   or writes it to disk.
+5. **Client certificates.** `prompt.opened` lists the certificates, and the
+   answer is `{index}` or `{cancel:true}`.
+6. **File choosers.** The answer is `{paths:[ABS]}`. The service checks each
+   path before it reaches the engine.
 
-Once these are answered, each kind follows the dialog pattern: hold the
-callback under the switch, `prompt.opened`, `prompt.answer`,
-`prompt.closed`, and today's policy when no prompt host is connected.
+**Built** (2026-11-21), under `--suitecut-host-events=1`, on protocol 1 and
+`embed.h`. The ABI is still 1, protocol 0 is unchanged, and without the
+switch nothing changes.
+
+- **The engine holds the callbacks.** `SuiteCutPersonPrompts`
+  (`native/browser/person_prompts.h`, `page/person_prompts.cc`) keeps each
+  held CEF callback with its answer, today's policy and a cancel. The
+  session turns it on per page with `{"command":"host","action":"prompts",
+  "enabled":true}`, while its owner has a host connection that listed
+  `prompts`. It reports `{"event":"prompt","id","kind","state":"opened",...}`
+  and later `"state":"closed"` with `reason` `answered`, `policy` (today's
+  policy answered it) or `reset`. An answer's contents never go into an
+  event.
+- **Which requests are held**, and today's policy for each, used when no
+  host is connected, when the last one leaves, and for `{"policy":true}`:
+
+  | Kind | Held when | `prompt.opened` adds | Answer | Policy |
+  |---|---|---|---|---|
+  | `file` | `OnFileDialog`, unless the agent's file chooser tool is waiting for it | `mode` (`open`, `openMultiple`, `openFolder`, `save`), `title`, `defaultPath`, `accept` | `{paths:[ABS]}` or `{cancel:true}` | cancel, as today with nothing pending |
+  | `permission` | `OnShowPermissionPrompt` and `OnRequestMediaAccessPermission`, only for what the context would not allow | `origin`, `permissions` (Chromium's names, or `microphone`, `camera`, `display-audio`, `display`) | `{accept:true\|false}` (all or none) or `{cancel:true}` | the context's allowed set |
+  | `auth` | `GetAuthCredentials`, on a tab the agent does not hold or without matching agent credentials | `url`, `host`, `port`, `realm`, `scheme`, `proxy` | `{username, password}` or `{cancel:true}` | the agent's `network.credentials` if they match, else cancel |
+  | `certificate` | `OnSelectClientCertificate` with at least one certificate | `host`, `port`, `proxy`, `certificates:[{index, subject, issuer, validFrom, expires}]` (Unix ms) | `{index}` or `{cancel:true}` | `Select(nullptr)`: send none |
+  | `download` | a download starts on a tab the agent does not hold, for an owner with a host | `url`, `suggestedName`, `mimeType`, `totalBytes?` | `{path:ABS}` or `{cancel:true}` | it stays where today's policy saved it |
+
+- **Ids** are `KIND:PAGE:N`. `prompt.closed {prompt, page, outcome}` says
+  `accepted`, `dismissed` (today's policy answered it, or the host left),
+  `closed` (a navigation or the page's end dropped it), or for downloads
+  `failed` with `error`. A download's `accepted` adds the saved `path`.
+- **Only a host answers.** An agent connection answering a person's prompt
+  gets `forbidden`. A second answer gets `prompt_gone`. An answer that does
+  not fit the kind gets `invalid_request`, and the prompt stays.
+- **Paths are checked first.** Each chooser path must be absolute and exist.
+  It must be a readable regular file, or a directory for `openFolder`. A
+  `save` or `download` path must not be a directory, and its directory must
+  be writable. Otherwise the answer is refused with `invalid_path`, and the
+  message names the bad path. The prompt stays open.
+- **Downloads.** Today's policy has already started the file into the
+  profile's download directory when the prompt opens. An answer with `path`
+  has the engine copy it there once it completes (`download` `saveAs`, on a
+  thread of its own with the transport's longest wait). `{cancel:true}`
+  cancels the download.
+- **HTTP auth on an agent's tab.** When the agent holds the tab and its
+  `network.credentials` match, the session answers `{policy:true}` itself,
+  so no prompt reaches the host. The engine's Fetch auth handler defers to
+  `GetAuthCredentials` while prompts are on, so every challenge comes
+  there. A proxy with credentials configured gets them at once.
+- **A navigation** drops the document's file choosers and media requests,
+  reported `closed`. Permission prompts close when Chromium dismisses them.
+  A host's `tabs.navigate` dismisses only held dialogs first, not these.
+- **Secrets.** The fake engine writes `<redacted>` for a password in its
+  log. The real-engine test checks that the answered password appears in no
+  event, no `tabs.describe` output, and no file under the session
+  directory.
+- **`hello`** lists `prompts.person` when host events are on.
+- **`embed.h`**: `sc_prompt_answer_files`, `sc_prompt_answer_permission`,
+  `sc_prompt_answer_login`, `sc_prompt_answer_certificate`,
+  `sc_prompt_answer_download` and `sc_prompt_cancel` (a dialog gets
+  `accept:false`, anything else `cancel:true`).
+- **The sample host** shows open and save panels for file choosers and
+  downloads, and sheets for permissions, logins and certificates. It was
+  compiled on the Mac, not run against an engine.
+
+**Not built, or not checked:**
+
+- Client certificates were not exercised on a real engine: that needs a TLS
+  server that asks for one and an NSS database with a certificate.
+- The Fetch handler's `Default` answer was checked only on the box's
+  engine with no agent credentials set.
+- A file chooser left when its host goes is cancelled. CEF's own dialog
+  cannot be shown later in a headless engine.
+- No macOS engine with host events has been built, so none of this has run
+  in the sample.
+
+**Navigation's commit: fixed under the switch.** With host events,
+`tabs.open` and `tabs.navigate` send the engine `navigateFrame` with
+`waitUntil:"commit"` (`page.goto`'s path). The old `navigate` command waited
+for the load to end. A page whose image hangs now returns from
+`sc_tab_navigate` at once while it still loads. The first navigation of a
+new tab then replaces its `about:blank`, so nothing may be behind it.
+Without the switch the old command stays, so protocol 0's timing and
+history do not change.
 
 ### Rules for all of it
 
@@ -940,17 +1013,21 @@ capabilities `tab.loading` and `tab.history` it adds
   - `dialog` (`alert`, `confirm`, `prompt`, `beforeunload`)
   - `permission` (`permissions: [...]`, `origin`)
   - `file` (`mode: open|openMultiple|openFolder|save`, `accept`)
-  - `download` (`suggestedName`)
-  - `auth` (`origin`, `realm`, `isProxy`)
+  - `download` (`suggestedName`, `url`, `mimeType`)
+  - `auth` (`url`, `host`, `port`, `realm`, `scheme`, `proxy`)
+  - `certificate` (`host`, `port`, `certificates: [...]`)
 - The matching answers:
   - `{accept, text?}`
-  - `{grant:[...]}`
+  - `{accept}` for a permission, all of it or none
   - `{paths:[ABS]}` or `{cancel:true}`
   - `{path:ABS}` or `{cancel:true}`
   - `{username, password}` or `{cancel:true}`
-- The first answer wins; later ones get `prompt_gone`. An unanswered prompt
-  takes the engine's default when its deadline passes (dialogs: 30 s today,
-  `dialog_controls.h:34`), and `prompt.closed` says `timeout`.
+  - `{index}` or `{cancel:true}`
+  - any of them `{policy:true}`, for today's answer
+- The first answer wins; later ones get `prompt_gone`. A dialog left
+  unanswered takes the engine's default after 30 s
+  (`dialog_controls.h:34`), and `prompt.closed` says `timeout`. A person's
+  prompt has no deadline (built as "Prompts that go to the person" says).
 - When an agent holds the tab, the agent may answer `dialog` (through its
   tools, as today). The person, through the host, answers `permission`
   (camera, microphone, location, notifications), `file` choosers that read
@@ -1435,8 +1512,8 @@ stopping a load, and back and forward following `canGoBack` and
 `canGoForward`; the page's cursor as an `NSCursor`; dialogs as `NSAlert`
 sheets answered with `sc_prompt_answer_dialog` (session flag
 `SC_SESSION_PROMPTS`); `NSTextInputClient` for IME; and an Edit menu whose
-commands go to `sc_view_edit`. Still to add: file prompts as `NSOpenPanel`
-once item 5 is decided, and a menu item that mints a grant and prints the
+commands go to `sc_view_edit`. Item 5 added open and save
+panels and sheets for a person's prompts, also unrun. Still to add: a menu item that mints a grant and prints the
 `suitecut-native-control --mcp --join …` command.
 
 ### What Napdock's helper would change
@@ -1493,7 +1570,7 @@ handling and frame validation from the helper.
 | 0 | **Built**: `shared_session_test` against a new `tests/support/session_fake_engine.cpp`, with the Napdock envelope replay in the same file; the Linux build is still to do. **Planned**: `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
 | 1 | **Built**: `session_protocol_test` in `native/client/tests/unit`; still to do: the golden fixtures as files, the script, and the real-engine workflow. **Planned**: **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
 | 2 | **Built**: `embed_test` in `native/client/tests/unit`, against `session_fake_engine`, which on macOS now sends real `420f` IOSurface frames at the viewport times the scale, then a forged frame from another process. It covers: runtime inspect (symlinked directory, an old service, missing, relative, a signing requirement, a wrong ABI), joining before start, owner isolation, `invalid_url`, navigation, history, take and release, screenshots, grants and revocation, `human_in_control`, `stale_generation`, the agent catalog, events (`resync`, `tab.changed`, timeout), an input-only view with every input kind and four threads of moves, library frames (size, format, use count, the forged frame dropped, resize, `view_busy`, `replace`, detach, an unsafe bootstrap name), host-only shutdown, idempotent close and `engine.exited`. `embed_header_test.c` compiles the header as C and checks the init functions and `sc_error_refusal`; `c_abi_test.c` is unchanged. Both pass on macOS and on Linux, where frames and signing requirements are `SC_UNSUPPORTED`. **Sample**: built, and run by hand against the real engine with `--click`, `--type` and `--snapshot`. **Packages**: `tests/consumer` compiles `embed.h` first and alone as C++, and `c_embed_consumer.c` includes only `embed.h` and calls it, in the C-only shared consumer too. `tools/verify-package.py` requires `client.h` and `embed.h` by name. `scripts/package-native-runtime.py` requires `embed.h` among its SDK inputs. `tools/package-source.py` now archives `native/client/session/`, which the source archive had lacked since phase 1. On Linux (the devbox, 2026-11-21), `verify-package.py --source-archive` passed from the exported archive. That covered static and shared builds, unit and architecture tests, relocated installs, and four consumers: static C++, shared C++, shared C-only and an embedding parent. `installed_embed_c_abi` passed in each. On macOS, the static install's consumer passed, with `embed.h` compiled alone. **Real engine, opt-in**: `suitecut-native-cef_embed_frames` (`ctest -L embed-frames` with `SUITECUT_EMBED_RUNTIME`) and `scripts/verify-embed-sample-macos.py`; see "Built in phase 2". |
-| 3 | **Built**: `session_protocol_test`'s `host_events` section, against `session_fake_engine`, which now models host events and held dialogs with `--suitecut-host-events=1`. It covers: the capabilities in `hello`; `tab.loading` (start, progress, finish, history) and `tab.title`; a new tab's `tab.changed` before its loading events; `tabs.list` fields; `tabs.stop` taking the tab; IME set, commit and cancel, with ranges and which of them take the tab; the edit commands; `view.cursor` and `view.ime`; no prompt without a prompt host; a prompt host holding its owner's dialogs; `prompt.opened` fields; agent answers on its own tab, refusal on the person's; another owner's prompt; a second answer; a prompt's default text; a host navigation dismissing a held alert, and a `beforeunload` left to the engine's reset; a popup's `opener`, with its dialogs held; protocol 0's tab fields unchanged; and the last prompt host leaving. `embed_test` adds `SC_SESSION_PROMPTS`, an unknown flag, the loading and title kinds, `sc_tab_stop`, the IME and edit calls in order, bad ranges and commands, and a dialog answered through `sc_prompt_answer_dialog`. `embed_header_test.c` checks `sc_ime_composition_init` and the new constants. The engine's `suitecut-page-before-unload-test` checks the dialog reset report. **Real engine, opt-in**: `suitecut-native-cef_host_events` (`ctest -L embed-host-events` with `SUITECUT_EMBED_RUNTIME`), Linux and macOS, headless; see "Built in phase 3". **Still to do**, once item 5 is decided: a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth; a dialog left to time out (30 s); `beforeunload` with a user gesture; audio audible while not recording. |
+| 3 | **Built**: `session_protocol_test`'s `host_events` section, against `session_fake_engine`, which now models host events and held dialogs with `--suitecut-host-events=1`. It covers: the capabilities in `hello`; `tab.loading` (start, progress, finish, history) and `tab.title`; a new tab's `tab.changed` before its loading events; `tabs.list` fields; `tabs.stop` taking the tab; IME set, commit and cancel, with ranges and which of them take the tab; the edit commands; `view.cursor` and `view.ime`; no prompt without a prompt host; a prompt host holding its owner's dialogs; `prompt.opened` fields; agent answers on its own tab, refusal on the person's; another owner's prompt; a second answer; a prompt's default text; a host navigation dismissing a held alert, and a `beforeunload` left to the engine's reset; a popup's `opener`, with its dialogs held; protocol 0's tab fields unchanged; and the last prompt host leaving. `embed_test` adds `SC_SESSION_PROMPTS`, an unknown flag, the loading and title kinds, `sc_tab_stop`, the IME and edit calls in order, bad ranges and commands, and a dialog answered through `sc_prompt_answer_dialog`. `embed_header_test.c` checks `sc_ime_composition_init` and the new constants. The engine's `suitecut-page-before-unload-test` checks the dialog reset report. **Real engine, opt-in**: `suitecut-native-cef_host_events` (`ctest -L embed-host-events` with `SUITECUT_EMBED_RUNTIME`), Linux and macOS, headless; see "Built in phase 3". **Item 5** adds `session_protocol_test`'s `person_prompts` section: no person prompts without a host connection, and an agent connection listing `prompts` does not count; each kind's `prompt.opened` fields; file answers with good and bad paths (`invalid_path` naming the path) for single, folder and save choosers, and cancel; a file chooser closed by a navigation; a permission refused, and a non-boolean answer; a certificate by index and an index not listed; auth answered by the agent's credentials on its tab with nobody asked, the person asked on the agent's tab without them and on the person's tab despite them, a login cancelled and one answered; a download saved to a chosen path and one cancelled, and none on an agent's tab; an agent's answer refused `forbidden`; a second answer `prompt_gone`; the last host leaving answering by policy; and the fake engine's log carrying no password. `embed_test` answers each kind through the new `sc_prompt_answer_*` calls and `sc_prompt_cancel`, and `embed_header_test.c` checks their arguments. The engine's `suitecut-person-prompts-test` checks the holder: hold, answer, a refused answer kept, `{policy:true}`, a dismissal, a reset that keeps what is not the document's, unsubscribing, and clearing. `cef_host_events` adds a file chooser answered, cancelled and closed by a navigation; geolocation refused and notifications granted, each asked again; HTTP basic auth answered, with no trace of the password; no download prompt on the agent's tab; a download saved to a chosen path from a host's tab; and `sc_tab_navigate` returning at commit on a stalled page. Its first-load check no longer expects `about:blank` behind the page. **Still to do**: client certificates on a real engine; a dialog left to time out (30 s); `beforeunload` with a user gesture; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
 | 5 | **MCP**: a join-mode test with a fake session (in the style of `control_cli_test.cpp`): grant narrowing, `--simple`, `human_in_control` as a tool error, opening the first tab. **Fuzzing**: `scripts/fuzz-native-control.py` extended to `--join`. |
 | 6 | **Linux spike**: half done on a machine without a GPU (2026-11-20, `suitecut-accelerated-paint-probe`): shared textures need GBM and give no frames without a render node; CPU frames work. **Still to do**: the same probe on a named GPU and driver, recording planes, formats and modifiers, then the frame workflow ported. |
@@ -1523,14 +1600,11 @@ handling and frame validation from the helper.
 - Whether `view.focus` is needed separately from input for caret and IME.
 - Whether a shared per-machine runtime later needs a broker process above
   sessions. With per-app pinned runtimes it does not.
-- **Prompts that go to the person** (phase 3's item 5): the questions under
-  "Built in phase 3".
-- **A navigation's commit.** `tabs.navigate` waits for `commit`, but the
-  engine marks a main frame committed only at its load end. A page that is
-  still loading, such as one whose image hangs or a document that stalls
-  mid-body, makes `tabs.navigate` fail with `navigation_failed` after 30 s,
-  although the page did commit. Found on the box in phase 3 and not fixed
-  there, since it predates it (`page/navigation.cc`, `page/frames.cc`).
+- **A navigation's commit without host events.** Protocol 0's
+  `tabs.navigate` still waits for the load's end, and a page that never
+  finishes loading fails it with `navigation_failed` after 30 s.
+- **Client certificates on a real engine**, and remembering permissions per
+  origin (see "Prompts that go to the person").
 - **Popup disposition.** A popup's `tab.changed` carries `opener` but not
   whether it asked for a tab, a window or a popup, nor its size.
 - **Custom cursors.** `view.cursor` says `custom` with the hotspot and
