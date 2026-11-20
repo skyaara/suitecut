@@ -269,7 +269,8 @@ auto Source::OnBeforeUnloadDialog(CefRefPtr<CefBrowser> browser, const CefString
 
 auto Source::OnResetDialogState(CefRefPtr<CefBrowser> browser) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnResetDialogState(browser);
-  if (dialogs_) dialogs_->Clear();
+  // With host events on, a window may be showing these as prompts: say so.
+  if (dialogs_) HostEventsEnabled() ? dialogs_->Reset() : dialogs_->Clear();
 }
 
 auto Source::OnDialogClosed(CefRefPtr<CefBrowser> browser) -> void {
