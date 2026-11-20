@@ -7,6 +7,9 @@
 #include "page/window_mode.h"
 #include "runtime/engine.h"
 namespace suitecut::browser {
+// True when the engine was launched with --suitecut-host-events=1 (page/host_events.cc).
+bool HostEventsEnabled();
+
 class Source : public CefClient,
                public CefLifeSpanHandler,
                public CefRenderHandler,
@@ -133,6 +136,15 @@ class Source : public CefClient,
   void OnLoadError(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, ErrorCode code,
                    const CefString&, const CefString&) override;
   void OnTitleChange(CefRefPtr<CefBrowser>, const CefString& title) override;
+  // Host events (page/host_events.cc), sent only with --suitecut-host-events=1.
+  void OnLoadingStateChange(CefRefPtr<CefBrowser>, bool loading, bool back, bool forward) override;
+  void OnLoadingProgressChange(CefRefPtr<CefBrowser>, double progress) override;
+  bool OnCursorChange(CefRefPtr<CefBrowser>, CefCursorHandle cursor, cef_cursor_type_t type,
+                      const CefCursorInfo& custom) override;
+  void OnImeCompositionRangeChanged(CefRefPtr<CefBrowser>, const CefRange& range,
+                                    const RectList& bounds) override;
+  void HostEvent(const char* name, Dict fields);
+  void HostCommand(int id, Dict message);
   void OnLoadStart(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame> frame, TransitionType) override;
   void OnRenderViewReady(CefRefPtr<CefBrowser>) override;
   void OnRenderProcessTerminated(CefRefPtr<CefBrowser>, TerminationStatus, int,

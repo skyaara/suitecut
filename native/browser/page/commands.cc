@@ -274,6 +274,10 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     NativeBringToFront(id, operation->generation);
     return;
   }
+  if (command == "host") {
+    HostCommand(id, message);
+    return;
+  }
   if (message->HasKey("nativeRootHandle") &&
       ((command != "queryEvaluate" && command != "handle") ||
        message->GetType("nativeRootHandle") != VTYPE_INT ||

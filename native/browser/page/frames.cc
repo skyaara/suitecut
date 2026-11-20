@@ -213,6 +213,8 @@ auto Source::MaybeReady() -> void {
   auto capabilities = suitecut::NativeBackendCapabilities();
   capabilities->SetBool("originalWidgetInputReceipts",
                         native_widget_mouse_ && native_widget_mouse_->available());
+  // Only when asked for: the TypeScript SDK reads these with a strict schema.
+  if (HostEventsEnabled()) capabilities->SetBool("hostEvents", true);
   header->SetDictionary("capabilities", capabilities);
   if (const auto video = engine_.VideoMetadata(page_id_)) header->SetDictionary("video", video);
   header->SetDictionary("mainFrame", FrameJson(frame->second));

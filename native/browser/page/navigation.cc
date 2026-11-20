@@ -62,6 +62,11 @@ auto Source::OnLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> fram
 
 auto Source::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnTitleChange(browser, title);
+  {
+    auto fields = CefDictionaryValue::Create();
+    fields->SetString("title", title);
+    HostEvent("title", fields);
+  }
   if (!closing_page_ && network_ &&
       !engine_.network_archive().PageTitle(network_context_id_, "page:" + std::to_string(page_id_),
                                            title.ToString()))
