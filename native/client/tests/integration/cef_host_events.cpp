@@ -18,6 +18,7 @@
 #include "suitecut/json.hpp"
 #include "posix_fixture.hpp"
 
+#include <cerrno>
 #include <arpa/inet.h>
 #include <signal.h>
 #include <unistd.h>
@@ -114,9 +115,24 @@ class PageServer {
     int one = 1;
     ::setsockopt(client, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof one);
 #endif
+    // Chromium preconnects sockets and may send its request on one much
+    // later. Read until the headers end; answering a socket that sent nothing
+    // would hand that answer to whatever request comes on it next.
+    std::string head;
     char request[4096];
-    const auto n = ::recv(client, request, sizeof request - 1, 0);
-    const std::string head = n > 0 ? std::string(request, static_cast<std::size_t>(n)) : "";
+    while (!stopped_ && head.find("\r\n\r\n") == std::string::npos) {
+      const auto n = ::recv(client, request, sizeof request, 0);
+      if (n == 0) break;
+      if (n < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) continue;
+        break;
+      }
+      head.append(request, static_cast<std::size_t>(n));
+    }
+    if (head.find("\r\n\r\n") == std::string::npos) {
+      ::close(client);
+      return;
+    }
     if (head.starts_with("GET /auth")) {
       const bool agent = head.starts_with("GET /auth-agent"), retry = head.starts_with("GET /auth-retry");
       const std::string login = agent ? kAgentLogin : retry ? kRetryLogin : kLogin;
