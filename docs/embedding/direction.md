@@ -298,6 +298,16 @@ The recommended first piece of work is phase 0 and the start of phase 1.
 Every later phase depends on a contract that has tests, and the session has
 none today.
 
+Progress, 2026-11-20:
+
+- Phase 0 is done on branch `claude/embeddable-runtime-2343a7`, except
+  that nothing has landed on `main`, and the Linux build has not been
+  run. That wait is on the push decision below.
+- Phase 1 has started there: the service is the `suitecut-session` product
+  target with protocol 1, and the installed helper's protocol 0 passes
+  unchanged against it. See "Built in phase 1" in the
+  [API design](api-design.md).
+
 ## Decisions
 
 The user asked the Napdock session that started this work to make the

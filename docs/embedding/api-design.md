@@ -398,8 +398,52 @@ protocol reports neither.
     engine.
 - The session has no tests: nothing under `native/client/tests` refers to
   `shared_session` or `control_session`.
+- Found while writing those tests: `view` `screenshot` closed the tab it
+  read. `Browser::page` returns a `Page` that owns the page, and the
+  temporary's destructor sent `closePage` (`:308`). With the real engine the
+  page then closes and `page-closed` removes the tab. Fixed in `1ffa23f`; a
+  bundle built before that has the bug.
 
 ## Part 2: Proposed contract
+
+### Built in phase 1 (2026-11-20)
+
+Phase 1 built the service and protocol 1 below, on branch
+`claude/embeddable-runtime-2343a7`. Where it differs from this draft, the
+built behaviour is what the rest of Part 2 now says:
+
+- **Where.** `native/client/session/` inside the client CMake project, not
+  a separate `native/session/` project. `host.cpp` (tabs, control, events,
+  grants), `protocol.cpp` (both protocols), `main.cpp` (the CLI) and
+  `control_session.cpp` (the socket, also used by `suitecut-native-control`).
+- **Protocol 0 is unchanged.** It keeps claiming a tab after the agent
+  call, and `watch` keeps waking on the session-wide counter. Only
+  protocol 1 claims before the call.
+- **Rule 9 holds.** Each owner has its own `AgentDriver` and
+  `SimpleAgent` over the shared `Browser`, so different owners' calls run
+  in parallel, protocol 0 included.
+- **Not built yet:** `view.focus`, `input.ime.*`, `input.edit`,
+  `prompt.answer`, per-view `scale`, `tab.loading`/`tab.title`/cursor
+  events, and anything that needs engine work. Those are phase 3.
+- **`hello`.** The reply's `runtime` has only `cef`, and `engine` only
+  `pid`. `pidVersion` waits until the engine reports one.
+- **Grants.** `--grants required` applies to agents: a host is the same
+  user's app and needs no grant. `session.grant` defaults to `["core"]`.
+- **Results.** `agent.call` returns `{result, generation, controlLost?}`.
+  `agent.catalog` returns `{tools}`. `view.attach` takes
+  `sink:{kind:"mach-bootstrap", name}` and returns `{view, engine:{pid}}`.
+  `view.resize` returns `{width, height}`.
+- **Input.** Modifiers are the keys the host holds down with `input.key`,
+  as the engine already tracks them. No `modifiers` field. A pointer press
+  or wheel with `x` and `y` moves there first.
+- **Events.** A `tab.changed` carries the tab as it is when read, with its
+  title read then. Several changes to one tab in one reply arrive as one.
+  Cursors start at 1, and 0 always means a first read.
+- **`--allow-schemes`** applies to tab opens and a person's navigations.
+  The agents' `navigate` tool is not checked yet.
+- **Still open:** any same-user client can send protocol 0's
+  `_session_close`. It is answered on every connection, whatever the
+  protocol flags, because the CLI's `status` and `close` use it.
 
 ### Rules for all of it
 
@@ -484,12 +528,9 @@ with `--protocol-0 off`. Then every protocol 0 message gets
 `{"ok":false,"error":{"code":"protocol_unsupported","message":"…"}}`, which
 the helper shows as `failed: protocol_unsupported: …`.
 
-Two visible changes for protocol 0 clients:
-
-- An agent call takes an `unclaimed` tab before it runs, not after.
-- `watch` wakes only for the connection owner's changes.
-
-Neither breaks the helper: it drops duplicate results itself.
+Protocol 0 keeps today's behaviour: an agent call takes an `unclaimed` tab
+after it has run, and `watch` wakes on any owner's change. Protocol 1
+connections get the stricter rules below.
 
 **Roles and grants.**
 
@@ -501,9 +542,10 @@ Neither breaks the helper: it drops duplicate results itself.
 - `session.grant {owner, role:"agent", tools:["core"], ttlMs?}` returns an
   opaque random token (32 bytes, hex). A host may grant only its own owner.
   `session.revoke {grant}` withdraws one.
-- With `--grants required`, `hello` without a valid grant gets
-  `not_granted`. With `--grants optional` (the default while protocol 0 is
-  served), a same-user client without a grant is a `host`.
+- With `--grants required`, an agent's `hello` without a valid grant gets
+  `not_granted`; a host needs none. With `--grants optional` (the default
+  while protocol 0 is served), a same-user client without a grant is
+  whichever role it asks for.
 - Grants are about scope: one owner, chosen tools. They are not a defence
   against malware running as the same user, which can read the profile
   anyway.
@@ -658,9 +700,8 @@ capabilities `tab.loading` and `tab.history` it adds
 8. An owner never sees another owner's tabs, views or prompts. They read as
    `unknown_*`.
 9. Agent calls of one owner run one at a time; those of different owners
-   must not wait for each other. Today one `AgentDriver` keeps one active
-   page and one set of refs (`shared_session.cpp:158-159`). Whether one
-   driver per owner over a shared `Browser` works needs checking in phase 1.
+   do not wait for each other. Built in phase 1 with one `AgentDriver` per
+   owner over the shared `Browser`.
 
 **Limits and timeouts.**
 
@@ -1015,26 +1056,24 @@ suitecut-native-control --mcp --join example --session-dir /abs/run --owner chat
 
 ### The session service as a product target
 
-- A new component, `native/session/`, a separate CMake project like the
-  others in [native/README.md](../../native/README.md), builds
-  `suitecut-session` against `SuiteCut::Client`.
-- Proposed modules:
-  - `service/`: socket, startup lock, accept loop, peer checks, from
-    `control_session.cpp`.
-  - `protocol/`: protocol 0 and 1 parsing and replies.
-  - `host/`: tabs, control and grants, from `shared_session.cpp`.
-  - `platform/`: the peer credential and sink validation per OS.
-  - `main.cpp`.
+- Built: `native/client/session/`, in the client CMake project
+  (`SUITECUT_CLIENT_BUILD_SESSION`, on by default except on Windows). It
+  builds `suitecut-session` against `SuiteCut::Client`.
+- Modules:
+  - `control_session.cpp`: socket, startup lock, accept loop, peer checks.
+  - `host.cpp`: tabs, control, per-owner agents, events and grants.
+  - `protocol.cpp`: protocol 0 and 1 parsing and replies.
+  - `main.cpp`: the CLI.
 - `suitecut-native-control` keeps its single-client named sessions. The
-  shared socket code becomes a private static library used by both
-  programs.
-- The `suitecut-shared-session` name ships as a second identically built
-  binary for as long as protocol 0 is served.
+  shared socket code is a private static library used by both programs.
+- The `suitecut-shared-session` name ships as a second program built from
+  the same objects, for as long as protocol 0 is served. The Napdock
+  packager places the service under both names.
 
 | Today | Becomes |
 | ----- | ------- |
 | Lives in `examples/`, built on every platform | Product target; macOS and Linux; Windows refused at configure time until ported |
-| Only http and https (`shared_session.cpp:75-81`), and only for the person | `--allow-schemes`, default `http,https`, applied to agent navigations too |
+| Only http and https (`shared_session.cpp:75-81`), and only for the person | `--allow-schemes`, default `http,https`, for tab opens and a person's navigations; agent navigations later |
 | Tools fixed to `core,debug,media` (`:107`) | `--tools` and grants |
 | Scale fixed at launch, default 2 (`:595`, `:609`) | Per view; `--scale` is the default |
 | Idle default 30 min (`:597`) | Unchanged; already an option |
@@ -1044,9 +1083,9 @@ suitecut-native-control --mcp --join example --session-dir /abs/run --owner chat
 | `tabs.open` defaults to `by:"agent"` (`:221`) | Decided by the role |
 | Default directory `/tmp/suitecut-control-<uid>` (`control_session.cpp:94`) | Unchanged for compatibility; hosts pass `--session-dir` |
 | `getpeereid` | `getpeereid` on macOS, `SO_PEERCRED` on Linux |
-| Every same-user client may close the session | `session.close` is host-only |
-| One lock for every owner's agent calls | Per owner (rule 9) |
-| No tests | See "Tests" |
+| Every same-user client may close the session | `session.close` is host-only; protocol 0's `_session_close` is still open to any same-user client |
+| One lock for every owner's agent calls | Per owner (rule 9), built |
+| No tests | Built: see "Tests" |
 
 ### A second sample host
 
@@ -1123,8 +1162,8 @@ For the Napdock side to pick up; this design changes nothing there.
 
 | Phase | Tests |
 | ----- | ----- |
-| 0 | **Unit**, `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
-| 1 | **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
+| 0 | **Built**: `shared_session_test` against a new `tests/support/session_fake_engine.cpp`, with the Napdock envelope replay in the same file; the Linux build is still to do. **Planned**: `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
+| 1 | **Built**: `session_protocol_test` in `native/client/tests/unit`; still to do: the golden fixtures as files, the script, and the real-engine workflow. **Planned**: **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
 | 2 | **C ABI**: `native/client/tests/unit/c_embed_abi_test.c` (`struct_size` and `abi_version` checks, null handles, `SC_REFUSED` and `sc_error_refusal`), with `c_abi_test.c` unchanged as the proof that v1 callers keep working. **Packages**: `tests/consumer` and `tools/verify-package.py` include `embed.h` in isolation. **Frames on macOS**: `cef_surface_workflows.cpp` attaches a library sink, then checks `420f`, even sides, timestamps, the pid and pid-version check, and that a held surface is never redrawn (in the style of `suitecut-mac-capture-test`). **Sample**: it builds, and `scripts/verify-embed-sample-macos.py` drives it once and compares a screenshot. |
 | 3 | One real-engine test per host event, in the `tests/cef` C++ workflows: `alert`, `confirm` and `prompt` answered and timed out; `beforeunload`; a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth (the fixture server under `tests/cef/fixtures`); cursor changes; IME composition and commit; copy and paste; title and loading events; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
@@ -1133,7 +1172,11 @@ For the Napdock side to pick up; this design changes nothing there.
 
 ### Open items for this design
 
-- Whether one `AgentDriver` per owner can share one `Browser` (rule 9).
+- The agent driver refuses to adopt a 129th page ("Agent page capacity
+  exceeded", `agent_driver.cpp`). That is a SuiteCut limit, which the
+  repository's rules do not allow, and pages the engine closed are never
+  dropped from it. Now it is per owner, not per session.
+- A real-engine run of the session tests, and the Linux build.
 - Per-view scale in the engine.
 - Whether `view.focus` is needed separately from input for caret and IME.
 - Whether a shared per-machine runtime later needs a broker process above
