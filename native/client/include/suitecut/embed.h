@@ -74,7 +74,9 @@ typedef struct sc_session_options {
   uint32_t abi_version;
   const sc_runtime_info *runtime; /* required with SC_SESSION_START */
   const char *name;               /* session name: letters, digits, '.', '_' and '-' */
-  const char *directory;          /* absolute private directory for the session's socket */
+  const char *directory;          /* absolute private directory for the session's socket. The socket
+                                   * path, directory + "/" + name + ".sock", must fit AF_UNIX: at most
+                                   * 103 bytes on macOS and 107 on Linux, or SC_INVALID_ARGUMENT */
   const char *profile;            /* absolute; used only when starting */
   const char *owner;              /* letters, digits, '.', '_', ':' and '-' */
   sc_session_role role;           /* default SC_ROLE_HOST */

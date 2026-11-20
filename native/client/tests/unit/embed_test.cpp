@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cstring>
 #include <filesystem>
+#include <sys/un.h>
 #include <fstream>
 #include <thread>
 
@@ -152,6 +153,25 @@ void session_flow() {
   require(sc_runtime_inspect(&options, &info, &error) == SC_OK, "inspect");
 
   check(open(&info, "host").status == SC_CLOSED, "joining a session that is not running is SC_CLOSED");
+  {
+    // A socket path AF_UNIX cannot hold is refused before anything starts.
+    const auto deep = (root / std::string(120, 'd')).string();
+    sc_session_options options;
+    sc_session_options_init(&options);
+    options.runtime = &info;
+    options.name = "embed";
+    options.directory = deep.c_str();
+    const auto profile = (root / "profile").string();
+    options.profile = profile.c_str();
+    options.owner = "host";
+    options.flags = SC_SESSION_START;
+    sc_session* session = nullptr;
+    const auto limit = std::to_string(sizeof(sockaddr_un{}.sun_path) - 1);
+    check(sc_session_open(&options, &session, &error) == SC_INVALID_ARGUMENT && !session &&
+              std::string(error.message).find("at most " + limit) != std::string::npos,
+          std::string("an overlong socket path names the limit: ") + error.message);
+    check(!fs::exists(deep), "an overlong socket path starts nothing");
+  }
   auto host_opened = open(&info, "host", SC_ROLE_HOST, nullptr, true);
   require(host_opened.status == SC_OK, std::string("start a session: ") + host_opened.error.message);
   sc_session* host = host_opened.session;

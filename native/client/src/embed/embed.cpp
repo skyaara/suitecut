@@ -560,6 +560,13 @@ sc_status sc_session_open(const sc_session_options* options, sc_session** out, s
     if (options->flags & ~SC_SESSION_START) throw std::invalid_argument("Unknown session flags");
     auto core = std::make_shared<SessionCore>();
     core->socket_path = std::string(options->directory) + "/" + options->name + ".sock";
+    // AF_UNIX paths are short (sun_path is 104 bytes on macOS, 108 on Linux,
+    // with the terminating NUL). Refuse here rather than when the service starts.
+    constexpr auto kSocketPathMax = sizeof(sockaddr_un{}.sun_path) - 1;
+    if (core->socket_path.size() > kSocketPathMax)
+      throw std::invalid_argument("The session's socket path (directory + \"/\" + name + \".sock\") is " +
+                                  std::to_string(core->socket_path.size()) + " bytes; AF_UNIX allows at most " +
+                                  std::to_string(kSocketPathMax) + " here. Choose a shorter directory or name");
     if (options->timeout_ms) core->timeout = std::chrono::milliseconds(options->timeout_ms);
     if (options->flags & SC_SESSION_START) {
       check_struct(options->runtime, "runtime info");
