@@ -282,7 +282,9 @@ int host_events_main(int argc, char** argv) {
     const auto finished = events->wait([&](sc_event_kind kind, const Json& event) {
       return on(SC_EVENT_TAB_LOADING)(kind, event) && event.at("loading") == Json(false);
     });
-    run.check(finished.is_object() && finished.at("canGoBack") == Json(false), "the load finishes", finished);
+    // A new tab starts at about:blank, so the page has history behind it.
+    run.check(finished.is_object() && finished.at("canGoBack") == Json(true) && finished.at("canGoForward") == Json(false),
+              "the load finishes, with about:blank behind it", finished);
     const auto titled = events->wait([&](sc_event_kind kind, const Json& event) {
       return on(SC_EVENT_TAB_TITLE)(kind, event) && event.at("title") == Json("Host events");
     });
@@ -302,7 +304,7 @@ int host_events_main(int argc, char** argv) {
     bool listed_state = false;
     for (const auto& entry : tabs.at("tabs").as_array())
       if (entry.at("page") == Json(page))
-        listed_state = entry.at("loading") == Json(false) && entry.at("canGoBack") == Json(false) &&
+        listed_state = entry.at("loading") == Json(false) && entry.at("canGoBack") == Json(true) &&
                        entry.at("title") == Json("Changed");
     run.check(listed_state, "the tab lists as loaded", tabs);
 
