@@ -304,11 +304,12 @@ class Host {
     if (op == "screenshot") {
       // What the person sees, for the app's composer. A viewer's request:
       // it reads the tab without taking it, and works while a person or the
-      // agent holds it.
-      const auto shot = browser_->page(page).command(
-          "artifact", Json{{"action", "screenshot"}, {"format", "png"}, {"scale", "css"}, {"caret", "hide"},
-                           {"animations", "allow"}, {"fullPage", false}, {"omitBackground", false},
-                           {"maskColor", "#FF00FF"}});
+      // agent holds it. It goes to the engine directly: a Page handle from
+      // Browser::page owns the page and would close the tab when it goes.
+      const auto shot = Engine(page, Json{{"command", "artifact"}, {"action", "screenshot"}, {"format", "png"},
+                                          {"scale", "css"}, {"caret", "hide"}, {"animations", "allow"},
+                                          {"fullPage", false}, {"omitBackground", false}, {"maskColor", "#FF00FF"}},
+                               std::chrono::milliseconds(30000));
       if (!shot.contains("data") || !shot.at("data").is_string())
         throw Refused("failed", "The engine returned no screenshot");
       return Json{{"base64", shot.at("data")}, {"mimeType", "image/png"}};
