@@ -3,8 +3,10 @@
 // Starts its own session on a SuiteCut runtime as a host that answers prompts,
 // and checks against a local page: loading state and titles, stopping a slow
 // load, JavaScript dialogs answered as prompts (and closed by a navigation),
-// the cursor over different elements, IME composition and edit commands, and
-// a popup's opener. No frames are needed: the view is input-only.
+// the cursor over different elements, IME composition and edit commands, a
+// popup's opener, and a person's prompts: a file chooser, permission requests,
+// an HTTP login and where to save a download. No frames are needed: the view
+// is input-only.
 //
 // usage: suitecut-native-cef_host_events RUNTIME ARTIFACTS
 //   RUNTIME   SuiteCut.app, a directory holding suitecut-browser and
@@ -29,6 +31,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <mutex>
 #include <stdexcept>
 #include <string>
@@ -50,9 +53,17 @@ const char kPage[] =
     "</style><input id=box autocomplete=off><a id=pop href=/page?popup target=_blank>popup</a><div id=busy></div>"
     "<script>setTimeout(()=>{document.title='Changed'},300)</script>";
 
+const char kFiles[] =
+    "<!doctype html><meta charset=utf-8><title>Files</title><style>html,body{margin:0}"
+    "#f{position:absolute;left:20px;top:20px;width:300px;height:40px}</style><input id=f type=file>"
+    "<script>f.onchange=()=>{document.title='files:'+[...f.files].map(x=>x.name).join(',')}</script>";
+const char kLogin[] = "YW5uOnB3LWJveC00NDE3LXVubG9nZ2Vk";  // ann:pw-box-4417-unlogged
+const char kPassword[] = "pw-box-4417-unlogged";
+
 // Serves the page; /stall, a page whose image is /slow; and /slow, headers
 // and then nothing for a long while. So /stall commits at once but stays
-// loading until it is stopped.
+// loading until it is stopped. /files has a file input; /auth asks for a
+// Basic login until it gets kLogin; /download is an attachment.
 class PageServer {
  public:
   PageServer() {
@@ -101,13 +112,29 @@ class PageServer {
     char request[4096];
     const auto n = ::recv(client, request, sizeof request - 1, 0);
     const std::string head = n > 0 ? std::string(request, static_cast<std::size_t>(n)) : "";
-    if (head.starts_with("GET /slow")) {
+    if (head.starts_with("GET /auth")) {
+      if (head.find(std::string("Authorization: Basic ") + kLogin) == std::string::npos) {
+        const std::string body = "<!doctype html><title>Login needed</title>";
+        Send(client, "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=\"Box\"\r\nContent-Type: text/html\r\n"
+                     "Connection: close\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body);
+      } else {
+        const std::string body = "<!doctype html><title>Authed</title>";
+        Send(client, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\nContent-Length: " +
+                         std::to_string(body.size()) + "\r\n\r\n" + body);
+      }
+    } else if (head.starts_with("GET /download")) {
+      const std::string body = "downloaded-bytes";
+      Send(client, "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n"
+                   "Content-Disposition: attachment; filename=\"report.txt\"\r\nConnection: close\r\n"
+                   "Content-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body);
+    } else if (head.starts_with("GET /slow")) {
       Send(client, "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n");
       // Hold the load open, but let the server stop promptly.
       for (int i = 0; i < 300 && !stopped_; ++i) std::this_thread::sleep_for(100ms);
     } else {
       const std::string body = head.starts_with("GET /page")    ? kPage
                                : head.starts_with("GET /stall") ? "<!doctype html><title>Stalled</title><img src=/slow>"
+                               : head.starts_with("GET /files") ? kFiles
                                                                 : "<!doctype html><title>other</title>";
       Send(client, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nCache-Control: no-store\r\n"
                    "Connection: close\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body);
@@ -325,17 +352,37 @@ int host_events_main(int argc, char** argv) {
     const auto value_is = [&](const std::string& expression, const std::string& expected) {
       return evaluate("String(" + expression + ")").find("\"" + expected + "\"") != std::string::npos;
     };
+    // For a value a page sets once a promise or callback runs.
+    const auto settles = [&](const std::string& expression, const std::string& expected) {
+      const auto deadline = Clock::now() + 5s;
+      while (Clock::now() < deadline) {
+        if (value_is(expression, expected)) return true;
+        std::this_thread::sleep_for(100ms);
+      }
+      return false;
+    };
 
-    // 2. Stopping a slow load. The page starts it itself: tabs.navigate
-    // waits for a commit the engine reports only at load end, so it would
-    // not return while the image hangs.
+    // 2. Stopping a slow load. tabs.navigate returns at the commit, while
+    // the page's image still hangs.
     run.stage("stop");
     events->mark();
-    evaluate("location.href='/stall';1");
+    const auto navigate_at = Clock::now();
+    const auto committed = sc_tab_navigate(session, page, pages.Url("/stall").c_str(), &tab, &error);
+    const auto commit_ms = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - navigate_at).count();
+    run.check(committed == SC_OK && commit_ms < 10000,
+              "sc_tab_navigate returns at the commit of a page still loading",
+              Json{{"ms", commit_ms}, {"error", committed == SC_OK ? "" : error.message}});
     const auto slow = events->wait([&](sc_event_kind kind, const Json& event) {
       return on(SC_EVENT_TAB_LOADING)(kind, event) && event.at("loading") == Json(true);
     });
     run.check(slow.is_object(), "the slow page is loading");
+    sc_json* still = nullptr;
+    sc_tab_list(session, &still, &error);
+    const auto still_tabs = Json::parse(text_of(still));
+    bool still_loading = false;
+    for (const auto& entry : still_tabs.at("tabs").as_array())
+      if (entry.at("page") == Json(page)) still_loading = entry.at("loading") == Json(true);
+    run.check(still_loading, "and it is still loading after the navigation returned", still_tabs);
     std::this_thread::sleep_for(500ms);
     const auto stop_at = Clock::now();
     events->mark();
@@ -515,6 +562,165 @@ int host_events_main(int argc, char** argv) {
       return kind == SC_EVENT_TAB_LOADING && event.at("page") == Json(popup_page) && event.at("loading") == Json(false);
     });
     run.check(popup_loaded.is_object(), "the popup reports its own loading");
+
+    // 7. A person's prompts.
+    run.stage("person");
+    char scratch[] = "/tmp/sc-he-files-XXXXXX";
+    if (!::mkdtemp(scratch)) throw std::runtime_error("scratch directory");
+    const fs::path chosen_dir = scratch;
+    const auto chosen = (chosen_dir / "chosen.txt").string();
+    std::ofstream(chosen) << "chosen";
+    const auto person_opened = [&](const char* kind, std::chrono::milliseconds limit = 15s) {
+      return events->wait([&](sc_event_kind event_kind, const Json& event) {
+        return event_kind == SC_EVENT_PROMPT_OPENED && event.at("prompt").at("page") == Json(page) &&
+               event.at("prompt").at("kind") == Json(kind);
+      }, limit);
+    };
+    const auto click = [&](double x, double y) {
+      sc_pointer_event at;
+      sc_pointer_event_init(&at);
+      at.x = x;
+      at.y = y;
+      at.action = SC_POINTER_DOWN;
+      sc_view_pointer(view, &at, &error);
+      at.action = SC_POINTER_UP;
+      sc_view_pointer(view, &at, &error);
+    };
+    // A file chooser, from the person's click on a file input.
+    if (sc_tab_navigate(session, page, pages.Url("/files").c_str(), &tab, &error) != SC_OK)
+      throw std::runtime_error(std::string("navigate to files: ") + error.message);
+    events->wait([&](sc_event_kind kind, const Json& event) {
+      return on(SC_EVENT_TAB_LOADING)(kind, event) && event.at("loading") == Json(false);
+    });
+    events->mark();
+    click(170, 40);
+    auto opened = person_opened("file");
+    run.check(opened.is_object() && opened.at("prompt").at("mode") == Json("open"),
+              "a click on a file input is a file prompt", opened);
+    auto id = opened.at("prompt").at("id").as_string();
+    const char* relative[] = {"chosen.txt"};
+    run.check(sc_prompt_answer_files(session, id.c_str(), relative, 1, &error) == SC_REFUSED,
+              "a relative path is refused", error.message);
+    const char* paths[] = {chosen.c_str()};
+    run.check(sc_prompt_answer_files(session, id.c_str(), paths, 1, &error) == SC_OK,
+              std::string("sc_prompt_answer_files: ") + error.message);
+    const auto picked = events->wait([&](sc_event_kind kind, const Json& event) {
+      return on(SC_EVENT_TAB_TITLE)(kind, event) && event.at("title") == Json("files:chosen.txt");
+    });
+    run.check(picked.is_object(), "the page's input has the chosen file");
+    events->mark();
+    click(170, 40);
+    opened = person_opened("file");
+    run.check(opened.is_object(), "a second click opens another file prompt");
+    id = opened.at("prompt").at("id").as_string();
+    run.check(sc_prompt_cancel(session, id.c_str(), &error) == SC_OK, "sc_prompt_cancel cancels it");
+    run.check(events->wait([&](sc_event_kind kind, const Json& event) {
+                return kind == SC_EVENT_PROMPT_CLOSED && event.at("prompt") == Json(id) && event.at("outcome") == Json("dismissed");
+              }).is_object(),
+              "a cancelled chooser closes, dismissed");
+    events->mark();
+    click(170, 40);
+    opened = person_opened("file");
+    id = opened.is_object() ? opened.at("prompt").at("id").as_string() : "";
+    if (sc_tab_navigate(session, page, pages.Url("/page?files-left").c_str(), &tab, &error) != SC_OK)
+      throw std::runtime_error(std::string("navigate away: ") + error.message);
+    const auto dropped = events->wait([&](sc_event_kind kind, const Json& event) {
+      return kind == SC_EVENT_PROMPT_CLOSED && event.at("prompt") == Json(id);
+    });
+    run.check(!id.empty() && dropped.is_object() && dropped.at("outcome") == Json("closed"),
+              "a navigation closes a held file chooser", dropped);
+
+    // Permissions: each request asks; nothing is remembered.
+    events->mark();
+    evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo='ok'},e=>{window.geo='error:'+e.code});1");
+    opened = person_opened("permission");
+    run.check(opened.is_object() && opened.at("prompt").at("permissions") == Json(Json::array{Json("geolocation")}) &&
+                  opened.at("prompt").at("origin").as_string().starts_with("http://127.0.0.1"),
+              "a geolocation request is a permission prompt", opened);
+    id = opened.at("prompt").at("id").as_string();
+    run.check(sc_prompt_answer_permission(session, id.c_str(), 0, &error) == SC_OK, "deny it");
+    run.check(settles("window.geo", "error:1"), "the page is told PERMISSION_DENIED");
+    events->mark();
+    evaluate("Notification.requestPermission().then(r=>{window.notified=r});1");
+    opened = person_opened("permission");
+    run.check(opened.is_object() && opened.at("prompt").at("permissions") == Json(Json::array{Json("notifications")}),
+              "a notification request is a permission prompt", opened);
+    id = opened.at("prompt").at("id").as_string();
+    run.check(sc_prompt_answer_permission(session, id.c_str(), 1, &error) == SC_OK, "grant it");
+    run.check(settles("window.notified", "granted"), "the page is granted notifications");
+    events->mark();
+    evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo2='ok'},e=>{window.geo2='error:'+e.code});1");
+    opened = person_opened("permission");
+    run.check(opened.is_object(), "a second geolocation request asks again: nothing was remembered");
+    if (opened.is_object()) sc_prompt_cancel(session, opened.at("prompt").at("id").as_string().c_str(), &error);
+    events->mark();
+    evaluate("navigator.mediaDevices.getUserMedia({video:true}).then(()=>{window.media='ok'},e=>{window.media=e.name});1");
+    opened = person_opened("permission", 5s);
+    if (opened.is_object()) sc_prompt_cancel(session, opened.at("prompt").at("id").as_string().c_str(), &error);
+    std::this_thread::sleep_for(500ms);
+    run.note("camera request", Json{{"prompt", opened}, {"page", evaluate("String(window.media)")}});
+
+    // An HTTP login, answered by the person. The page starts the load, so
+    // the agent holds the tab, without credentials of its own.
+    events->mark();
+    evaluate("location.href='/auth';1");
+    opened = person_opened("auth");
+    run.check(opened.is_object() && opened.at("prompt").at("realm") == Json("Box") &&
+                  opened.at("prompt").at("scheme").as_string() == "basic" &&
+                  opened.at("prompt").at("proxy") == Json(false),
+              "a Basic challenge is an auth prompt", opened);
+    id = opened.at("prompt").at("id").as_string();
+    run.check(sc_prompt_answer_login(session, id.c_str(), "ann", kPassword, &error) == SC_OK,
+              std::string("sc_prompt_answer_login: ") + error.message);
+    const auto authed = events->wait([&](sc_event_kind kind, const Json& event) {
+      return on(SC_EVENT_TAB_TITLE)(kind, event) && event.at("title") == Json("Authed");
+    });
+    run.check(authed.is_object(), "the login reaches the server");
+    std::string leaked;
+    const auto everything = events->all();
+    if (everything.dump().find(kPassword) != std::string::npos) leaked = "events";
+    sc_json* status_json = nullptr;
+    if (sc_session_describe(session, &status_json, &error) == SC_OK && text_of(status_json).find(kPassword) != std::string::npos)
+      leaked = "describe";
+    for (const auto& entry : fs::recursive_directory_iterator(session_dir)) {
+      if (!entry.is_regular_file()) continue;
+      std::ifstream in(entry.path(), std::ios::binary);
+      const std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+      if (contents.find(kPassword) != std::string::npos) leaked = entry.path().string();
+    }
+    run.check(leaked.empty(), "the password is in no event, description or session file", leaked);
+
+    // Downloads: on the agent's tab, the agent's policy; on the person's, a prompt.
+    events->mark();
+    evaluate("location.href='/download';1");
+    opened = person_opened("download", 4s);
+    run.check(!opened.is_object(), "a download on the agent's tab asks nobody", opened);
+    events->mark();
+    std::thread downloading([&] {
+      sc_tab moved;
+      sc_tab_init(&moved);
+      sc_error failure;
+      sc_tab_navigate(session, page, pages.Url("/download").c_str(), &moved, &failure);  // never commits
+    });
+    opened = person_opened("download");
+    downloading.join();
+    run.check(opened.is_object() && opened.at("prompt").at("suggestedName") == Json("report.txt"),
+              "a download on the person's tab asks where", opened);
+    id = opened.at("prompt").at("id").as_string();
+    const auto saved = (chosen_dir / "saved.txt").string();
+    run.check(sc_prompt_answer_download(session, id.c_str(), saved.c_str(), &error) == SC_OK,
+              std::string("sc_prompt_answer_download: ") + error.message);
+    const auto stored = events->wait([&](sc_event_kind kind, const Json& event) {
+      return kind == SC_EVENT_PROMPT_CLOSED && event.at("prompt") == Json(id);
+    }, 30s);
+    std::string contents;
+    std::getline(std::ifstream(saved), contents);
+    run.check(stored.is_object() && stored.at("outcome") == Json("accepted") && stored.at("path") == Json(saved) &&
+                  contents == "downloaded-bytes",
+              "the download is saved where the person chose", stored);
+    std::error_code removed;
+    fs::remove_all(chosen_dir, removed);
+    run.note("not exercised here", "client certificates (none in the profile), and a host leaving (see the fake engine tests)");
 
     sc_view_destroy(view);
     view = nullptr;
