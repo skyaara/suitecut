@@ -784,7 +784,8 @@ switch nothing changes.
   `GetAuthCredentials` while prompts are on, so every challenge comes
   there. A proxy with credentials configured gets them at once.
 - **A navigation** drops the document's file choosers and media requests,
-  reported `closed`. Permission prompts close when Chromium dismisses them.
+  reported `closed`. The engine does this at the main frame's load start,
+  since Chromium resets dialog state only on a page that has shown a dialog. Permission prompts close when Chromium dismisses them.
   A host's `tabs.navigate` dismisses only held dialogs first, not these.
 - **Secrets.** The fake engine writes `<redacted>` for a password in its
   log. The real-engine test checks that the answered password appears in no
