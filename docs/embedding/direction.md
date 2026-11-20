@@ -89,11 +89,16 @@ The C ABI (`native/client/include/suitecut/client.h`) and the C++ API on top.
   installed Chrome or Firefox, or attach to them, then submit JSON commands
   and poll packets ([client.h](../../native/client/include/suitecut/client.h)).
   There is nothing for sessions, owners, views, frames, input or host events.
-- **Missing.** Finding and checking a runtime, joining a session as an
-  owner, tabs, views with a platform surface sink, input including IME
-  composition, host events the app answers, and taking and releasing
-  control. The design adds these in a new header, so ABI v1 callers keep
-  working.
+- **Added in phase 2.** A second header,
+  [embed.h](../../native/client/include/suitecut/embed.h), in the same
+  library. It finds a runtime and checks its signature, joins a session as an
+  owner, and works with tabs. It attaches views with a surface sink (on
+  macOS so far) and sends pointer, wheel, key and text input. It covers
+  taking and releasing control, and follows the session's events. ABI v1
+  callers are unchanged.
+- **Still missing.** IME composition, edit commands, host events the app
+  answers (dialogs, file choosers, permissions, downloads, auth), the
+  cursor, and C++ classes over `embed.h`. These are phase 3.
 
 ### 3. The session service
 
@@ -331,6 +336,13 @@ Progress, 2026-11-20:
 - Napdock's installed browser bundle now carries the new service, so a
   composer screenshot no longer closes the tab. The bundle it replaced is
   kept beside it as `SuiteCut.app.backup-2026-11-20`.
+- Phase 2 is built there: `suitecut/embed.h` and the sample host
+  `suitecut-embed-sample`. The sample shows and drives a tab of the real
+  CEF 156 engine using only the public header, receiving IOSurface frames
+  itself with no relay. The library's tests pass on macOS and Linux.
+  Napdock's helper has a written path onto it ("What Napdock's helper would
+  change" in the [API design](api-design.md)). See "Built in phase 2" there
+  for where the header differs from the draft.
 
 ## Decisions
 

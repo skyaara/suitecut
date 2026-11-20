@@ -479,6 +479,82 @@ surface output exists only on macOS. A Linux host has no view to attach
 until phase 6. Detach could answer as a no-op there instead; nothing
 depends on it yet.
 
+### Built in phase 2 (2026-11-20)
+
+Phase 2 built `suitecut/embed.h` and a second sample host on the same
+branch. The header speaks protocol 1 to `suitecut-session`. It is installed
+beside `client.h` in the same `SuiteCut::Client` library, and `client.h` and
+`SC_ABI_VERSION` are unchanged. The code is in `native/client/src/embed/`:
+`embed.cpp` is portable, and `embed_apple.cpp` holds the frame receiver and
+the signature check. Where it differs from the sketch under "C ABI additions",
+the header is what was built:
+
+- **Runtime.**
+  - `sc_runtime_inspect` takes a `.app` (programs in `Contents/MacOS`) or a
+    directory holding `suitecut-browser` and `suitecut-session`.
+  - It checks the code signature first: the bundle with its nested code, or
+    each program. Then it runs `suitecut-session --version --json`.
+  - A service that does not answer is protocol 0. A range that does not
+    overlap the caller's `protocol_min`..`protocol_max` is `SC_UNSUPPORTED`.
+  - The manifest (`suitecut-runtime.json`) waits for phase 4.
+  - `sc_runtime_info` carries the service version, its protocol range, the
+    protocol chosen, whether the signature was checked, and both paths.
+- **Session.**
+  - There is no `SC_SESSION_ALLOW_PROTOCOL_0` and no `max_message_bytes`:
+    `embed.h` speaks protocol 1 only.
+  - `SC_SESSION_START` runs the service's `start` with the session's name,
+    directory, profile, and optional scale and idle time.
+  - `sc_session_describe` returns the `hello` reply as JSON.
+  - `sc_session_grant` takes a comma-separated tool list (NULL is `core`)
+    and a lifetime. `sc_session_revoke` was added.
+  - `sc_session_close` is idempotent. With `shutdown` it sends
+    `session.close`, which only a host may do. Calls after it return
+    `SC_CLOSED`.
+  - The socket path must fit in `sun_path` (104 bytes on macOS), so a host
+    keeps `directory` short. The sample uses `/tmp/suitecut-sample-<uid>`.
+- **Tabs.**
+  - `sc_tab` carries `page`, `control` and `generation`. URLs and titles
+    come from `sc_tab_list`'s JSON.
+  - `sc_tab_screenshot` writes a PNG to an absolute path (`view.screenshot`
+    with `to:{file}`).
+- **Views.**
+  - The sinks are `SC_SINK_LIBRARY` and `SC_SINK_MACH_BOOTSTRAP`.
+  - A NULL sink gives a view for input and resizing only, with no frames.
+  - `sc_frame.surface` is an `IOSurfaceRef`. The frame owns it, with its
+    use count raised, until `sc_frame_release`.
+  - The library keeps only the newest waiting frame, and releases the ones
+    it replaces.
+  - Its receiver drops frames from any process but the engine's, by the pid
+    in `hello`. The pid version waits until the engine reports one.
+  - Off macOS, frame sinks return `SC_UNSUPPORTED`. A NULL-sink view works
+    everywhere.
+- **Input.**
+  - There is no `modifiers` field and no `code`. Modifiers are keys the host
+    holds down with `sc_view_key`, as in protocol 1.
+  - There is no per-view scale. Coordinates are CSS pixels.
+- **Events.** The kinds are `OTHER` 0, `TAB_CHANGED` 1, `TAB_CLOSED` 2,
+  `RESYNC` 3 and `ENGINE_EXITED` 4. Types the library does not know come as
+  `OTHER`, with their JSON.
+- **Not in `embed.h` yet:** `sc_view_set_focus`, IME, edit commands,
+  prompts, the cursor, loading and title events, and the C++ classes. Those
+  come with phase 3. The header has no stubs for them.
+- **Connections.**
+  - Requests use a pool: a call takes an idle connection or opens one, so
+    calls from several threads do not wait for each other.
+  - Events have their own connection, and each view has its own for input.
+  - A pointer move coalesces with the next one while another input is still
+    on its way.
+
+The sample host ran against a clone of the signed CEF 156 runtime Napdock
+ships. It used session `sample-probe` with a throwaway profile, and a page
+served locally:
+
+- the signature requirement passed;
+- frames arrived at the view's size (1024×684 CSS at scale 2);
+- a click sent at CSS (200, 75) reached the page at (200, 75);
+- the typed text reached the focused input;
+- the session shut down when the app quit.
+
 ### Rules for all of it
 
 - **No limits of SuiteCut's own.** CEF and Chromium enforce theirs
@@ -770,6 +846,10 @@ reports `"proprietary"`. FFmpeg is not in the bundle; a host that wants
 recording passes its own FFmpeg path (decision 4).
 
 ### C ABI additions (sketch)
+
+This is the design as drafted before phase 2. The header that was built
+differs in the places listed under "Built in phase 2"; read
+[embed.h](../../native/client/include/suitecut/embed.h) for the real one.
 
 A new header, `suitecut/embed.h`, in the same `SuiteCut::Client` library. It
 follows `client.h`: `struct_size` plus `abi_version` in every options
@@ -1127,74 +1207,89 @@ suitecut-native-control --mcp --join example --session-dir /abs/run --owner chat
 
 ### A second sample host
 
-`native/examples/embed-macos/` is a separate CMake project that is not
-installed. It builds `suitecut-embed-sample`, a small AppKit app in about
-600 lines of Objective-C++, using only `embed.h`:
+Built in phase 2 (`native/client/examples/embed-macos/`). It is part of the
+client project's examples on macOS and is not installed. It builds
+`suitecut-embed-sample`, an AppKit app in about 490 lines of Objective-C++,
+using only `embed.h`:
 
-- One window: a toolbar with back, forward, reload, an address field and a
-  Take over / Hand back button, over a view whose `CALayer` shows the frames.
-- It starts from `--runtime PATH` (`sc_runtime_inspect` with SuiteCut's
-  team requirement), opens session `suitecut-sample` as owner `sample` with
-  role `host`, opens one tab, and attaches an `SC_SINK_LIBRARY` view.
-- A thread calls `sc_view_next_frame`, raises each surface's use count, and
-  sets the layer's contents on the main thread.
+- One window: a bar with back, forward, reload, an address field, a
+  Take over / Hand back button and a status line, over a view whose
+  `CALayer` shows the frames.
+- It starts from `--runtime PATH`, with an optional
+  `--signing-requirement`. It starts or joins session `suitecut-sample` as
+  owner `sample`, opens one tab and attaches an `SC_SINK_LIBRARY` view the
+  size of its view.
+- A thread waits in `sc_view_next_frame` and hands each frame to the main
+  thread. The main thread sets the layer's contents to the surface and
+  releases the frame that was on screen before it.
 - Mouse, scroll and keys go to `sc_view_pointer`, `sc_view_wheel` and
-  `sc_view_key`. `NSTextInputClient` maps marked text to
-  `sc_view_ime_set` and `sc_view_ime_commit`. Cmd+C/V/X/Z go to
-  `sc_view_edit`.
-- An event thread posts to the main queue:
-  - a dialog becomes an `NSAlert`;
-  - a file prompt becomes an `NSOpenPanel`;
-  - a cursor event sets an `NSCursor`;
-  - `tab.changed` updates the toolbar.
-- A menu item mints a grant and prints the `suitecut-native-control --mcp --join …`
-  command, so an agent can drive the same tab while the window watches.
+  `sc_view_key`. Keys that are not text map to DOM key names, and modifier
+  changes become key presses and releases. Text goes to `sc_view_text`.
+  Resizing the window resizes the view.
+- An event thread posts `tab.changed` to the main queue, which updates the
+  address, the button and the status line.
+- Quitting shuts its session down unless `--keep-session` is given.
+- `--click X,Y`, `--type TEXT`, `--snapshot PNG` and `--exit-after SECONDS`
+  make an unattended run. The snapshot is the frame on screen at quit.
 
 What it proves:
 
 - Nothing in the API is named after Napdock.
 - A host can receive frames directly, with no relay process.
 - Owners are the host's own strings.
-- Every host event can be answered by a plain window.
 
-It is also the place to run the phase 3 event tests by hand.
+Phase 3 adds to it: `NSTextInputClient` for IME, Cmd+C/V/X/Z as edit
+commands, dialogs as `NSAlert`, file prompts as `NSOpenPanel`, the cursor,
+and a menu item that mints a grant and prints the
+`suitecut-native-control --mcp --join …` command. It is also the place to
+run the phase 3 event tests by hand.
 
 ### What Napdock's helper would change
 
-For the Napdock side to pick up; this design changes nothing there.
+For the Napdock side to pick up; this design changes nothing there. Since
+phase 2 the helper has two routes. It can keep its own protocol code and
+move it to protocol 1, or it can link `SuiteCut::Client` and call `embed.h`
+from Swift. The second route removes the framing, request ids, connection
+handling and frame validation from the helper.
 
-1. Look for `Contents/MacOS/suitecut-session` first, then
-   `suitecut-shared-session`. Read `Contents/Resources/suitecut-runtime.json`
-   and refuse a runtime whose protocol range excludes 1 (or fall back to
-   protocol 0).
-2. Send `hello`: role `host` from `browserhost serve`, `agent` from
-   `browserhost mcp`. Declare `maxMessageBytes` (8 MB today).
-3. Replace `watch` with `events.next`, and drop the duplicate check in
-   `TabWatcher`.
+1. Find the runtime with `sc_runtime_inspect` and Napdock's signing
+   requirement, or do the same by hand: look for
+   `Contents/MacOS/suitecut-session` first, then `suitecut-shared-session`,
+   and ask it `--version --json`. Refuse a runtime whose range excludes 1,
+   or fall back to protocol 0. The runtime manifest replaces the version
+   query in phase 4.
+2. Send `hello` (`sc_session_open`): role `host` from `browserhost serve`,
+   and `agent` from `browserhost mcp`. A helper that keeps its own code
+   declares `maxMessageBytes` (8 MB today).
+3. Replace `watch` with `events.next` (`sc_session_next_event`), and drop
+   the duplicate check in `TabWatcher`.
 4. Probe with `session.status` instead of `tabs.list` for the owner
    `browserhost`.
 5. Keep the relay with `SC_SINK_MACH_BOOTSTRAP`, so the app's helper-pid
-   check stays. Compare the trailer's pid version with `engine.pidVersion`.
-6. Ask for screenshots with `to:{file}`. The helper already writes a PNG to
-   its data folder (`tabs.screenshot`).
+   check stays. Alternatively, the app could link the library itself and
+   use `SC_SINK_LIBRARY`, with no relay. Compare the trailer's pid version
+   with `engine.pidVersion` once the engine reports one.
+6. Ask for screenshots with `to:{file}` (`sc_tab_screenshot`). The helper
+   already writes a PNG to its data folder (`tabs.screenshot`).
 7. Remove the 1920×1080 viewport limit (`Helper.swift:70`). Agree one
    largest frame side between the helper (16384) and the app (8192), or
    none.
-8. Send per-view `scale` from the panel's backing scale, not the session's
-   fixed 2.
-9. Use pointer coordinates in CSS pixels, and send modifiers with pointer
-   and key events.
-10. Forward IME (`input.ime.*`) and Cmd+C/V/X/Z (`input.edit`) from the
-    panel.
-11. Answer `prompt.opened` in the panel: dialogs, file pickers, permissions,
-    downloads, auth. Show `tab.loading`, titles and the cursor.
-12. Optionally replace `browserhost mcp` with
+8. Send pointer coordinates in CSS pixels. Send modifiers as held keys
+   (`input.key` down and up), because input events carry no `modifiers`.
+9. Phase 3, once built: per-view `scale` from the panel's backing scale;
+   IME (`input.ime.*`) and Cmd+C/V/X/Z (`input.edit`); answering
+   `prompt.opened` (dialogs, file pickers, permissions, downloads, auth);
+   showing `tab.loading`, titles and the cursor.
+10. Optionally replace `browserhost mcp` with
     `suitecut-native-control --mcp --join`, once the executor can pass a
     grant. Otherwise keep it and send `expectGeneration`.
-13. After starting the runtime, check the running engine's signature by
+11. After starting the runtime, check the running engine's signature by
     process (`SecCodeCopyGuestWithAttributes`), not only the files.
-14. Update the decision record: drop "at most 16" tabs, and note protocol 1.
-15. Handle `engine.exited` by restarting the session once.
+12. Update the decision record: drop "at most 16" tabs, and note protocol 1.
+13. Handle `engine.exited` by restarting the session once.
+14. Keep "Quit browser" on protocol 0's `_session_close` until the helper
+    speaks protocol 1 as a host, then use `session.close`
+    (`sc_session_close` with `shutdown`).
 
 ### Tests per phase
 
@@ -1202,7 +1297,7 @@ For the Napdock side to pick up; this design changes nothing there.
 | ----- | ----- |
 | 0 | **Built**: `shared_session_test` against a new `tests/support/session_fake_engine.cpp`, with the Napdock envelope replay in the same file; the Linux build is still to do. **Planned**: `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
 | 1 | **Built**: `session_protocol_test` in `native/client/tests/unit`; still to do: the golden fixtures as files, the script, and the real-engine workflow. **Planned**: **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
-| 2 | **C ABI**: `native/client/tests/unit/c_embed_abi_test.c` (`struct_size` and `abi_version` checks, null handles, `SC_REFUSED` and `sc_error_refusal`), with `c_abi_test.c` unchanged as the proof that v1 callers keep working. **Packages**: `tests/consumer` and `tools/verify-package.py` include `embed.h` in isolation. **Frames on macOS**: `cef_surface_workflows.cpp` attaches a library sink, then checks `420f`, even sides, timestamps, the pid and pid-version check, and that a held surface is never redrawn (in the style of `suitecut-mac-capture-test`). **Sample**: it builds, and `scripts/verify-embed-sample-macos.py` drives it once and compares a screenshot. |
+| 2 | **Built**: `embed_test` in `native/client/tests/unit`, against `session_fake_engine`, which on macOS now sends real `420f` IOSurface frames at the viewport times the scale, then a forged frame from another process. It covers: runtime inspect (symlinked directory, an old service, missing, relative, a signing requirement, a wrong ABI), joining before start, owner isolation, `invalid_url`, navigation, history, take and release, screenshots, grants and revocation, `human_in_control`, `stale_generation`, the agent catalog, events (`resync`, `tab.changed`, timeout), an input-only view with every input kind and four threads of moves, library frames (size, format, use count, the forged frame dropped, resize, `view_busy`, `replace`, detach, an unsafe bootstrap name), host-only shutdown, idempotent close and `engine.exited`. `embed_header_test.c` compiles the header as C and checks the init functions and `sc_error_refusal`; `c_abi_test.c` is unchanged. Both pass on macOS and on Linux, where frames and signing requirements are `SC_UNSUPPORTED`. **Sample**: built, and run by hand against the real engine with `--click`, `--type` and `--snapshot`. **Still to do**: `embed.h` in `tests/consumer` and `tools/verify-package.py`; a real-engine frame workflow in `tests/cef` (`420f`, even sides, timestamps, a held surface never redrawn); `scripts/verify-embed-sample-macos.py` to drive the sample and compare its snapshot. |
 | 3 | One real-engine test per host event, in the `tests/cef` C++ workflows: `alert`, `confirm` and `prompt` answered and timed out; `beforeunload`; a file chooser answered and cancelled; a permission granted and denied; a download to a chosen path; HTTP basic auth (the fixture server under `tests/cef/fixtures`); cursor changes; IME composition and commit; copy and paste; title and loading events; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
 | 5 | **MCP**: a join-mode test with a fake session (in the style of `control_cli_test.cpp`): grant narrowing, `--simple`, `human_in_control` as a tool error, opening the first tab. **Fuzzing**: `scripts/fuzz-native-control.py` extended to `--join`. |
@@ -1219,9 +1314,15 @@ For the Napdock side to pick up; this design changes nothing there.
     `_session_close` when `--protocol-0 off`;
   - stop answering it altogether once Napdock's helper no longer relies on
     the CLI's `close`.
+
+  It stays as it is for now: Napdock's "Quit browser" sends it.
 - **The Linux frame path** (see "How frames reach the app" in the
   [direction](direction.md)).
 - Per-view scale in the engine.
+- The engine's pid version in `hello`, so receivers can check it as well as
+  the pid.
+- Whether `embed.h` should take a socket path, or a shorter directory
+  layout, so that long session directories fit `sun_path`.
 - Whether `view.focus` is needed separately from input for caret and IME.
 - Whether a shared per-machine runtime later needs a broker process above
   sessions. With per-app pinned runtimes it does not.
