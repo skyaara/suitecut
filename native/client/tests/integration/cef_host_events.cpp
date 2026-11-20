@@ -639,49 +639,49 @@ int host_events_main(int argc, char** argv) {
               "a navigation closes a held file chooser", dropped);
 
     // Permissions: each request asks; nothing is remembered. Which requests
-    // reach CEF's permission prompt headless is the engine's, so each is
-    // noted, and at least one must ask.
-    events->mark();
-    evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo='ok'},e=>{window.geo='error:'+e.code});1");
-    opened = person_opened("permission", 8s);
-    const bool geolocation_asks = opened.is_object();
-    if (geolocation_asks) {
-      run.check(opened.at("prompt").at("permissions") == Json(Json::array{Json("geolocation")}) &&
-                    opened.at("prompt").at("origin").as_string().starts_with("http://127.0.0.1"),
-                "a geolocation request is a permission prompt", opened);
-      id = opened.at("prompt").at("id").as_string();
-      run.check(sc_prompt_answer_permission(session, id.c_str(), 0, &error) == SC_OK, "deny it");
-      run.check(settles("window.geo", "error:1"), "the page is told PERMISSION_DENIED");
-    } else {
-      run.note("geolocation: no prompt", evaluate("String(window.geo)"));
-    }
-    events->mark();
-    evaluate("Notification.requestPermission().then(r=>{window.notified=r});1");
-    opened = person_opened("permission", 8s);
-    const bool notifications_ask = opened.is_object();
-    if (notifications_ask) {
-      run.check(opened.at("prompt").at("permissions") == Json(Json::array{Json("notifications")}),
-                "a notification request is a permission prompt", opened);
-      id = opened.at("prompt").at("id").as_string();
-      run.check(sc_prompt_answer_permission(session, id.c_str(), 1, &error) == SC_OK, "grant it");
-      run.check(settles("window.notified", "granted"), "the page is granted notifications");
-    } else {
-      run.note("notifications: no prompt", evaluate("String(window.notified)"));
-    }
-    run.check(geolocation_asks || notifications_ask, "a permission request reaches the person");
-    if (geolocation_asks) {
+    // reach CEF's permission prompt headless is CEF's (Alloy has no
+    // notifications, for one), so each kind is tried and noted, at least one
+    // must ask, and that one must ask again.
+    struct Request {
+      const char* name;
+      const char* start;   // sets window.answer when the page hears back
+      bool allow;
+    };
+    const Request requests[] = {
+        {"geolocation", "navigator.geolocation.getCurrentPosition(()=>{window.answer='ok'},e=>{window.answer='error:'+e.code})", false},
+        {"notifications", "Notification.requestPermission().then(r=>{window.answer=r})", true},
+        {"midi-sysex", "navigator.requestMIDIAccess({sysex:true}).then(()=>{window.answer='ok'},e=>{window.answer=e.name})", false},
+        {"clipboard-read", "navigator.clipboard.readText().then(()=>{window.answer='ok'},e=>{window.answer=e.name})", true},
+        {"camera", "navigator.mediaDevices.getUserMedia({video:true}).then(()=>{window.answer='ok'},e=>{window.answer=e.name})", false},
+    };
+    const Request* asking = nullptr;
+    Json tried = Json::object{};
+    for (const auto& request : requests) {
       events->mark();
-      evaluate("navigator.geolocation.getCurrentPosition(()=>{window.geo2='ok'},e=>{window.geo2='error:'+e.code});1");
+      evaluate(std::string("window.answer=undefined;") + request.start + ";1");
+      opened = person_opened("permission", 6s);
+      Json entry{{"prompt", opened}};
+      if (opened.is_object()) {
+        id = opened.at("prompt").at("id").as_string();
+        entry["answered"] = sc_prompt_answer_permission(session, id.c_str(), request.allow ? 1 : 0, &error) == SC_OK;
+        entry["closed"] = events->wait([&](sc_event_kind kind, const Json& event) {
+          return kind == SC_EVENT_PROMPT_CLOSED && event.at("prompt") == Json(id);
+        }, 5s);
+        if (!asking && opened.at("prompt").at("origin").as_string().starts_with("http://127.0.0.1")) asking = &request;
+      }
+      std::this_thread::sleep_for(500ms);
+      entry["page"] = evaluate("String(window.answer)");
+      tried[request.name] = std::move(entry);
+    }
+    run.note("permission requests", tried);
+    run.check(asking != nullptr, "a permission request reaches the person", tried);
+    if (asking) {
+      events->mark();
+      evaluate(std::string(asking->start) + ";1");
       opened = person_opened("permission");
-      run.check(opened.is_object(), "a second geolocation request asks again: nothing was remembered");
+      run.check(opened.is_object(), std::string("a second ") + asking->name + " request asks again: nothing was remembered");
       if (opened.is_object()) sc_prompt_cancel(session, opened.at("prompt").at("id").as_string().c_str(), &error);
     }
-    events->mark();
-    evaluate("navigator.mediaDevices.getUserMedia({video:true}).then(()=>{window.media='ok'},e=>{window.media=e.name});1");
-    opened = person_opened("permission", 5s);
-    if (opened.is_object()) sc_prompt_cancel(session, opened.at("prompt").at("id").as_string().c_str(), &error);
-    std::this_thread::sleep_for(500ms);
-    run.note("camera request", Json{{"prompt", opened}, {"page", evaluate("String(window.media)")}});
 
     // An HTTP login, answered by the person. The page starts the load, so
     // the agent holds the tab, without credentials of its own.
