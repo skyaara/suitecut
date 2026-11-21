@@ -84,6 +84,23 @@ int main() {
   const auto count = events.size();
   prompts.Clear();
   assert(events.size() == count && calls.cancel == 3 && calls.policy == 2);
+  // CEF dismisses a permission prompt from inside its answer (Continue calls
+  // OnDismissPermissionPrompt at once): it closes once, answered, uncancelled.
+  Calls reentered;
+  auto hold = Holding(reentered, false, "permission:9");
+  hold.answer = [&prompts, &reentered](Dict answer) -> std::string {
+    if (!answer || answer->GetType("value") != VTYPE_STRING) return "An answer has a value";
+    ++reentered.answered;
+    prompts.Dismissed("permission:9");
+    return "";
+  };
+  assert(prompts.Show("permission", CefDictionaryValue::Create(), std::move(hold)));
+  const auto asked = events.back()->GetString("id").ToString();
+  const auto shown = events.size();
+  assert(!prompts.Answer(asked, Answer("other", "x"), error) && prompts.Size() == 1 && events.size() == shown);
+  assert(prompts.Answer(asked, Answer("value", "allow"), error) && reentered.answered == 1 && reentered.cancel == 0);
+  assert(prompts.Size() == 0 && events.size() == shown + 1 && events.back()->GetString("reason") == "answered");
+  prompts.Clear();
   // The agent's credentials: one try per challenge until a document commits.
   SuiteCutAgentAuthTries tries;
   const auto key = SuiteCutAgentAuthTries::Key(false, "box.test", 443, "Box", "basic");

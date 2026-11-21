@@ -81,11 +81,17 @@ class SuiteCutPersonPrompts {
       Close(state.info, "policy");
       return true;
     }
-    error = found->second.hold.answer ? found->second.hold.answer(answer) : "This prompt takes no answer";
-    if (!error.empty()) return false;
-    auto info = found->second.info;
+    // Out of the map before CEF hears the answer: a permission callback's
+    // Continue() calls OnDismissPermissionPrompt at once, which would
+    // otherwise find this prompt, cancel it and erase it under us.
+    auto state = std::move(found->second);
     pending_.erase(found);
-    Close(info, "answered");
+    error = state.hold.answer ? state.hold.answer(answer) : "This prompt takes no answer";
+    if (!error.empty()) {
+      pending_.emplace(id, std::move(state));  // a refused answer keeps the prompt
+      return false;
+    }
+    Close(state.info, "answered");
     return true;
   }
   // Chromium dropped a request it had asked about (a permission prompt).
