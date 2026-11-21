@@ -808,6 +808,13 @@ switch nothing changes.
 - **A navigation** drops the document's file choosers and media requests,
   reported `closed`. The engine does this at the main frame's load start,
   since Chromium resets dialog state only on a page that has shown a dialog. Permission prompts close when Chromium dismisses them.
+- **Permissions are not remembered.** Chromium stores an accept or deny
+  from its prompt as the origin's content setting, so the next request
+  would not ask (seen on macOS). After a person's answer the engine puts
+  the requested types back to the default for that origin. Chromium asks
+  only while they are at the default, so this restores the state from
+  before the prompt; an agent's grant or override would have decided
+  without asking. Today's policy answers are unchanged.
   A host's `tabs.navigate` dismisses only held dialogs first, not these.
 - **Secrets.** The fake engine writes `<redacted>` for a password in its
   log. The real-engine test checks that the answered password appears in no
@@ -819,8 +826,9 @@ switch nothing changes.
   `sc_prompt_answer_download` and `sc_prompt_cancel` (a dialog gets
   `accept:false`, anything else `cancel:true`).
 - **The sample host** shows open and save panels for file choosers and
-  downloads, and sheets for permissions, logins and certificates. It was
-  compiled on the Mac, not run against an engine.
+  downloads, and sheets for permissions, logins and certificates. It has
+  run against a macOS engine (below), but only unattended: its panels and
+  sheets have not been opened and answered there.
 
 **Checked against the real engine** on the devbox (2026-11-21: Linux x64,
 headless, CEF 156.0.30, engine and client at `9658c9f`):
@@ -846,14 +854,32 @@ The first runs found five engine and session faults, all fixed:
 They also found two faults in the test's page server: it answered idle
 preconnected sockets, and it answered requests read only in part.
 
+**Checked against a macOS engine** (2026-11-21: macOS 27 arm64, CEF
+156.0.30 OpenArch codec SDK, engine built on the Mac, headless):
+`suitecut-native-cef_host_events` passed all 64 checks,
+`suitecut-native-cef_embed_frames` all 23 (`420f` IOSurface frames, 30 in
+0.48 s from the animated page, none after detach), and
+`scripts/verify-embed-sample-macos.py` passed against the snapshot
+reference. On macOS every permission kind reached CEF's prompt:
+notifications and clipboard read accepted (`granted`, `ok`), geolocation
+(`error:1`), MIDI sysex and the camera (`NotAllowedError`) refused, and a
+second geolocation request asked again. The first run found two engine
+faults, both fixed:
+
+- Answering a permission prompt crashed the engine. CEF's `Continue()`
+  calls `OnDismissPermissionPrompt` at once, which erased the held prompt
+  while `SuiteCutPersonPrompts::Answer` still used it. The answer now runs
+  after the prompt leaves the holder, and a refused answer puts it back.
+- A refused geolocation request was remembered, so the second one did not
+  ask (the reset above).
+
 **Not built, or not checked:**
 
 - **Permission prompts never reached CEF's handler** on the headless Linux
   engine. Geolocation (`error:1`), notifications (`denied`), MIDI sysex and
   clipboard read (`NotAllowedError`) were refused before
-  `OnShowPermissionPrompt`. The camera found no device. The macOS custom-UI
-  prototype did get prompts on windowed Alloy pages. So the permission path
-  is checked only against the fake engine.
+  `OnShowPermissionPrompt`. The camera found no device. On macOS they all
+  reach it (above), so the permission path is checked there.
 - **The agent's credentials** cannot be set through `embed.h`: its sessions
   give agents the `core`, `debug` and `media` tools, not `network`. The
   once-per-challenge rule is checked by the engine's unit test and the fake
@@ -862,8 +888,8 @@ preconnected sockets, and it answered requests read only in part.
   server that asks for one and an NSS database with a certificate.
 - A file chooser left when its host goes is cancelled. CEF's own dialog
   cannot be shown later in a headless engine.
-- No macOS engine with host events has been built, so none of this has run
-  in the sample.
+- The sample's AppKit panels and sheets have not been opened and answered
+  against an engine; its verifier only clicks, types and takes a snapshot.
 
 **Navigation's commit: fixed under the switch.** With host events,
 `tabs.open` and `tabs.navigate` send the engine `navigateFrame` with
@@ -1625,7 +1651,7 @@ handling and frame validation from the helper.
 | 0 | **Built**: `shared_session_test` against a new `tests/support/session_fake_engine.cpp`, with the Napdock envelope replay in the same file; the Linux build is still to do. **Planned**: `native/client/tests/unit/shared_session_test.cpp`, running the built tool against `tests/support/transport_fake_engine.cpp` or `browser_facade_engine.cpp` (both fake engines exist). Covers: framing (empty, partial, 2 s deadline, many requests per connection), `_session_status` and `_session_close`, owner isolation (`unknown_page`), `human_in_control`, take and release generations, popup inheritance, `engine_exited`. **Build**: a Linux configure and build of `native/client` to settle the `getpeereid` question. |
 | 1 | **Built**: `session_protocol_test` in `native/client/tests/unit`; still to do: the golden fixtures as files, the script, and the real-engine workflow. **Planned**: **Protocol conformance** tests in `native/session/tests/unit` with a fake engine: `hello`, detecting protocol 0, every op and error code, roles and grants, `expectGeneration`, claiming before the call, the event cursor and `resync`, `reply_too_large`, per-owner agent concurrency. **Golden protocol 0 fixtures** (`native/session/tests/fixtures/protocol0/*.json`), recorded from the shapes Napdock sends (`Helper.swift`, `AgentTools.swift`) and replayed against the new service. **Layout**: `native/client/tests/architecture` and `tools/check-layout.py` extended to the new component. **Script**: `scripts/check-session-protocol.py`, standard library only like the other `check-*` scripts, as a protocol 0 client and a protocol 1 client. **Real engine**: a C++ workflow `native/client/tests/integration/session_workflows.cpp`, registered in the `tests/cef` manifests: two owners, an agent against a person, popups, engine death. |
 | 2 | **Built**: `embed_test` in `native/client/tests/unit`, against `session_fake_engine`, which on macOS now sends real `420f` IOSurface frames at the viewport times the scale, then a forged frame from another process. It covers: runtime inspect (symlinked directory, an old service, missing, relative, a signing requirement, a wrong ABI), joining before start, owner isolation, `invalid_url`, navigation, history, take and release, screenshots, grants and revocation, `human_in_control`, `stale_generation`, the agent catalog, events (`resync`, `tab.changed`, timeout), an input-only view with every input kind and four threads of moves, library frames (size, format, use count, the forged frame dropped, resize, `view_busy`, `replace`, detach, an unsafe bootstrap name), host-only shutdown, idempotent close and `engine.exited`. `embed_header_test.c` compiles the header as C and checks the init functions and `sc_error_refusal`; `c_abi_test.c` is unchanged. Both pass on macOS and on Linux, where frames and signing requirements are `SC_UNSUPPORTED`. **Sample**: built, and run by hand against the real engine with `--click`, `--type` and `--snapshot`. **Packages**: `tests/consumer` compiles `embed.h` first and alone as C++, and `c_embed_consumer.c` includes only `embed.h` and calls it, in the C-only shared consumer too. `tools/verify-package.py` requires `client.h` and `embed.h` by name. `scripts/package-native-runtime.py` requires `embed.h` among its SDK inputs. `tools/package-source.py` now archives `native/client/session/`, which the source archive had lacked since phase 1. On Linux (the devbox, 2026-11-21), `verify-package.py --source-archive` passed from the exported archive. That covered static and shared builds, unit and architecture tests, relocated installs, and four consumers: static C++, shared C++, shared C-only and an embedding parent. `installed_embed_c_abi` passed in each. On macOS, the static install's consumer passed, with `embed.h` compiled alone. **Real engine, opt-in**: `suitecut-native-cef_embed_frames` (`ctest -L embed-frames` with `SUITECUT_EMBED_RUNTIME`) and `scripts/verify-embed-sample-macos.py`; see "Built in phase 2". |
-| 3 | **Built**: `session_protocol_test`'s `host_events` section, against `session_fake_engine`, which now models host events and held dialogs with `--suitecut-host-events=1`. It covers: the capabilities in `hello`; `tab.loading` (start, progress, finish, history) and `tab.title`; a new tab's `tab.changed` before its loading events; `tabs.list` fields; `tabs.stop` taking the tab; IME set, commit and cancel, with ranges and which of them take the tab; the edit commands; `view.cursor` and `view.ime`; no prompt without a prompt host; a prompt host holding its owner's dialogs; `prompt.opened` fields; agent answers on its own tab, refusal on the person's; another owner's prompt; a second answer; a prompt's default text; a host navigation dismissing a held alert, and a `beforeunload` left to the engine's reset; a popup's `opener`, with its dialogs held; protocol 0's tab fields unchanged; and the last prompt host leaving. `embed_test` adds `SC_SESSION_PROMPTS`, an unknown flag, the loading and title kinds, `sc_tab_stop`, the IME and edit calls in order, bad ranges and commands, and a dialog answered through `sc_prompt_answer_dialog`. `embed_header_test.c` checks `sc_ime_composition_init` and the new constants. The engine's `suitecut-page-before-unload-test` checks the dialog reset report. **Real engine, opt-in**: `suitecut-native-cef_host_events` (`ctest -L embed-host-events` with `SUITECUT_EMBED_RUNTIME`), Linux and macOS, headless; see "Built in phase 3" (63 checks on Linux at `9658c9f`). **Item 5** adds `session_protocol_test`'s `person_prompts` section: no person prompts without a host connection, and an agent connection listing `prompts` does not count; each kind's `prompt.opened` fields; file answers with good and bad paths (`invalid_path` naming the path) for single, folder and save choosers, and cancel; a file chooser closed by a navigation; a permission refused, and a non-boolean answer; a certificate by index and an index not listed; auth answered by the agent's credentials on its tab with nobody asked, the person asked on the agent's tab without them and on the person's tab despite them, a login cancelled and one answered; a download saved to a chosen path and one cancelled, and none on an agent's tab; an agent's answer refused `forbidden`; a second answer `prompt_gone`; the last host leaving answering by policy; and the fake engine's log carrying no password. `embed_test` answers each kind through the new `sc_prompt_answer_*` calls and `sc_prompt_cancel`, and `embed_header_test.c` checks their arguments. The engine's `suitecut-person-prompts-test` checks the holder: hold, answer, a refused answer kept, `{policy:true}`, a dismissal, a reset that keeps what is not the document's, unsubscribing, and clearing. It also checks `SuiteCutAgentAuthTries`: one try per challenge, kept apart by proxy and realm, and cleared at a commit. `suitecut-network-authentication-test` checks the Fetch handler's `Ask`: six rejected answers asked again with no cap, an answer sent long after the 30 s, and a late answer after its session detached sent nowhere. `cef_host_events` adds a file chooser answered, cancelled and closed by a navigation; each permission kind tried and noted (none reaches CEF's prompt headless on Linux); a second realm asking, a wrong login asked again and the right one logging in; HTTP basic auth answered, with no trace of the password; no download prompt on the agent's tab; a download saved to a chosen path from a host's tab; and `sc_tab_navigate` returning at commit on a stalled page. Its first-load check no longer expects `about:blank` behind the page. **Still to do**: client certificates on a real engine; a dialog left to time out (30 s); `beforeunload` with a user gesture; audio audible while not recording. |
+| 3 | **Built**: `session_protocol_test`'s `host_events` section, against `session_fake_engine`, which now models host events and held dialogs with `--suitecut-host-events=1`. It covers: the capabilities in `hello`; `tab.loading` (start, progress, finish, history) and `tab.title`; a new tab's `tab.changed` before its loading events; `tabs.list` fields; `tabs.stop` taking the tab; IME set, commit and cancel, with ranges and which of them take the tab; the edit commands; `view.cursor` and `view.ime`; no prompt without a prompt host; a prompt host holding its owner's dialogs; `prompt.opened` fields; agent answers on its own tab, refusal on the person's; another owner's prompt; a second answer; a prompt's default text; a host navigation dismissing a held alert, and a `beforeunload` left to the engine's reset; a popup's `opener`, with its dialogs held; protocol 0's tab fields unchanged; and the last prompt host leaving. `embed_test` adds `SC_SESSION_PROMPTS`, an unknown flag, the loading and title kinds, `sc_tab_stop`, the IME and edit calls in order, bad ranges and commands, and a dialog answered through `sc_prompt_answer_dialog`. `embed_header_test.c` checks `sc_ime_composition_init` and the new constants. The engine's `suitecut-page-before-unload-test` checks the dialog reset report. **Real engine, opt-in**: `suitecut-native-cef_host_events` (`ctest -L embed-host-events` with `SUITECUT_EMBED_RUNTIME`), Linux and macOS, headless; see "Built in phase 3" (63 checks on Linux at `9658c9f`; 64 on macOS, where permission prompts reach CEF). **Item 5** adds `session_protocol_test`'s `person_prompts` section: no person prompts without a host connection, and an agent connection listing `prompts` does not count; each kind's `prompt.opened` fields; file answers with good and bad paths (`invalid_path` naming the path) for single, folder and save choosers, and cancel; a file chooser closed by a navigation; a permission refused, and a non-boolean answer; a certificate by index and an index not listed; auth answered by the agent's credentials on its tab with nobody asked, the person asked on the agent's tab without them and on the person's tab despite them, a login cancelled and one answered; a download saved to a chosen path and one cancelled, and none on an agent's tab; an agent's answer refused `forbidden`; a second answer `prompt_gone`; the last host leaving answering by policy; and the fake engine's log carrying no password. `embed_test` answers each kind through the new `sc_prompt_answer_*` calls and `sc_prompt_cancel`, and `embed_header_test.c` checks their arguments. The engine's `suitecut-person-prompts-test` checks the holder: hold, answer, a refused answer kept, `{policy:true}`, a dismissal, a reset that keeps what is not the document's, unsubscribing, clearing, and a permission dismissed from inside its own answer (as CEF's `Continue()` does) closing once, answered. It also checks `SuiteCutAgentAuthTries`: one try per challenge, kept apart by proxy and realm, and cleared at a commit. `suitecut-network-authentication-test` checks the Fetch handler's `Ask`: six rejected answers asked again with no cap, an answer sent long after the 30 s, and a late answer after its session detached sent nowhere. `cef_host_events` adds a file chooser answered, cancelled and closed by a navigation; each permission kind tried and noted (none reaches CEF's prompt headless on Linux; all do on macOS, where a second request must ask again); a second realm asking, a wrong login asked again and the right one logging in; HTTP basic auth answered, with no trace of the password; no download prompt on the agent's tab; a download saved to a chosen path from a host's tab; and `sc_tab_navigate` returning at commit on a stalled page. Its first-load check no longer expects `about:blank` behind the page. **Still to do**: client certificates on a real engine; a dialog left to time out (30 s); `beforeunload` with a user gesture; audio audible while not recording. |
 | 4 | **Bundle**: `scripts/check-runtime-bundle-macos.py` checks that `otool -L` shows only system and in-bundle libraries, that every Mach-O has the same `minos`, hardened runtime flags, the manifest present and signed, and the protocol range. **Relocation**: `scripts/verify-native-runtime-macos.py` extended to run on a relocated copy with `/opt/homebrew` out of reach. **Gatekeeper**: `spctl` and `stapler validate` only after a notarization the owner approved. |
 | 5 | **MCP**: a join-mode test with a fake session (in the style of `control_cli_test.cpp`): grant narrowing, `--simple`, `human_in_control` as a tool error, opening the first tab. **Fuzzing**: `scripts/fuzz-native-control.py` extended to `--join`. |
 | 6 | **Linux spike**: half done on a machine without a GPU (2026-11-20, `suitecut-accelerated-paint-probe`): shared textures need GBM and give no frames without a render node; CPU frames work. **Still to do**: the same probe on a named GPU and driver, recording planes, formats and modifiers, then the frame workflow ported. |
@@ -1660,9 +1686,9 @@ handling and frame validation from the helper.
   finishes loading fails it with `navigation_failed` after 30 s.
 - **Client certificates on a real engine**, and remembering permissions per
   origin (see "Prompts that go to the person").
-- **Permission prompts on a real engine**: why headless Linux CEF refuses
-  geolocation, notifications, MIDI sysex and clipboard read before
-  `OnShowPermissionPrompt`, and whether a windowed or macOS engine asks.
+- **Permission prompts on headless Linux**: why CEF refuses geolocation,
+  notifications, MIDI sysex and clipboard read before
+  `OnShowPermissionPrompt` there. A headless macOS engine asks.
 - **Agent tools for an embedded session**: `embed.h` cannot give agents the
   `network` tools, so they cannot set `network.credentials` there.
 - **The engine's 120 s cap on a command's wait** (`page/commands.cc`,
