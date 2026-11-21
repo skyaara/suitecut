@@ -12,5 +12,12 @@
     "sha256": "d9bcb24c64284be28dfd5ed99961fd2aa562308bad2d0ad79217fdec18542dcc",
     "size": 135597207,
     "codecs": "Third-party build of the same CEF tag with proprietary_codecs=true and ffmpeg_branding=\"Chrome\" (H.264, AAC, HEVC via VideoToolbox); not an official CEF build and carries no codec patent licence. See CODECS.md."
+  },
+  "macosarm64Official": {
+    "url": "https://cef-builds.spotifycdn.com/cef_binary_156.0.30%2Bg6028375%2Bchromium-156.0.8078.96_macosarm64_minimal.tar.bz2",
+    "sha256": "731b599e78c71bf33530d65bfa18963f7d1d59902c1f381f5452188e5116b855",
+    "upstreamSha1": "6393d8a838d3b29f6b6939b970b5931dde2082aa",
+    "size": 134874408,
+    "codecs": "Official CEF build: no proprietary codecs (no H.264, AAC or HEVC), so it carries no codec patent licence obligation. The embed kit's default; the macosarm64 codec build is an option (scripts/package-embed-kit-macos.py --cef codecs)."
   }
 }

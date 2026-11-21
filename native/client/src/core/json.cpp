@@ -2,7 +2,11 @@
 #include "suitecut/json.hpp"
 #include <algorithm>
 #include <charconv>
+#include <cerrno>
 #include <cmath>
+#if defined(__APPLE__)
+#include <xlocale.h>
+#endif
 #include <limits>
 
 namespace suitecut {
@@ -123,8 +127,21 @@ class Parser {
       // 1e20 without an exponent; retain its finite numeric value as a double.
     }
     double value = 0;
+#if defined(__APPLE__)
+    // libc++ parses doubles with from_chars only from macOS 26; the client
+    // supports macOS 14. The token is already valid JSON number syntax, so
+    // strtod in the C locale reads exactly it.
+    static const locale_t c_locale = newlocale(LC_ALL_MASK, "C", nullptr);
+    const std::string copy(token);
+    char* end = nullptr;
+    errno = 0;
+    value = strtod_l(copy.c_str(), &end, c_locale);
+    if (end != copy.c_str() + copy.size() || !std::isfinite(value) || (errno == ERANGE && value == 0.0))
+      fail("floating point range");
+#else
     const auto result = std::from_chars(token.data(), token.data() + token.size(), value, std::chars_format::general);
     if (result.ec != std::errc{} || result.ptr != token.data() + token.size() || !std::isfinite(value)) fail("floating point range");
+#endif
     return value;
   }
   // Containers under construction live on an explicit stack: nesting depth is bounded by memory, not the thread stack.

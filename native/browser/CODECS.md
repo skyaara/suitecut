@@ -2,6 +2,8 @@
 
 **macOS arm64 is the platform for proprietary-codec playback.** Its pinned SDK is a codec-enabled build of CEF 156.0.30 (below) and plays H.264, AAC and HEVC. Use macOS for anything that needs them.
 
+**The macOS embed kit ships the official CEF build by default, with no H.264, AAC or HEVC.** The codec build is a third-party build with no codec patent licence, so a kit that other people install defaults to the official archive (`macosarm64Official` in [`cef-build.json`](cef-build.json)). `scripts/package-embed-kit-macos.py --cef codecs` packages the codec build instead, for a vendor that has settled its own licensing. See [docs/embedding/embed-kit-macos.md](../../docs/embedding/embed-kit-macos.md).
+
 The official Linux CEF156 runtime lacks H.264/AAC playback, and no Linux codec build is planned for now: the source build needs a 500 GiB / 64 GiB host we don't have, and no CEF156 Linux codec prebuilt exists. The Linux profile below stays as the recipe if that changes; it has never been run. Recording and publishing use a separate FFmpeg encoder and do not add browser decoders.
 
 ## Build common web codecs

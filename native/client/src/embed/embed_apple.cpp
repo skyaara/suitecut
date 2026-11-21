@@ -191,6 +191,13 @@ void CheckSignature(const std::string& bundle, const std::vector<std::string>& p
     check_code(bundle, parsed);  // the bundle, with every nested program
   } else {
     for (const auto& program : programs) check_code(program, parsed);
+    // An embed kit: its bundles and the framework, nested code included.
+    std::error_code ignored;
+    for (const auto& entry : std::filesystem::directory_iterator(root, ignored)) {
+      const auto extension = entry.path().extension();
+      if ((extension == ".app" || extension == ".framework") && entry.is_directory(ignored))
+        check_code(entry.path().string(), parsed);
+    }
   }
 }
 

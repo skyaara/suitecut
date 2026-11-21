@@ -39,9 +39,12 @@ SC_API void sc_json_destroy(sc_json *json);
 
 /* ---- Runtime: find and check a runtime before using it. ----
  * |path| is a SuiteCut.app bundle (Contents/MacOS holds the programs) or a
- * directory holding suitecut-browser and suitecut-session. On macOS a
+ * directory holding suitecut-browser and suitecut-session. On macOS the
+ * directory may be an embed kit, whose engine is
+ * suitecut-browser.app/Contents/MacOS/suitecut-browser. On macOS a
  * signing requirement is checked against the whole bundle, nested code
- * included, before anything in it runs. The service is then asked for its
+ * included, before anything in it runs; for a directory, against both
+ * programs and every .app and .framework at its top level. The service is then asked for its
  * version and protocols (suitecut-session --version --json); no engine
  * starts. A service too old to answer speaks protocol 0 only. */
 typedef struct sc_runtime_options {

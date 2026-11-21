@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
+# macOS 14 is the oldest release the engine, its helpers and the embed kit
+# support. CEF's own CMake asks for 13.0; it is raised below to match.
+set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version")
 project(suitecut_browser LANGUAGES C CXX)
 if(APPLE)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
@@ -25,6 +28,13 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CEF_ROOT}/cmake")
 set(USE_SANDBOX ON CACHE BOOL "Keep Chromium renderer sandbox enabled" FORCE)
 find_package(CEF REQUIRED)
+if(APPLE)
+  # CEF set a plain variable of 13.0 over the cache entry; take the cache.
+  set(suitecut_macos_minimum "$CACHE{CMAKE_OSX_DEPLOYMENT_TARGET}")
+  list(TRANSFORM CEF_COMPILER_FLAGS REPLACE "^-mmacosx-version-min=.*$" "-mmacosx-version-min=${suitecut_macos_minimum}")
+  set(CEF_TARGET_SDK "${suitecut_macos_minimum}")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "${suitecut_macos_minimum}")
+endif()
 find_package(CURL 7.88 REQUIRED)
 if(APPLE AND CURL_INCLUDE_DIR MATCHES "/MacOSX[^/]*\\.sdk/usr/include$")
   # The sysroot already supplies these headers. Adding its C header directory

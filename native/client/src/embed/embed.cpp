@@ -518,7 +518,12 @@ sc_status sc_runtime_inspect(const sc_runtime_options* options, sc_runtime_info*
     if (options->protocol_min > options->protocol_max) throw std::invalid_argument("protocol_min is above protocol_max");
     const std::filesystem::path root(options->path);
     const auto programs = program_dir(root);
-    const auto engine = programs / "suitecut-browser", service = programs / "suitecut-session";
+    // An embed kit (a folder, not a bundle) keeps the engine in
+    // suitecut-browser.app beside the session (scripts/package-embed-kit-macos.py).
+    const auto kit_engine = root / "suitecut-browser.app" / "Contents" / "MacOS" / "suitecut-browser";
+    const auto engine = programs == root && ::access(kit_engine.c_str(), X_OK) == 0 ? kit_engine
+                                                                                   : programs / "suitecut-browser";
+    const auto service = programs / "suitecut-session";
     for (const auto& program : {engine, service})
       if (::access(program.c_str(), X_OK) != 0)
         throw std::runtime_error("The runtime has no " + program.filename().string() + " at " + program.string());
