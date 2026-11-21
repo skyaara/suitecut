@@ -11,6 +11,7 @@
 #include "include/cef_parser.h"
 
 #include <cstdlib>
+#include <set>
 
 namespace suitecut::browser {
 namespace {
@@ -63,6 +64,16 @@ CefRefPtr<CefListValue> PermissionNames(uint32_t requested) {
     names->SetString(names->GetSize(), name.empty() ? std::string("unknown") : std::string(name));
   }
   return names;
+}
+
+// The content settings a permission request's bits stand for. A definition
+// counts only when every bit it needs was requested.
+std::set<cef_content_setting_types_t> PermissionSettings(uint32_t requested) {
+  std::set<cef_content_setting_types_t> types;
+  for (const auto& entry : suitecut::NativePermissionDefinitions())
+    if (entry.flags && (entry.flags & ~requested) == 0)
+      for (size_t i = 0; i < entry.count; ++i) types.insert(entry.settings[i]);
+  return types;
 }
 
 CefRefPtr<CefListValue> MediaNames(uint32_t requested) {
@@ -158,10 +169,23 @@ auto Source::PermissionPrompt(uint64_t prompt_id, const CefString& origin, uint3
   info->SetList("permissions", PermissionNames(requested));
   SuiteCutPersonPrompts::Hold hold;
   hold.key = "permission:" + std::to_string(prompt_id);
-  hold.answer = [callback](Dict answer) -> std::string {
+  // Chromium keeps an accept or deny from its prompt as the origin's content
+  // setting, so the next request would not ask. Decision 3 remembers nothing:
+  // once Chromium has stored the answer, the requested types go back to the
+  // default. Chromium asks only while they are at the default, so this is
+  // the state from before the prompt; a grant or override would have decided
+  // without asking.
+  CefRefPtr<CefRequestContext> context = browser_ ? browser_->GetHost()->GetRequestContext() : nullptr;
+  hold.answer = [callback, context, origin = origin.ToString(), requested](Dict answer) -> std::string {
     bool accept = false;
     if (!Accepted(answer, accept)) return "A permission's answer has accept: true or false";
     callback->Continue(accept ? CEF_PERMISSION_RESULT_ACCEPT : CEF_PERMISSION_RESULT_DENY);
+    if (context)
+      CefPostTask(TID_UI, new Task([context, origin, types = PermissionSettings(requested)] {
+        for (const auto type : types)
+          context->SetContentSetting(origin, type == CEF_CONTENT_SETTING_TYPE_STORAGE_ACCESS ? CefString(origin) : CefString(),
+                                     type, CEF_CONTENT_SETTING_VALUE_DEFAULT);
+      }));
     return "";
   };
   hold.policy = [this, callback, origin = origin.ToString(), requested] {
