@@ -1,19 +1,20 @@
 # Scripts
 
-Maintainer scripts for building, packaging and verifying SuiteCut. Most need a
-built CEF executable or local toolchains, and none publish anything. The common
-ones are wired to `package.json` scripts; run those rather than the files directly.
+Maintainer scripts for packaging, signing and verifying suitecut's native
+runtime. They are Python 3 and use only the standard library. Most need a built
+CEF executable or local toolchains, and none publish anything.
 
-| Pattern                                                | Purpose                                                                 | Examples                                                  |
-| ------------------------------------------------------ | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| `verify-native-*.mjs`, `verify-native-*.py`            | Real-browser checks of one native feature against the built engine      | `pnpm test:native`, `pnpm test:native:cadence`            |
-| `check-native-runner-*.py`                             | Process-level checks of the native test runner (`suitecut-test`)        | `python3 scripts/check-native-runner-repeat-each.py`      |
-| `verify-*.mjs`                                         | Package, plugin and release verification                                | `pnpm test:package:built`, `pnpm test:audio-plugin:built` |
-| `sdk-*.mjs`                                            | Browser-control SDK fuzzing, hardening and performance reviews          | `scripts/sdk-browser-stress.mjs`                          |
-| `package-*.py`, `sign-*.py`, `native_macos_signing.py` | Build relocatable native runtimes and sign macOS bundles                | [macOS runtime](../docs/native-full-runtime-macos.md)     |
-| `check-lfs-assets.mjs`, `clean-dist.mjs`               | Build helpers run by `prepack` and `build`                              | `pnpm check:lfs`                                          |
-| `run-song-maker-example.py`                            | Pack both SDKs into a temporary consumer and run the Song Maker example | `pnpm example:song-maker`                                 |
+| Pattern                                                       | Purpose                                                              |
+| ------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `package-native-runtime*.py`, `verify-native-runtime*.py`     | Build and check relocatable native runtimes (Linux x64, macOS arm64) |
+| `package-embed-kit-macos.py`, `build-embed-kit-deps-macos.py` | Build the signed macOS embed kit and its dependencies                |
+| `verify-embed-kit-macos.py`, `verify-embed-sample-macos.py`   | Check the embed kit and the sample app that uses it                  |
+| `package-napdock-browser-macos.py`                            | Package the engine for Napdock's Browser extension                   |
+| `sign-native-macos.py`, `native_macos_signing.py`             | Sign macOS bundles with the shared signing policy                    |
+| `verify-native-macos-recording.py`                            | Measure encoded frames and audio from a native runtime's recording   |
+| `run-cef-regressions.py`, `cef_regression_processes.py`       | Compatibility entry point and process helpers for `tests/cef`        |
+| `verify-cef-upstream.py`, `check-cef-fix-bundle.py`           | Run CEF's own parser and string tests; check CEF patch bundles       |
+| `fuzz-native-control.py`                                      | Fuzz the native session IPC with a supplied test engine              |
 
-Scripts stay in one flat directory because many locate the repository root
-relative to their own path. Shared Python helpers (`native_*.py`) are imported by
-the `check-native-runner-*` scripts beside them.
+Scripts stay in one flat directory because several locate the repository root
+relative to their own path.

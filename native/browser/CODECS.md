@@ -36,6 +36,12 @@ Use a dedicated empty build root. Subsequent stages require its matching ownersh
 
 ## Acceptance and packaging
 
+The acceptance, packaging and Twitch commands in this section are Node scripts
+that drove the engine through the removed Node SDK. They are kept on the
+`archive/node` branch; this line has no native replacement for the playback
+gate yet, so a new codec build cannot be accepted here until one exists. The
+results below were measured with them.
+
 ```bash
 node scripts/verify-browser-codec-runtime.mjs \
   --executable /mnt/suitecut-cef156-web-codecs/native/suitecut-browser \

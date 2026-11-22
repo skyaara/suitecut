@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.20)
 project(SuiteCutCEFRegressions LANGUAGES NONE)
 include(CTest)
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
-find_program(SUITECUT_NODE NAMES node REQUIRED)
-get_filename_component(SUITECUT_ROOT "../.." ABSOLUTE)
 set(SUITECUT_CEF_ENGINE "" CACHE FILEPATH "Actual compiled CEF executable")
 set(SUITECUT_CLIENT_BUILD "" CACHE PATH "Compiled client regression binaries")
 set(SUITECUT_FFMPEG "" CACHE FILEPATH "Runtime ffmpeg")
@@ -14,8 +12,7 @@ if(BUILD_TESTING)
   add_test(NAME cef.harness.unit COMMAND "${Python3_EXECUTABLE}" -m unittest discover
     -s "${CMAKE_CURRENT_SOURCE_DIR}/unit" -p "test_*.py")
   set_tests_properties(cef.harness.unit PROPERTIES TIMEOUT 120 LABELS "cef;harness;unit")
-  add_test(NAME cef.catalogue COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}"
-    --node "${SUITECUT_NODE}" --list)
+  add_test(NAME cef.catalogue COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}" --list)
   set_tests_properties(cef.catalogue PROPERTIES TIMEOUT 30 LABELS "cef;harness;catalogue")
   if(SUITECUT_CEF_REAL_BROWSER_TESTS)
     foreach(required IN ITEMS SUITECUT_CEF_ENGINE SUITECUT_FFMPEG SUITECUT_FFPROBE)
@@ -29,12 +26,8 @@ if(BUILD_TESTING)
         message(FATAL_ERROR "Missing C++ workflow: ${SUITECUT_CLIENT_BUILD}/${binary}; build client-cef-binaries")
       endif()
     endforeach()
-    if(NOT EXISTS "${SUITECUT_ROOT}/dist/native.js")
-      message(FATAL_ERROR "Missing built SDK; run pnpm build")
-    endif()
     add_test(NAME cef.browser.full COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}"
-      --node "${SUITECUT_NODE}" --engine "${SUITECUT_CEF_ENGINE}"
-      --client-build "${SUITECUT_CLIENT_BUILD}" --sdk "${SUITECUT_ROOT}/dist"
+      --engine "${SUITECUT_CEF_ENGINE}" --client-build "${SUITECUT_CLIENT_BUILD}"
       --ffmpeg "${SUITECUT_FFMPEG}" --ffprobe "${SUITECUT_FFPROBE}"
       --profile full --workers 2 --seed 211)
     set_tests_properties(cef.browser.full PROPERTIES TIMEOUT 1800 PROCESSORS 2

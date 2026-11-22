@@ -3,10 +3,6 @@
     "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "baseUrl": ".",
-    "paths": {
-      "suitecut/audio-plugin": ["./src/audio-plugin.ts"]
-    },
     "lib": ["ES2023", "DOM"],
     "types": ["node"],
     "strict": true,
@@ -22,18 +18,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "examples/**/*.ts",
-    "scripts/**/*.mjs",
-    "benchmarks/**/*.mjs",
-    "docs/internals/cef-issues/repro/**/*.mjs",
-    "vitest.config.ts"
-  ]
+  "include": ["benchmarks/**/*.mjs"]
 }

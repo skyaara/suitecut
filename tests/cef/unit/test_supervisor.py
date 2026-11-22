@@ -74,7 +74,7 @@ class SupervisorTests(unittest.TestCase):
     def test_zero_exit_with_failed_evidence_is_failed(self):
         (self.root / 'result.json').write_text(json.dumps({'passed': False, 'checks': ['not enough']}))
         with self.assertRaises(ValueError):
-            evidence.validate_reports(self.root, {'kind':'journey','id':'test.a'})
+            evidence.validate_reports(self.root, {'kind':'cpp','id':'test.a','evidence':{'file':'result.json','rules':[{'path':'passed','equals':True},{'path':'checks','minItems':1}]}})
 
     def test_process_inspection_failure_still_reaps_child(self):
         with patch.object(runner,'group_members',side_effect=RuntimeError('ps unavailable')):
@@ -86,10 +86,10 @@ class SupervisorTests(unittest.TestCase):
     def test_zero_exit_without_assertions_is_failed(self):
         (self.root / 'result.json').write_text(json.dumps({'passed': True, 'checks': []}))
         with self.assertRaises(ValueError):
-            evidence.validate_reports(self.root, {'kind':'journey','id':'test.a'})
+            evidence.validate_reports(self.root, {'kind':'cpp','id':'test.a','evidence':{'file':'result.json','rules':[{'path':'passed','equals':True},{'path':'checks','minItems':1}]}})
 
     def test_repetition_keeps_failure_in_junit(self):
-        attempts = [dict(id='a', kind='journey',seed=i,repeat=i,passed=(i==2),errors=[] if i==2 else ['original failure'],directory=f'cases/a-{i}') for i in (1,2)]
+        attempts = [dict(id='a', kind='cpp',seed=i,repeat=i,passed=(i==2),errors=[] if i==2 else ['original failure'],directory=f'cases/a-{i}') for i in (1,2)]
         reporting.write_reports(self.root, dict(passed=False,attempts=attempts,durationSeconds=1,globalErrors=[]))
         xml = ET.parse(self.root / 'junit.xml').getroot()
         self.assertEqual(xml.attrib['tests'], '2')
@@ -102,11 +102,11 @@ class SupervisorTests(unittest.TestCase):
         self.assertEqual(xml.attrib['failures'], '1')
 
     def test_case_filter_and_empty_selection(self):
-        cases = [dict(id='race.a',tags=['race'],kind='journey'),dict(id='proof.b',tags=[],kind='proof')]
+        cases = [dict(id='race.a',tags=['race'],kind='cpp'),dict(id='cpp.b',tags=[],kind='cpp')]
         self.assertEqual(catalogue.selected(cases,'races',[]),cases[:1])
         with self.assertRaises(ValueError):
             catalogue.selected(cases,'full',['no-such-case'])
-        self.assertEqual(catalogue.selected(cases,'smoke',['proof.*']),cases[1:])
+        self.assertEqual(catalogue.selected(cases,'smoke',['cpp.*']),cases[1:])
 
 
 if __name__ == '__main__':

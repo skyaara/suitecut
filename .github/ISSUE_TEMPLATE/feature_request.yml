@@ -26,11 +26,12 @@ body:
     attributes:
       label: Area
       options:
-        - Playwright fixture and capture
-        - Narration
-        - Manifest and reporter
-        - Rendering and FFmpeg
-        - CLI and package
+        - CEF engine
+        - C++ client SDK and C ABI
+        - Control CLI and MCP
+        - Embedding (macOS embed kit)
+        - Capture, recording and streaming
+        - Packaging and signing
         - Documentation
     validations:
       required: true

@@ -1,112 +1,68 @@
 # Releasing suitecut
 
-Only maintainers with npm and GitHub release access should use this checklist.
+Only maintainers with release access should use this checklist. Nothing here
+publishes on its own; publishing, pushing and deployment need explicit
+authorization.
 
-1. Start from a clean `main` branch and review every change since the previous tag.
-2. Confirm the package name is still available or owned by the maintainer with `npm view suitecut`
-   and `npm whoami`.
-3. Replace `Unreleased` in `CHANGELOG.md` with the release date. Set the same version in
-   `package.json` and `pnpm-lock.yaml`.
-4. Run the release checks:
+## What a release contains
 
-   ```sh
-   pnpm install --frozen-lockfile
-   pnpm check
-   pnpm site:check
-   pnpm site:build
-   pnpm test:native:cadence
-   pnpm test:audio-plugin
-   pnpm test:kokoro
-   pnpm test:package
-   SUITECUT_NATIVE_EXECUTABLE=/path/to/suitecut-browser pnpm test:native
-   pnpm audit
-   ```
+suitecut ships native distributions only:
 
-5. Inspect `npm pack --dry-run --json`. The suitecut tarball should contain only `dist`, the README,
-   changelog, licenses, package metadata, cursor/Kokoro assets, and native browser source/build pins.
-   Compiled CEF binaries and SDKs must stay out of the npm tarball. The Sherpa audio plugin
-   packages live on the `audio-plugins` branch and are released from there.
+- the C++20 client SDK, C ABI and `suitecut-native-control` CLI, as SDK-only
+  archives per platform (no CEF or browser binaries);
+- the optional full-runtime archive built with `scripts/package-native-runtime.py`
+  (Linux x64) or `scripts/package-native-runtime-macos.py` (macOS arm64); see
+  [native full runtime](docs/native-full-runtime.md) and the
+  [macOS recipe](docs/native-full-runtime-macos.md);
+- the signed macOS embed kit built with `scripts/package-embed-kit-macos.py`; see
+  [the embed kit](docs/embedding/embed-kit-macos.md).
 
-6. Publish suitecut. Use npm provenance when the npm account and repository are configured for it:
+Native SDK versioning and C ABI versioning are independent. Each platform needs
+its own dependency and runtime qualification. Windows runtime packaging is not
+implemented. Do not publish the GPL media bundle without its complete
+corresponding source.
 
-   ```sh
-   npm publish --provenance --access public
-   ```
+## Gates
 
-7. Verify the published package in a new temporary project before creating and pushing the matching
-   Git tag and GitHub release.
+1. Build the engine and client from a clean checkout against the pinned CEF SDK
+   (`native/browser/cef-build.json`) and libyuv commit. Record the commit.
+2. Run the client tests in Release and with `SUITECUT_CLIENT_SANITIZERS=ON`. Set
+   `ASAN_OPTIONS=detect_leaks=1:halt_on_error=1` and
+   `UBSAN_OPTIONS=halt_on_error=1`. Run the heavy JSON/packet and observation
+   campaigns with `SUITECUT_CLIENT_FUZZ_ITERATIONS` and
+   `SUITECUT_AGENT_FUZZ_ITERATIONS`; ordinary CTest uses smaller finite defaults.
+3. Exercise the session worker with `scripts/fuzz-native-control.py`, passing an
+   absolute CLI path, the built `simple_agent_test` engine and a new report path.
+4. Build the engine with `-DSUITECUT_BUILD_BROWSER_CHECKS=ON` and run its CTest
+   checks.
+5. Run the [full CEF regression suite](docs/cef-regressions.md) with bounded
+   workers against the exact candidate app and freshly built client. Retain the
+   source and runtime fingerprints, failures and cleanup receipts.
+6. Install static and shared client builds into fresh prefixes and compile
+   independent C and C++ consumers using only installed headers and CMake
+   exports, as described in the [SDK architecture](native/client/ARCHITECTURE.md).
+   Verify the installed CLI, skill files, browser cleanup and runtime library
+   requirements.
+7. For the full runtime, verify native recording from a freshly extracted and
+   relocated installation, including CEF page audio and external Chromium, using
+   the bundled media tools.
+8. For the embed kit, run `scripts/verify-embed-kit-macos.py` and
+   `scripts/verify-embed-sample-macos.py` against the exact kit folder.
 
-Never test a release by publishing another version. Use `npm pack` and the package smoke test first.
+`native/shared/native_aria_formatter.h` and `native/shared/native_aria_json.h`
+were generated from the removed TypeScript formatter; edit them by hand now and
+keep their regression tests passing.
 
-## Browser-control and native SDK release gates
-
-The release includes the `suitecut`, `@suitecut/browser-control` and `@suitecut/shared-browser` npm packages,
-the eight audio packages, and separate platform-specific C++20/C ABI/CLI distributions.
-Keep CEF and other browser runtimes outside the small SDK-only archives. The
-optional full-runtime archive is built separately with
-`scripts/package-native-runtime.py`; see [native full runtime](docs/native-full-runtime.md).
-Verify native recording from a freshly extracted and relocated installation,
-including CEF page audio and external Chromium, using the bundled media tools.
-Do not publish the GPL media bundle without its complete corresponding source.
-Native SDK versioning
-and ABI versioning are independent of npm package versions. Current native
-support includes Linux/POSIX and a separately qualified macOS ARM64 recipe;
-each platform needs its own dependency/runtime qualification. Windows runtime
-packaging is not implemented. Follow the [macOS recipe](docs/native-full-runtime-macos.md)
-for fixed signing, dependency closure and deployment-target limitations.
-
-Before shipping CEF changes, run the [full local regression suite](docs/cef-regressions.md)
-with bounded workers against the exact candidate app and freshly built SDK.
-Retain the complete source/runtime fingerprints, failures and cleanup receipts.
-The regression package is not enabled in CI. SDK source archives and static/shared
-consumer verification are described in the [SDK architecture](native/client/ARCHITECTURE.md).
-Keep generated build outputs, profiles, local signing policies and reports out of Git.
-
-Build every workspace package with `pnpm build:packages` as well as the root package,
-then run `pnpm release:check`. It packs each npm package without publishing
-(`suitecut`, `@suitecut/browser-control` and `@suitecut/shared-browser`), checks
-its manifest and contents, and fails if the version is already on npm.
-`@suitecut/shared-browser` is versioned on its own 0.x line until its API settles. Ignore generated
-package `dist` directories during linting, then check the authored code with
-`pnpm lint`, `pnpm format:check`, `pnpm typecheck`, and `pnpm test -- --run`.
-Regenerate `native/shared/native_aria_formatter.h` and `native/shared/native_aria_json.h` with
-`scripts/generate-native-aria-formatter.mjs` after changing their authored
-functions; the JSON generator requires its `formatNativeAriaJSON` argument.
-The matching regression tests enforce the canonical source contract.
-
-Run the standalone native client tests in Release and with
-`SUITECUT_CLIENT_SANITIZERS=ON`. Set `ASAN_OPTIONS=detect_leaks=1:halt_on_error=1`
-and `UBSAN_OPTIONS=halt_on_error=1`. Run the heavy native JSON/packet and
-observation campaigns directly with `SUITECUT_CLIENT_FUZZ_ITERATIONS` and
-`SUITECUT_AGENT_FUZZ_ITERATIONS`; ordinary CTest uses smaller finite defaults.
-Exercise the session worker with `scripts/fuzz-native-control.py`, passing an
-absolute CLI path, the built `simple_agent_test` engine, and a new report path.
-Run process-owning checks under `suitecut-proof-supervisor` and retain its
-descendant-cleanup receipt. Sanitizer CLI builds explicitly request leak checks
-before a worker's `_exit`.
-
-Run the emitted JavaScript lifecycle, routes, protocol and value fuzz scripts
-against both `dist` and `packages/browser-control/dist`. Use fixed seeds, finite
-iteration counts, exposed GC, and a bounded heap. These are controlled transport
-proofs; additionally run real CEF, Chrome and Firefox browser workflows. Do not
-label acknowledgement-only results as verified application outcomes.
-
-Before distribution, install both static and shared native builds into fresh
-prefixes and compile independent C and C++ consumers using only installed
-headers/CMake exports. Verify the installed CLI, skill files, native browser
-cleanup, and runtime library requirements. Test npm tarballs in fresh consumers,
-including declarations, exports, CLI entry points and the browser viewer.
-Run `pnpm audit` after dependency updates and verify a frozen lockfile install.
-
-Publish only the exact tested archives. Record versions, source/binary hashes,
-archive SHA-256, dependency audit, fuzz seeds/counts, platform requirements and
+Publish only the exact tested archives. Record versions, source and binary
+hashes, archive SHA-256, fuzz seeds and counts, platform requirements and
 remaining backend limits in the release manifest. Passing finite fuzz tests
 does not establish whole-browser leak freedom; prebuilt CEF is not sanitizer
-instrumented by native-client sanitizer builds.
+instrumented by the client's sanitizer builds.
 
 ## Website deployment
 
-Build and test the custom-domain site before deploying to the existing Cloudflare Pages project:
+Build and check the site before deploying to the existing Cloudflare Pages
+project:
 
 ```sh
 pnpm site:check
@@ -114,24 +70,5 @@ pnpm site:build
 wrangler pages deploy site/dist --project-name suitecut --branch main
 ```
 
-Cloudflare builds use the default `https://suitecut.aakashreddy.com` origin and `/` base.
-Verify `/docs/streaming` after publishing.
-
-## Release artifact check
-
-After building, pack the exact release tarball into `.suitecut/release/` and write
-`latest.json` containing its `version` and absolute `tarball` path. Run:
-
-```sh
-SUITECUT_NATIVE_EXECUTABLE=/path/to/suitecut-browser node scripts/verify-beta-package.mjs --release
-```
-
-This installs the actual tarball in a temporary consumer, verifies root/native and
-native subpath exports, records with CEF page audio, and checks browser cleanup.
-Publish this verified tarball. The native executable is built separately; do not
-label the npm artifact as containing a signed or notarized CEF binary.
-
-If registry authentication is unavailable, the verified tarballs can be published as
-GitHub release assets first. Use those explicit asset URLs in installation docs,
-including the matching shared runtime for audio families. Report registry publication
-as pending and leave the npm dist-tag unchanged until authentication is restored.
+Cloudflare builds use the default `https://suitecut.aakashreddy.com` origin and
+`/` base. Check the home page and `/docs` after publishing.

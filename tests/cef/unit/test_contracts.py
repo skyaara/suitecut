@@ -78,21 +78,18 @@ class EvidenceContracts(unittest.TestCase):
     def test_new_and_removed_fixture_inputs_change_inventory(self):
         suite = self.directory / 'suite'
         suite.mkdir()
-        sdk = self.directory / 'sdk'
-        sdk.mkdir()
-        (sdk / 'native.js').write_text('// SDK')
         engine = self.directory / 'engine'
         engine.write_text('test executable identity')
-        args = SimpleNamespace(engine=engine, sdk=sdk, node='node', ffmpeg=None, ffprobe=None, client_build=None)
+        args = SimpleNamespace(engine=engine, ffmpeg=None, ffprobe=None, client_build=None)
         with patch.object(evidence, 'SUITE', suite), patch.object(evidence, 'ROOT', self.directory):
-            before = evidence.pin_inputs(args, [{'kind': 'journey'}])
+            before = evidence.pin_inputs(args, [])
             fixture = suite / 'new-fixture.html'
             fixture.write_text('<!doctype html>new real app')
-            after = evidence.pin_inputs(args, [{'kind': 'journey'}])
+            after = evidence.pin_inputs(args, [])
             self.assertNotEqual(before, after)
             self.assertIn(str(fixture), after)
             fixture.unlink()
-            self.assertEqual(before, evidence.pin_inputs(args, [{'kind': 'journey'}]))
+            self.assertEqual(before, evidence.pin_inputs(args, []))
 
     def test_bad_contracts_fail(self):
         for patch in ({'file': '../old/report.json'}, {'file': '/tmp/report.json'}, {'rules': []},
@@ -129,23 +126,11 @@ class EvidenceContracts(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(b'ValueError', result.stderr)
 
-    def test_journey_identity_seed_and_cleanup_are_required(self):
-        good = {'id': 'test.a', 'seed': 23, 'passed': True, 'checks': ['outcome'], 'errors': [],
-                'cleanupErrors': [], 'unhandled': [], 'processExit': {'code': 0, 'signal': None},
-                'nativeStderrBytes': 0, 'capabilities': {'backend': 'cef'}}
-        case = {'kind': 'journey', 'id': 'test.a'}
-        path = self.directory / 'result.json'
-        path.write_text(json.dumps(good))
-        self.assertGreater(validate_reports(self.directory, case, 23), 0)
-        for patch in ({'id': 'test.other'}, {'seed': 24}, {'processExit': {'code': 0, 'signal': 'SIGTERM'}}, {'cleanupErrors': ['leak']}):
-            path.write_text(json.dumps(dict(good, **patch)))
-            with self.subTest(patch=patch), self.assertRaises(ValueError):
-                validate_reports(self.directory, case, 23)
-
 
 class CatalogueContracts(unittest.TestCase):
     def setUp(self):
-        self.case = {'id': 'test.one', 'kind': 'journey', 'timeout': 90, 'tags': ['smoke']}
+        self.case = {'id': 'test.one', 'kind': 'cpp', 'timeout': 90, 'tags': ['smoke'], 'binary': 'workflow',
+                     'evidence': {'file': 'report.json', 'rules': [{'path': 'ok', 'equals': True}]}}
 
     def test_duplicate_ids_fail(self):
         with self.assertRaises(ValueError):
@@ -159,7 +144,7 @@ class CatalogueContracts(unittest.TestCase):
                 validate_catalogue([dict(self.case, **patch)])
 
     def test_missing_cpp_evidence_fails(self):
-        case = dict(self.case, kind='cpp', binary='workflow')
+        case = {key: value for key, value in self.case.items() if key != 'evidence'}
         with self.assertRaises(ValueError):
             validate_catalogue([case])
 
@@ -168,12 +153,10 @@ class CatalogueContracts(unittest.TestCase):
             selected([self.case], 'full', ['test.*', 'typo.*'])
 
     def test_real_catalogue_is_complete_and_valid(self):
-        cases = catalogue('node')
-        self.assertEqual({kind: sum(c['kind'] == kind for c in cases) for kind in ('journey', 'proof', 'cpp')},
-                         {'journey': 29, 'proof': 57, 'cpp': 5})
+        cases = catalogue()
+        self.assertEqual([case['kind'] for case in cases], ['cpp'] * 5)
         for case in cases:
-            if case['kind'] != 'journey':
-                validate_contract(case['evidence'])
+            validate_contract(case['evidence'])
 
 
 if __name__ == '__main__':

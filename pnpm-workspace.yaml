@@ -1,6 +1,5 @@
 packages:
   - 'site'
-  - 'packages/*'
 allowBuilds:
   esbuild: true
   protobufjs: true

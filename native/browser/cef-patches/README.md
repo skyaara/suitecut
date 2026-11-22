@@ -145,6 +145,8 @@ First build SuiteCut into a separate directory against the rebuilt minimal distr
 
 ```bash
 cd "$suitecut_repo"
+# verify-cef-directory-upload.mjs is a Node script on the archive/node branch;
+# this line has no native replacement for it yet.
 cmake -S native/browser -B .suitecut/cef156-directory-repair-native \
   -DCEF_ROOT=/absolute/path/to/rebuilt/minimal/sdk \
   -DLIBYUV_ROOT="$suitecut_repo/.suitecut/libyuv" \

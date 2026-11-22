@@ -1,128 +1,103 @@
 # suitecut
 
-Record and stream narrated browser flows using native embedded Chromium capture.
-suitecut saves source video and an action timeline, then renders a finished video.
+suitecut is a Chromium browser runtime built on CEF. Programs control it from
+C++, C, a command-line tool or MCP, and native apps embed its pages in their own
+windows. Everything that ships is native code; Node.js is used only to build the
+website and run the benchmark harness.
 
-Browser control is also available through a standalone [native C++ SDK and C ABI](native/client/README.md), which controls the suitecut CEF engine or installed Chrome/Chromium without Node.js. Its `suitecut-native-control` CLI also runs as an MCP server for agents. Browser runtimes remain separate distributions.
+The earlier Node.js package (recording, narration and rendering, the
+`@suitecut/browser-control` and `@suitecut/shared-browser` npm SDKs, and the test
+runner) is kept on the `archive/node` branch. It is not developed further.
 
-## Packages
+## What's here
 
-| Package                                                                         | What it is                                                                                                 |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| [`suitecut`](https://www.npmjs.com/package/suitecut)                            | Record, narrate, render and stream browser flows (this directory)                                          |
-| [`@suitecut/browser-control`](packages/browser-control/README.md)               | Browser control for the native CEF engine, Chromium (CDP) and Firefox (WebDriver BiDi), with a live viewer |
-| [`@suitecut/shared-browser`](packages/shared-browser/README.md)                 | One native window a person and an agent use together, with a TypeScript SDK and an MCP server (preview)    |
-| [`SuiteCut::Client`](native/client/README.md)                                   | C/C++ SDK with a stable C ABI and the `suitecut-native-control` CLI and MCP server                         |
-| [Audio plugins](https://github.com/skyaara/suitecut/tree/audio-plugins/plugins) | Optional Sherpa text-to-speech voices, developed on the `audio-plugins` branch                             |
+| Path                      | Contents                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `native/browser/`         | The CEF engine, `suitecut-browser` ([README](native/browser/README.md))                                  |
+| `native/client/`          | C++20 client SDK, versioned C ABI, `suitecut-native-control` CLI and MCP server, macOS embed kit         |
+| `native/shared/`          | CEF-free DOM and ARIA helpers shared by the engine and the Chrome and Firefox backends                   |
+| `native/resource-policy/` | Shared resource policy component                                                                         |
+| `tests/cef/`              | Real-browser regression suite for the C++ workflows ([README](tests/cef/README.md))                      |
+| `scripts/`                | Packaging, signing and runtime verification scripts in Python ([index](scripts/README.md))               |
+| `docs/`                   | Build, embedding and engineering notes ([index](docs/README.md))                                         |
+| `benchmarks/`             | Benchmark harness comparing suitecut with agent-browser and browser-use ([README](benchmarks/README.md)) |
+| `site/`                   | The website                                                                                              |
 
-Each package has its own page, explainer video and quick start at
-[suitecut.aakashreddy.com/packages](https://suitecut.aakashreddy.com/packages).
-`pnpm release:check` builds nothing and publishes nothing; it checks every npm
-package's manifest, tarball contents and version against npm.
+## Build
 
-## Native browser and media tools
-
-Requires Node.js 22+, pnpm 11, FFmpeg/FFprobe, and the separately built CEF
-executable. See [build requirements and component setup](docs/building.md).
-The native SDK builds independently of CEF; the embedded browser uses the pinned
-CEF 156.0.30 build (stable Chromium 156.0.8078.96); on macOS ARM64 that is a third-party build with
-H.264, AAC and HEVC playback. Linux x64 and macOS ARM64 have separate qualification scopes.
-Windows runtime packaging is not implemented.
+The engine needs the pinned CEF 156.0.30 SDK (Chromium 156.0.8078.96), libyuv,
+CMake 3.21+, Ninja and a C++20 compiler. macOS arm64 uses a codec-enabled build
+of the same CEF tag, so H.264, AAC and HEVC play there; Linux x64 uses the
+official minimal archive. [Build requirements](docs/building.md) and the
+[engine README](native/browser/README.md#build) give the full steps.
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm build
-export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"
-node dist/cli.js doctor
+cmake -S native/browser -B .suitecut/native-build -G Ninja \
+  -DCEF_ROOT="$PWD/.suitecut/cef-sdk" -DLIBYUV_ROOT="$PWD/.suitecut/libyuv" \
+  -DPROJECT_ARCH=arm64 -DCMAKE_BUILD_TYPE=Release
+cmake --build .suitecut/native-build --target suitecut-browser --parallel 2
 ```
 
-For installed packages, `suitecut install` downloads checksum-verified media tools.
-System FFmpeg/FFprobe or explicit `SUITECUT_FFMPEG_PATH` and
-`SUITECUT_FFPROBE_PATH` can also be used.
+The client SDK builds without CEF:
 
-## Record and render
-
-```ts
-import { record, renderSuiteCut } from 'suitecut'
-
-const recording = await record(
-  'Product tour',
-  async ({ page, suitecut }) => {
-    await page.goto('https://example.com')
-    await suitecut.highlight(page.locator('h1'))
-    await suitecut.narrate('Welcome to the product tour.')
-    await suitecut.checkpoint('Opening screen')
-  },
-  {
-    native: { width: 1920, height: 1080, framesPerSecond: 120 },
-    capture: { framesPerSecond: 60, audio: true },
-  },
-)
-
-await renderSuiteCut({
-  manifestPath: recording.manifestPath,
-  outputPath: '.suitecut/product-tour.mp4',
-  config: { output: { framesPerSecond: 60 } },
-})
+```sh
+cmake --preset release -S native/client
+cmake --build .suitecut/build/client-release --parallel 2
+ctest --test-dir .suitecut/build/client-release --output-on-failure -L unit
 ```
 
-Capture FPS accepts any integer from 1, and output FPS any rate from 1; suitecut
-sets no maximum. Timestamp-based
-resampling holds or drops frames; it does not generate new motion. Actual browser
-capture throughput depends on page activity and host capacity. Page audio is off
-by default. Browser control includes locators, frames, input, network interception,
-artifacts and lifecycle operations; see the
-[feature checklist](docs/playwright-feature-parity.md) for backend limits.
+## Control the browser
 
-## Stream
+From the command line, one session per name:
 
-`launchBrowser` and `createBroadcast` publish native pixels and optional page audio
-to RTMP/RTMPS. Broadcast source selection preserves the publisher connection.
-See [the native guide](native/browser/README.md) for source ownership, recording,
-streaming, IPC and failure behavior.
+```sh
+suitecut-native-control --session demo --browser /absolute/path/to/suitecut-browser open https://example.com
+suitecut-native-control --session demo snapshot
+suitecut-native-control --session demo fill e12 'Ada'
+suitecut-native-control --session demo click e15
+```
 
-## Repository layout
+`suitecut-native-control --browser /absolute/path/to/suitecut-browser --mcp`
+runs the same tools as an MCP server. From C++, `SimpleAgent` offers `observe`,
+`act` and `wait`:
 
-| Path                        | Contents                                                                                            |
-| --------------------------- | --------------------------------------------------------------------------------------------------- |
-| `src/`                      | TypeScript SDK, CLI and test runner                                                                 |
-| `native/`                   | CEF runtime, C/C++ client SDK, native test runner and shared helpers ([overview](native/README.md)) |
-| `packages/browser-control/` | Build and package metadata for `@suitecut/browser-control`                                          |
-| `packages/shared-browser/`  | Build and package metadata for `@suitecut/shared-browser`                                           |
-| `site/`                     | Documentation website                                                                               |
-| `docs/`                     | Guides, feature reference and engineering notes ([index](docs/README.md))                           |
-| `examples/`                 | Runnable examples ([index](examples/README.md))                                                     |
-| `tests/`                    | Unit tests and the real-CEF regression harness (`tests/cef`)                                        |
-| `scripts/`                  | Build, packaging and verification scripts ([index](scripts/README.md))                              |
-| `assets/`                   | Bundled Kokoro voice (Git LFS) and cursor images                                                    |
+```cpp
+#include <suitecut/simple_agent.hpp>
 
-## Documentation
+suitecut::AgentDriver driver(browser);
+suitecut::SimpleAgent agent(driver);
+auto observation = agent.call("observe", {{"boxes", true}});
+auto result = agent.call("act", {{"action", "fill"}, {"ref", "e1"}, {"value", "Hello"}});
+```
 
-- [Documentation index](docs/README.md) and [setup and API guide](docs/guide.md)
-- [Build requirements](docs/building.md) and [benchmarks](docs/benchmarks.md)
-- [CEF runtime architecture](native/browser/ARCHITECTURE.md) and [validation status](native/browser/AUDIT.md)
-- [Playwright behavior reference and feature checklist](docs/playwright-feature-parity.md)
-- [Contributing](CONTRIBUTING.md), [security policy](SECURITY.md) and [changelog](CHANGELOG.md)
+The [client README](native/client/README.md) covers the full C++ API, the C ABI,
+the Chrome/Chromium (CDP) and Firefox (WebDriver BiDi) backends, and installing
+with `find_package(SuiteCutClient)`.
+
+## Embed in a macOS app
+
+The [macOS embed kit](docs/embedding/embed-kit-macos.md) is one folder of signed
+files an app copies into its bundle: the engine app, the `suitecut-session`
+service the app talks to, licences and a `kit.json` manifest. Napdock's Browser
+extension is the first app that uses it. The
+[direction](docs/embedding/direction.md) and
+[API design](docs/embedding/api-design.md) documents describe where embedding
+is going.
 
 ## Verification
 
-`pnpm test:native:cadence` decodes actual FFmpeg video/audio from timestamped test
-inputs, including 120 FPS output. `pnpm test:native` additionally requires the CEF
-binary and verifies real browser, recording and streaming behavior.
+Engine and client checks run under CTest in their build directories. The
+real-browser suite runs five C++ workflows, built with the client's
+`client-cef-binaries` target, against an actual engine:
 
-The October 21 macOS ARM64 qualification, on CEF 156.0.7, passed all 90 full CEF regression cases,
-with one regression worker, and all 17 standalone native SDK checks. The runtime
-split also passed 23 translation-unit checks without forced precompiled headers.
-These are local results on macOS 27.0.1, not qualification for older macOS or
-Intel hardware. The CEF suite is available locally and has not been added to CI.
+```sh
+python3 tests/cef --engine /absolute/path/to/suitecut-browser \
+  --client-build .suitecut/build/client-release
+```
 
-suitecut owns its native capture and media pipeline. The macOS runtime includes
-GPU pixel conversion and VideoToolbox H.264 encoding; the C++ SDK also exposes
-native recording tools. TypeScript provides narration and finished-video
-composition. See the platform recipes for supported paths and measured limits.
+These are local commands; there is no CI.
 
 ## License
 
-suitecut is [MIT licensed](LICENSE). Bundled Kokoro assets are Apache-2.0
-([notice](assets/kokoro/NOTICE.md)); other third-party terms are in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+suitecut is [MIT licensed](LICENSE). CEF, Chromium, libyuv and other
+third-party terms are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

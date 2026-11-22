@@ -8,9 +8,7 @@ protocol, engine, page and process modules, controller domains and ownership.
 | ------------------ | --------------------------------------------------------------------- |
 | `browser/`         | Embedded CEF runtime, native control and capture implementation       |
 | `client/`          | Standalone C/C++ SDK and command-line examples; builds without CEF    |
-| `runner/`          | Native test runner                                                    |
 | `resource-policy/` | Shared resource policy component                                      |
-| `tools/`           | Native media/tool packaging                                           |
 | `shared/`          | CEF-free DOM/ARIA helpers shared by the runtime and external backends |
 
 The C++ SDK uses `include/suitecut/` for installed headers, `src/` for private

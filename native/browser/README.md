@@ -1,4 +1,4 @@
-# SuiteCut 2.0 embedded browser
+# suitecut embedded browser
 
 The default Chromium Embedded Framework (CEF) capture backend for SuiteCut 2.0. Each launch owns a
 sandboxed CEF helper that can host isolated contexts and multiple native pages. Video comes from `CefRenderHandler::OnPaint`;
@@ -245,7 +245,6 @@ not establish those gates.
 
 Linux also needs Chromium's runtime dependencies. Set `headless: true` in native
 launch options for display-free software rendering; the sandbox stays enabled.
-Set `SUITECUT_NATIVE_HEADLESS=1` when running the native verifier scripts.
 Native HTTP additionally requires libcurl 7.88 or newer and its development
 package (`libcurl4-openssl-dev` on Debian), plus libpsl headers and library
 (`libpsl-dev` on Debian; `libpsl` on macOS). CMake checks these dependencies;
@@ -277,279 +276,12 @@ archive checksum; the Linux archive cannot be used on macOS.
 Windows configuration deliberately fails until its sandbox and packaging are
 implemented. Do not work around platform problems by disabling the sandbox.
 
-## Node API
-
-The SDK exposes native contexts, pages and frames; CSS, text, role, test-ID and
-custom selectors; locator and retained-element input; typed evaluation and
-object handles; navigation; cookies and storage; networking; screenshots/PDF;
-tracing; recording and publishing. C++ owns operation deadlines, retries, input,
-physical protocol settlement and media processing. The SDK serializes requests
-and hosts caller callbacks. Unsupported options fail explicitly. Each feature
-family retains its verified scope and remaining gaps in
-[the feature-matching spec](../../docs/playwright-feature-parity.md).
-
-An actual crashed child page can recover through `page.reload()`, preserving
-the Page identity and durable listeners. Old renderer handles, outstanding
-operations and media jobs stay failed. Recovery waits for an actual new renderer,
-navigation commit and main/utility execution contexts. The initial root renderer
-still has helper-fatal crash behavior.
-
-`tracesDir` publishes native trace/network/stack files and resources while a
-chunk is active. Changes coalesce behind a native100ms flush deadline, including
-console/network activity without a subsequent browser command. Stopping waits
-for physical writers and exports the final chunk. See [native tracing](../../docs/native-tracing.md)
-for publication ordering, limits and current coverage support.
-Automatic CORS preflights stay in native network/HAR observations while being
-excluded from public request events; early routing still has a separate gap.
-
-The browser binary does not require Node. The commands above build the native
-browser target. Internal browser checks remain available as explicit CMake
-targets and can be built and run when verifying browser changes.
-
-The separate test framework in [`native/runner`](../runner/README.md) is excluded
-from the browser build by default. Its optional targets require an explicit
-`-DSUITECUT_BUILD_TEST_RUNNER=ON`; test-framework parity is outside the current
-browser-control task.
-The private native protocol is not Playwright's wire protocol, and raw command
-access does not establish API parity.
-
-```ts
-import { launchNativeBrowser, createNativeBroadcast } from 'suitecut/native'
-
-const source = await launchNativeBrowser({
-  executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE!,
-  width: 1920,
-  height: 1080,
-  framesPerSecond: 60,
-  pixelFormat: 'i420',
-})
-
-let broadcast
-try {
-  await source.navigate('https://example.com')
-  broadcast = await createNativeBroadcast({
-    source,
-    ffmpegPath: '/absolute/path/to/ffmpeg',
-    stream: { url: process.env.RTMP_URL!, audio: true },
-  })
-  await broadcast.ready()
-  // Keep running until your application's stop signal or an observed failure.
-  await Promise.race([source.failure, broadcast.failure, applicationStopSignal])
-} finally {
-  await broadcast?.stop()
-  await source.close()
-}
-```
-
-`applicationStopSignal` above is an application-owned promise. RTMP credentials
-belong in environment variables or a secret store, never in examples or logs.
-CEF and FFmpeg are explicitly selected executables; importing the module does not
-download software, launch a browser, or start a broadcast.
-
-Native broadcast audio is disabled by default. Set `stream.audio: true` to send
-the selected CEF source's page audio; `false` creates video-only output. The C++
-publisher receives CEF media directly; the SDK does not subscribe to frame/audio
-callbacks or spawn a publishing process. See [native publishing](../../docs/native-publishing.md)
-for actual progress, supported options, and current native capability limits.
-
-- `navigate(url)` accepts HTTP(S), resolves after the main-frame load, and rejects
-  HTTP errors, loading errors, concurrent navigation, closure, or a 30-second
-  command timeout. Page subresources can continue loading afterward.
-  Modal JavaScript dialogs and context menus are suppressed, downloads are denied,
-  and new popup browser windows are rejected. In-page select popups are composited.
-- `sendDevToolsCommand(method, params)` invokes CEF's native DevTools API over the
-  private command pipe and returns the untrusted JSON result. Validate returned
-  values. It supports input, DOM inspection, evaluation, and other Chromium
-  DevTools commands; it is a trusted operator interface, not a page-facing API.
-- `onFrame(callback)` delivers owned pixel buffers, their `pixelFormat`, physical width/height,
-  a capture timestamp, and a cumulative native video-drop counter. The latest
-  frame is delivered immediately to a new subscriber when available. Callbacks
-  must be synchronous and return promptly. Do not mutate buffers shared with
-  other subscribers; copy before modifying. Unsubscribe using the returned function.
-- `pixelFormat: 'bgra'` (default) preserves full-resolution BGRA8 pixels. Use
-  `pixelFormat: 'i420'` for streaming: native libyuv converts to contiguous Y, U,
-  and V planes with BT.709 limited-range coefficients. I420 needs even CSS
-  dimensions, discards alpha, and subsamples chroma; it reduces pipe bandwidth by
-  62.5%. The publisher declares the matching matrix/range in the encoded video.
-- `onAudio(callback)` delivers owned 48 kHz stereo PCM, signed 16-bit little-endian,
-  plus frame count and first-sample timestamp. There is no extension or system
-  microphone capture. Silence is supplied by the publisher when no audio arrives.
-- Timestamps are mapped into Node's `performance.now()` clock at the startup
-  handshake. Video timestamps describe capture callbacks. Audio PTS is anchored
-  at its first callback and subsequent PTS deltas are preserved, including delayed
-  callbacks under CPU pressure. A backward PTS or a jump more than 250 ms into the
-  future re-anchors it. CEF builds have used different audio clock origins.
-  This is not a hardware clock or a
-  guarantee of zero latency. Clock and A/V drift need measurement in long runs.
-- `failure` rejects for unexpected exit, renderer termination, audio error,
-  malformed IPC, or a frame/audio subscriber exception. Observe it for each source.
-  `closed` resolves once the child and stdio close; `close()` is idempotent and
-  forces termination after five seconds if graceful shutdown stalls.
-  Each source receives a private temporary Chromium root profile, removed after
-  process closure. The user’s normal browser profile is never reused.
-  `state` reports `running`, `closing`, `closed`, or `failed`; closed/failed sources
-  reject new subscriptions and cannot be selected for a broadcast.
-- A broadcast owns its publisher and retains its owner/selected page until the physical
-  encoder exits. `await selectSource(next)` requires a real page in the same native
-  helper with matching physical size and pixel format, and preserves the publisher
-  connection while clearing previous audio. Graceful owner/selected page or context
-  closure finalizes the publisher; crashes fail it. Automatic browser restart and
-  game scheduling remain application responsibilities.
-- `deviceScaleFactor` (any positive finite number) preserves CSS dimensions while
-  scaling physical capture dimensions; suitecut sets no maximum size, though
-  physical dimensions must fit an `int` stride. Dimensions are immutable for each source. Broadcasts
-  require even physical dimensions. Use a replacement source to change layouts.
-
-### Frame rates and resampling
-
-`framesPerSecond` accepts any integer from **1** (default 60); suitecut sets no
-upper limit and CEF applies its own. This sets CEF's
-maximum offscreen paint rate; actual callbacks depend on page activity and host
-capacity. Capture timestamps and native drop counts remain attached to frames.
-Do not interpret a 120 FPS file as proof of 120 distinct captured frames.
-
-Recording `capture.framesPerSecond` and native broadcast
-`stream.framesPerSecond` independently select the constant output rate, accepting
-any finite number from 1, including 29.97 and 59.94. CEF capture
-requests retain their genuine integer ceiling; output is resampled on the native
-recording clock. Omitted recording cadence uses each source's requested rate; omitted
-broadcast cadence uses the first source's rate and stays fixed across switches.
-Pages in the same helper with matching physical dimensions and pixel format can
-feed the same broadcast. Cross-helper frame/audio relaying is not implemented.
-
-Recording samples the newest captured image at or before each output tick on a
-timeline anchored at the first accepted capture. Faster input drops intermediate
-images; slower or idle input holds the previous image. Frames are not blended or
-motion-interpolated. Obsolete callbacks cannot replace newer held images.
-Encoder backpressure replaces the pending capture rather than growing a queue.
-Finalization fills ticks before the end time, without adding an extra tick at
-the end boundary. Duration is quantized to output frame intervals.
-
-Native streaming paces output slots against an absolute monotonic timeline,
-holding the latest genuine image when input is slower. The 48 kHz audio sample
-boundary at video tick `n` is `floor(n * 48000 / outputFPS)`, so fractional rates
-emit whole-sample counts without cumulative rounding drift. Pause holds the image
-and emits silence while this live timeline continues. Native counters disclose
-held images, audio gaps/overlap, pause, and source-switch discards. Excessive
-capture-clock or pipe lag fails the publisher rather than silently skipping time.
-
-Final rendering can resample again using `config.output.framesPerSecond` or CLI
-`--fps`; known constant-rate sources first recover their frame-index clock to
-avoid WebM millisecond timestamp rounding changing selection. Its FFmpeg `fps`
-filter then rounds forward to the next output tick, holding/dropping frames
-without interpolation. Variable-rate sources retain their captured timing.
-Source recording settings and final output settings are separate.
-
-Run `pnpm test:native:cadence` without CEF to decode frame IDs and page-tone audio
-through the real recorder/FFmpeg pipeline at 24→120, 120→24, 120→120 and 59→37,
-plus final rendering at 120→60. Reports and media go under
-`.suitecut/native-cadence-verification/`. This verifies resampling, decoded
-pixels and audio continuity; it does not establish real CEF throughput at 120 FPS.
-
-## Recording, narration, and presentations
-
-The same `NativeBrowser` can now feed a recording, a broadcast, or both. Recording
-uses native raw frames directly and produces ordinary SuiteCut WebM source clips,
-checkpoints, narration artifacts, and a manifest consumable by `renderSuiteCut`.
-It shares the existing narration worker, presentation actions, manifest writer,
-and renderer.
-
-```ts
-import { launchNativeBrowser, recordNative } from 'suitecut/native'
-import { renderSuiteCut } from 'suitecut/render'
-
-const source = await launchNativeBrowser({
-  executablePath: process.env.SUITECUT_NATIVE_EXECUTABLE!,
-  width: 1920,
-  height: 1080,
-  framesPerSecond: 60,
-  pixelFormat: 'i420',
-})
-try {
-  const recording = await recordNative(
-    'Native product tour',
-    async ({ page, suitecut }) => {
-      await page.goto('https://example.com')
-      await suitecut.highlight(page.locator('h1'))
-      await suitecut.narrate('This tour uses the embedded browser.')
-      await suitecut.checkpoint('Opening screen')
-    },
-    {
-      source,
-      capture: { audio: true },
-      output: { directory: '.suitecut/native-tour', manifestPath: '.suitecut/native-tour.json' },
-    },
-  )
-  await renderSuiteCut({
-    manifestPath: recording.manifestPath,
-    outputPath: '.suitecut/native-tour.mp4',
-    config: { output: { width: 1920, height: 1080, framesPerSecond: 60 } },
-  })
-} finally {
-  await source.close()
-}
-```
-
-`recordNative(name, callback, options)` requires an already launched, caller-owned
-source. It never closes that source or a broadcast using it. `ffmpegPath` is
-optional and uses the existing SuiteCut media-tool resolver. Output directory,
-manifest path, relative/absolute artifact paths, and audio plugin references use
-the native output configuration.
-
-The callback receives `{ source, page, suitecut, signal, addSource }`:
-
-- `suitecut` supports narration/captions, checkpoint clips, holds, highlights,
-  rendered zooms, cursor movement, clicks, typing, and scrolling. Narration model
-  preparation pauses the recording clock and frame capture; narration playback
-  duration remains in the video. This pause does not pause a concurrent broadcast.
-- `await addSource(otherSource)` registers another caller-owned browser and returns
-  its `NativePage`. Call `suitecut.selectPage(nextPage)` to switch the authored
-  timeline. Sources may use different dimensions/formats/FPS; each records its
-  own clip and the renderer composes the selected intervals. Selection is explicit;
-  this does not enable popup windows in CEF.
-- `capture.size` optionally scales recorded video while leaving CSS layout alone.
-  `capture.framesPerSecond` optionally resamples source clips to a chosen cadence of 1 FPS or more.
-  `capture.narrationTailMs` controls the pause after speech. Set CSS dimensions,
-  device scale, and capture FPS when launching the source. Unsupported capture
-  options are rejected instead of silently ignored.
-- `capture.audio` is a boolean and defaults to `false`. Set it to `true` to put
-  48 kHz stereo page audio into each native source WebM. The final renderer follows
-  authored page selection, inserts silence for holds or sources without audio, and
-  mixes page audio with narration. `sourceAudioEnabled`, `sourceAudioVolume`, and
-  `narrationVolume` provide final-render controls.
-- The native `page` supports `goto`, `evaluate`, `locator`, waits, and private
-  DevTools commands. `createNativePage(source)` exposes these controls without
-  starting a recording. Evaluation functions must be self-contained and arguments
-  and returned values JSON-serializable; there are no remote JS handles.
-- Native locators use **strict CSS selectors in the main document**. They check
-  uniqueness and dispatch input through Chromium. They do not provide role/text selectors, iframe/shadow-root traversal, automatic retries, or full
-  actionability checks. Await application readiness explicitly.
-- Recording observes source/encoder failures and cancellation, finalizes media
-  when possible, and writes a failed manifest for callback errors. Sources remain
-  caller-owned. Finalization permits up to 60 seconds for the encoder; it does not
-  use streaming's five-second shutdown budget.
-
-With `capture.audio: true`, recorded source clips contain Opus page audio alongside
-VP9 video. Audio uses the same pause-adjusted recording clock as video, is trimmed
-with the selected source intervals, and is mixed with synthesized narration during
-rendering. Authored zoom is applied by the final renderer, not by changing the
-native page's viewport. Concurrent broadcasts receive browser-rendered effects
-and captions, but not the recording renderer's zoom transform or narration mix.
-
-Run `pnpm test:native:recording` with `SUITECUT_NATIVE_EXECUTABLE` set. The verifier
-records native input and presentation actions, excludes deliberately slow audio
-preparation, switches sources, renders the manifest, decodes output audio, and
-checks source-specific page tones, narration mixing, the default audio-off path,
-and callback-failure/cancellation cleanup. Its narration fixture is a
-repeatable tone that checks timing and mixing rather than speech-model quality.
-
 ## Memory and backpressure
 
 CEF callbacks never wait for pipe writes. The native writer retains one pending
 video frame per page, which a newer frame replaces, and queues audio and control
 packets whole; a stalled consumer causes video replacement but no audio or event
-eviction, so memory grows until the host reads. Node retains only the latest
-source frame unless the caller retains more. Commands, results and packet
+eviction, so memory grows until the host reads. Commands, results and packet
 headers have no size limit of suitecut's own. Intake only waits: while 64
 commands are queued or 128 replies await the pipe, and while unread events exceed
 65,536 or 64 MiB (an empty backlog accepts any size).
@@ -637,7 +369,7 @@ Stderr is drained without forwarding page URLs or browser diagnostics into repor
 ## Open-source distribution
 
 SuiteCut's source is MIT licensed. CEF and Chromium retain their own licenses and
-third-party notices. SDK binaries are not committed or included in the npm package.
+third-party notices. SDK binaries are not committed.
 libyuv retains its BSD-3-Clause license. Keep `CEF-LICENSE.txt`, `CEF-CREDITS.html`,
 and `libyuv-LICENSE.txt` in any native binary distribution.
 See [AUDIT.md](AUDIT.md) for validation evidence and release limitations.
@@ -656,24 +388,11 @@ passed a bounded live scope for activation, mobile capture restoration, locator
 handlers, idle emulation, before-unload and native context video/file lifecycle.
 Ordinary MIDI overrides now reject explicitly: that content-setting type is not
 registered in this CEF build. See [the active backlog](../../docs/internals/native-browser-active-backlog.md)
-for exact remaining implementation and verification boundaries. Browser builds
-must use `-DSUITECUT_BUILD_TEST_RUNNER=OFF` when reusing an older cache.
-
-### Consolidated browser SDK build
-
-The focused public SDK entry is `suitecut/browser`; see
-[the browser SDK guide](../../docs/native-browser-sdk.md). The 17 October source
-pass adds launch-context video, dynamic viewport fitting and odd video canvases,
-retained-node locator handlers, delayed HAR header finalization, and native packet
-write/clock-pause optimizations. The native browser target and matching SDK
-compiled and are installed together from `746bdb7`. Dynamic-library resolution
-and the public SDK import pass. E2E and fuzz verification remain deferred; this
-build does not complete the remaining browser feature gaps. Build details are in
-`.suitecut/diagnostics/native-browser-build.json`.
+for exact remaining implementation and verification boundaries.
 
 Default native builds leave component-check executables out of `all`. Explicit
 check targets still work; `-DSUITECUT_BUILD_BROWSER_CHECKS=ON` includes them in
-the default build. Keep `-DSUITECUT_BUILD_TEST_RUNNER=OFF` for browser-only work.
+the default build.
 
 The current stock-CEF pass adds audited native handler callback I/O and native
 snapshot-reference registrations, permission-scope fixes and native-reported

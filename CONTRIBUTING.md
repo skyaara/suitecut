@@ -1,56 +1,48 @@
-# Contributing to SuiteCut
+# Contributing to suitecut
 
-SuiteCut owns its CEF capture, private transport, timing, narration, manifests,
-recording and publishing. Preserve source ownership, failure propagation and
-sandboxing when changing these boundaries.
+suitecut is native code: the CEF engine in `native/browser`, the C++ client SDK
+and C ABI in `native/client`, and the helpers they share. Preserve source
+ownership, failure propagation and sandboxing when changing these boundaries.
 
 ## Setup and checks
 
-See [component build requirements](docs/building.md) for the JavaScript SDK,
-standalone C++ SDK, macOS packaging and local CEF regression suite.
-Install [Git LFS](https://git-lfs.com) before cloning: the bundled Kokoro model
-(`assets/kokoro/model_quantized.onnx`) is stored in LFS, and `pnpm pack` refuses a
-pointer file. In an existing clone run `git lfs install` and `git lfs pull`.
-Use Node.js 22 or newer, pnpm 11, FFmpeg and FFprobe. Real browser checks require the pinned
-CEF executable described in [native/browser/README.md](native/browser/README.md).
+See [build requirements](docs/building.md) for the engine, the client SDK, macOS
+packaging and the real-browser regression suite. Real browser checks need the
+pinned CEF executable described in [native/browser/README.md](native/browser/README.md).
+
+```sh
+cmake --preset release -S native/client
+cmake --build .suitecut/build/client-release --parallel 2
+ctest --test-dir .suitecut/build/client-release --output-on-failure -L unit
+python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'
+```
+
+Build the engine with `-DSUITECUT_BUILD_BROWSER_CHECKS=ON` and run `ctest` in its
+build directory for engine changes. Run the [full CEF suite](docs/cef-regressions.md)
+for runtime qualification. Report missing runtime evidence as blocked, not
+passing. Keep compiler jobs and browser workers bounded; on a 16 GB Mac use
+`--parallel 2` to `4` and one browser worker. There is no CI.
+
+The website and benchmark harness use Node.js 22+ and pnpm 11 as tools only:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm build
-pnpm typecheck
-pnpm exec vitest run --maxWorkers=2
-pnpm test:native:cadence
+pnpm lint
+pnpm format:check
 pnpm site:check
 pnpm site:build
 ```
 
-Run `pnpm test:native` for browser/capture/lifecycle changes on a supported CEF
-host. Report missing runtime evidence as blocked, not passing. Use native CTest
-checks for frame-rate parsing, audio-clock and libyuv pixel changes.
-Run `pnpm test:cef:unit` for harness changes and the
-[full CEF suite](docs/cef-regressions.md) for runtime qualification. Keep compiler
-jobs and browser workers bounded; default to one browser worker on a small Mac.
-The CEF suite is not enabled in CI.
+## Code boundaries
 
-## Code and package boundaries
-
-- Keep TypeScript strict and validate runtime JSON input with Zod.
-- Use NodeNext ESM imports with emitted `.js` relative specifiers.
-- Keep renderer DOM logic independent of host orchestration.
+- Keep the client SDK buildable without CEF headers, and the C ABI versioned.
 - Preserve bounded capture queues, capture timestamps and observable failures.
-- Keep model runtimes out of this branch; the Sherpa audio plugins live on the
-  `audio-plugins` branch. Retain upstream license notices.
-- Do not commit `.suitecut`, `dist`, browser profiles or generated media.
-- Do not replace Kokoro assets without updating their pin and notices.
+- Retain upstream license notices for CEF, Chromium, libyuv and other
+  dependencies.
+- Do not commit `.suitecut`, browser profiles or generated media.
 
-Public entries are `suitecut`, `suitecut/native`, `suitecut/beta`,
-`suitecut/audio-plugin`, `suitecut/render` and `suitecut/types`. Treat export,
-option, manifest and CLI changes as public API changes. Audio plugins run in the
-narration worker and write mono PCM WAV to the requested path.
-
-Run `pnpm test:package` for package changes and `pnpm test:audio-plugin` for audio
-contracts. Sherpa plugin checks run on the `audio-plugins` branch. These checks
-do not publish anything.
+Treat C ABI, installed header, CLI, MCP tool schema and embed kit layout changes
+as public API changes.
 
 ## Review
 

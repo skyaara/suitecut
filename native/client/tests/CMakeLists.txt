@@ -167,6 +167,9 @@ foreach(source IN LISTS client_unit_sources)
   get_filename_component(name "${source}" NAME_WE)
   add_dependencies(client-unit-binaries ${name})
 endforeach()
+if(TARGET embed_test)
+  add_dependencies(client-unit-binaries shared_session_test session_protocol_test embed_test)
+endif()
 add_custom_target(client-cef-binaries DEPENDS native-client-real-browser
   suitecut-native-cross_browser_features suitecut-native-cef_artifact_workflows
   suitecut-native-cef_restricted_bootstrap suitecut-native-cef_media_workflows)

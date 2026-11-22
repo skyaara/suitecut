@@ -1,182 +1,45 @@
 {
-  "name": "suitecut",
-  "version": "2.1.0",
-  "description": "Record and stream narrated browser flows with native embedded CEF capture.",
-  "keywords": [
-    "screen-recording",
-    "test-automation",
-    "video",
-    "narration",
-    "cef",
-    "embedded-browser"
-  ],
-  "homepage": "https://suitecut.aakashreddy.com",
-  "bugs": {
-    "url": "https://github.com/skyaara/suitecut/issues"
+  "name": "suitecut-workspace",
+  "private": true,
+  "description": "Tooling for suitecut's website and benchmark harness. suitecut itself is native: the CEF engine, C++ client SDK and C ABI in native/.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
   },
+  "packageManager": "pnpm@11.21.0",
+  "workspaces": [
+    "site"
+  ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/skyaara/suitecut.git"
   },
+  "homepage": "https://suitecut.aakashreddy.com",
+  "bugs": {
+    "url": "https://github.com/skyaara/suitecut/issues"
+  },
   "author": "skyaara",
-  "type": "module",
-  "license": "MIT",
-  "bin": {
-    "suitecut": "dist/cli.js",
-    "suitecut-test": "dist/native-runner-cli.js"
-  },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./audio-plugin": {
-      "types": "./dist/audio-plugin.d.ts",
-      "default": "./dist/audio-plugin.js"
-    },
-    "./render": {
-      "types": "./dist/render.d.ts",
-      "default": "./dist/render.js"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "default": "./dist/types.js"
-    },
-    "./package.json": "./package.json",
-    "./browser": {
-      "types": "./dist/browser.d.ts",
-      "default": "./dist/browser.js"
-    },
-    "./browser/remote": {
-      "types": "./dist/remote-browser.d.ts",
-      "default": "./dist/remote-browser.js"
-    },
-    "./native": {
-      "types": "./dist/native.d.ts",
-      "default": "./dist/native.js"
-    },
-    "./beta": {
-      "types": "./dist/beta.d.ts",
-      "default": "./dist/beta.js"
-    }
-  },
-  "files": [
-    "assets/kokoro",
-    "assets/cursors",
-    "CHANGELOG.md",
-    "CODE_OF_CONDUCT.md",
-    "CONTRIBUTING.md",
-    "dist",
-    "LICENSE",
-    "README.md",
-    "SECURITY.md",
-    "THIRD_PARTY_NOTICES.md",
-    "native/browser",
-    "!native/browser/AUDIT.md",
-    "native/shared",
-    "native/runner",
-    "native/tools",
-    "scripts/sign-native-macos.py",
-    "scripts/native_macos_signing.py",
-    "scripts/native-runner-callback-proof.mjs",
-    "scripts/check-native-runner-grep.py",
-    "scripts/check-native-runner-directory.py",
-    "scripts/check-native-runner-directory-parallel.py",
-    "scripts/check-native-runner-directory-project-output.py",
-    "scripts/measure-native-runner-directory.py",
-    "scripts/check-native-runner-directory-fault.py",
-    "scripts/check-native-runner-attempt-error-attribution.py",
-    "scripts/check-native-runner-fixture-timeouts.py",
-    "scripts/check-native-runner-beforeall-duration.py",
-    "scripts/native_error_attribution_proof.py",
-    "scripts/verify-native-accepted-work.py",
-    "scripts/verify-native-websocket-close.mjs",
-    "scripts/verify-native-screenshot-assertions.mjs",
-    "scripts/check-native-runner-screenshot-assertions.py",
-    "scripts/check-native-runner-snapshot-paths.py",
-    "scripts/check-native-runner-snapshot-suffix.py",
-    "scripts/check-native-runner-repeat-each.py",
-    "scripts/check-native-runner-repeat-contexts.py",
-    "scripts/check-native-runner-repeat-groups.py",
-    "scripts/check-native-runner-fail-flaky.py",
-    "scripts/check-native-runner-to-pass.py",
-    "scripts/check-native-runner-to-pass-source.py",
-    "scripts/native_to_pass_fixtures.py",
-    "scripts/native_repeat_process_proof.py",
-    "scripts/generate-native-grep-unicode.py",
-    "scripts/generate-native-grep-properties.py",
-    "scripts/check-native-runner-output-retention.py",
-    "scripts/check-native-runner-project-output.py",
-    "scripts/check-native-runner-terminal-reporters.py",
-    "scripts/check-native-runner-reports.py",
-    "scripts/check-native-runner-public.py",
-    "scripts/check-native-runner-interrupt.py",
-    "scripts/check-native-runner-wrapper-signals.py",
-    "scripts/check-native-runner-parent-death.py"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "workspaces": [
-    "site",
-    "packages/*"
-  ],
   "scripts": {
-    "build:browser-control": "pnpm --filter @suitecut/browser-control build",
-    "build:shared-browser": "pnpm --filter @suitecut/shared-browser build",
-    "build:packages": "pnpm --filter \"./packages/*\" build",
-    "release:check": "node scripts/release-check.mjs",
-    "build": "pnpm clean:dist && tsc -p tsconfig.build.json",
-    "clean:dist": "node scripts/clean-dist.mjs",
-    "example:render": "node dist/cli.js render --manifest .suitecut/latest-run.json --output .suitecut/videos/product-tour.mp4",
+    "bench": "node benchmarks/run.mjs",
+    "format": "prettier --write \"benchmarks/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
+    "format:check": "prettier --check \"benchmarks/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\" \"scripts/**/*.mjs\" \"benchmarks/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\" \"scripts/**/*.mjs\" \"benchmarks/**/*.mjs\" \"site/**/*.{astro,css,ts,json,mjs}\" \".github/**/*.yml\" \"*.{js,json}\"",
-    "check": "pnpm site:sync && pnpm build && pnpm test:audio-plugin:built && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test -- --run",
     "typecheck": "tsc --noEmit",
     "site:build": "pnpm --filter suitecut-docs build",
     "site:check": "pnpm --filter suitecut-docs check",
     "site:sync": "pnpm --filter suitecut-docs sync",
-    "test": "vitest run",
-    "test:audio-plugin": "pnpm build && pnpm test:audio-plugin:built",
-    "test:audio-plugin:built": "node scripts/verify-audio-plugin.mjs",
-    "test:kokoro": "pnpm build && node scripts/verify-kokoro.mjs",
-    "test:package": "pnpm build && pnpm test:package:built",
-    "test:package:built": "node scripts/verify-package.mjs",
-    "test:platform": "vitest run tests/atomic-file.test.ts tests/cli.test.ts tests/manifest.test.ts tests/process.test.ts tests/report-redaction.test.ts tests/timeline.test.ts",
-    "prepack": "pnpm check:lfs && pnpm build",
-    "prepublishOnly": "pnpm check && pnpm site:check && pnpm site:build && pnpm test:package:built",
-    "test:native": "pnpm build && node scripts/verify-native-browser.mjs && node scripts/verify-native-stream.mjs && node scripts/verify-native-recording.mjs",
-    "test:native:stream": "pnpm build && node scripts/verify-native-stream.mjs",
-    "test:native:recording": "pnpm build && node scripts/verify-native-recording.mjs",
-    "test:native:cadence": "pnpm build && node scripts/verify-native-cadence.mjs",
-    "pack:beta": "pnpm build && node scripts/pack-beta.mjs",
-    "test:beta:package": "node scripts/verify-beta-package.mjs",
-    "example:native": "pnpm build && node --experimental-strip-types examples/native.ts",
-    "example:song-maker": "python3 scripts/run-song-maker-example.py",
-    "test:native:hover": "pnpm build && node scripts/verify-native-hover.mjs",
-    "test:native:scroll": "pnpm build && node scripts/verify-native-scroll.mjs",
-    "test:native:pointer-nodes": "pnpm build && node scripts/verify-native-pointer-nodes.mjs",
-    "test:native:select-text": "pnpm build && node scripts/verify-native-select-text.mjs",
-    "test:native:reconnect": "pnpm build && node scripts/verify-native-stream-reconnect.mjs",
-    "test:native:publisher": "pnpm build && node scripts/verify-native-streaming-source.mjs",
-    "test:native:values": "pnpm build && node scripts/verify-native-window-values.mjs",
-    "test:native:cookies": "pnpm build && node scripts/verify-native-partitioned-cookies.mjs",
-    "test:native:recovery": "pnpm build && node scripts/verify-native-page-recovery.mjs && node scripts/verify-native-page-recovery-deadlines.mjs && node scripts/verify-native-page-recovery-media.mjs",
     "test:cef": "python3 tests/cef",
-    "soak:real-sites": "pnpm build && node --experimental-strip-types examples/real-sites/soak.ts",
-    "bench": "pnpm build && node benchmarks/run.mjs",
     "test:cef:list": "python3 tests/cef --list",
-    "test:cef:unit": "python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'",
-    "check:lfs": "node scripts/check-lfs-assets.mjs"
+    "test:cef:unit": "python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
-    "@types/yauzl": "^3.4.0",
     "eslint": "^10.9.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
@@ -185,23 +48,6 @@
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.67.0",
-    "vitest": "^4.1.11"
-  },
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "packageManager": "pnpm@11.21.0",
-  "dependencies": {
-    "onnxruntime-web": "^1.27.0",
-    "phonemizer": "^1.2.1",
-    "sharp": "^0.35.5",
-    "yaml": "2.9.0",
-    "yauzl": "3.4.0",
-    "zod": "^4.4.3"
-  },
-  "directories": {
-    "example": "examples",
-    "test": "tests"
+    "typescript-eslint": "^8.67.0"
   }
 }

@@ -8,7 +8,6 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
-      'packages/*/dist/**',
       '.suitecut/**',
       // Agent worktrees are whole checkouts of other branches; .venv* are Python envs.
       '.claude/**',

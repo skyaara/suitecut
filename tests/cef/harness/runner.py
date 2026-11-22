@@ -10,7 +10,6 @@ import json
 import os
 from pathlib import Path
 import random
-import re
 import shutil
 import signal
 import subprocess
@@ -41,43 +40,24 @@ def run_case(case, seed, attempt, args, output):
     work.mkdir()
     artifacts = directory / 'artifacts'
     artifacts.mkdir()
-    # Legacy proofs have local output roots relative to cwd. Only immutable source
-    # directories are linked; .suitecut outputs never point at the main checkout.
-    for name in ('dist', 'native', 'assets', 'scripts'):
-        (work / name).symlink_to(ROOT / name, target_is_directory=True)
-    env = dict(os.environ, SUITECUT_NATIVE_EXECUTABLE=str(args.engine),
-               SUITECUT_NATIVE_SDK_DIRECTORY=str(args.sdk))
+    # Only the immutable native sources are linked; .suitecut outputs never point
+    # at the main checkout.
+    (work / 'native').symlink_to(ROOT / 'native', target_is_directory=True)
+    env = dict(os.environ, SUITECUT_NATIVE_EXECUTABLE=str(args.engine))
     for dependency in ('ffmpeg','ffprobe'):
         if getattr(args,dependency,None):
             env['SUITECUT_'+dependency.upper()]=str(getattr(args,dependency))
-    env.update(case.get('env', {}))
-    if case['kind'] == 'journey':
-        command = [args.node, str(SUITE / 'harness/worker.mjs'), '--case', case['id'], '--seed', str(seed),
-                   '--engine', str(args.engine), '--sdk', str(args.sdk), '--output', str(directory)]
-        for dependency in case.get('requires', []):
-            command += ['--'+dependency, str(getattr(args,dependency))]
-    elif case['kind'] == 'proof':
-        script = ROOT / case['script']
-        for variable in re.findall(r'process\.env\.(SUITECUT_[A-Z_]+)', script.read_text()):
-            if variable.endswith(('_DIRECTORY', '_OUTPUT')) and 'SDK' not in variable:
-                env[variable] = str(artifacts)
-            elif variable.endswith('_REPORT'):
-                env[variable] = str(artifacts / 'report.json')
-        command = [args.node, str(script)] + case.get('args', [])
+    binary = args.client_build / case['binary']
+    if case['id'] == 'cpp.decoded-media':
+        command=[sys.executable,str(SUITE/'harness/native_media.py'),'--client',str(binary),'--engine',str(args.engine),
+                 '--ffmpeg',str(args.ffmpeg),'--ffprobe',str(args.ffprobe),'--output',str(artifacts)]
+    elif case['id'] == 'cpp.facade-lifecycle':
+        command = [str(binary), '--browser', str(args.engine), '--fixture', str(ROOT / 'native/client/tools/fixture.html'),
+                   '--iterations', '30', '--cycles', '50', '--output', str(artifacts / 'results.json')]
+    elif case['id'] == 'cpp.features-network':
+        command = [str(binary), '--backend', 'cef', '--browser', str(args.engine), '--output', str(artifacts)]
     else:
-        if not args.client_build:
-            raise ValueError('Full suite C++ cases require --client-build; use --profile journeys without a C++ build')
-        binary = args.client_build / case['binary']
-        if case['id'] == 'cpp.decoded-media':
-            command=[sys.executable,str(SUITE/'harness/native_media.py'),'--client',str(binary),'--engine',str(args.engine),
-                     '--ffmpeg',str(args.ffmpeg),'--ffprobe',str(args.ffprobe),'--output',str(artifacts)]
-        elif case['id'] == 'cpp.facade-lifecycle':
-            command = [str(binary), '--browser', str(args.engine), '--fixture', str(ROOT / 'native/client/tools/fixture.html'),
-                       '--iterations', '30', '--cycles', '50', '--output', str(artifacts / 'results.json')]
-        elif case['id'] == 'cpp.features-network':
-            command = [str(binary), '--backend', 'cef', '--browser', str(args.engine), '--output', str(artifacts)]
-        else:
-            command = [str(binary), str(args.engine), str(artifacts)]
+        command = [str(binary), str(args.engine), str(artifacts)]
     atomic_json(directory / 'invocation.json', {'case': case, 'seed': seed, 'repeat': attempt, 'command': command})
     row = dict(id=case['id'], kind=case['kind'], seed=seed, repeat=attempt,
                directory=str(directory.relative_to(output)), passed=False, errors=[])
@@ -121,13 +101,11 @@ def main(argv=None):
     STOP.clear()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--engine', type=Path)
-    parser.add_argument('--sdk', type=Path, default=ROOT / 'dist')
     parser.add_argument('--client-build', type=Path)
-    parser.add_argument('--node', default=shutil.which('node') or 'node')
     parser.add_argument('--ffmpeg', type=Path, default=shutil.which('ffmpeg'))
     parser.add_argument('--ffprobe', type=Path, default=shutil.which('ffprobe'))
     parser.add_argument('--output', type=Path)
-    parser.add_argument('--profile', choices=['smoke', 'journeys', 'races', 'proofs', 'full'], default='full')
+    parser.add_argument('--profile', choices=['smoke', 'races', 'full'], default='full')
     parser.add_argument('--case', action='append', default=[], help='Case ID/glob; repeat option to select multiple')
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--repeat', type=int, default=1, help='Every attempt counts; repetition is not retry')
@@ -146,8 +124,8 @@ def main(argv=None):
     except ValueError:
         parser.error('--shard must be index/count with 1 <= index <= count <= 256')
     try:
-        cases = selected(catalogue(args.node), args.profile, args.case)
-    except (ValueError, OSError, subprocess.SubprocessError) as error:
+        cases = selected(catalogue(), args.profile, args.case)
+    except (ValueError, OSError) as error:
         parser.error(str(error))
     if not cases:
         parser.error('Selection matched zero scenarios')
@@ -157,23 +135,18 @@ def main(argv=None):
         return 0
     if not args.engine or not args.engine.is_file():
         parser.error('--engine must name the actual compiled CEF executable')
-    args.engine = args.engine.resolve(); args.sdk = args.sdk.resolve()
-    if not (args.sdk / 'native.js').is_file():
-        parser.error('Built SDK missing; run pnpm build or pass --sdk')
+    args.engine = args.engine.resolve()
     for dependency in {d for c in cases for d in c.get('requires', [])}:
         binary=getattr(args,dependency)
         if not binary or not Path(binary).is_file():
             parser.error(f'Selected scenario requires --{dependency} or {dependency} on PATH')
         setattr(args,dependency,Path(binary).resolve())
-    if any(c['kind'] == 'proof' for c in cases) and args.sdk != ROOT / 'dist':
-        parser.error('Existing proofs import repository dist; full/proofs profiles require --sdk to be repository dist')
-    if any(c['kind'] == 'cpp' for c in cases):
-        if not args.client_build:
-            parser.error('C++ scenarios require --client-build (or select --profile journeys)')
-        args.client_build = args.client_build.resolve()
-        for case in cases:
-            if case['kind'] == 'cpp' and not (args.client_build / case['binary']).is_file():
-                parser.error('Missing compiled C++ test: ' + case['binary'])
+    if not args.client_build:
+        parser.error('--client-build must name the directory with the compiled C++ cases')
+    args.client_build = args.client_build.resolve()
+    for case in cases:
+        if not (args.client_build / case['binary']).is_file():
+            parser.error('Missing compiled C++ test: ' + case['binary'])
     output = (args.output or ROOT / '.suitecut/cef-regressions' / (dt.datetime.now().strftime('%Y%m%d-%H%M%S') + f'-{os.getpid()}')).resolve()
     output.mkdir(parents=True, exist_ok=False)
     inputs = pin_inputs(args, cases)
@@ -186,7 +159,7 @@ def main(argv=None):
     atomic_json(output / 'plan.json', [dict(id=c['id'], seed=s, repeat=r) for c,s,r in jobs])
     random.Random(args.seed).shuffle(jobs)
     report = dict(schemaVersion=2, passed=False, started=dt.datetime.now(dt.timezone.utc).isoformat(),
-                  engine=str(args.engine), sdk=str(args.sdk), profile=args.profile, workers=args.workers,
+                  engine=str(args.engine), clientBuild=str(args.client_build), profile=args.profile, workers=args.workers,
                   seed=args.seed, repeat=args.repeat, shard=args.shard, totalUnshardedAttempts=planned,
                   plannedAttempts=len(jobs), selectedCases=[{k:v for k,v in c.items() if k != 'run'} for c in cases],
                   host={'platform':sys.platform,'cpuCount':os.cpu_count(),'loadAverageAtStart':os.getloadavg()},
@@ -226,7 +199,7 @@ def main(argv=None):
             report['globalErrors'].append('Final input inventory could not be verified: '+str(error))
         atomic_json(output / 'inputs-after.json',after)
         if after != inputs:
-            report['globalErrors'].append('Pinned browser, SDK, test source or C++ binary changed during run')
+            report['globalErrors'].append('Pinned browser, test source or C++ binary changed during run')
         report['inputsUnchanged']=after==inputs
         report['attempts'].sort(key=lambda r:(r['id'],r['seed'],r['repeat']))
         report['durationSeconds']=round(time.monotonic()-started,3)

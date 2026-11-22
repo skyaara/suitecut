@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- suitecut is native only. The Node.js product is removed from this line and
+  kept on the `archive/node` branch, which is not developed further: the
+  `suitecut` npm package (recording, narration, Kokoro voices, rendering, CLI and
+  Node APIs), `@suitecut/browser-control`, `@suitecut/shared-browser`, the
+  native test runner (`native/runner`, whose tests ran in Node), its proof
+  supervisor (`native/tools`), the vitest suite, the Node examples and the
+  Node-driven verification scripts. What remains is the CEF engine, the C++
+  client SDK and C ABI, the `suitecut-native-control` CLI and MCP server, and
+  the macOS embed kit. The CEF regression suite (`tests/cef`) now runs only its
+  five C++ workflows and needs no Node. Node.js is still used as a tool to build
+  the website and run the benchmark harness.
+- Merge the macOS embed kit and Napdock's shared browser session: a signed
+  macOS 14 kit folder with the engine and the `suitecut-session` service,
+  IOSurface view sharing, person-answered permission, HTTP auth and file
+  prompts, and download waits.
 - Fix multipart uploads from a `ReadStream` on descriptor 0 under Node 26.
   Node 26 closes descriptor 0 itself, which earlier versions skipped, so it
   could close a file the caller had reopened there. suitecut now takes the
