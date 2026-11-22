@@ -128,12 +128,18 @@ export class NativeMultipartStreamJob {
             if (settled) physicallyClosed()
           }
         }
+        // Node before 26 skips descriptor0 as falsy when it closes; Node 26
+        // closes it without checking whose file it is now. Take descriptor0
+        // from the stream first so only this job closes it, after the
+        // identity check below, on every Node version. Reads already in
+        // flight keep the descriptor they were issued with.
+        const adoptedZero = Reflect.get(stream, 'fd') === 0
+        if (adoptedZero) Reflect.set(stream, 'fd', null)
         originalDestroy.call(stream, error, (failure) => {
-          // Node's FS close helper historically skips descriptor0 as falsy.
           // The real _destroy receipt already waited all in-flight reads. Only
           // close the exact path-backed descriptor identity this job adopted.
           const descriptor = Reflect.get(stream, 'fd') as UntrustedInput
-          if (descriptor !== 0) {
+          if (!adoptedZero && descriptor !== 0) {
             complete(failure)
             return
           }

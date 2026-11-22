@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fix multipart uploads from a `ReadStream` on descriptor 0 under Node 26.
+  Node 26 closes descriptor 0 itself, which earlier versions skipped, so it
+  could close a file the caller had reopened there. suitecut now takes the
+  descriptor from the stream before Node's close and closes it only after
+  checking it is still the stream's file, on every Node version.
 - Pin CEF 156.0.30 (Chromium 156.0.8078.96, stable) instead of the 156.0.7
   beta. Linux x64 uses CEF's official minimal archive. macOS arm64 uses
   OpenArch's third-party build of the same tag with proprietary codecs, so
