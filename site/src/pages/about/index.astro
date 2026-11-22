@@ -1,112 +1,84 @@
 ---
 import Explainer from '../../components/Explainer.astro'
+import { components } from '../../data/components.js'
 import { diagrams } from '../../data/diagrams.js'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { sitePath } from '../../lib/paths.js'
-
-const packages = [
-  {
-    name: 'suitecut',
-    kind: 'TypeScript · npm',
-    text: 'Record, narrate, render and stream browser flows. Includes the suitecut command line and the suitecut-test runner.',
-  },
-  {
-    name: '@suitecut/browser-control',
-    kind: 'TypeScript · tarball',
-    text: 'Drive the CEF engine, installed Chrome, Chromium, Edge or Brave over CDP, and Firefox over WebDriver BiDi, with a live viewer for human handover.',
-  },
-  {
-    name: 'SuiteCut::Client',
-    kind: 'C++20 · C ABI',
-    text: 'A native SDK for the same browsers, with no Node.js, CEF headers or automation library.',
-  },
-  {
-    name: 'suitecut-native-control',
-    kind: 'Native executable',
-    text: 'A command line with persistent sessions that also runs as an MCP server for agents.',
-  },
-  {
-    name: 'suitecut CEF runtime',
-    kind: 'C++ · CEF 156',
-    text: 'The embedded engine itself, built from a pinned CEF and distributed separately from the SDKs.',
-  },
-  {
-    name: 'Audio plugins',
-    kind: 'TypeScript · branch',
-    text: 'Optional local voices built on Sherpa: VITS and Piper, Kitten, Matcha, Pocket, Supertonic, ZipVoice and Kokoro.',
-  },
-]
 ---
 
 <BaseLayout
   title="About · suitecut"
-  description="What suitecut is, how its embedded Chrome works, and the packages it ships."
+  description="What suitecut is, how its embedded Chromium works, and the native components it ships."
   current="about"
 >
   <article class="page prose about">
     <h1>About suitecut</h1>
     <p class="about-lede">
-      suitecut is an embedded Chrome built to be recorded, streamed and driven. It began as a way to
-      turn scripted browser flows into narrated product videos, and grew into a browser layer that
-      scripts, agents and people can share.
+      suitecut is an embedded Chromium built to be recorded, streamed and driven. It is native code:
+      a CEF engine, a C++ SDK with a C ABI, a command line that is also an MCP server, and a kit for
+      putting the engine inside a Mac app.
     </p>
 
-    <h2 id="what">What we do</h2>
+    <h2 id="what">What it does</h2>
     <dl class="about-list">
       <div>
         <dt>Record</dt>
         <dd>
-          Capture what the page really draws and plays, with a timeline of every narration,
-          highlight and checkpoint beside it.
+          Capture what the page really draws and plays into WebM, or hardware H.264 MP4 on macOS,
+          with counts of every real and held frame.
         </dd>
       </div>
       <div>
-        <dt>Render</dt>
-        <dd>Turn that timeline into a finished video with captions, zoom and mixed audio.</dd>
-      </div>
-      <div>
         <dt>Stream</dt>
-        <dd>Publish the same pixels and sound live to RTMP or RTMPS.</dd>
+        <dd>Publish the same pixels and sound live over RTMP, RTMPS or TCP.</dd>
       </div>
       <div>
         <dt>Drive</dt>
         <dd>
-          Control the browser from TypeScript, C++, a command line or any MCP client, or point those
-          same tools at the Chrome or Firefox you already have.
+          Control the browser from C++, C, a command line or any MCP client, or point the same tools
+          at the Chrome or Firefox you already have.
+        </dd>
+      </div>
+      <div>
+        <dt>Embed</dt>
+        <dd>
+          Show the engine's tabs in your own macOS app, with frames on the GPU, and let an agent
+          work in the same tabs.
         </dd>
       </div>
     </dl>
 
     <h2 id="how">How it works</h2>
     <p>
-      suitecut ships its own Chromium Embedded Framework runtime, pinned to CEF 156. Each launch
-      starts a sandboxed helper that hosts isolated contexts and pages. Video comes straight from
-      the renderer's paint callback and audio from its audio stream, so there's no screenshot loop,
-      browser extension or open debugging port in the capture path.
+      suitecut ships its own Chromium Embedded Framework runtime, pinned to CEF 156.0.30. Video
+      comes straight from the renderer's paint callback and audio from its audio stream, so there's
+      no screenshot loop, browser extension or open debugging port in the capture path.
     </p>
     <p>
-      Your code talks to the helper over a small binary protocol. Frames and sound flow back on one
-      clock, where the recorder picks the newest real image for each output frame and never blends
-      or invents motion. FFmpeg encodes the result; the renderer later composes it with narration
-      into the final video, or the publisher streams it live.
+      Your code talks to the engine over a pipe: JSON commands in, binary packets out. Frames and
+      sound flow back on one clock, where the recorder picks the newest real image for each output
+      frame and never blends or invents motion. FFmpeg encodes the result into a file or a live
+      stream.
     </p>
     <p>
-      Browser control, the agent tools and the MCP server sit on the same native driver. That's why
-      a script, a model and a person in the live viewer can all work in one session, with the same
-      page, cookies and storage.
+      The C++ SDK, the C ABI, the agent tools and the MCP server sit on one native library. In an
+      embedding app, the person and the agent share one session, with the same pages, cookies and
+      storage, and take turns on each tab.
     </p>
     <Explainer explained={diagrams.together} />
 
-    <h2 id="packages">Packages</h2>
+    <h2 id="components">Components</h2>
     <div class="about-packages">
       {
-        packages.map((item) => (
+        components.map((item) => (
           <div>
             <p class="about-package-name">
-              <strong>{item.name}</strong>
+              <strong>
+                <a href={sitePath(`/components/${item.slug}`)}>{item.name}</a>
+              </strong>
               <span>{item.kind}</span>
             </p>
-            <p class="about-package-text">{item.text}</p>
+            <p class="about-package-text">{item.line}.</p>
           </div>
         ))
       }
@@ -119,14 +91,12 @@ const packages = [
         implemented yet.
       </li>
       <li>
-        <code>suitecut</code> is published on npm. <code>@suitecut/browser-control</code> is built and
-        packed from the repository and hasn't been published yet.
+        Nothing is published to a package registry. You build the SDK, the engine and the embed kit
+        from the repository; Linux x64 also has a full runtime archive.
       </li>
       <li>
-        Browser features are tracked family by family, with evidence and known gaps, in the
-        <a href="https://github.com/skyaara/suitecut/blob/main/docs/playwright-feature-parity.md"
-          >feature checklist</a
-        >.
+        The earlier Node.js packages, including the npm package and the video renderer, were removed
+        on 2026-11-22.
       </li>
       <li>
         Every published <a href={sitePath('/benchmarks')}>benchmark</a> names its host, commit and the
@@ -184,6 +154,10 @@ const packages = [
     display: grid;
     align-content: start;
     gap: 0.35rem;
+  }
+
+  .about-package-name a {
+    color: inherit;
   }
 
   .about-package-name strong {

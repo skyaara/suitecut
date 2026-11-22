@@ -10,8 +10,8 @@ interface Props {
 
 const {
   code,
-  label = 'TypeScript',
-  lang = label === 'Terminal' ? 'bash' : 'typescript',
+  label = 'C++',
+  lang = label === 'Terminal' ? 'bash' : 'cpp',
   theme = 'one-light',
 } = Astro.props
 const lineCount = code.split('\n').length

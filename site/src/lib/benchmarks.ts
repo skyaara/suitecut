@@ -34,13 +34,13 @@ export const clientSetup =
   'Same pinned CEF binary, 1280×720 at 60 FPS, deterministic fixture. 30 samples per small operation, six 256 KiB evaluations and 50 context/page cycles.'
 
 export const clientRuns = [
-  { measure: 'Launch to ready', native: 187, node: 483, unit: 'ms' },
-  { measure: 'Small evaluation', native: 0.5, node: 2.02, unit: 'ms' },
-  { measure: '256 KiB evaluation', native: 7.43, node: 10.72, unit: 'ms' },
-  { measure: 'Locator count', native: 11.92, node: 12.54, unit: 'ms' },
-  { measure: 'Locator click', native: 49.99, node: 66.72, unit: 'ms' },
-  { measure: 'Locator fill', native: 11.33, node: 19.46, unit: 'ms' },
-  { measure: 'Peak client memory', native: 3.63, node: 140.05, unit: 'MiB' },
+  { measure: 'Launch to ready', native: 187, unit: 'ms' },
+  { measure: 'Small evaluation', native: 0.5, unit: 'ms' },
+  { measure: '256 KiB evaluation', native: 7.43, unit: 'ms' },
+  { measure: 'Locator count', native: 11.92, unit: 'ms' },
+  { measure: 'Locator click', native: 49.99, unit: 'ms' },
+  { measure: 'Locator fill', native: 11.33, unit: 'ms' },
+  { measure: 'Peak client memory', native: 3.63, unit: 'MiB' },
 ]
 
 export const reproduceCapture = `python3 scripts/verify-native-macos-recording.py \\

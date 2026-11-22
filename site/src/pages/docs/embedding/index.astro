@@ -1,0 +1,152 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import Explainer from '../../../components/Explainer.astro'
+import { snippets } from '../../../data/components.js'
+import { diagrams } from '../../../data/diagrams.js'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sitePath } from '../../../lib/paths.js'
+
+const repo = 'https://github.com/skyaara/suitecut/blob/main'
+
+const layout = `suitecut-browser.app/      the engine, with the CEF framework and five helper apps
+suitecut-session           the session service, protocols 0 and 1
+licenses/                  CEF, Chromium credits, libyuv, suitecut, OpenSSL, curl, libpsl, brotli
+kit.json                   versions, protocols, signing, and every file's path, size and sha256`
+
+const verify = `python3 scripts/verify-embed-kit-macos.py --kit .suitecut/embed-kit \\
+  --client-build .suitecut/kit-client-build --output .suitecut/kit-verify-NEW`
+
+type Row = readonly [string, string]
+
+const control: Row[] = [
+  ['unclaimed', 'Nobody holds the tab'],
+  ['agent', 'The agent holds it; a person\u2019s input or navigation takes it'],
+  [
+    'human',
+    'The person holds it; agent calls are refused with human_in_control until they release it',
+  ],
+  [
+    'generation',
+    'Raised on every change of hands; an action against an old one gets stale_generation',
+  ],
+]
+---
+
+<DocsLayout
+  title="Embedding"
+  description="Embed the suitecut engine in a macOS app with the embed kit and suitecut/embed.h: sessions, shared tabs, GPU frames and an agent working beside a person."
+  section="embedding"
+>
+  <h1>Embedding</h1>
+  <p>
+    The macOS embed kit puts the suitecut engine inside another app. The app opens a session, shows
+    the engine's tabs in its own views and can let an AI agent work in the same tabs. The kit is one
+    folder of signed files that the app copies into its own bundle; there is no separate browser to
+    install.
+  </p>
+  <Explainer explained={diagrams.embed} />
+
+  <h2 id="kit">What's in the kit</h2>
+  <CodeBlock code={layout} label="Layout" lang="plaintext" />
+  <p>
+    The engine stays a full <code>.app</code> bundle, because Chromium's helper processes only find the
+    browser when its main executable is bundled. The kit's Mach-O files link only
+    <code>/usr/lib</code> and <code>/System/Library</code> and need macOS 14 or newer. They are signed
+    with the hardened runtime and a timestamp; the kit is not notarized.
+  </p>
+  <p>
+    The kit defaults to the official CEF 156.0.30 build, which plays no H.264, AAC or HEVC.
+    <code>--cef codecs</code> packages the third-party codec build instead, which has no codec patent
+    licence. The files total 333 MB, most of it the CEF framework.
+  </p>
+
+  <h2 id="build">Build and check it</h2>
+  <p>
+    The <a href={`${repo}/docs/embedding/embed-kit-macos.md#recipe`}>full recipe</a> builds static curl,
+    OpenSSL, libpsl and brotli for macOS 14, then the engine, the session service and the kit. The last
+    steps package it and check it:
+  </p>
+  <CodeBlock code={snippets.kitStart} label="Terminal" lang="bash" />
+  <CodeBlock code={verify} label="Terminal" lang="bash" />
+
+  <h2 id="api">The embed API</h2>
+  <p>
+    <code>suitecut/embed.h</code> is a C header in the same <code>SuiteCut::Client</code> library as
+    <code>client.h</code>. It speaks session protocol 1 to <code>suitecut-session</code> over a private
+    socket.
+  </p>
+  <CodeBlock code={snippets.embedCode} label="C" lang="cpp" />
+  <ul class="dp-rows">
+    <li>
+      <code>sc_runtime_inspect</code>
+      <span class="dp-detail"
+        >Checks the code signature, then asks the service for its version and protocol range</span
+      >
+    </li>
+    <li>
+      <code>sc_session_open</code>
+      <span class="dp-detail"
+        ><code>SC_SESSION_START</code> starts the service; <code>SC_SESSION_PROMPTS</code> holds the owner's
+        dialogs for the app to answer</span
+      >
+    </li>
+    <li>
+      <code>sc_session_grant</code>
+      <span class="dp-detail"
+        >Gives an agent chosen tool groups for a set lifetime; <code>sc_session_revoke</code> takes them
+        back</span
+      >
+    </li>
+    <li>
+      <code>sc_tab_open</code>
+      <span class="dp-detail"
+        >Opens a tab; <code>sc_tab_take</code> and <code>sc_tab_release</code> change who holds it</span
+      >
+    </li>
+    <li>
+      <code>sc_view_attach</code>
+      <span class="dp-detail"
+        >Attaches a view to a tab; <code>sc_view_next_frame</code> returns its newest frame</span
+      >
+    </li>
+  </ul>
+
+  <h2 id="frames">Frames</h2>
+  <p>
+    A frame is an <code>IOSurfaceRef</code> in NV12. The engine converts each paint with Metal into a
+    surface it owns, so frames stay on the GPU on the way to the app. The library keeps only the newest
+    waiting frame and drops frames from any process but the engine. The app draws the surface and hands
+    it back with <code>sc_frame_release</code>. Off macOS, frame sinks return
+    <code>SC_UNSUPPORTED</code>; a view without a sink still takes input and resizing.
+  </p>
+
+  <h2 id="sharing">Sharing a tab with an agent</h2>
+  <Explainer explained={diagrams.together} />
+  <ul class="dp-rows">
+    {
+      control.map(([key, value]) => (
+        <li>
+          <code>{key}</code>
+          <span class="dp-detail">{value}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p>
+    An agent connects as the session's agent and gets the tool groups the app granted. The
+    <a href={sitePath('/docs/agents')}>agent tools</a> are the same <code>observe</code>,
+    <code>act</code> and <code>wait</code> that <code>SimpleAgent</code> provides.
+  </p>
+
+  <h2 id="status">What's built</h2>
+  <p>
+    Sessions, tabs, views, GPU frames, input, host events (loading, titles, cursors, popups) and
+    prompts for dialogs, file choosers, downloads, permissions, HTTP logins and client certificates
+    are built. The <a href={`${repo}/docs/embedding/api-design.md`}>API design</a> marks what is built,
+    what was checked against a real engine and what is still proposed. Not built yet: <code
+      >sc_view_set_focus</code
+    >, the C++ classes for the embed API, and joining an existing session from <code
+      >suitecut-native-control</code
+    >'s MCP server.
+  </p>
+</DocsLayout>

@@ -1,0 +1,79 @@
+---
+import CodeBlock from '../../components/CodeBlock.astro'
+import ComponentRows from '../../components/ComponentRows.astro'
+import Doodle from '../../components/Doodle.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { components } from '../../data/components.js'
+import { sitePath } from '../../lib/paths.js'
+
+const labels = { cpp: 'C++', c: 'C', json: 'JSON', sh: 'Terminal', cmake: 'CMake' } as const
+const langs = { cpp: 'cpp', c: 'cpp', json: 'json', sh: 'bash', cmake: 'plaintext' } as const
+---
+
+<BaseLayout
+  title="Components · suitecut"
+  description="suitecut's native components: the CEF engine, the C++ SDK and C ABI, the native control CLI and MCP server, and the macOS embed kit."
+  current="components"
+>
+  <div class="page prose components">
+    <h1>Components</h1>
+    <p class="lede">
+      suitecut is four native components around one engine: Chromium running inside a CEF program, <span
+        class="dp-marker dp-marker-red dp-marker-inline"
+        >recorded and driven without a debugging port</span
+      >.
+    </p>
+    <ComponentRows />
+
+    {
+      components.map((item) => (
+        <section class="component-block" id={item.slug}>
+          <h2>
+            <a href={sitePath(`/components/${item.slug}`)}>{item.name}</a>
+          </h2>
+          <p class="component-kind">
+            <span class="dp-badge dp-badge-neutral">{item.kind}</span>
+            <span class="dp-badge dp-badge-neutral">{item.status}</span>
+          </p>
+          <p>{item.line}.</p>
+          <Doodle doodle={item.doodle} class="component-doodle" />
+          <p>{item.intro[0]}</p>
+          <CodeBlock
+            code={item.start.code}
+            label={labels[item.start.language]}
+            lang={langs[item.start.language]}
+          />
+          <p>
+            <a class="dp-link" href={sitePath(`/components/${item.slug}`)}>
+              How {item.name} works
+            </a>
+          </p>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .lede {
+    max-width: 32rem;
+  }
+
+  .component-block h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .component-kind {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: calc(var(--space-3) * -1);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .components :global(.component-doodle) {
+    margin: var(--space-6) 0;
+  }
+</style>

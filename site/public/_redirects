@@ -1,0 +1,21 @@
+# Pages removed with the Node.js packages on 2026-11-22.
+/packages                  /components               301
+/packages/                 /components               301
+/packages/native-sdk       /components/native-sdk    301
+/packages/native-sdk/      /components/native-sdk    301
+/packages/*                /components               301
+/film/*                    /components               301
+/docs/streaming            /docs/recording           301
+/docs/streaming/           /docs/recording           301
+/docs/shared-browser       /docs/how-it-works        301
+/docs/shared-browser/      /docs/how-it-works        301
+/docs/api                  /docs                     301
+/docs/api/                 /docs                     301
+/docs/browser-control      /docs/agents              301
+/docs/browser-control/     /docs/agents              301
+/docs/extending            /docs                     301
+/docs/extending/           /docs                     301
+/docs/kokoro               /docs                     301
+/docs/kokoro/              /docs                     301
+/docs/audio-plugins        /docs                     301
+/docs/audio-plugins/       /docs                     301

@@ -51,14 +51,14 @@ const socialImageUrl = new URL(sitePath(socialImage), Astro.site)
       <main id="main-content" transition:animate="fade"><slot /></main>
       <footer class="site-footer" transition:persist="site-footer">
         <p>
-          suitecut 2.1 · MIT licence · on <a
+          suitecut · MIT licence · on <a
             href="https://design-system.aakashreddy.com"
             target="_blank"
             rel="noopener noreferrer">Deli Paper</a
           >
         </p>
         <nav aria-label="Footer">
-          <a href={sitePath('/packages')}>Packages</a>
+          <a href={sitePath('/components')}>Components</a>
           <a href={sitePath('/about')}>About</a>
           <a href={sitePath('/docs')}>Docs</a>
           <a href={sitePath('/benchmarks')}>Benchmarks</a>

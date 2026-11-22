@@ -1,0 +1,188 @@
+---
+import CodeBlock from '../../../components/CodeBlock.astro'
+import Explainer from '../../../components/Explainer.astro'
+import { snippets } from '../../../data/components.js'
+import { diagrams } from '../../../data/diagrams.js'
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { sitePath } from '../../../lib/paths.js'
+
+const repo = 'https://github.com/skyaara/suitecut/blob/main'
+
+const record = `#include <suitecut/browser.hpp>
+#include <chrono>
+#include <thread>
+
+using suitecut::Json;
+
+suitecut::LaunchOptions options;
+options.executable = "/absolute/path/to/suitecut-browser";
+options.frames_per_second = 30; // capture cadence
+auto browser = suitecut::Browser::launch(options);
+auto page = browser.main_page();
+page.navigate("https://example.com/");
+
+auto started = page.command("recording", Json{
+    {"action", "start"}, {"ffmpegPath", "/usr/bin/ffmpeg"},
+    {"outputPath", "/tmp/page.webm"}, {"framesPerSecond", 30},
+    {"width", 1280}, {"height", 720}, {"audio", true}});
+std::this_thread::sleep_for(std::chrono::seconds(5));
+auto result = page.command("recording", Json{
+    {"action", "stop"}, {"recordingId", started.at("id")}});
+browser.close();`
+
+const chromium = `suitecut::LaunchOptions options;
+options.executable = "/usr/bin/chromium";
+auto browser = suitecut::Browser::launch_chromium(options);
+auto page = browser.main_page();
+page.navigate("https://example.com/");
+page.start_recording("/tmp/page.mp4", 30, suitecut::Json{
+    {"ffmpegPath", "/usr/bin/ffmpeg"}, {"ffprobePath", "/usr/bin/ffprobe"}});
+// ...
+auto result = page.stop_recording();`
+
+const stream = `auto started = page.command("streaming", suitecut::Json{
+    {"action", "start"}, {"clientToken", "stream-1"},
+    {"ffmpegPath", "/usr/bin/ffmpeg"}, {"destination", "rtmp://127.0.0.1/live/key"},
+    {"framesPerSecond", 30}, {"width", 1280}, {"height", 720}, {"audio", true},
+    {"videoCodec", "h264"}, {"audioCodec", "aac"}, {"container", "flv"},
+    {"bitrateKbps", 4500}});
+const auto id = started.at("id");
+auto status = page.command("streaming", suitecut::Json{{"action", "status"}, {"streamId", id}});
+auto finished = page.command("streaming", suitecut::Json{{"action", "stop"}, {"streamId", id}});`
+
+const reconnect = `{"reconnect": {"maxAttempts": 3, "initialDelayMs": 250, "maxDelayMs": 5000, "timeoutMs": 30000}}`
+
+type Row = readonly [string, string]
+
+const recordingActions: Row[] = [
+  ['start', 'ffmpegPath, outputPath, framesPerSecond, width, height, audio; optional maxFileBytes'],
+  ['status', 'Current counters for the recording'],
+  ['pause, resume', 'Pause the recording at the command time, and resume it'],
+  ['stop', 'Finish the file and report its counters'],
+  ['cancel', 'Cancels the recording'],
+]
+
+const streamingActions: Row[] = [
+  ['start', 'Starts a publisher; replies once encoded output is observed'],
+  ['status', 'Counters, phase, the selected page and the output rate'],
+  ['pause, resume', 'Holds the image and sends silence while the live timeline continues'],
+  ['select', 'Switches the source to another page in the same engine (sourcePageId)'],
+  ['stop', 'Waits for the encoder to finish and reports the final counters'],
+  ['cancel', 'Cancels the publisher'],
+]
+---
+
+<DocsLayout
+  title="Recording and streaming"
+  description="Record a page to WebM or MP4 with its sound, or publish it live over RTMP, RTMPS or TCP, from the suitecut engine."
+  section="recording"
+>
+  <h1>Recording and streaming</h1>
+  <p>
+    The engine records a page with its sound into a file, or publishes it live. Both are engine
+    commands, so they work the same from C++, from the C ABI with <code>sc_client_call</code>, or
+    from anything that writes the engine's JSON lines. FFmpeg does the muxing; on macOS an MP4 uses
+    the hardware H.264 encoder.
+  </p>
+
+  <h2 id="record">Record a page</h2>
+  <Explainer explained={diagrams.recording} />
+  <CodeBlock code={record} label="C++" lang="cpp" />
+  <p>
+    The engine's <code>recording</code> command takes these actions. Every action but
+    <code>start</code> names the recording with <code>recordingId</code>, and any field the command
+    doesn't know is rejected.
+  </p>
+  <ul class="dp-rows">
+    {
+      recordingActions.map(([key, value]) => (
+        <li>
+          <code>{key}</code>
+          <span class="dp-detail">{value}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p>
+    The output is WebM, or MP4 on macOS with hardware encoding. Width and height must be even, and
+    page audio is optional. <code>framesPerSecond</code> may be fractional, such as 29.97: capture runs
+    at the whole-number launch option <code>frames_per_second</code>, and the encoder resamples onto
+    the requested timeline. A higher output rate repeats captured images; it doesn't create motion
+    the browser didn't paint. <a href={sitePath('/docs/how-it-works#clock')}>One clock</a> explains how
+    frames are picked and held.
+  </p>
+
+  <h2 id="recorder">The bundled recorder</h2>
+  <p>
+    <code>suitecut-native-record</code> is the program above with flags. It finds the engine, FFmpeg and
+    FFprobe relative to its own location in an installed runtime.
+  </p>
+  <CodeBlock code={snippets.recordCode} label="Terminal" lang="bash" />
+
+  <h2 id="chromium">Recording Chrome or Chromium</h2>
+  <p>
+    <code>Page::start_recording</code> records an installed Chrome or Chromium. Source frames are spooled,
+    resampled to the output rate and finalized with FFmpeg and FFprobe. The result is a silent MP4 or
+    WebM; page audio needs the engine.
+  </p>
+  <CodeBlock code={chromium} label="C++" lang="cpp" />
+
+  <h2 id="stream">Stream a page live</h2>
+  <Explainer explained={diagrams.streaming} />
+  <p>
+    The <code>streaming</code> command publishes over <code>rtmp://</code>, <code>rtmps://</code> or
+    <code>tcp://</code>. The engine does frame-rate conversion, the FFmpeg process, pipe
+    backpressure and the publisher's lifetime; the caller sends commands and reads counters. It runs
+    on Linux and macOS.
+  </p>
+  <CodeBlock code={stream} label="C++" lang="cpp" />
+  <ul class="dp-rows">
+    {
+      streamingActions.map(([key, value]) => (
+        <li>
+          <code>{key}</code>
+          <span class="dp-detail">{value}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p>
+    <code>start</code> requires every field shown above. Codecs are <code>h264</code> and
+    <code>aac</code> in <code>flv</code>, or <code>vp9</code> and <code>opus</code> in
+    <code>webm</code>; RTMP and RTMPS need the first pair. The bitrate is fixed for the life of the
+    publisher. Encoded and muxed counters show local FFmpeg progress, not receipt by the server.
+  </p>
+
+  <h2 id="reconnect">Reconnecting</h2>
+  <p>
+    Without <code>reconnect</code> the engine makes one publisher attempt. With it, the engine replaces
+    a failed publisher, backing off between attempts. These are the defaults:
+  </p>
+  <CodeBlock code={reconnect} label="JSON" lang="json" />
+  <p>
+    Between attempts the phase is <code>reconnecting</code>. While disconnected, only the latest
+    picture is kept and captured audio is dropped and counted. Cancellation, a page crash and
+    pipe-lag failures stay terminal.
+  </p>
+
+  <h2 id="timing">Timing</h2>
+  <p>
+    With audio, the publisher buffers 120 ms of captured media by default (<code
+      >captureLatencyMs</code
+    >). Audio advances in 20 ms chunks on a 48 kHz timeline; audio that isn't there by its playout
+    time becomes counted silence. <code>maxWriteLagMs</code> (default 2000) fails a publisher whose pipe
+    falls that far behind.
+  </p>
+
+  <h2 id="limits">Limits</h2>
+  <p>
+    A decoded-window audit still finds tone dropouts, and low-rate Opus startup can fail; continuous
+    audio and A/V synchronization are still being repaired. Switching to a page in another engine
+    and changing the bitrate while live aren't supported. Live streaming throughput isn't measured;
+    the measured recording numbers are on the <a href={sitePath('/docs/performance')}
+      >performance page</a
+    >. The full reference is <a href={`${repo}/docs/native-publishing.md`}
+      >native continuous publishing</a
+    >.
+  </p>
+</DocsLayout>

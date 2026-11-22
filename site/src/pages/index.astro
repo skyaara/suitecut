@@ -1,17 +1,12 @@
 ---
-import Explainer from '../components/Explainer.astro'
-import { diagrams } from '../data/diagrams.js'
 import CodeBlock from '../components/CodeBlock.astro'
-import Film from '../components/Film.astro'
-import PackageRows from '../components/PackageRows.astro'
+import ComponentRows from '../components/ComponentRows.astro'
+import Explainer from '../components/Explainer.astro'
+import { snippets } from '../data/components.js'
+import { diagrams } from '../data/diagrams.js'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { recordExample } from '../lib/api-reference.js'
-import { clientRuns } from '../lib/benchmarks.js'
+import { captureRuns, clientRuns } from '../lib/benchmarks.js'
 import { sitePath } from '../lib/paths.js'
-import Clip from '../components/Clip.astro'
-import frameRatesSource from '../../../examples/engine/frame-rates.ts?raw'
-import ebaySource from '../../../examples/real-sites/ebay.ts?raw'
-import songMakerSource from '../../../examples/real-sites/song-maker.ts?raw'
 
 type Spec = [string, string]
 
@@ -20,10 +15,10 @@ const engineSpecs: Spec[] = [
   ['Video', 'CefRenderHandler::OnPaint, BGRA8 or I420 frames with paint IDs'],
   ['Audio', 'CefAudioHandler::OnAudioStreamPacket, 48 kHz stereo PCM'],
   ['Not used', 'No screenshot loop, browser extension or open debugging port'],
-  ['Process', 'One sandboxed helper per launch, hosting isolated contexts and many pages'],
+  ['Protocol', 'One JSON command per line on stdin, length-prefixed binary packets on stdout'],
   ['Modules', 'protocol, runtime, page and process, with one shutdown barrier'],
   ['Backpressure', 'Callbacks never wait on pipes; one pending frame, audio queued whole'],
-  ['Qualified', '90-case CEF regression package on macOS ARM64, October 21, on CEF 156.0.7'],
+  ['Regressions', 'Five C++ workflows run against the real engine by a local supervisor'],
 ]
 
 const mediaSpecs: Spec[] = [
@@ -31,20 +26,19 @@ const mediaSpecs: Spec[] = [
   ['Output rate', 'Any rate from 1, including 29.97 and 59.94'],
   ['Resampling', 'Newest real image at each tick. Never blended or interpolated'],
   ['macOS path', 'IOSurface capture, Metal NV12 conversion, h264_videotoolbox'],
-  ['Audio sync', 'Whole-sample boundaries per tick, so fractional rates never drift'],
-  ['Publishing', 'Any number of publishers, fixed bitrate, optional reconnect policy'],
+  ['Files', 'WebM with page audio, or hardware H.264 MP4 on macOS'],
+  ['Publishing', 'RTMP, RTMPS or TCP, fixed bitrate, optional reconnect policy'],
   ['Health', 'Held images, audio gaps, pauses and source switches are counted'],
-  ['Narration', 'Kokoro 82M with 28 voices, the macOS voice, Piper via plugins'],
 ]
 
 const agentSpecs: Spec[] = [
   ['Tools', 'observe, act and wait'],
   ['Observations', 'Compact controls and text, with optional control and byte limits'],
   ['Refs', 'Short element refs, replaced on every observation; stale refs rejected'],
-  ['Batches', 'Any number of known actions in one act, stopping on the first failure'],
+  ['Batches', 'Several actions in one act, stopping at the first failure'],
   ['Deadlines', 'One shared deadline, 5 s by default and capped at 30 s'],
   ['Safety', 'Mutations are never retried. Password values are redacted'],
-  ['Results', 'delivered confirms the browser received it; effect checks the UI'],
+  ['Results', 'delivered records browser acknowledgement; effect checks the UI'],
 ]
 
 const mcpSpecs: Spec[] = [
@@ -57,226 +51,64 @@ const mcpSpecs: Spec[] = [
   ['Remote', 'Connection headers and TLS client certificates for remote browsers'],
 ]
 
-const viewerSpecs: Spec[] = [
-  ['Take control', 'Waits for admitted agent work, then hands input to a person'],
-  ['Resume AI', 'Releases held keys and buttons and returns control'],
-  ['Same session', 'One page, cookies and storage for both people and agents'],
-  ['Any device', 'With network: true, open the link on a phone, tablet or another computer'],
-  ['Fits the screen', 'Touch input, and the page resizes to the screen in control'],
-  ['Private', 'A bearer token in the link, loopback only unless you opt in, no CDNs'],
-]
-
-// The demos are the real-site examples, recorded by scripts/record-site-demos.mjs.
-// Each shows the body of the script that made it.
-const scriptOf = (source: string) =>
-  (source.split('async ({ page, suitecut }) => {\n')[1]?.split('\n  },\n')[0] ?? '')
-    .split('\n')
-    .map((line) => line.slice(4))
-    .join('\n')
-
-const demos = [
-  {
-    name: 'ebay',
-    path: 'examples/real-sites/ebay.ts',
-    title: 'Shop for a keyboard on eBay',
-    caption:
-      'Real typing in the search box, a highlight on the results, then a listing opened, its photo zoomed and its price pointed at. Play it with sound for the narration.',
-    script: scriptOf(ebaySource),
-    sound: true,
-  },
-  {
-    name: 'frame-rates',
-    path: 'examples/engine/frame-rates.ts',
-    title: "Scroll Apple's iPhone store at 120 fps",
-    caption:
-      'One recording rendered twice, 24 fps on the left and 60 on the right. Watch the scroll.',
-    script: scriptOf(frameRatesSource),
-    sound: false,
-  },
-  {
-    name: 'song-maker',
-    path: 'examples/real-sites/song-maker.ts',
-    title: 'Write a tune in Song Maker',
-    caption:
-      "Real clicks on Chrome Music Lab. Play it with sound: the page's own audio is in the video.",
-    script: scriptOf(songMakerSource),
-    sound: true,
-  },
-]
-
-const chromeWindowSpecs: Spec[] = [
-  ['Window', "Chromium's own tabs, address bar, menus, find, zoom and right-click menus"],
-  ['Shared tabs', 'Tabs a person opens become pages the agent can see and drive'],
-  ['Profile', 'Cookies, logins, storage and history survive restarts'],
-  ['Closed off', 'No DevTools, View Source or Inspect, and no open debugging port'],
-  ['Capture', 'Record, stream or watch the window live while a person uses it'],
-  ['Limits', 'Shown on screen, so no headless runs; tested on macOS ARM64'],
-]
-
-const chromeWindowExample = `const browser = await launchBrowser({
-  executablePath: '/path/to/suitecut-browser',
-  userDataDir: '/path/to/profile',
-  windowMode: 'chrome',
-})
-const page = browser.defaultContext().pages()[0]
-await page.goto('https://www.ebay.com/')`
-
-const families = [
-  'Browser lifecycle',
-  'Contexts and profiles',
-  'Pages and popups',
-  'Navigation',
-  'Frames and iframes',
-  'Locators',
-  'Actionability',
-  'Pointer and touch',
-  'Keyboard and text',
-  'Form controls',
-  'Uploads and drag-drop',
-  'DOM inspection',
-  'Evaluation and handles',
-  'Events and cancellation',
-  'Dialogs',
-  'Downloads',
-  'Network observation',
-  'Request routing',
-  'HAR record and replay',
-  'WebSockets',
-  'API requests',
-  'Storage and auth state',
-  'Proxies and permissions',
-  'Emulation',
-  'Virtual time',
-  'Workers',
-  'Accessibility',
-  'Screenshots',
-  'PDF',
-  'Video and screencast',
-  'Tracing and coverage',
-]
-
-const mcpConfig = `{
-  "mcpServers": {
-    "suitecut": {
-      "command": "/usr/local/bin/suitecut-native-control",
-      "args": ["--browser", "/usr/bin/chromium", "--mcp", "--tools", "core,network"]
-    }
-  }
-}`
-
 const externalSpecs: Spec[] = [
-  ['Chromium family', 'Installed Chrome, Chromium, Edge or Brave over a private CDP pipe'],
+  ['Chromium family', 'Installed Chrome or Chromium over a private CDP pipe'],
   ['Firefox', 'Installed Firefox over WebDriver BiDi'],
   ['Attach', 'Connect to a browser that is already running instead of launching one'],
-  ['Remote', 'Connection headers and TLS client certificates for browsers on another host'],
-  ['Nothing extra', 'The CLI and C++ SDK need no CEF runtime, Node.js or automation library'],
+  ['Nothing extra', 'The CLI and C++ SDK need no CEF runtime or automation library'],
 ]
 
-const externalExample = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://www.ebay.com/
-suitecut-native-control --session shop snapshot
-suitecut-native-control --session shop --response none fill e12 'mechanical keyboard'
-suitecut-native-control --session shop press Enter
-suitecut-native-control --session shop close`
-
-const externalNode = `import { launchBrowser } from '@suitecut/browser-control'
-
-const browser = await launchBrowser({
-  backend: 'bidi',
-  executablePath: '/path/to/firefox',
-  headless: true,
-})`
-
-const agentExample = `suitecut::AgentDriver driver(browser);
-suitecut::SimpleAgent agent(driver);
-
-auto seen = agent.call("observe", {{"boxes", true}});
-auto done = agent.call("act", {
-    {"action", "fill"}, {"ref", "e1"}, {"value", "Hello"}});
-auto ready = agent.call("wait", {{"text", "Saved"}, {"timeoutMs", 2000}});`
+const embedSpecs: Spec[] = [
+  ['The kit', 'One signed folder: the engine bundle, suitecut-session, licences and kit.json'],
+  ['API', 'suitecut/embed.h, a C header in the same SuiteCut::Client library'],
+  ['Frames', 'NV12 IOSurfaces converted by the engine with Metal, newest frame only'],
+  ['Sharing', 'Each tab is unclaimed, held by the agent or held by the person'],
+  ['Prompts', 'Dialogs, file choosers, downloads, permissions and logins go to the app'],
+  ['Requires', 'macOS 14 or newer on Apple silicon; not notarized'],
+]
 
 const highlights = clientRuns.filter((row) =>
-  ['Launch to ready', 'Small evaluation', 'Locator fill'].includes(row.measure),
+  ['Launch to ready', 'Small evaluation', 'Locator fill', 'Peak client memory'].includes(
+    row.measure,
+  ),
 )
 const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.round(value)))
 ---
 
 <BaseLayout
   title="suitecut"
-  description="An embedded Chromium engine for recording, streaming, browser agents and MCP, with native capture and a C++ SDK."
+  description="An embedded Chromium engine for recording, streaming, browser agents and MCP, with native capture, a C++ SDK and a macOS embed kit."
   current="home"
 >
   <div class="home prose">
     <section class="home-hero">
       <h1>Chromium you can record, stream and drive</h1>
       <p class="home-lede">
-        suitecut runs Chromium inside your own program and takes
+        suitecut runs Chromium inside a CEF program and takes
         <span class="dp-marker dp-marker-red dp-marker-inline"
           >video and sound straight from the renderer</span
-        >, with no screenshots, extensions or open debugging port. Drive it from TypeScript, C++ or
-        any MCP client, then record it, stream it live to your phone or to an audience, or let an
-        agent work while you watch.
+        >, with no screenshots, extensions or open debugging port. Drive it from C++, C or any MCP
+        client, record it, stream it live, or show its tabs in your own Mac app while an agent works
+        in them.
       </p>
       <p class="home-actions">
-        <a class="tag" href={sitePath('/packages')}>See the packages</a>
+        <a class="tag" href={sitePath('/components')}>See the components</a>
         <a class="dp-link" href={sitePath('/docs')}>Read the guide</a>
       </p>
     </section>
-    <Film slug="suitecut" title="suitecut in a minute" />
 
-    <h2 id="packages">Packages</h2>
+    <h2 id="components">Components</h2>
     <p>
-      Four packages share one engine. Each has its own page with a short film, a diagram and a quick
+      Four native components share one engine. Each has its own page with a diagram and a quick
       start.
     </p>
-    <PackageRows />
-
-    <h2 id="watch">Watch it work</h2>
-    <p>
-      Real public sites, recorded by suitecut from the script under each video. The cursor,
-      highlights, zoom, captions and voice are all steps in that script, and nothing was edited
-      afterwards.
-    </p>
-    <div class="demos">
-      {
-        demos.map((demo) => (
-          <figure class="demo">
-            {demo.sound ? (
-              <video
-                src={sitePath(`/demo/${demo.name}.mp4`)}
-                poster={sitePath(`/demo/${demo.name}.jpg`)}
-                controls
-                playsinline
-                preload="none"
-                aria-label={demo.title}
-              />
-            ) : (
-              <video
-                src={sitePath(`/demo/${demo.name}.mp4`)}
-                poster={sitePath(`/demo/${demo.name}.jpg`)}
-                autoplay
-                muted
-                loop
-                playsinline
-                preload="metadata"
-                aria-label={demo.title}
-              />
-            )}
-            <figcaption>
-              <strong>{demo.title}</strong>
-              {demo.caption}
-            </figcaption>
-            <CodeBlock code={demo.script} label={demo.path} lang="typescript" />
-          </figure>
-        ))
-      }
-    </div>
+    <ComponentRows />
 
     <h2 id="capabilities">How it fits together</h2>
     <p>
       One engine sits in the middle. Everything you build talks to it through the same protocol, and
       everything it produces comes from its own paint and audio callbacks.
-      <a href={sitePath('/docs/how-it-works')}>How it works</a> follows a frame through every part, with
-      real recordings.
+      <a href={sitePath('/docs/how-it-works')}>How it works</a> follows a frame through every part.
     </p>
     <Explainer explained={diagrams.engine} />
 
@@ -296,11 +128,12 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         ))
       }
     </dl>
+    <CodeBlock code={snippets.engineProtocol} label="JSON" lang="json" />
 
-    <h2 id="media">Media engine</h2>
+    <h2 id="media">Recording and streaming</h2>
     <p>
       Capture, resampling, encoding and publishing run natively on one clock. Recording and
-      streaming share the pipeline, and the renderer mixes narration with page audio afterwards.
+      streaming share the pipeline; only the last step differs.
     </p>
     <dl class="specs">
       {
@@ -312,9 +145,19 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         ))
       }
     </dl>
-    <CodeBlock code={recordExample} />
+    <CodeBlock code={snippets.recordCode} label="Terminal" lang="bash" />
+    <p class="muted">
+      <a href={sitePath('/docs/recording')}>The recording and streaming commands</a>.
+    </p>
 
-    <h2 id="agent">Browser agent</h2>
+    <h2 id="sdk">C++ SDK and C ABI</h2>
+    <p>
+      <code>SuiteCut::Client</code> is a C++20 library with browsers, contexts, pages and locators, and
+      a versioned C ABI for any language that can call C. It needs no CEF headers.
+    </p>
+    <CodeBlock code={snippets.cppCode} label="C++" lang="cpp" />
+
+    <h3 id="agent">Browser agent</h3>
     <p>
       The simple agent gives a model three tools instead of fifty. It observes the page as compact
       controls, acts on short refs and waits for a visible change, all inside one deadline.
@@ -329,7 +172,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         ))
       }
     </dl>
-    <CodeBlock code={agentExample} label="C++" lang="cpp" />
+    <CodeBlock code={snippets.agentCode} label="C++" lang="cpp" />
 
     <h3 id="external">Use the browser you already have</h3>
     <p>
@@ -346,14 +189,12 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         ))
       }
     </dl>
-    <CodeBlock code={externalExample} label="Terminal" />
-    <CodeBlock code={externalNode} label="TypeScript" />
 
-    <h2 id="mcp">Browser MCP</h2>
+    <h2 id="mcp">Command line and MCP</h2>
     <p>
       <code>suitecut-native-control</code> is a native executable that runs as an MCP server, a line-by-line
-      JSON tool or a persistent command-line session. No Node.js, model or task planner is embedded; your
-      host brings the agent.
+      JSON tool or a persistent command-line session. No model or task planner is embedded; your host
+      brings the agent.
     </p>
     <dl class="specs">
       {
@@ -365,54 +206,21 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         ))
       }
     </dl>
-    <CodeBlock code={mcpConfig} label="MCP config" lang="json" />
-
-    <h2 id="control">Browser control</h2>
-    <p>
-      <code>@suitecut/browser-control</code> drives the CEF engine, installed Chrome, Chromium, Edge or
-      Brave over CDP, and Firefox over WebDriver BiDi. It covers 31 feature families, each with scoped
-      evidence in the
-      <a href="https://github.com/skyaara/suitecut/blob/main/docs/playwright-feature-parity.md"
-        >feature checklist</a
-      >.
-    </p>
-    <ul class="families">
-      {families.map((family) => <li>{family}</li>)}
-    </ul>
-
-    <h3 id="chrome-window">A Chrome window people can use</h3>
-    <p>
-      Launch with <code>windowMode: 'chrome'</code> and the same browser control drives a full Chrome
-      window instead of an offscreen page. Add <code>userDataDir</code> and it keeps its profile between
-      runs.
-    </p>
-    <dl class="specs">
-      {
-        chromeWindowSpecs.map(([key, value]) => (
-          <div>
-            <dt>{key}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))
-      }
-    </dl>
-    <CodeBlock code={chromeWindowExample} />
-
-    <h3 id="viewer">Watch and take over from any device</h3>
-    <p>
-      Every headless browser streams itself. <code>createBrowserViewer</code> serves the engine's own
-      frames to a page you open on this machine or, with <code>network: true</code>, on your phone.
-      Take control from there, then hand it back to the agent.
-      <a href={sitePath('/examples#phone')}>See the example</a>.
-    </p>
-    <Clip
-      name="phone-viewer"
-      title="A phone takes over an agent's eBay search, then hands it back."
-      portrait
+    <CodeBlock
+      code={`${snippets.controlStart}\n${snippets.cliCode}`}
+      label="Terminal"
+      lang="bash"
     />
+    <CodeBlock code={snippets.mcpConfig} label="MCP config" lang="json" />
+
+    <h2 id="embed">Embed it in a Mac app</h2>
+    <p>
+      The macOS embed kit is one folder an app copies into its bundle. The app opens a session,
+      shows the engine's tabs in its own views and can let an agent work in the same tabs.
+    </p>
     <dl class="specs">
       {
-        viewerSpecs.map(([key, value]) => (
+        embedSpecs.map(([key, value]) => (
           <div>
             <dt>{key}</dt>
             <dd>{value}</dd>
@@ -420,52 +228,45 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         ))
       }
     </dl>
-
-    <h2 id="test">Testing and tracing</h2>
-    <p>
-      <code>suitecut-test</code> runs suites with fixtures, retries, repeat-each and multi-file discovery,
-      and writes JSON, JUnit and HTML reports. <code>expectNative</code> adds retrying and soft assertions,
-      <code>toPass</code> and locator handlers.
-    </p>
+    <Explainer explained={diagrams.embed} />
     <p class="muted">
-      Tracing is recorded in C++: screencast frames, DOM, network and accessibility snapshots, and
-      sources, finalized into a zip. Document coverage and HAR record and replay sit alongside.
+      <a href={sitePath('/docs/embedding')}>How embedding works</a>.
     </p>
 
     <h2 id="benchmarks">Benchmarks</h2>
     <p>
-      The native C++ client against the Node SDK, driving the same pinned CEF binary. Shorter is
-      faster.
+      1080p120 recording on an Apple M4 with page audio and five CPU load workers, in distinct
+      frames per second out of 120:
     </p>
     <div class="bars">
       {
-        highlights.map((row) => {
-          const max = Math.max(row.native, row.node)
-          return (
-            <div class="bar">
-              <span class="label">{row.measure}</span>
-              <span class="bar-track">
-                <span class="bar-fill is-native" style={`width:${(row.native / max) * 100}%`} />
-                <span class="bar-value">
-                  {format(row.native)} {row.unit}
-                </span>
-              </span>
-              <span class="bar-track">
-                <span class="bar-fill" style={`width:${(row.node / max) * 100}%`} />
-                <span class="bar-value">
-                  {format(row.node)} {row.unit}
-                </span>
-              </span>
-            </div>
-          )
-        })
+        captureRuns.map((row) => (
+          <div class="bar">
+            <span class="label">{row.run}</span>
+            <span class="bar-track">
+              <span class="bar-fill is-native" style={`width:${(row.fps / 120) * 100}%`} />
+              <span class="bar-value">{row.fps.toFixed(2)}</span>
+            </span>
+          </div>
+        ))
       }
-      <p class="bars-key label">
-        <span><i class="is-native"></i>Native C++</span><span><i></i>Node SDK</span>
-      </p>
     </div>
+    <p>Medians for the C++ SDK driving the pinned CEF binary:</p>
+    <dl class="specs">
+      {
+        highlights.map((row) => (
+          <div>
+            <dt>{row.measure}</dt>
+            <dd>
+              {format(row.native)} {row.unit}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
     <p class="muted">
-      <a href={sitePath('/benchmarks')}>See every run, its host and how to reproduce it.</a>
+      <a href={sitePath('/benchmarks')}>See every run, its host and how to reproduce it</a>, and
+      suitecut against agent-browser and browser-use on real pages.
     </p>
 
     <h2 id="platforms">Platforms</h2>
@@ -473,21 +274,25 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       <div><dt>Runtime</dt><dd>Linux x64 and macOS ARM64, each with its own qualification</dd></div>
       <div><dt>Not yet</dt><dd>Windows runtime packaging and Safari or WebKit backends</dd></div>
       <div>
-        <dt>Requires</dt><dd>Node.js 22, pnpm, FFmpeg and a separately built CEF executable</dd>
+        <dt>Requires</dt><dd>
+          CMake, a C++20 compiler, FFmpeg for recording and a separately built CEF engine
+        </dd>
       </div>
-      <div><dt>Native SDK</dt><dd>Builds without Node.js or CEF headers</dd></div>
+      <div>
+        <dt>C++ SDK</dt><dd>Builds without CEF headers; drives Chrome or Firefox on its own</dd>
+      </div>
       <div>
         <dt>Playback</dt><dd>
-          H.264, AAC and HEVC play on macOS ARM64 through a third-party codec build; Linux uses
-          stock CEF without them
+          H.264, AAC and HEVC play on macOS ARM64 through a third-party codec build; Linux and the
+          embed kit's default use stock CEF without them
         </dd>
       </div>
     </dl>
 
     <h2 id="start">Get started</h2>
     <p class="muted">
-      <code>suitecut install</code> fetches checksum-verified media tools and
-      <code>suitecut doctor</code> reports what's missing.
+      Build the C++ SDK with CMake, build the engine against the pinned CEF SDK, or use the Linux
+      x64 runtime archive that holds both.
     </p>
     <p class="home-links">
       <a class="tag" href={sitePath('/docs')}>Read the guide</a>
@@ -497,20 +302,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     </p>
   </div>
 </BaseLayout>
-
-<script>
-  // Respect reduced motion: show the first frame with controls instead of looping.
-  function setupDemos() {
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    for (const video of document.querySelectorAll<HTMLVideoElement>('.demo video[autoplay]')) {
-      video.autoplay = false
-      video.pause()
-      video.controls = true
-    }
-  }
-
-  document.addEventListener('astro:page-load', setupDemos)
-</script>
 
 <style>
   .home {
@@ -527,39 +318,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     align-items: center;
     gap: var(--space-3) var(--space-6);
     margin: var(--space-8) 0 0;
-  }
-
-  /* Demo recordings */
-  .demos {
-    display: grid;
-    gap: 3rem;
-    margin: 2.5rem 0 0;
-  }
-
-  .demo {
-    margin: 0;
-  }
-
-  .demo video {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    border-radius: 0.5rem;
-    background: var(--panel);
-    box-shadow: 0 0 0 1px var(--line);
-  }
-
-  .demo figcaption {
-    margin-top: var(--space-3);
-    color: var(--muted);
-    font: 500 16px / 24px var(--sans);
-  }
-
-  .demo figcaption strong {
-    display: block;
-    color: var(--heading);
-    font-weight: 600;
   }
 
   /* Specs */
@@ -588,33 +346,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     line-height: 1.75rem;
   }
 
-  .families {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0 1.5rem;
-    margin: 1.5rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .families li {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin: 0;
-    padding: 0.3rem 0;
-    color: var(--muted);
-    font: 500 16px / 24px var(--sans);
-  }
-
-  .families li::before {
-    content: '';
-    width: 0.75rem;
-    height: 1px;
-    flex: none;
-    background: var(--accent);
-  }
-
   /* Benchmark bars */
   .bars {
     display: grid;
@@ -627,7 +358,9 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
   .bar {
     display: grid;
-    gap: 0.35rem;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
   }
 
   .bar-track {
@@ -651,28 +384,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     color: var(--muted);
     font: 500 16px / 1 var(--sans);
     font-variant-numeric: tabular-nums;
-  }
-
-  .bars-key {
-    display: flex;
-    gap: 1.25rem;
-    margin: 0;
-  }
-
-  .bars-key span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-  }
-
-  .bars-key i {
-    width: 0.5rem;
-    height: 0.5rem;
-    background: var(--line-strong);
-  }
-
-  .bars-key i.is-native {
-    background: var(--chrome-dark);
   }
 
   .home-links {
@@ -706,10 +417,6 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     .specs div {
       grid-template-columns: 1fr;
       gap: 0.1rem;
-    }
-
-    .families {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>

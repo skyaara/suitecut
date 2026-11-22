@@ -89,9 +89,7 @@ const format = (value: number) =>
         <thead>
           <tr>
             <th>Median</th>
-            <th>Native C++</th>
-            <th>Node SDK</th>
-            <th>Ratio</th>
+            <th>C++ SDK</th>
           </tr>
         </thead>
         <tbody>
@@ -102,10 +100,6 @@ const format = (value: number) =>
                 <td class="accent">
                   {format(row.native)} {row.unit}
                 </td>
-                <td>
-                  {format(row.node)} {row.unit}
-                </td>
-                <td class="muted">{(row.node / row.native).toFixed(1)}×</td>
               </tr>
             ))
           }
@@ -114,7 +108,7 @@ const format = (value: number) =>
     </div>
     <p class="muted">
       Memory is the application client only; browser memory is excluded. These are scoped
-      observations from two repetitions, not universal speedups.
+      observations from two repetitions on one host.
     </p>
 
     <h2 id="reproduce">Reproduce</h2>

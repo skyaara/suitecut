@@ -240,11 +240,16 @@ const behind = columns.flatMap(([key, label, unit]) => {
     3 times each; the tables use the median call.
   </li>
   <li>
-    The snapshot is the text each tool gives an agent: suitecut
-    <code>ariaSnapshot(&#123; mode: 'ai', interactive: true &#125;)</code>, agent-browser
+    The snapshot is the text each tool gives an agent: suitecut's compact observation, agent-browser
     <code>snapshot -i</code> (the mode its documentation recommends) and browser-use
     <code>llm_representation()</code>. browser-use leaves out elements more than 1000 px outside the
     viewport, so its snapshot does not cover the whole page.
+  </li>
+  <li>
+    The published run (2026-11-09, suitecut 2.1.0) measured suitecut through its former Node.js
+    package, with <code>ariaSnapshot(&#123; mode: 'ai', interactive: true &#125;)</code>. The
+    adapter now drives <code>suitecut-native-control</code> and its <code>observe</code> tool; these numbers
+    change when the benchmark is run again.
   </li>
   <li>
     A task reads a snapshot before each step and acts on the first element whose role and name

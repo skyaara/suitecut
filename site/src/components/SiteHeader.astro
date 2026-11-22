@@ -2,7 +2,7 @@
 import { sitePath } from '../lib/paths.js'
 import Logo from './Logo.astro'
 
-export type Section = 'home' | 'about' | 'benchmarks' | 'docs' | 'examples' | 'packages'
+export type Section = 'home' | 'about' | 'benchmarks' | 'docs' | 'examples' | 'components'
 
 interface Props {
   current?: Section
@@ -11,7 +11,7 @@ interface Props {
 const { current } = Astro.props
 const repository = 'skyaara/suitecut'
 const links: { label: string; href: string; key?: Section }[] = [
-  { label: 'Packages', href: sitePath('/packages'), key: 'packages' },
+  { label: 'Components', href: sitePath('/components'), key: 'components' },
   { label: 'Benchmarks', href: sitePath('/benchmarks'), key: 'benchmarks' },
   { label: 'Docs', href: sitePath('/docs'), key: 'docs' },
   { label: 'Examples', href: sitePath('/examples'), key: 'examples' },

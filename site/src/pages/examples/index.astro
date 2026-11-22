@@ -1,89 +1,52 @@
 ---
-import browserControlSource from '../../../../examples/browser-control/record-video.ts?raw'
-import frameRatesSource from '../../../../examples/engine/frame-rates.ts?raw'
-import nativeSource from '../../../../examples/native.ts?raw'
-import ebaySource from '../../../../examples/real-sites/ebay.ts?raw'
-import songMakerSource from '../../../../examples/real-sites/song-maker.ts?raw'
-import agentSource from '../../../../examples/shared-browser/agent.ts?raw'
-import liveViewerSource from '../../../../examples/browser-control/live-viewer.ts?raw'
-import Clip from '../../components/Clip.astro'
+import agentSource from '../../../../native/client/examples/agent.cpp?raw'
+import chromiumSource from '../../../../native/client/examples/chromium.cpp?raw'
+import embedSampleSource from '../../../../native/client/examples/embed-macos/main.mm?raw'
+import rawSource from '../../../../native/client/examples/raw.c?raw'
+import readWindowSource from '../../../../native/client/examples/read_window.cpp?raw'
+import recordSource from '../../../../native/client/examples/record.cpp?raw'
 import CodeBlock from '../../components/CodeBlock.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { streamExample } from '../../lib/api-reference.js'
+import { snippets } from '../../data/components.js'
 import { sitePath } from '../../lib/paths.js'
 
 const featured = [
-  ['#agent-window', 'An agent shops in a window you can see', 'shared browser, MCP'],
-  ['#narrated', 'A narrated shopping tour', 'the suitecut engine'],
-  ['#headless-video', 'A Playwright-style run with video', 'browser control, headless'],
-  ['#phone', 'Watch and take over from your phone', 'live viewer, any device'],
-  ['#frame-rates', 'One recording, any frame rate', 'the suitecut engine'],
-  ['#page-sound', "A page's own sound", 'the suitecut engine'],
+  ['#form', 'Fill a form from C++', 'suitecut-native-agent'],
+  ['#chrome', 'Drive the Chrome you already have', 'suitecut-native-chromium'],
+  ['#c', 'Send one engine command from C', 'suitecut-native-command'],
+  ['#record', 'Record a page with its sound', 'suitecut-native-record'],
+  ['#reads', 'Keep several reads in flight', 'suitecut-native-read-window'],
+  ['#cli', 'A session from the shell, or MCP', 'suitecut-native-control'],
+  ['#embed', 'Show a tab in a Mac app', 'suitecut-embed-sample'],
 ] as const
 
-const songMaker = `export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"
-pnpm example:song-maker`
+const build = `cmake -S native/client -B .suitecut/examples-build -DCMAKE_BUILD_TYPE=Release \\
+  -DSUITECUT_CLIENT_BUILD_EXAMPLES=ON
+cmake --build .suitecut/examples-build --parallel 2`
 
-const installedBrowser = `import { launchBrowser } from '@suitecut/browser-control'
+const runAgent = `suitecut-native-agent /absolute/path/to/suitecut-browser /tmp/form.png`
+const runChromium = `suitecut-native-chromium /usr/bin/chromium https://example.com/`
+const runRaw = `suitecut-native-command /absolute/path/to/suitecut-browser \\
+  '{"command":"evaluate","expression":"40+2"}'`
+const runReads = `suitecut-native-read-window /absolute/path/to/suitecut-browser 4 \\
+  document.title location.href document.readyState`
+const runEmbed = `suitecut-embed-sample --runtime /path/to/embed-kit --url https://example.com/`
 
-const browser = await launchBrowser({
-  backend: 'cdp',
-  executablePath: '/path/to/google-chrome',
-  headless: true,
-})
-try {
-  const page = await browser.newPage()
-  await page.goto('https://www.ebay.com/')
-  await page.getByRole('combobox', { name: 'Search for anything' }).fill('mechanical keyboard')
-  await page.keyboard.press('Enter')
-  console.log(await page.getByRole('heading', { level: 1 }).first().textContent())
-} finally {
-  await browser.close()
-}`
-
-const cliAgent = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://www.ebay.com/
-suitecut-native-control --session shop snapshot
-suitecut-native-control --session shop --response none fill e12 'mechanical keyboard'
-suitecut-native-control --session shop press Enter
-suitecut-native-control --session shop close`
-
-const mcpConfig = `{
-  "mcpServers": {
-    "suitecut": {
-      "command": "/absolute/install/prefix/bin/suitecut-native-control",
-      "args": ["--browser", "/usr/bin/chromium", "--mcp", "--tools", "core,network"]
-    }
-  }
-}`
-
-const cppAgent = `#include <suitecut/browser.hpp>
-#include <suitecut/simple_agent.hpp>
-
-int main() {
-  suitecut::LaunchOptions options;
-  options.executable = "/usr/bin/firefox";
-  auto browser = suitecut::Browser::launch_firefox(options);
-  browser.main_page().navigate("https://www.ebay.com/");
-
-  suitecut::AgentDriver driver(browser);
-  suitecut::SimpleAgent agent(driver);
-  auto seen = agent.call("observe", {});
-  auto ready = agent.call("wait", {{"text", "Search for anything"}, {"timeoutMs", 5000}});
-  browser.close();
-}`
+// The sample is an 833-line AppKit app; its opening comment says what it does.
+const embedHeader = embedSampleSource.slice(0, embedSampleSource.indexOf('#import'))
 ---
 
 <BaseLayout
   title="Examples · suitecut"
-  description="Record, render, stream and drive browsers with suitecut: complete examples from the repository."
+  description="Complete C++, C and command-line examples from native/client/examples: drive a page, record it, call the C ABI, run an MCP server and embed a tab in a Mac app."
   current="examples"
 >
   <article class="page prose">
     <h1>Examples</h1>
     <p>
-      Every video here was recorded by suitecut, on a live public site, from the script printed
-      under it. Nothing was edited afterwards except to make web-sized copies. The runs only browse
-      and search: no sign-in, no cart and no checkout.
+      Each program here is printed whole from <code>native/client/examples</code> in the repository, and
+      each builds into an executable of the same name. They take the browser's path as an argument and
+      use only the public headers in <code>native/client/include/suitecut</code>.
     </p>
     <ul class="dp-rows">
       {
@@ -97,139 +60,87 @@ int main() {
         ))
       }
     </ul>
+    <CodeBlock code={build} label="Terminal" lang="bash" />
 
-    <h2 id="agent-window">An agent shops in a window you can see</h2>
+    <h2 id="form">Fill a form from C++</h2>
     <p>
-      The <a href={sitePath('/docs/shared-browser')}>shared browser</a> opens a real window, and an agent
-      drives it through the MCP server while you watch or join in. Here the agent searches eBay, opens
-      a listing in a new tab, reads it and goes back to the results. The window records itself: the frames
-      come from Chromium's compositor, not a screen recording.
+      Launch the engine, set a page's content, fill a field by its label and click a button by its
+      role. The example checks that the click arrived as trusted input, then prints the page's
+      accessibility observation and can save a screenshot.
     </p>
-    <Clip
-      name="agent-window"
-      title="Recorded by the shared browser at 30 fps while the agent worked."
-    >
-      {' '}The dark second is the new tab before the listing painted.
-    </Clip>
-    <p>
-      The script plays the part of the MCP host, so every step is a tool call a model could make:
-      <code>browser_snapshot</code> to find the search box by its name, <code>browser_type</code>,
-      <code>browser_click</code> on the listing's ref, and the two recording tools around it all.
-    </p>
-    <CodeBlock code={agentSource} label="examples/shared-browser/agent.ts" />
+    <CodeBlock code={runAgent} label="Terminal" lang="bash" />
+    <CodeBlock code={agentSource} label="native/client/examples/agent.cpp" lang="cpp" />
 
-    <h2 id="narrated">A narrated shopping tour</h2>
+    <h2 id="chrome">Drive the Chrome you already have</h2>
     <p>
-      The <code>suitecut</code> package records a script in its own headless Chromium and turns it into
-      a finished video: the cursor, the typing, the highlights, the zoom and the voice are all steps in
-      the script. Play it with sound.
+      The same facade launches an installed Chrome or Chromium over a private pipe, without the
+      engine. <code>Browser::launch_firefox</code> does the same for Firefox.
     </p>
-    <Clip name="ebay" title="eBay, recorded and narrated by suitecut." sound />
-    <CodeBlock code={ebaySource} label="examples/real-sites/ebay.ts" />
+    <CodeBlock code={runChromium} label="Terminal" lang="bash" />
+    <CodeBlock code={chromiumSource} label="native/client/examples/chromium.cpp" lang="cpp" />
 
-    <h2 id="headless-video">A Playwright-style run with video</h2>
+    <h2 id="c">Send one engine command from C</h2>
     <p>
-      <a href={sitePath('/docs/browser-control')}>Browser control</a> is the familiar API: locators, roles,
-      real keyboard input, history. Turn on <code>recordVideo</code> for a context, as in Playwright,
-      and every page in it is filmed while it runs headless.
+      A plain C program against <code>suitecut/client.h</code>. It launches the engine, sends any
+      engine command object and prints the reply packet. Any language that can call C can do the
+      same.
     </p>
-    <Clip name="browser-control" title="The context's own video, from the script below." />
-    <CodeBlock code={browserControlSource} label="examples/browser-control/record-video.ts" />
+    <CodeBlock code={runRaw} label="Terminal" lang="bash" />
+    <CodeBlock code={rawSource} label="native/client/examples/raw.c" lang="cpp" />
 
-    <h2 id="phone">Watch and take over from your phone</h2>
+    <h2 id="record">Record a page with its sound</h2>
     <p>
-      Every headless browser can stream itself. <code>createBrowserViewer</code> serves a live view of
-      the engine's own frames from your machine, with no extension, relay or cloud service. Pass
-      <code>network: true</code> and the printed link opens on a phone, a tablet or another computer on
-      the same network. Tap <b>Take control</b> and the agent pauses; tap <b>Resume AI</b> and it carries
-      on from wherever you left the page.
+      The recorder in the runtime archive. With the engine it sends the <code>recording</code> command
+      and writes WebM, or hardware H.264 MP4 on macOS, with optional page audio. With
+      <code>--backend chromium</code> it records a silent MP4 or WebM from an installed Chromium.
+      <a href={sitePath('/docs/recording')}>Recording and streaming</a> explains the options.
     </p>
-    <Clip
-      name="phone-viewer"
-      title="A phone takes over an agent's eBay search, then hands it back."
-      portrait
-    >
-      {' '}With <code>resolutionMode: 'auto'</code> the page resizes to fit the screen in control, so
-      eBay switches to its phone layout. Recorded by suitecut at phone size.
-    </Clip>
-    <p>
-      The link carries its own key, and requests without it are refused. It is plain HTTP, so share
-      it on networks you trust; leave <code>network</code> off and the viewer stays on this machine. For
-      an audience rather than a co-pilot, <a href="#publish">publish the same browser</a> to RTMP instead.
-    </p>
-    <CodeBlock code={liveViewerSource} label="examples/browser-control/live-viewer.ts" />
+    <CodeBlock code={snippets.recordCode} label="Terminal" lang="bash" />
+    <CodeBlock code={recordSource} label="native/client/examples/record.cpp" lang="cpp" />
 
-    <h2 id="frame-rates">One recording, any frame rate</h2>
+    <h2 id="reads">Keep several reads in flight</h2>
     <p>
-      Capture once at a high frame rate such as 120 a second, then render as many times as you like
-      at any rate, including 29.97 and 59.94. Lower rates keep the newest real frame for each tick;
-      higher ones never invent motion that wasn't painted.
+      The transport under the facade accepts more than one request at a time. This example keeps a
+      window of evaluations submitted, prints each result in order, and cancels what is still
+      pending if one fails.
     </p>
-    <Clip
-      name="frame-rates"
-      title="Two renders of one 120 fps recording of Apple's store, side by side."
-    >
-      {' '}24 fps on the left, 60 on the right: watch the scroll.
-    </Clip>
-    <CodeBlock code={frameRatesSource} label="examples/engine/frame-rates.ts" />
+    <CodeBlock code={runReads} label="Terminal" lang="bash" />
+    <CodeBlock code={readWindowSource} label="native/client/examples/read_window.cpp" lang="cpp" />
 
-    <h2 id="page-sound">A page's own sound</h2>
+    <h2 id="cli">A session from the shell, or MCP</h2>
     <p>
-      Real clicks on Chrome Music Lab's Song Maker. The tune in the video is the page's own Web
-      Audio, captured from the renderer and mixed under the narration. Play it with sound.
+      <code>suitecut-native-control</code> keeps a named browser session alive between commands. Each
+      observation returns short refs that the next command can use.
     </p>
-    <Clip name="song-maker" title="Song Maker, recorded with its sound." sound />
-    <CodeBlock code={songMakerSource} label="examples/real-sites/song-maker.ts" />
-
-    <h2 id="song-maker">A real app at 1080p60</h2>
+    <CodeBlock
+      code={`${snippets.controlStart}\n${snippets.cliCode}`}
+      label="Terminal"
+      lang="bash"
+    />
+    <p>The same executable is a stdio MCP server:</p>
+    <CodeBlock code={snippets.mcpConfig} label="MCP config" lang="json" />
     <p>
-      The
-      <a href="https://github.com/skyaara/suitecut/blob/main/examples/song-maker/README.md"
-        >Song Maker example</a
-      > drives Chrome Music Lab's Song Maker with real pointer input: it composes a melody, changes the
-      tempo, switches instruments and plays it back. It records the app and its Web Audio, then renders
-      and verifies a 1920 × 1080, 60 fps MP4.
+      <a href={sitePath('/docs/agents')}>Agents and MCP</a> covers tool groups, backends and the
+      <code>SimpleAgent</code> class.
     </p>
+
+    <h2 id="embed">Show a tab in a Mac app</h2>
     <p>
-      It installs <code>@suitecut/browser-control</code> and <code>suitecut</code> from freshly packed
-      tarballs into a separate project, the way a real consumer would.
+      The embed sample is a small AppKit app built with the client on macOS. It uses only
+      <code>suitecut/embed.h</code> and draws the engine's IOSurface frames in a layer.
+      <a href={sitePath('/docs/embedding')}>Embedding</a> walks through the API.
     </p>
-    <CodeBlock label="Terminal" code={songMaker} />
-
-    <h2 id="record-and-render">The smallest recording</h2>
+    <CodeBlock code={runEmbed} label="Terminal" lang="bash" />
+    <CodeBlock
+      code={embedHeader.trim()}
+      label="native/client/examples/embed-macos/main.mm"
+      lang="cpp"
+    />
     <p>
-      A narrated page with its audio, rendered to a video. This is <code>examples/native.ts</code>;
-      run it with <code>pnpm example:native</code>.
+      <a
+        href="https://github.com/skyaara/suitecut/blob/main/native/client/examples/embed-macos/main.mm"
+        >The full source</a
+      > is on GitHub.
     </p>
-    <CodeBlock code={nativeSource} />
-
-    <h2 id="publish">Publish a source</h2>
-    <p>
-      Stream a page to RTMP or RTMPS. Your app owns the browser and the stop signal; keep stream
-      keys in environment variables.
-    </p>
-    <CodeBlock code={streamExample} />
-
-    <h2 id="installed-browser">Drive an installed browser</h2>
-    <p>
-      <code>@suitecut/browser-control</code> without the embedded engine, against the Chrome you already
-      have.
-    </p>
-    <CodeBlock code={installedBrowser} />
-
-    <h2 id="cli-agent">Command-line agent session</h2>
-    <p>A persistent session that any script or agent can drive one command at a time.</p>
-    <CodeBlock label="Terminal" code={cliAgent} />
-
-    <h2 id="mcp">MCP client</h2>
-    <p>
-      Add suitecut to any MCP client as a stdio server. See
-      <a href={sitePath('/docs/agents')}>Agents and MCP</a> for tool groups and backends.
-    </p>
-    <CodeBlock code={mcpConfig} label="MCP config" lang="json" />
-
-    <h2 id="cpp-agent">C++ agent with Firefox</h2>
-    <p>The native SDK's simple agent, driving an installed Firefox over WebDriver BiDi.</p>
-    <CodeBlock code={cppAgent} label="C++" lang="cpp" />
   </article>
 </BaseLayout>

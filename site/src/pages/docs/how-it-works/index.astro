@@ -1,11 +1,12 @@
 ---
-import Clip from '../../../components/Clip.astro'
 import ClockDoodle from '../../../components/ClockDoodle.astro'
 import CodeBlock from '../../../components/CodeBlock.astro'
 import Explainer from '../../../components/Explainer.astro'
 import { diagrams } from '../../../data/diagrams.js'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { sitePath } from '../../../lib/paths.js'
+
+const repo = 'https://github.com/skyaara/suitecut/blob/main'
 
 type Row = readonly [string, string]
 
@@ -19,14 +20,6 @@ const engineRows: Row[] = [
   ['Not used', 'No screenshot loop, no browser extension and no open debugging port'],
 ]
 
-const steps = `await suitecut.type(search, 'mechanical keyboard')
-await page.keyboard.press('Enter')
-await suitecut.highlight(page.locator('h1').first(), { label: 'results' })
-await suitecut.narrate('Real typing and a real search. Now open a listing.')
-await suitecut.hover(listing)
-await suitecut.zoom(page.locator('.ux-image-carousel-item img').first(), { scale: 1.25, holdMs: 1400 })
-await suitecut.highlight(price, { label: 'price' })`
-
 const clockRows: Row[] = [
   ['Moving page', 'A 60 fps animation recorded at 60 fps: 241 frames, all 241 new'],
   ['Lower rate', 'The same page at 30 fps: 121 frames; every other paint skipped before copying'],
@@ -34,14 +27,7 @@ const clockRows: Row[] = [
   ['Never invented', 'No blending or interpolation; a held frame is counted as held'],
 ]
 
-const record = `const recording = await browser.startRecording({
-  path: 'session.mp4',
-  fps: 30,
-  audio: true,
-})
-// ... you and the agent use the window ...
-const result = await recording.stop()
-// { durationMs, outputFrames, heldFrames, outputBytes, ... }`
+const record = `{"id":3,"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page","width":0,"height":0,"audio":false,"ffmpegPath":"ffmpeg"}`
 
 const benchmark: readonly (readonly string[])[] = [
   ['Chrome screencast, JPEG, 2x', '54–58', '32–40 ms', '11.7–12.7 s'],
@@ -52,21 +38,21 @@ const benchmark: readonly (readonly string[])[] = [
 
 <DocsLayout
   title="How it works"
-  description="The moving parts of suitecut, from the paint callback to the finished MP4, shown with real recordings."
+  description="The moving parts of suitecut, from the paint callback to a recording, a live stream or an app's view."
   section="how-it-works"
 >
   <h1>How it works</h1>
   <p>
-    suitecut is a handful of parts that hand each other frames and sound. This page follows a frame
-    from the moment Chromium paints it to the moment it lands in a video or a live stream. Every
-    clip on this page is a real recording made by the part it describes.
+    suitecut is a handful of native parts that hand each other frames and sound. This page follows a
+    frame from the moment Chromium paints it to the moment it lands in a video, a live stream or an
+    app's view.
   </p>
 
   <h2 id="engine">The engine</h2>
   <p>
     At the centre is Chromium, embedded through CEF. Your program starts it and talks to it over a
-    small binary protocol. Nothing reaches in from outside, so there is no debugging port and no
-    extension to install.
+    pipe: one JSON command per line on stdin, length-prefixed binary packets back on stdout. Nothing
+    reaches in from outside, so there is no debugging port and no extension to install.
   </p>
   <Explainer explained={diagrams.engine} />
   <p>
@@ -83,18 +69,6 @@ const benchmark: readonly (readonly string[])[] = [
       ))
     }
   </ul>
-
-  <h2 id="steps">Steps become video</h2>
-  <p>
-    A recording is a script. The cursor, highlights, zooms and captions are steps in it, drawn into
-    the page while it records, so nothing is edited afterwards.
-  </p>
-  <Clip name="ebay" title="Live eBay, recorded and narrated from the script below." sound />
-  <CodeBlock code={steps} label="examples/real-sites/ebay.ts" />
-  <p>
-    A click is real browser input, not a script calling <code>element.click()</code>. The cursor you
-    see is drawn by suitecut and moves on the same clock as the page.
-  </p>
 
   <h2 id="clock">One clock</h2>
   <p>
@@ -129,31 +103,14 @@ const benchmark: readonly (readonly string[])[] = [
     publishers.
   </p>
 
-  <h2 id="render">Rendering and narration</h2>
-  <p>
-    Recording writes source clips and a manifest. Rendering is a separate step that picks the
-    intervals to keep, lays narration over them and mixes it with the page's own sound. Narration
-    comes from Kokoro running locally, so no text leaves your machine.
-  </p>
-  <Explainer explained={diagrams.recordAndRender} />
-  <Clip name="song-maker" title="Chrome Music Lab’s Song Maker. Play it with sound." sound>
-    {' '}The tune is the page’s own audio, mixed under the narration.
-  </Clip>
-
   <h2 id="window">Recording a window</h2>
   <p>
-    The <a href={sitePath('/docs/shared-browser')}>shared browser</a> is an ordinary window that a person
-    uses, so Chromium draws it on screen, not into memory. CEF has no frame callback for a window, so
-    suitecut takes the frames macOS is about to show.
+    The <a href={`${repo}/docs/shared-browser.md`}>shared-browser prototype</a> is an ordinary window
+    with its own tab strip, so Chromium draws it on screen, not into memory. CEF has no frame callback
+    for a window, so the engine hooks the window's layer and takes each IOSurface as the layer receives
+    it. The prototype's control protocol starts a recording with one line:
   </p>
-  <Explainer explained={diagrams.windowFrames} />
-  <CodeBlock code={record} />
-  <Clip
-    name="agent-window"
-    title="The shared browser recording itself while an agent works across eBay tabs."
-  >
-    {' '}The crop follows whichever tab is in front.
-  </Clip>
+  <CodeBlock code={record} label="JSON" lang="json" />
   <p>
     How it compares with the usual way to film Chrome, the DevTools screencast. On the same M4 Mac,
     the same 2x window and a page that redraws every frame for 5 seconds:
@@ -190,15 +147,10 @@ const benchmark: readonly (readonly string[])[] = [
 
   <h2 id="window-sound">Sound from a window</h2>
   <p>
-    With <code>audio: true</code>, CEF hands over the front tab's sound. CEF silences a page while
+    With <code>"audio": true</code>, CEF hands over the front tab's sound. CEF silences a page while
     it captures it, so suitecut only asks for the sound while such a recording runs, and plays it
     back to the speakers itself. The person using the window hears the page as usual.
   </p>
-  <Clip
-    name="shared-song-maker"
-    title="Song Maker in the shared browser, recorded with its sound. Play it with sound."
-    sound
-  />
   <p>
     The sound's timestamps are moved onto the frame clock. On a test page that flashed and beeped
     together, the beep landed 14 to 19 ms after the flash in the file, well under one frame at 30
@@ -207,21 +159,26 @@ const benchmark: readonly (readonly string[])[] = [
 
   <h2 id="drive">Driving it</h2>
   <p>
-    The TypeScript SDK, the C++ library, the command line and both MCP servers all talk to the same
-    native driver. A script, a model and a person can take turns on one page, with the same cookies
-    and storage.
+    The C++ SDK, the C ABI and <code>suitecut-native-control</code> all go through one native library,
+    <code>SuiteCut::Client</code>. The same library also drives an installed Chrome or Firefox,
+    without the engine's recording.
+  </p>
+  <Explainer explained={diagrams.nativeClient} />
+  <p>
+    In the macOS embed kit, an app opens a session, shows tabs in its own views and lets an agent
+    work in the same tabs. Each tab is controlled by one side at a time.
   </p>
   <Explainer explained={diagrams.together} />
 
   <h2 id="live">Going live</h2>
   <p>
-    A live stream is the recording pipeline with a publisher at the end. A person can watch a run in
-    the live viewer and take control once the agent's current action finishes, then hand it back.
+    A live stream is the recording pipeline with a publisher at the end: FFmpeg sends the page, with
+    its sound, to an RTMP, RTMPS or TCP destination.
   </p>
   <Explainer explained={diagrams.streaming} />
   <p>
-    Next: <a href={sitePath('/docs/extending')}>extending suitecut</a> covers where you can plug your
-    own code into each of these parts.
+    Next: <a href={sitePath('/docs/recording')}>recording and streaming</a> has the commands and their
+    options.
   </p>
 </DocsLayout>
 

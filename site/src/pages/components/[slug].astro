@@ -1,42 +1,41 @@
 ---
 import CodeBlock from '../../components/CodeBlock.astro'
+import ComponentRows from '../../components/ComponentRows.astro'
 import Doodle from '../../components/Doodle.astro'
-import Film from '../../components/Film.astro'
-import PackageRows from '../../components/PackageRows.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { packages, type Package } from '../../data/packages.js'
+import { components, type Component, type Language } from '../../data/components.js'
 import { sitePath } from '../../lib/paths.js'
 
 export function getStaticPaths() {
-  return packages.map((item) => ({ params: { slug: item.slug }, props: { item } }))
+  return components.map((item) => ({ params: { slug: item.slug }, props: { item } }))
 }
 
 interface Props {
-  item: Package
+  item: Component
 }
 
 const { item }: Props = Astro.props
-const languages = {
-  ts: { label: 'TypeScript', lang: 'typescript' },
-  json: { label: 'MCP config', lang: 'json' },
-  cpp: { label: 'C++', lang: 'cpp' },
-  sh: { label: 'Terminal', lang: 'bash' },
-} as const
+const languages: Record<Language, { label: string; lang: 'cpp' | 'json' | 'bash' | 'plaintext' }> =
+  {
+    cpp: { label: 'C++', lang: 'cpp' },
+    c: { label: 'C', lang: 'cpp' },
+    json: { label: 'JSON', lang: 'json' },
+    sh: { label: 'Terminal', lang: 'bash' },
+    cmake: { label: 'CMake', lang: 'plaintext' },
+  }
 const external = (href: string) => href.startsWith('http')
-const index = packages.indexOf(item)
-const next = packages[(index + 1) % packages.length]
+const index = components.indexOf(item)
+const next = components[(index + 1) % components.length]
 ---
 
-<BaseLayout title={`${item.name} · suitecut`} description={`${item.line}.`} current="packages">
-  <article class="prose package">
+<BaseLayout title={`${item.name} · suitecut`} description={`${item.line}.`} current="components">
+  <article class="prose component">
     <h1>{item.name}</h1>
-    <p class="package-line">{item.line}.</p>
-    <p class="package-kind">
+    <p class="component-line">{item.line}.</p>
+    <p class="component-kind">
       <span class="dp-badge dp-badge-neutral">{item.kind}</span>
       <span class="dp-badge dp-badge-neutral">{item.status}</span>
     </p>
-
-    <Film slug={item.slug} title={`${item.name}, explained`} />
 
     <h2 id="how">How it works</h2>
     {
@@ -50,14 +49,15 @@ const next = packages[(index + 1) % packages.length]
         ),
       )
     }
-    <Doodle doodle={item.doodle} class="package-doodle" />
+    <Doodle doodle={item.doodle} class="component-doodle" />
     <p class="doodle-caption">{item.doodle.title}</p>
 
     <h2 id="start">Quick start</h2>
+    <h3>{item.start.title}</h3>
     <CodeBlock
-      code={item.install}
-      label={item.slug === 'native-sdk' ? 'CMake' : 'Terminal'}
-      lang={item.slug === 'native-sdk' ? 'plaintext' : 'bash'}
+      code={item.start.code}
+      label={languages[item.start.language].label}
+      lang={languages[item.start.language].lang}
     />
     {
       item.examples.map((example) => (
@@ -65,8 +65,8 @@ const next = packages[(index + 1) % packages.length]
           <h3>{example.title}</h3>
           <CodeBlock
             code={example.code}
-            label={languages[example.language as keyof typeof languages].label}
-            lang={languages[example.language as keyof typeof languages].lang}
+            label={languages[example.language].label}
+            lang={languages[example.language].lang}
           />
         </>
       ))
@@ -108,12 +108,12 @@ const next = packages[(index + 1) % packages.length]
       }
     </ul>
 
-    <h2 id="others">Other packages</h2>
-    <PackageRows except={item.slug} />
+    <h2 id="others">Other components</h2>
+    <ComponentRows except={item.slug} />
     {
       next && (
         <p>
-          <a class="tag" href={sitePath(`/packages/${next.slug}`)}>
+          <a class="tag" href={sitePath(`/components/${next.slug}`)}>
             Next: {next.name}
           </a>
         </p>
@@ -123,21 +123,21 @@ const next = packages[(index + 1) % packages.length]
 </BaseLayout>
 
 <style>
-  .package {
+  .component {
     padding-top: var(--space-18);
   }
 
-  .package h1 {
+  .component h1 {
     max-width: none;
     margin-bottom: var(--space-5);
     overflow-wrap: anywhere;
   }
 
-  .package-line {
+  .component-line {
     max-width: 32rem;
   }
 
-  .package-kind {
+  .component-kind {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
@@ -146,7 +146,7 @@ const next = packages[(index + 1) % packages.length]
   }
 
   /* Diagrams take the card's full width so their labels stay readable. */
-  .package :global(.package-doodle) {
+  .component :global(.component-doodle) {
     margin: var(--space-8) calc(var(--space-6) - var(--gutter)) var(--space-3);
   }
 

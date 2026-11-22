@@ -5,78 +5,18 @@ import { sitePath } from '../lib/paths.js'
 interface Props {
   title: string
   description: string
-  section:
-    | 'overview'
-    | 'how-it-works'
-    | 'extending'
-    | 'api'
-    | 'browser-control'
-    | 'shared-browser'
-    | 'agents'
-    | 'kokoro'
-    | 'audio-plugins'
-    | 'streaming'
-    | 'performance'
+  section: 'overview' | 'how-it-works' | 'agents' | 'recording' | 'embedding' | 'performance'
 }
 
 const { title, description, section } = Astro.props
 
 const categories = [
-  {
-    key: 'overview',
-    label: 'Getting started',
-    href: '/docs',
-  },
-  {
-    key: 'how-it-works',
-    label: 'How it works',
-    href: '/docs/how-it-works',
-  },
-  {
-    key: 'extending',
-    label: 'Extending suitecut',
-    href: '/docs/extending',
-  },
-  {
-    key: 'api',
-    label: 'API and CLI',
-    href: '/docs/api',
-  },
-  {
-    key: 'browser-control',
-    label: 'Browser control',
-    href: '/docs/browser-control',
-  },
-  {
-    key: 'shared-browser',
-    label: 'Shared browser',
-    href: '/docs/shared-browser',
-  },
-  {
-    key: 'agents',
-    label: 'Agents and MCP',
-    href: '/docs/agents',
-  },
-  {
-    key: 'streaming',
-    label: 'Live streaming',
-    href: '/docs/streaming',
-  },
-  {
-    key: 'performance',
-    label: 'Performance',
-    href: '/docs/performance',
-  },
-  {
-    key: 'kokoro',
-    label: 'Kokoro speech',
-    href: '/docs/kokoro',
-  },
-  {
-    key: 'audio-plugins',
-    label: 'Audio plugins',
-    href: '/docs/audio-plugins',
-  },
+  { key: 'overview', label: 'Getting started', href: '/docs' },
+  { key: 'how-it-works', label: 'How it works', href: '/docs/how-it-works' },
+  { key: 'agents', label: 'Agents and MCP', href: '/docs/agents' },
+  { key: 'recording', label: 'Recording and streaming', href: '/docs/recording' },
+  { key: 'embedding', label: 'Embedding', href: '/docs/embedding' },
+  { key: 'performance', label: 'Performance', href: '/docs/performance' },
 ] as const
 
 const content = await Astro.slots.render('default')
