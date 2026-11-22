@@ -12,6 +12,8 @@ import stat
 import subprocess
 import tarfile
 
+import suitecut_version
+
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -80,7 +82,7 @@ def main():
     if any(output.is_relative_to(p) or p.is_relative_to(output) for p in inputs):
         raise ValueError('Input and output directories must be disjoint')
     output.mkdir(parents=True, exist_ok=False)
-    version = '0.1.0'
+    version = suitecut_version.version()
     name = f'SuiteCutRuntime-{version}-linux-x86_64'
     stage = output / name
     copy_tree(args.sdk, stage)

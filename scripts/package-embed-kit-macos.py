@@ -53,6 +53,7 @@ import tarfile
 import tempfile
 import urllib.request
 
+import suitecut_version
 from native_macos_signing import resolve_identity
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -316,7 +317,7 @@ def package(args):
         'formatVersion': 1,
         'name': 'suitecut-embed-kit',
         'platform': 'macos', 'architecture': 'arm64',
-        'suitecutVersion': json.loads((ROOT / 'package.json').read_text())['version'],
+        'suitecutVersion': suitecut_version.version(),
         'sessionVersion': described.get('version'),
         'protocols': described.get('protocols', {}),
         'minimumMacOS': MINIMUM,

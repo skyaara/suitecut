@@ -1,6 +1,45 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 (native) — unreleased
+
+The first native-only release of suitecut, for **macOS arm64 (Apple Silicon,
+macOS 14 or later)**. It ships:
+
+- `suitecut-browser`, the CEF 156.0.30 engine (Chromium 156.0.8078.96), as a
+  signed app bundle;
+- the C++20 client SDK and C ABI (`SC_ABI_VERSION` 1), with CMake package
+  exports;
+- `suitecut-native-control`, the browser-control CLI and MCP server for agents;
+- the full runtime archive (SDK, CLI and engine together) and the signed embed
+  kit (`suitecut-session`, `SC_EMBED_ABI_VERSION` 1).
+
+Versioning restarts at 0.1.0 for the native line; 2.x was the Node.js package,
+which now lives only on the `archive/node` branch. The version is set in one
+place, the client's `project()` line in `native/client/CMakeLists.txt`, and the
+engine bundle, `suitecut-session`, archives and `kit.json` read it from there.
+
+Not in this release: Linux x64 and Windows builds are not qualified (Linux
+builds from source but was not tested for 0.1.0; Windows runtime packaging
+does not exist), and codec playback acceptance and folder upload have no
+native checks yet (their old checks were Node only).
+
+- Fix `get url`, `get title` and `read` failing right after an input that
+  navigates. They ran in the document being replaced and failed with "Cannot
+  find context with specified id"; they now read again in the new document
+  within the page's timeout. These reads have no side effects; `evaluate` is
+  unchanged. A benchmark run that stopped for 90 s on this error was reading
+  replies wrongly: the CLI prints JSON keys sorted, so a failed reply starts
+  `{"error":`, not `{"ok":`.
+- Read the engine bundle's and the packagers' version from the client project
+  instead of `package.json`, which no longer has one.
+
+### Changes since 2.0.0
+
+These landed on the development line between 2.0.0 and the move to native.
+Entries that name Node.js APIs (`ariaSnapshot()`, `locator.*`,
+`createBrowserViewer`, the Kokoro narration and the npm packages) describe code
+that is now only on `archive/node`; the engine and C++ work they describe ships
+in 0.1.0.
 
 - suitecut is native only. The Node.js product is removed from this line and
   kept on the `archive/node` branch, which is not developed further: the
@@ -17,11 +56,6 @@
   macOS 14 kit folder with the engine and the `suitecut-session` service,
   IOSurface view sharing, person-answered permission, HTTP auth and file
   prompts, and download waits.
-- Fix multipart uploads from a `ReadStream` on descriptor 0 under Node 26.
-  Node 26 closes descriptor 0 itself, which earlier versions skipped, so it
-  could close a file the caller had reopened there. suitecut now takes the
-  descriptor from the stream before Node's close and closes it only after
-  checking it is still the stream's file, on every Node version.
 - Pin CEF 156.0.30 (Chromium 156.0.8078.96, stable) instead of the 156.0.7
   beta. Linux x64 uses CEF's official minimal archive. macOS arm64 uses
   OpenArch's third-party build of the same tag with proprietary codecs, so

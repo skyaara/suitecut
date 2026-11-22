@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tarfile
 
+import suitecut_version
 from native_macos_signing import resolve_identity, sign, sign_app, signature
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -152,7 +153,7 @@ def main():
     identity = resolve_identity(args.signing_identity)
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    name = ('SuiteCutRuntime' if args.kind == 'runtime' else 'SuiteCutClient') + '-0.1.0-macos-arm64'
+    name = ('SuiteCutRuntime' if args.kind == 'runtime' else 'SuiteCutClient') + f'-{suitecut_version.version()}-macos-arm64'
     if args.kind != 'runtime':
         name += '-' + args.kind
     stage = output / name

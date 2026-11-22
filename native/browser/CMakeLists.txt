@@ -276,13 +276,15 @@ if(APPLE)
   set(suitecut_icon "${CMAKE_CURRENT_SOURCE_DIR}/resources/SuiteCut.icns" "${CMAKE_CURRENT_SOURCE_DIR}/resources/Assets.car")
   target_sources(suitecut-browser PRIVATE ${suitecut_icon})
   set_source_files_properties(${suitecut_icon} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-  # The app reports the SDK's version in Finder and About.
-  set(suitecut_version "1.0")
-  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../package.json")
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../../package.json" suitecut_package)
-    string(JSON suitecut_version GET "${suitecut_package}" version)
-    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../../package.json")
+  # The app reports suitecut's version in Finder and About. The client's
+  # project() line is the one place it is set.
+  set(suitecut_client_lists "${CMAKE_CURRENT_SOURCE_DIR}/../client/CMakeLists.txt")
+  file(STRINGS "${suitecut_client_lists}" suitecut_project_line REGEX "^project\\(SuiteCutClient VERSION ")
+  if(NOT suitecut_project_line MATCHES "VERSION ([0-9]+\\.[0-9]+\\.[0-9]+)")
+    message(FATAL_ERROR "Cannot read suitecut's version from ${suitecut_client_lists}")
   endif()
+  set(suitecut_version "${CMAKE_MATCH_1}")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${suitecut_client_lists}")
   set_target_properties(suitecut-browser PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in" MACOSX_BUNDLE_BUNDLE_NAME "SuiteCut" MACOSX_BUNDLE_ICON_FILE "SuiteCut"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${suitecut_version}" MACOSX_BUNDLE_BUNDLE_VERSION "${suitecut_version}")
   SET_EXECUTABLE_TARGET_PROPERTIES(suitecut-browser)
