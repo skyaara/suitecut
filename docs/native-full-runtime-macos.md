@@ -8,7 +8,7 @@ non-system dynamic-library dependency closure. Application dylibs live directly
 in `Contents/Frameworks`, including their transitive dependencies; custom
 subdirectories can fail during macOS code-signing clone launches. See
 [Apple's code-signing layout guidance](https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html). Runtime paths are relative to
-the installation. Node.js and a system FFmpeg installation are not required.
+the installation. A system FFmpeg installation is not required.
 
 Local builds and packages share one signing policy in
 `~/Library/Application Support/SuiteCut/macos-signing.json`, with optional
@@ -293,7 +293,7 @@ clock control, and offscreen out-of-process-frame full-page capture remain
 outside this runtime's advertised capabilities. Embedded native streaming uses bounded FFmpeg subprocesses on Linux and macOS.
 The macOS regression verifies actual publisher startup and physical child
 retirement after renderer failure; it does not qualify every live destination. Firefox needs a separately supplied browser and separate
-macOS validation. The full Node narration/editing workflow is not bundled.
+macOS validation.
 
 Retain the bundled dependency notices and exact media provenance. GPL-enabled
 FFmpeg builds need complete corresponding source and applicable notices before

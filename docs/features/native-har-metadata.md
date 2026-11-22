@@ -12,13 +12,16 @@ matched response metadata confirms an authoritative header observation is
 ready and all observed content codings are empty or `identity`. The private
 native `_nativeHeadersObserved` flag distinguishes genuine Chromium headers
 from an empty dictionary supplied by a missing-metadata DTO default. A genuine
-response ExtraInfo receipt can establish that provenance later. The
-SDK response schema strips this internal key.
+response ExtraInfo receipt can establish that provenance later. The flag is
+internal to the engine's projection, not a HAR field.
 
 Compressed, unread, failed and header-unknown bodies keep compression unknown.
 The projection does not use a response's transfer total as payload length or
 subtract estimated headers. Encoded `response.bodySize` remains unknown without
 a genuine byte observation; zero identity compression does not supply one.
+
+The baseline runs below are historical. They ran through the Node SDK, which
+has since been removed, so "SDK" in them names that package.
 
 The ten original HAR locations selected for the historical ca7 baseline were
 run unchanged on sealed native `b074f3e2`: five passed and five failed, without

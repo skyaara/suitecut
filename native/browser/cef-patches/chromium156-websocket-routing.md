@@ -104,7 +104,7 @@ The production `NativePage.webSocketRouting` adapter now probes this exact
 revision (2) before enabling root-target control. It preserves page-local routing
 generations and exact socket/message identities, queued event ownership and
 original deadlines. See
-[`docs/features/native-websocket-routing.md`](../../../docs/features/native-websocket-routing.md).
+`docs/features/native-websocket-routing.md` on the `archive/node` branch.
 Stock CEF rejects the probe; no source-file presence enables the feature.
 
 Page/context URL registration and callback dispatch, inherited policy for

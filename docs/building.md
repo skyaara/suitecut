@@ -1,42 +1,25 @@
 # Build requirements and local verification
 
-Choose the component you need. The JavaScript package, standalone C++ SDK and
-embedded CEF runtime have separate build and distribution boundaries. Browser
+Choose the component you need. The standalone C++ SDK and the embedded CEF
+runtime have separate build and distribution boundaries. Browser
 binaries, build directories, local signing policies and qualification reports
 are not source dependencies committed to Git.
 
 | Component                 | Requirements                                                                                                                                                                                                                                                                |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| JavaScript SDK            | Node.js 22 or newer; pnpm 11.21.0 as pinned in `package.json`                                                                                                                                                                                                               |
 | Standalone C/C++ SDK      | CMake 3.20 or newer; C++20 compiler and C toolchain; threads, OpenSSL and ZLIB development libraries                                                                                                                                                                        |
 | Embedded CEF runtime      | CMake 3.21 or newer; C++20 toolchain; Ninja for the commands below; exact platform CEF SDK matching `native/browser/cef-build.json`; libyuv source pinned in the browser build guide; curl 7.88 or newer, OpenSSL 3 or newer, libpsl, ZLIB and Brotli development libraries |
 | macOS runtime             | Apple Silicon build uses the matching ARM64 CEF SDK, Apple Clang with Objective-C++, and Apple frameworks including Metal, IOSurface and VideoToolbox; Python 3 for signing                                                                                                 |
-| Full CEF regression suite | Python 3.11 or newer, Node.js 22 or newer, OpenSSL CLI, built JavaScript SDK, actual CEF app, five built C++ workflows, FFmpeg and FFprobe                                                                                                                                  |
+| macOS embed kit           | The macOS runtime requirements, plus static curl, OpenSSL, libpsl and brotli built for macOS 14 by `scripts/build-embed-kit-deps-macos.py`; see [the embed kit](embedding/embed-kit-macos.md)                                                                    |
+| CEF regression suite      | Python 3.11 or newer, OpenSSL CLI, an actual CEF app, the five built C++ workflows, FFmpeg and FFprobe                                                                                                                                                                      |
 
-The standalone SDK requires no CEF headers or Node.js. Browser control requires
+The standalone SDK requires no CEF headers. Browser control requires
 a separately installed supported browser. Recording requires media tools; the
-full-runtime archive bundles these. The full CEF suite needs VP9 and Opus
+full-runtime archive bundles these. The CEF suite needs VP9 and Opus
 support in its media tools. See [SDK setup](../native/client/README.md),
-[browser setup](../native/browser/README.md#build), and
-[macOS packaging](native-full-runtime-macos.md) for the exact recipes.
-
-## JavaScript SDK
-
-```sh
-pnpm install --frozen-lockfile
-pnpm build
-pnpm build:packages
-pnpm typecheck
-pnpm exec vitest run --maxWorkers=2
-```
-
-`pnpm build:packages` builds `@suitecut/browser-control` and
-`@suitecut/shared-browser`. `pnpm release:check` packs every npm package without
-publishing and checks its manifest, contents and version.
-
-Set `SUITECUT_NATIVE_EXECUTABLE` to the built browser executable when using CEF.
-On macOS this is the executable inside the complete `.app` bundle. Ordinary
-JavaScript compilation does not build or download CEF.
+[browser setup](../native/browser/README.md#build),
+[macOS packaging](native-full-runtime-macos.md) and the
+[embed kit recipe](embedding/embed-kit-macos.md#recipe) for the exact recipes.
 
 ## Standalone C++ SDK
 
@@ -58,15 +41,17 @@ LeakSanitizer availability is platform dependent.
 ## CEF runtime and regressions
 
 Follow the platform browser recipe with explicit `CEF_ROOT` and `LIBYUV_ROOT`.
+On macOS the engine is the executable inside the complete `.app` bundle.
 Use `cmake --build BUILD_DIR --target suitecut-browser --parallel 1` on a small
 Mac. Keep compiler jobs and regression workers bounded; avoid concurrent heavy
 builds while measuring capture throughput. The optional
 `SUITECUT_BROWSER_PRECOMPILED_HEADERS=OFF` switch removes the build optimization.
 
 ```sh
-pnpm test:cef:unit
-pnpm test:cef:list
-python3 tests/cef --engine /absolute/path/to/suitecut-browser --profile smoke --workers 1
+python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'
+python3 tests/cef --list
+python3 tests/cef --engine /absolute/path/to/suitecut-browser \
+  --client-build .suitecut/cef-regression-client --workers 1
 ```
 
 The [full execution guide](cef-regressions.md) lists the required C++ workflows,

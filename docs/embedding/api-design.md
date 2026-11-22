@@ -607,7 +607,8 @@ decision record's prompt rule settles. It keeps protocol 0 and the ABI:
   passes it through a new `LaunchOptions::host_events`. Other clients never
   see the new `host` packet type, so their decoders, which refuse unknown
   types, keep working. The engine's `ready` packet says `hostEvents:true`
-  only then, because the TypeScript SDK's capability schema is strict.
+  only then, because the TypeScript SDK's capability schema was strict (that
+  SDK has since been removed).
 - **1. Loading.** `OnLoadingStateChange` and `OnLoadingProgressChange`
   become `tab.loading {page, loading, progress, canGoBack, canGoForward}`.
   `tabs.stop` (host, `sc_tab_stop`) calls `StopLoad`. Like a navigation, it

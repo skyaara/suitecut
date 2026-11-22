@@ -133,6 +133,6 @@ This adapter remains private until review, combined Source checks and matching
 live wait/ignoreErrors proofs; the earlier native primitive is independently
 complete. HAR ordering, nonstring matchers and Page unrouteAll remain separate.
 
-The following RegExp/synchronous-predicate adapter is described separately in
-`native-route-url-matcher-contract.md`. It extends the same native policy book
-and physical receipt paths; its matching public browser proof remains pending.
+A RegExp/synchronous-predicate adapter for the removed Node SDK extended the
+same native policy book and physical receipt paths; its note was removed with
+that SDK, and its matching public browser proof was never run.

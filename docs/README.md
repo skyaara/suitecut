@@ -1,63 +1,53 @@
 # suitecut documentation
 
-Start with the [guide](guide.md). Component READMEs live next to their code:
+suitecut is a native product: the embedded CEF browser engine
+(`suitecut-browser`), the C++20 client SDK with its versioned C ABI, the
+`suitecut-native-control` command line and MCP server, and the macOS embed kit
+for apps. Component READMEs live next to their code:
 [native components](../native/README.md), [CEF runtime](../native/browser/README.md),
-[C/C++ client SDK](../native/client/README.md),
-[browser-control package](../packages/browser-control/README.md) and
-[shared-browser package](../packages/shared-browser/README.md).
+[C/C++ client SDK](../native/client/README.md) and its
+[architecture](../native/client/ARCHITECTURE.md).
 
 ## Guides and reference
 
-| Document                                                                  | What it covers                                                                                      |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [suitecut native guide](guide.md)                                         | Setup, recording, narration, rendering and streaming with the Node API                              |
-| [Build requirements and local verification](building.md)                  | Building the JavaScript package, C++ SDK and CEF runtime, and checking each                         |
-| [Native browser-control SDK](native-browser-sdk.md)                       | The `@suitecut/browser-control` API for the native CEF browser                                      |
-| [Live browser viewer and human handover](native-browser-viewer.md)        | The local viewer, taking control from an agent and changing the resolution                          |
-| [Shared browser: SDK and MCP](shared-browser.md)                          | `@suitecut/shared-browser` (preview): its control protocol, SDK, MCP server and bot-detection notes |
-| [Native continuous publishing](native-publishing.md)                      | RTMP/RTMPS and WebM publishing from the native browser                                              |
-| [Native tracing and coverage](native-tracing.md)                          | Trace sessions, captures and coverage recorded in C++                                               |
-| [Native full runtime](native-full-runtime.md)                             | The Linux x64 archive with the SDK, CLI, engine, CEF and FFmpeg                                     |
-| [Native macOS ARM64 runtime](native-full-runtime-macos.md)                | Building, signing and qualifying the macOS runtime                                                  |
-| [Benchmarks](benchmarks.md)                                               | Latest capture measurements and the commands that reproduce them                                    |
-| [CEF real-browser regression suite](cef-regressions.md)                   | The local suite that runs the real CEF executable                                                   |
-| [Playwright feature matching specification](playwright-feature-parity.md) | Behavior reference and feature checklist, with backend limits                                       |
+| Document                                                         | What it covers                                                                 |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [Build requirements and local verification](building.md)         | Building and checking the C++ SDK, the CEF runtime and the embed kit           |
+| [Native full runtime](native-full-runtime.md)                    | The Linux x64 archive with the SDK, CLI, engine, CEF and FFmpeg                |
+| [Native macOS ARM64 runtime](native-full-runtime-macos.md)       | Building, signing and qualifying the macOS runtime                             |
+| [Native continuous publishing](native-publishing.md)             | The engine's `streaming` command: RTMP, RTMPS and TCP publishing, reconnecting |
+| [Shared-browser prototype](shared-browser.md)                    | The engine's own-tab-strip window mode and its stdin/stdout control protocol   |
+| [CEF real-browser regression suite](cef-regressions.md)          | The local suite that runs the C++ workflows against the real CEF executable    |
+| [Benchmarks](benchmarks.md)                                      | Latest capture measurements and the commands that reproduce them               |
+
+The competitor benchmark (suitecut against agent-browser and browser-use) has
+its own [README](../benchmarks/README.md).
 
 ## Embedding
 
-SuiteCut as a browser runtime other apps embed, share with an AI agent and
+suitecut as a browser runtime other apps embed, share with an AI agent and
 control. The direction's decisions were made by delegation on 2026-11-20;
 the API design marks what is built and what is still proposed.
 
 | Document                                                             |
 | -------------------------------------------------------------------- |
-| [Direction: an embeddable browser runtime](embedding/direction.md)   |
+| [The macOS embed kit](embedding/embed-kit-macos.md)                  |
 | [Embedding API and session protocol design](embedding/api-design.md) |
+| [Direction: an embeddable browser runtime](embedding/direction.md)   |
 
 ## Feature reference
 
-Behavior of individual native browser and runner features.
+Behavior of individual engine features.
 
-| Feature                                                                                     | What it covers                                                      |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [Native API context storage](features/native-api-storage.md)                                | Origin state kept by an independent `NativeAPIRequestContext`       |
-| [Native context permissions](features/native-context-permissions.md)                        | `grantPermissions`, `clearPermissions` and the CEF permission table |
-| [Native debugger collected-script cache](features/native-debugger-script-cache.md)          | The collected-script source cache, now left to V8's own policy      |
-| [Native HAR metadata](features/native-har-metadata.md)                                      | HAR `postData` params and other recorded metadata                   |
-| [Native locator handlers](features/native-locator-handlers.md)                              | `addLocatorHandler` and `removeLocatorHandler` for overlays         |
-| [Native locator suggestions](features/native-locator-suggestions.md)                        | `locator.suggest()` and `elementHandle.suggestLocator()`            |
-| [Native directory discovery and coroutine cohorts](features/native-multi-file-discovery.md) | Test discovery from a `testDir` with `testMatch` and `testIgnore`   |
-| [Native page close and beforeunload](features/native-page-before-unload.md)                 | `page.close({ runBeforeUnload: true })` and its dialog              |
-| [Native Page and Frame form selectors](features/native-page-form-selectors.md)              | `check`, `selectOption`, `setInputFiles` and their `strict` option  |
-| [Native pointer input](features/native-pointer-input.md)                                    | Hover targeting, actionability and its options                      |
-| [Native child renderer recovery](features/native-renderer-recovery.md)                      | `page.reload()` after a child page's renderer crashes               |
-| [Native assertion-deadline receipts](features/native-soft-assertion-deadline.md)            | Telling a deadline with no observation from a mismatch              |
-| [Native soft assertion bridge](features/native-soft-assertions.md)                          | `expectNative.soft()` for locators and pages                        |
-| [Targeted native keyboard ownership](features/native-targeted-keyboard.md)                  | Locator and element `press`, `type` and `sendKeys`                  |
-| [Native callback assertions](features/native-to-pass.md)                                    | `expectNative(callback).toPass()`                                   |
-| [Native WebSocket transport control](features/native-websocket-routing.md)                  | `webSocketRouting` on a custom CEF build                            |
-| [Original-widget mouse control](features/native-widget-mouse.md)                            | The isolated Chromium mouse-lease extension                         |
-| [Native BackForwardCache launch policy](features/native-worker-cache-policy.md)             | The `backForwardCache: false` launch option                         |
+| Feature                                                                            | What it covers                                                                  |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [Native context permissions](features/native-context-permissions.md)               | `Context::grant_permissions`, `clear_permissions` and the CEF permission table  |
+| [Native debugger collected-script cache](features/native-debugger-script-cache.md) | The collected-script source cache, now left to V8's own policy                  |
+| [Native HAR metadata](features/native-har-metadata.md)                             | HAR `postData` params, compression, cookies and other recorded metadata         |
+
+Notes on the engine's patches to CEF and Chromium (WebSocket routing,
+original-widget input receipts and others) are in
+[`native/browser/cef-patches`](../native/browser/cef-patches/README.md).
 
 ## Internals
 

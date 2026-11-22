@@ -105,10 +105,10 @@ The C ABI (`native/client/include/suitecut/client.h`) and the C++ API on top.
 One process per session. It owns the engine, keeps each owner's tabs, says
 who controls each tab, and serves the private socket.
 
-- **Today.** It is `suitecut-shared-session`, built from
-  [native/client/examples/shared_session.cpp](../../native/client/examples/shared_session.cpp)
-  with the socket code in
-  [control_session.cpp](../../native/client/examples/control_session.cpp).
+- **Today** (as of `48ab856`, when this was written). It is
+  `suitecut-shared-session`, built from `native/client/examples/shared_session.cpp`
+  with the socket code in `native/client/examples/control_session.cpp`. Both
+  have since moved into [native/client/session/](../../native/client/session/).
   It has owners and per-tab control (`agent`, `human`, `unclaimed`, with a
   generation counter). It offers tab operations, view operations (attach to
   a Mach port, detach, screenshot, resize, input) and agent tool calls, plus
@@ -119,11 +119,11 @@ who controls each tab, and serves the private socket.
   - Any process of the same user can act as any owner, or close the whole
     session.
   - Agent calls from every owner run one at a time
-    ([shared_session.cpp:169](../../native/client/examples/shared_session.cpp)),
+    (`shared_session.cpp:169`),
     so one agent's long wait holds up every other app's agent.
   - It passes on none of the engine's dialogs, downloads, permission
     requests, loading state or title changes; only navigations, new popups
-    and closed pages ([shared_session.cpp:518-567](../../native/client/examples/shared_session.cpp)).
+    and closed pages (`shared_session.cpp:518-567`).
 
 ### 4. AI and control through one channel
 

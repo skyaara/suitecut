@@ -33,7 +33,7 @@ only after its exact read-only revision probe succeeds. The probe supplement
 must follow the widget receipt patch; its three source postimages belong in
 the bundle's final hashes. Its reply is `schemaVersion` 2 (no lease or pending
 capacities); the host refuses the capped schema 1. Stock CEF keeps this capability false. See
-[`docs/features/native-widget-mouse.md`](../../../docs/features/native-widget-mouse.md) for raw
+`docs/features/native-widget-mouse.md` on the `archive/node` branch for raw
 root-widget/attached-OOPIF scope, physical cancellation and remaining backend
 receipt families. These candidates do not constitute complete browser parity.
 

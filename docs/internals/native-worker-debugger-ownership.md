@@ -1,21 +1,15 @@
 # Native worker debugger ownership contract
 
-Status: implemented privately for Source-owned dedicated workers. The SDK
-`NativeWorker.createDebuggerSession()` routes to the actual Source worker
-controller; its immutable attachment/Runtime pin grants no page or frame
-identity. Focused native controls and SDK transport tests validate this slice;
-matching live-browser integration remains unrun. Broker/shared/service worker
-sessions and agent-wide pause/step are explicitly unsupported.
+Status: implemented privately for Source-owned dedicated workers. A worker
+debugger session routes to the actual Source worker controller; its immutable
+attachment/Runtime pin grants no page or frame identity. The removed Node SDK
+opened these sessions with `NativeWorker.createDebuggerSession()`; the engine
+side is the `debugger` command family. Focused native controls and the Node
+SDK's transport tests validated this slice; matching live-browser integration
+remains unrun. Broker/shared/service worker sessions and agent-wide pause/step
+are explicitly unsupported.
 
-```ts
-const debuggerSession = await worker.createDebuggerSession({ timeout: 1000 })
-const scripts = await debuggerSession.scripts()
-// Source, script breakpoints, and primitive evaluation use this captured worker.
-// waitForPause observes an actual worker pause; it does not force a global pause.
-await debuggerSession.close()
-```
-
-`debuggerSession.capabilities` exposes these supported controls after successful
+A session's capabilities expose these supported controls after successful
 native admission. `pause` and `step` are false for worker and frame sessions;
 observed pauses, resume, inventory/source, script breakpoints and paused
 primitive evaluation are supported. A missing actual Runtime unique context is
@@ -140,7 +134,7 @@ context receipts; exercise source, pause, primitive evaluation, breakpoint
 cleanup and coverage coexistence; then prove real helper exit and strict native
 stderr. Broker/service/shared scopes require their own browser proof after the
 Client adapter exists. Existing root inventory/evaluation/frame checks remain relevant regressions.
-The affected frame Source component and SDK debugger/worker tests have run;
+The affected frame Source component and the removed Node SDK's debugger/worker tests ran;
 these matching live worker browser proofs remain unrun.
 
 ## Implemented central Source seams (private)

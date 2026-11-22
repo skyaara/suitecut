@@ -7,7 +7,7 @@ For macOS ARM64 builds and qualification, see
 C ABI, agent CLI, native recorder, suitecut engine, pinned CEF 156.0.30 (stable),
 CEF resources/locales/notices, and pinned FFmpeg/ffprobe in one installation.
 The smaller SDK archives remain available for applications using existing browsers.
-No Node.js process or dependency download is required to use this bundle.
+No dependency download is required to use this bundle.
 
 Extract the archive into a directory owned by the application user. All component
 paths are relative to the extracted installation; moving that installation does
@@ -48,8 +48,7 @@ options object. When omitted it retains `/usr/bin/ffmpeg` and `/usr/bin/ffprobe`
 CEF uses the existing `Page::command("recording", ...)` protocol, with explicit
 `ffmpegPath`, `outputPath`, dimensions, cadence, audio flag and returned recording
 ID. The native recorder is a complete example of both paths. Firefox recording
-is not supplied. The full Node.js suitecut narration/editing workflow is not part
-of this native browser runtime.
+is not supplied.
 
 ## Build the archive
 

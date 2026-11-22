@@ -1,8 +1,10 @@
 # Native engine and browser-control performance review
 
 Reviewed on Linux, 17 October 2026. This review covers the owned C++ browser
-engine, native capture and resource pipelines, and the standalone
-`@suitecut/browser-control` SDK/viewer. The installed CEF/Chromium library remains
+engine, native capture and resource pipelines, and the Node browser-control
+SDK and its viewer. That SDK and viewer were removed on 2026-11-22; the rows
+and measurements that name the SDK, the viewer or Node describe removed code
+and are kept only as a record. The installed CEF/Chromium library remains
 the pinned, prebuilt CEF 156 runtime. It was not rebuilt or instrumented.
 
 The changes remove repeated work, fix resource retirement, and reuse existing
