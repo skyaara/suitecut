@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Runs the whole benchmark:
 //   node benchmarks/run.mjs [--rounds 3] [--tools suitecut,agent-browser,browser-use]
+//     [--sites news.ycombinator.com,...] [--tasks hn-open-comments,...] [--out DIR]
+// --sites and --tasks run a subset (hosts and task names; empty for none); by default all run.
 // Each round starts every tool cold (new browser, new profile) and rotates the
 // order so no tool always runs first. Results land in benchmarks/results/.
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
@@ -16,7 +18,7 @@ import { parseArgs } from 'node:util'
 import * as z from 'zod'
 
 import { Run } from './schema.mjs'
-import { sites, tasks } from './tasks.mjs'
+import { sites as allSites, tasks as allTasks } from './tasks.mjs'
 
 /** @typedef {import('./schema.mjs').BenchRun} BenchRun */
 
@@ -26,8 +28,27 @@ const { values } = parseArgs({
     rounds: { type: 'string', default: '3' },
     tools: { type: 'string', default: 'suitecut,agent-browser,browser-use' },
     out: { type: 'string', default: join(here, 'results') },
+    sites: { type: 'string' },
+    tasks: { type: 'string' },
   },
 })
+/**
+ * The entries a comma-separated option names, or all of them.
+ * @template T
+ * @param {T[]} all Every entry.
+ * @param {string | undefined} option The option's value.
+ * @param {(entry: T) => string} key What the option names an entry by.
+ * @returns {T[]} The selected entries.
+ */
+const select = (all, option, key) => {
+  if (option === undefined) return all
+  const names = option.split(',').filter(Boolean)
+  const unknown = names.filter((name) => !all.some((entry) => key(entry) === name))
+  if (unknown.length) throw new Error(`Unknown: ${unknown.join(', ')}`)
+  return all.filter((entry) => names.includes(key(entry)))
+}
+const sites = select(allSites, values.sites, (url) => new URL(url).hostname)
+const tasks = select(allTasks, values.tasks, (task) => task.name)
 const rounds = Number(values.rounds)
 const out = values.out
 const python = process.env.BROWSER_USE_PYTHON ?? 'python3'
@@ -56,6 +77,18 @@ const quiet = (command, args) => {
     return undefined
   }
 }
+/**
+ * A file's text, if it exists.
+ * @param {string} path The file.
+ * @returns {string | undefined} Its text.
+ */
+const quietRead = (path) => {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch {
+    return undefined
+  }
+}
 const freeGB = () => {
   const disk = statfsSync('/')
   return (disk.bavail * disk.bsize) / 2 ** 30
@@ -69,7 +102,7 @@ const environment = {
   node: process.version,
   suitecut: z
     .object({ version: z.string() })
-    .parse(JSON.parse(readFileSync(join(here, '../package.json'), 'utf8'))).version,
+    .safeParse(JSON.parse(quietRead(join(here, '../package.json')) ?? '{}')).data?.version,
   // A run on uncommitted changes says so, so its numbers are not credited to the commit.
   commit: quiet('git', ['-C', here, 'describe', '--always', '--dirty']),
   agentBrowser: quiet(process.env.AGENT_BROWSER ?? 'agent-browser', ['--version'])?.replace(

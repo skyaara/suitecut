@@ -25,8 +25,10 @@ use the median call.
 
 - **Launch**: from starting the tool to a page that answers.
 - **Snapshot**: the text an agent reads to choose what to do. Tokens are characters / 4.
-  - suitecut: `page.ariaSnapshot({ mode: 'ai', interactive: true })`; the full
-    `ariaSnapshot({ mode: 'ai' })` is measured too.
+  - suitecut: `observe`, the compact observation `suitecut-native-control` gives agents by
+    default (the controls an agent can act on, with refs, their enclosing containers and the
+    page's text), as the JSON line it prints; the full `observe` (`format: "full"`, the
+    whole page tree) is measured too.
   - agent-browser: `snapshot -i`, which its documentation recommends to agents; the full
     `snapshot` is measured too.
   - browser-use: `get_browser_state_summary()` and `dom_state.llm_representation()`, the
@@ -55,9 +57,9 @@ passes when the page URL reaches the goal within 20 s. Task time runs from navig
 snapshot read along the way.
 
 **CPU and memory**: while a run goes, [`run.mjs`](run.mjs) samples every process it started
-every 0.5 s with `ps`: the adapter, the browser and all its helper processes, and
-agent-browser's daemon, which detaches from the command that starts it. CPU is the sum of
-each process's CPU time; memory is the peak of their summed resident sizes, which counts
+every 0.5 s with `ps`: the adapter, suitecut's control CLI, the browser and all its helper
+processes, and agent-browser's daemon, which detaches from the command that starts it. CPU is
+the sum of each process's CPU time; memory is the peak of their summed resident sizes, which counts
 pages that processes share more than once, for every tool alike.
 
 No LLM is involved: a model would add its own latency, cost and randomness, and the same
@@ -72,13 +74,33 @@ choices are made for every tool. What is measured is what the browser layer cost
 - browser-use runs with its default extensions off, one of which hides cookie banners, so all
   tools load the same page.
 - agent-browser times include starting its CLI for each command, as an agent calls it.
+- suitecut runs `suitecut-native-control` in its persistent JSON-lines mode: one control
+  process owns the engine for the whole run, and each call is one request line and one reply,
+  as an agent holding its MCP connection works (MCP is the same loop with JSON-RPC framing).
+  Its times do not include starting a process per command. Actions are sent with
+  `response: "none"`, so `act` returns no observation of its own; the harness reads one
+  snapshot before each step, as for every tool. The harness reads suitecut's URL from an
+  observation scoped to `<head>` (a few milliseconds), because `get url` has no deadline and
+  can stop answering after a key press that navigates. A suitecut navigation or snapshot gets
+  30 s, the longest deadline the native tools accept; the other tools use their own defaults.
 - Real sites change from minute to minute and network time varies. Compare tools within one
   run and look at `load1` (the machine's load average) in `results.json`.
 
 ## Running it
 
-Build suitecut (`pnpm build`, and the native browser as in
-[docs/building.md](../docs/building.md)), then install the others:
+Build the suitecut engine as in [docs/building.md](../docs/building.md) and the native
+control CLI, which needs no CEF headers. Copy the engine first if its build directory may be
+rebuilt during a run:
+
+```bash
+ditto .suitecut/cef-codecs-2026-11-19/build/suitecut-browser.app \
+  .suitecut/bench-engine/suitecut-browser.app
+cmake -S native/client -B .suitecut/native-client-bench -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+ninja -C .suitecut/native-client-bench -j2 suitecut-native-control
+```
+
+Then install the others:
 
 ```bash
 npm install -g agent-browser && agent-browser install
@@ -90,15 +112,20 @@ python3 -m venv .venv-bench && .venv-bench/bin/pip install browser-use
 
 Environment variables:
 
-| Variable             | Default                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| `SUITECUT_BROWSER`   | `.suitecut/cef-codecs-2026-11-19/build/suitecut-browser.app/Contents/MacOS/suitecut-browser` |
-| `AGENT_BROWSER`      | `agent-browser` on `PATH`                                                                    |
-| `BROWSER_USE_PYTHON` | `python3` (use the venv's `python`)                                                          |
-| `CHROME`             | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (for browser-use)             |
+| Variable             | Default                                                                          |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `SUITECUT_CONTROL`   | `.suitecut/native-client-bench/suitecut-native-control`                          |
+| `SUITECUT_BROWSER`   | `.suitecut/bench-engine/suitecut-browser.app/Contents/MacOS/suitecut-browser`    |
+| `AGENT_BROWSER`      | `agent-browser` on `PATH`                                                        |
+| `BROWSER_USE_PYTHON` | `python3` (use the venv's `python`)                                              |
+| `CHROME`             | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (for browser-use) |
 
-`--tools suitecut,agent-browser` runs a subset, and `--out` writes somewhere else. The run
-stops if less than 2 GB of disk is free.
+The suitecut defaults are relative to the repository root. `--tools suitecut,agent-browser`
+runs a subset of tools, `--sites news.ycombinator.com,github.com` a subset of pages (by host)
+and `--tasks hn-open-comments,github-hops` a subset of tasks (by name; an empty value runs
+none), and `--out` writes somewhere else. Point `--out` at a scratch directory for a trial
+run so `results/` keeps the published numbers. The run stops if less than 2 GB of disk is
+free.
 
 ## Files
 

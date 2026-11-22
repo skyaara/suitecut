@@ -142,7 +142,7 @@ const lines = [
   '',
   "CPU and memory cover every process a run starts (browser, renderers, GPU, driver, and agent-browser's daemon), sampled every 0.5 s; CPU is the median run's total, memory the peak of the summed resident sizes, which counts shared pages more than once.",
   '',
-  "Snapshot and screenshot times are medians of 3 calls per page, then of all pages and rounds. Tokens are characters / 4 of the text an agent reads: suitecut `ariaSnapshot({ mode: 'ai', interactive: true })`, agent-browser `snapshot -i`, browser-use `llm_representation()`.",
+  'Snapshot and screenshot times are medians of 3 calls per page, then of all pages and rounds. Tokens are characters / 4 of the text an agent reads: suitecut `suitecut-native-control` compact `observe`, agent-browser `snapshot -i`, browser-use `llm_representation()`.',
   '',
   '## Summary',
   '',
