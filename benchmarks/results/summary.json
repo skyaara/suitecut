@@ -1,14 +1,14 @@
 {
   "environment": {
-    "date": "2026-11-04T07:32:33.264Z",
+    "date": "2026-11-09T10:28:16.926Z",
     "os": "darwin 27.0.0",
     "cpu": "Apple M4",
     "cores": 10,
     "memoryGB": 16,
     "node": "v24.20.0",
     "suitecut": "2.1.0",
-    "commit": "fd4c280-dirty",
-    "agentBrowser": "0.37.1",
+    "commit": "a6511ee-dirty",
+    "agentBrowser": "0.41.2",
     "browserUse": "0.13.14",
     "chrome": "Google Chrome 156.0.8078.80"
   },
@@ -18,92 +18,92 @@
       "version": "2.1.0",
       "runs": 3,
       "failedRuns": [],
-      "launchMs": 899.3017090000001,
-      "closeMs": 496.2848329999979,
-      "cpuSeconds": 55.629999999999995,
-      "peakMemoryMB": 2816.453125,
-      "loadMs": 1118.2896250000001,
-      "snapshotMs": 78.55574999999953,
-      "snapshotTokens": 19861.25,
-      "fullSnapshotTokens": 70565,
-      "screenshotMs": 53.27000000000044,
+      "launchMs": 769.5752500000001,
+      "closeMs": 192.06879099999787,
+      "cpuSeconds": 39.55999999999998,
+      "peakMemoryMB": 3795.203125,
+      "loadMs": 1154.6113330000003,
+      "snapshotMs": 39.13666699999885,
+      "snapshotTokens": 19105.5,
+      "fullSnapshotTokens": 68703.25,
+      "screenshotMs": 145.16312499999913,
       "siteErrors": [],
       "tasksPassed": 33,
       "tasksRun": 33,
-      "retries": 4,
-      "taskMs": 1128.910667,
-      "taskTokens": 100654.25,
+      "retries": 1,
+      "taskMs": 756.6605829999971,
+      "taskTokens": 92587.25,
       "perSite": {
         "news.ycombinator.com": {
           "n": 3,
-          "loadMs": 2231.341917,
-          "snapshotMs": 74.17804199999955,
-          "snapshotTokens": 2126.75,
-          "fullSnapshotMs": 55.5425409999998,
-          "fullSnapshotTokens": 9528.75,
-          "screenshotMs": 50.493875000000116
+          "loadMs": 1154.6113330000003,
+          "snapshotMs": 27.582958999999846,
+          "snapshotTokens": 2071,
+          "fullSnapshotMs": 25.062250000000404,
+          "fullSnapshotTokens": 9288.75,
+          "screenshotMs": 142.6686669999999
         },
         "en.wikipedia.org": {
           "n": 3,
-          "loadMs": 1507.1253749999996,
-          "snapshotMs": 150.13283299999966,
-          "snapshotTokens": 5161.25,
-          "fullSnapshotMs": 125.62345800000003,
-          "fullSnapshotTokens": 19915.5,
-          "screenshotMs": 79.28649999999834
+          "loadMs": 1720.5575829999998,
+          "snapshotMs": 49.49024999999983,
+          "snapshotTokens": 5168.75,
+          "fullSnapshotMs": 50.403582999999344,
+          "fullSnapshotTokens": 19937.75,
+          "screenshotMs": 182.88395799999944
         },
         "developer.mozilla.org": {
           "n": 3,
-          "loadMs": 436.0331249999999,
-          "snapshotMs": 37.74725000000035,
-          "snapshotTokens": 1791.75,
-          "fullSnapshotMs": 32.69858299999942,
-          "fullSnapshotTokens": 7455,
-          "screenshotMs": 51.00904199999968
+          "loadMs": 343.25545799999963,
+          "snapshotMs": 24.040791999999783,
+          "snapshotTokens": 1804,
+          "fullSnapshotMs": 20.31050000000141,
+          "fullSnapshotTokens": 7468.75,
+          "screenshotMs": 146.66287499999999
         },
         "www.bbc.com": {
           "n": 3,
-          "loadMs": 2611.4753340000007,
-          "snapshotMs": 62.074125000001004,
-          "snapshotTokens": 4109.5,
-          "fullSnapshotMs": 52.449916999999914,
-          "fullSnapshotTokens": 8356,
-          "screenshotMs": 103.31874999999854
+          "loadMs": 2199.1355829999993,
+          "snapshotMs": 39.13666699999885,
+          "snapshotTokens": 3360.5,
+          "fullSnapshotMs": 26.28216699999757,
+          "fullSnapshotTokens": 6681.75,
+          "screenshotMs": 801.8731669999979
         },
         "github.com": {
           "n": 3,
-          "loadMs": 1289.2574999999997,
-          "snapshotMs": 113.11666700000205,
-          "snapshotTokens": 3492.5,
-          "fullSnapshotMs": 105.92616700000144,
-          "fullSnapshotTokens": 13040.5,
-          "screenshotMs": 64.84487499999886
+          "loadMs": 2287.258041999994,
+          "snapshotMs": 51.4007500000007,
+          "snapshotTokens": 3521.75,
+          "fullSnapshotMs": 50.38824999999997,
+          "fullSnapshotTokens": 13022.5,
+          "screenshotMs": 145.16312499999913
         },
         "docs.python.org": {
           "n": 3,
-          "loadMs": 288.2320830000026,
-          "snapshotMs": 29.928083999999217,
+          "loadMs": 364.56633299999885,
+          "snapshotMs": 19.296000000002095,
           "snapshotTokens": 1691.25,
-          "fullSnapshotMs": 27.27333400000134,
+          "fullSnapshotMs": 14.692708000002312,
           "fullSnapshotTokens": 4403.75,
-          "screenshotMs": 49.225750000001426
+          "screenshotMs": 119.54304100000081
         },
         "react.dev": {
           "n": 3,
-          "loadMs": 656.1536250000026,
-          "snapshotMs": 147.5660829999979,
+          "loadMs": 503.9602500000001,
+          "snapshotMs": 86.27091700000165,
           "snapshotTokens": 1488.25,
-          "fullSnapshotMs": 149.53499999999985,
-          "fullSnapshotTokens": 7865.5,
-          "screenshotMs": 53.27000000000044
+          "fullSnapshotMs": 52.762166000000434,
+          "fullSnapshotTokens": 7900,
+          "screenshotMs": 130.1715419999964
         }
       },
       "perTask": {
         "hn-open-comments": {
           "passed": 3,
           "runs": 3,
-          "ms": 690.6312080000025,
-          "tokens": 2184.25,
+          "ms": 730.3908749999973,
+          "tokens": 2127.75,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -111,8 +111,8 @@
         "wikipedia-search": {
           "passed": 3,
           "runs": 3,
-          "ms": 1111.2650829999984,
-          "tokens": 2909.25,
+          "ms": 687.203125,
+          "tokens": 2799.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -120,7 +120,7 @@
         "mdn-open-reference": {
           "passed": 3,
           "runs": 3,
-          "ms": 365.0126670000027,
+          "ms": 332.710957999996,
           "tokens": 1707.75,
           "retries": 0,
           "retryErrors": [],
@@ -129,7 +129,7 @@
         "github-open-issues": {
           "passed": 3,
           "runs": 3,
-          "ms": 1188.2377500000002,
+          "ms": 1374.4072080000005,
           "tokens": 2453,
           "retries": 0,
           "retryErrors": [],
@@ -138,19 +138,17 @@
         "bbc-open-sport": {
           "passed": 3,
           "runs": 3,
-          "ms": 2650.601749999998,
-          "tokens": 8145.75,
-          "retries": 2,
-          "retryErrors": [
-            "The element this snapshot ref named is no longer in the page; take a new snapshot"
-          ],
+          "ms": 658.8882500000036,
+          "tokens": 3332,
+          "retries": 0,
+          "retryErrors": [],
           "errors": []
         },
         "wikipedia-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 2367.477458000001,
-          "tokens": 57055.5,
+          "ms": 1839.866582999999,
+          "tokens": 55262,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -158,7 +156,7 @@
         "mdn-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 1016.994708000002,
+          "ms": 511.6253330000036,
           "tokens": 6435.75,
           "retries": 0,
           "retryErrors": [],
@@ -167,18 +165,18 @@
         "github-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 3945.581124999997,
-          "tokens": 7066,
-          "retries": 2,
+          "ms": 2190.807332999997,
+          "tokens": 5830.25,
+          "retries": 1,
           "retryErrors": [
-            "The element this snapshot ref named is no longer in the page; take a new snapshot"
+            "No link named /^Labels$/ in the snapshot"
           ],
           "errors": []
         },
         "python-docs-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 714.4135000000024,
+          "ms": 807.3430410000001,
           "tokens": 7280.75,
           "retries": 0,
           "retryErrors": [],
@@ -187,8 +185,8 @@
         "react-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 1155.479333000003,
-          "tokens": 2906.5,
+          "ms": 628.2384160000001,
+          "tokens": 2905.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -196,8 +194,8 @@
         "github-open-file": {
           "passed": 3,
           "runs": 3,
-          "ms": 2007.684874999999,
-          "tokens": 2509.75,
+          "ms": 968.0869579999999,
+          "tokens": 2453,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -205,95 +203,95 @@
       }
     },
     "agent-browser": {
-      "version": "0.37.1",
+      "version": "0.41.2",
       "runs": 3,
       "failedRuns": [],
-      "launchMs": 1465.685625,
-      "closeMs": 786.1457500000033,
-      "cpuSeconds": 57.099999999999916,
-      "peakMemoryMB": 3633.28125,
-      "loadMs": 1723.452666000001,
-      "snapshotMs": 60.79541599999993,
-      "snapshotTokens": 26683.25,
-      "fullSnapshotTokens": 72805.75,
-      "screenshotMs": 64.42454100000032,
+      "launchMs": 3708.18,
+      "closeMs": 228.94841600000655,
+      "cpuSeconds": 24.700000000000003,
+      "peakMemoryMB": 3416.078125,
+      "loadMs": 997.5319999999992,
+      "snapshotMs": 34.2902920000015,
+      "snapshotTokens": 25935.25,
+      "fullSnapshotTokens": 69451.5,
+      "screenshotMs": 199.20291700000053,
       "siteErrors": [],
-      "tasksPassed": 33,
+      "tasksPassed": 32,
       "tasksRun": 33,
-      "retries": 0,
-      "taskMs": 1362.0177079999994,
-      "taskTokens": 123772,
+      "retries": 4,
+      "taskMs": 677.0286670000005,
+      "taskTokens": 98359.375,
       "perSite": {
         "news.ycombinator.com": {
           "n": 3,
-          "loadMs": 1778.5415,
-          "snapshotMs": 48.562708000000384,
-          "snapshotTokens": 3449.25,
-          "fullSnapshotMs": 52.29316600000038,
-          "fullSnapshotTokens": 6977.25,
-          "screenshotMs": 76.03775000000041
+          "loadMs": 1315.86875,
+          "snapshotMs": 25.382790999999997,
+          "snapshotTokens": 3631.25,
+          "fullSnapshotMs": 21.026208000000224,
+          "fullSnapshotTokens": 6550.25,
+          "screenshotMs": 119.99812500000007
         },
         "en.wikipedia.org": {
           "n": 3,
-          "loadMs": 1752.951583,
-          "snapshotMs": 100.77562500000022,
-          "snapshotTokens": 5015,
-          "fullSnapshotMs": 102.75570799999878,
-          "fullSnapshotTokens": 21954.75,
-          "screenshotMs": 65.72920800000065
+          "loadMs": 605.5830409999999,
+          "snapshotMs": 59.46812499999942,
+          "snapshotTokens": 5049.75,
+          "fullSnapshotMs": 58.205542000001515,
+          "fullSnapshotTokens": 21263.5,
+          "screenshotMs": 250.8637920000001
         },
         "developer.mozilla.org": {
           "n": 3,
-          "loadMs": 1723.452666000001,
-          "snapshotMs": 25.2785840000015,
-          "snapshotTokens": 1602.75,
-          "fullSnapshotMs": 22.105208000000857,
-          "fullSnapshotTokens": 6075.25,
-          "screenshotMs": 57.49491699999999
+          "loadMs": 286.0762089999989,
+          "snapshotMs": 21.250166999998328,
+          "snapshotTokens": 1652.5,
+          "fullSnapshotMs": 17.168417000000773,
+          "fullSnapshotTokens": 6124.25,
+          "screenshotMs": 195.171792000001
         },
         "www.bbc.com": {
           "n": 3,
-          "loadMs": 6550.4534589999985,
-          "snapshotMs": 64.08645800000158,
-          "snapshotTokens": 7524.25,
-          "fullSnapshotMs": 60.932832999998936,
-          "fullSnapshotTokens": 11719.25,
-          "screenshotMs": 74.5268329999999
+          "loadMs": 2015.9024170000012,
+          "snapshotMs": 34.2902920000015,
+          "snapshotTokens": 6178.75,
+          "fullSnapshotMs": 32.72220799999923,
+          "fullSnapshotTokens": 9145.75,
+          "screenshotMs": 225.54899999999907
         },
         "github.com": {
           "n": 3,
-          "loadMs": 1423.0492079999967,
-          "snapshotMs": 111.36633300000176,
-          "snapshotTokens": 5695.5,
-          "fullSnapshotMs": 110.9522500000021,
-          "fullSnapshotTokens": 10888,
-          "screenshotMs": 66.47987499999726
+          "loadMs": 1103.077792,
+          "snapshotMs": 44.42949999999837,
+          "snapshotTokens": 5920.5,
+          "fullSnapshotMs": 43.044042000001355,
+          "fullSnapshotTokens": 11062.25,
+          "screenshotMs": 207.9429999999993
         },
         "docs.python.org": {
           "n": 3,
-          "loadMs": 634.1963329999999,
-          "snapshotMs": 40.84441700000025,
-          "snapshotTokens": 1599,
-          "fullSnapshotMs": 38.675624999999854,
-          "fullSnapshotTokens": 4197.75,
-          "screenshotMs": 61.2175410000018
+          "loadMs": 997.5319999999992,
+          "snapshotMs": 20.36920800000007,
+          "snapshotTokens": 1668,
+          "fullSnapshotMs": 15.163040999999794,
+          "fullSnapshotTokens": 4223.25,
+          "screenshotMs": 170.0337499999987
         },
         "react.dev": {
           "n": 3,
-          "loadMs": 1132.6805830000012,
-          "snapshotMs": 224.74266699999862,
-          "snapshotTokens": 1797.5,
-          "fullSnapshotMs": 171.4439999999995,
-          "fullSnapshotTokens": 10993.5,
-          "screenshotMs": 64.42454100000032
+          "loadMs": 1450.3489169999993,
+          "snapshotMs": 65.16899999999805,
+          "snapshotTokens": 1834.5,
+          "fullSnapshotMs": 65.29812500000116,
+          "fullSnapshotTokens": 11082.25,
+          "screenshotMs": 177.10162499999933
         }
       },
       "perTask": {
         "hn-open-comments": {
           "passed": 3,
           "runs": 3,
-          "ms": 895.390250000004,
-          "tokens": 3449.25,
+          "ms": 596.5967920000003,
+          "tokens": 3753,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -301,8 +299,8 @@
         "wikipedia-search": {
           "passed": 3,
           "runs": 3,
-          "ms": 1224.323749999996,
-          "tokens": 2756,
+          "ms": 892.4925839999996,
+          "tokens": 2663.75,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -310,8 +308,8 @@
         "mdn-open-reference": {
           "passed": 3,
           "runs": 3,
-          "ms": 673.9845420000056,
-          "tokens": 1514.75,
+          "ms": 132.65008300000045,
+          "tokens": 1581.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -319,8 +317,8 @@
         "github-open-issues": {
           "passed": 3,
           "runs": 3,
-          "ms": 2041.9552500000063,
-          "tokens": 5695,
+          "ms": 1209.7857500000027,
+          "tokens": 4407,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -328,26 +326,30 @@
         "bbc-open-sport": {
           "passed": 3,
           "runs": 3,
-          "ms": 2700.1147500000006,
-          "tokens": 7529.25,
+          "ms": 469.1411670000016,
+          "tokens": 4545,
           "retries": 0,
           "retryErrors": [],
           "errors": []
         },
         "wikipedia-hops": {
-          "passed": 3,
+          "passed": 2,
           "runs": 3,
-          "ms": 3245.548999999999,
-          "tokens": 63740.5,
-          "retries": 0,
-          "retryErrors": [],
-          "errors": []
+          "ms": 1475.8658544999998,
+          "tokens": 42122.875,
+          "retries": 1,
+          "retryErrors": [
+            "No link named /^Chromium( \\(web browser\\))?$/ in the snapshot"
+          ],
+          "errors": [
+            "URL did not reach wikipedia\\.org/wiki/Blink_\\(browser_engine\\); last https://en.wikipedia.org/wiki/Chromium_(web_browser)"
+          ]
         },
         "mdn-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 853.0649169999961,
-          "tokens": 13768.25,
+          "ms": 364.8821250000037,
+          "tokens": 14059.75,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -355,8 +357,8 @@
         "github-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 2574.403124999997,
-          "tokens": 7998.75,
+          "ms": 1231.771375000004,
+          "tokens": 8725.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -364,17 +366,19 @@
         "python-docs-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 802.0671670000011,
-          "tokens": 6907.5,
-          "retries": 0,
-          "retryErrors": [],
+          "ms": 967.476125000001,
+          "tokens": 7109.5,
+          "retries": 3,
+          "retryErrors": [
+            "No link named /^re — / in the snapshot"
+          ],
           "errors": []
         },
         "react-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 1362.0177079999994,
-          "tokens": 4717.75,
+          "ms": 476.27879199999734,
+          "tokens": 3664,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -382,8 +386,8 @@
         "github-open-file": {
           "passed": 3,
           "runs": 3,
-          "ms": 1714.820667,
-          "tokens": 5695,
+          "ms": 595.8041669999948,
+          "tokens": 5727.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -394,78 +398,78 @@
       "version": "0.13.14",
       "runs": 3,
       "failedRuns": [],
-      "launchMs": 1329.5665839910507,
-      "closeMs": 114.42270815372467,
-      "cpuSeconds": 67.26999999999998,
-      "peakMemoryMB": 2587.296875,
-      "loadMs": 678.26766705513,
-      "snapshotMs": 291.6961671113968,
-      "snapshotTokens": 16595.5,
+      "launchMs": 653.7698749899864,
+      "closeMs": 109.99566701054573,
+      "cpuSeconds": 36.61,
+      "peakMemoryMB": 2709.15625,
+      "loadMs": 1153.1775830090046,
+      "snapshotMs": 104.93083399534225,
+      "snapshotTokens": 16953.25,
       "fullSnapshotTokens": 0,
-      "screenshotMs": 75.0703752040863,
+      "screenshotMs": 129.43154096603394,
       "siteErrors": [],
       "tasksPassed": 33,
       "tasksRun": 33,
       "retries": 0,
-      "taskMs": 2274.2987089157104,
-      "taskTokens": 45012,
+      "taskMs": 1899.0016669929028,
+      "taskTokens": 45862,
       "perSite": {
         "news.ycombinator.com": {
           "n": 3,
-          "loadMs": 1545.3915421962738,
-          "snapshotMs": 178.624458193779,
-          "snapshotTokens": 3290,
-          "screenshotMs": 84.24716603755951
+          "loadMs": 1153.1775830090046,
+          "snapshotMs": 85.62295800447464,
+          "snapshotTokens": 3251,
+          "screenshotMs": 125.85966700315475
         },
         "en.wikipedia.org": {
           "n": 3,
-          "loadMs": 678.26766705513,
-          "snapshotMs": 510.6852501630783,
-          "snapshotTokens": 2775.75,
-          "screenshotMs": 85.20050001144409
+          "loadMs": 870.6853330135345,
+          "snapshotMs": 195.23287498950958,
+          "snapshotTokens": 2869,
+          "screenshotMs": 176.77037498354912
         },
         "developer.mozilla.org": {
           "n": 3,
-          "loadMs": 365.68766689300537,
-          "snapshotMs": 184.07379186153412,
-          "snapshotTokens": 1760,
-          "screenshotMs": 83.8758749961853
+          "loadMs": 1447.9045419991016,
+          "snapshotMs": 100.65362495183945,
+          "snapshotTokens": 1763.5,
+          "screenshotMs": 116.81483301520348
         },
         "www.bbc.com": {
           "n": 3,
-          "loadMs": 2777.6045410633087,
-          "snapshotMs": 291.6961671113968,
-          "snapshotTokens": 1344.75,
-          "screenshotMs": 96.81875002384186
+          "loadMs": 1898.8742079734802,
+          "snapshotMs": 95.52079102396965,
+          "snapshotTokens": 1475,
+          "screenshotMs": 137.40816602110863
         },
         "github.com": {
           "n": 3,
-          "loadMs": 946.879166841507,
-          "snapshotMs": 504.1839588880539,
-          "snapshotTokens": 5387.5,
-          "screenshotMs": 73.54883289337158
+          "loadMs": 6989.48508399725,
+          "snapshotMs": 222.50229197740555,
+          "snapshotTokens": 5546.75,
+          "screenshotMs": 141.0281250178814
         },
         "docs.python.org": {
           "n": 3,
-          "loadMs": 295.6382499933243,
-          "snapshotMs": 130.64133405685425,
+          "loadMs": 488.02241599559784,
+          "snapshotMs": 47.954874992370605,
           "snapshotTokens": 1175.25,
-          "screenshotMs": 66.0812919139862
+          "screenshotMs": 91.872584015131
         },
         "react.dev": {
           "n": 3,
-          "loadMs": 542.1067502498627,
-          "snapshotMs": 394.1835000514984,
-          "snapshotTokens": 862.25,
-          "screenshotMs": 55.543083906173706
+          "loadMs": 1265.9793750047684,
+          "snapshotMs": 152.94604203104973,
+          "snapshotTokens": 872.75,
+          "screenshotMs": 131.3993330001831
         }
       },
       "perTask": {
         "hn-open-comments": {
           "passed": 3,
           "runs": 3,
-          "ms": 1837.0297909975052,
-          "tokens": 3289.75,
+          "ms": 1716.0020000040531,
+          "tokens": 3249.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -473,8 +477,8 @@
         "wikipedia-search": {
           "passed": 3,
           "runs": 3,
-          "ms": 1457.1488338708878,
-          "tokens": 3019,
+          "ms": 1090.393208026886,
+          "tokens": 2930.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -482,7 +486,7 @@
         "mdn-open-reference": {
           "passed": 3,
           "runs": 3,
-          "ms": 1186.409833908081,
+          "ms": 974.3079580068588,
           "tokens": 1497.5,
           "retries": 0,
           "retryErrors": [],
@@ -491,8 +495,8 @@
         "github-open-issues": {
           "passed": 3,
           "runs": 3,
-          "ms": 2123.3687088489532,
-          "tokens": 4458.25,
+          "ms": 1768.6518750190735,
+          "tokens": 4621,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -500,8 +504,8 @@
         "bbc-open-sport": {
           "passed": 3,
           "runs": 3,
-          "ms": 3021.820249915123,
-          "tokens": 1109.5,
+          "ms": 1408.699208021164,
+          "tokens": 1234.25,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -509,8 +513,8 @@
         "wikipedia-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 7594.236791014671,
-          "tokens": 10794.5,
+          "ms": 4760.5708340108395,
+          "tokens": 10957.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -518,7 +522,7 @@
         "mdn-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 2291.1526250839233,
+          "ms": 1899.0016669929028,
           "tokens": 3194.5,
           "retries": 0,
           "retryErrors": [],
@@ -527,8 +531,8 @@
         "github-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 3174.777291059494,
-          "tokens": 8209,
+          "ms": 2194.5035419762135,
+          "tokens": 8473.25,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -536,8 +540,8 @@
         "python-docs-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 2682.876584172249,
-          "tokens": 3119.75,
+          "ms": 2080.9074590206146,
+          "tokens": 3120.5,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -545,8 +549,8 @@
         "react-hops": {
           "passed": 3,
           "runs": 3,
-          "ms": 2779.180624961853,
-          "tokens": 1861.25,
+          "ms": 2454.817542016506,
+          "tokens": 1959.75,
           "retries": 0,
           "retryErrors": [],
           "errors": []
@@ -554,8 +558,8 @@
         "github-open-file": {
           "passed": 3,
           "runs": 3,
-          "ms": 1588.025375008583,
-          "tokens": 4459,
+          "ms": 1247.5185419917107,
+          "tokens": 4623.75,
           "retries": 0,
           "retryErrors": [],
           "errors": []
