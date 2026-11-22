@@ -1,0 +1,30 @@
+{
+  "note": "Sources of the libraries the macOS embed kit links statically, built for macOS 14 by scripts/build-embed-kit-deps-macos.py. URLs and sha256 match the Homebrew formulae of the same versions.",
+  "deploymentTarget": "14.0",
+  "packages": {
+    "openssl": {
+      "version": "3.5.9",
+      "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+      "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+      "license": "Apache-2.0"
+    },
+    "brotli": {
+      "version": "1.2.1",
+      "url": "https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz",
+      "sha256": "98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f",
+      "license": "MIT"
+    },
+    "libpsl": {
+      "version": "0.23.3",
+      "url": "https://github.com/rockdaboot/libpsl/releases/download/0.23.3/libpsl-0.23.3.tar.gz",
+      "sha256": "93941f85a1e7bd593fa94f299233cb5dfc91cd144fd9a78a6ceb75001c5b03be",
+      "license": "MIT"
+    },
+    "curl": {
+      "version": "8.23.0",
+      "url": "https://curl.se/download/curl-8.23.0.tar.bz2",
+      "sha256": "95b22eb32bf6d1fa6e3e9463bdb61cece3efc56d86576a9b3cbd428246a6d854",
+      "license": "curl"
+    }
+  }
+}

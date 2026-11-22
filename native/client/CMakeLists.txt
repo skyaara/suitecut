@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
+# macOS 14 is the oldest release the session service and the embed kit support.
+set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version")
 project(SuiteCutClient VERSION 0.1.0 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
@@ -15,6 +17,14 @@ endif()
 option(SUITECUT_CLIENT_BUILD_TESTS "Build SDK unit and integration executables" ${suitecut_tests_default})
 option(SUITECUT_CLIENT_BUILD_EXAMPLES "Build SDK command-line examples" ${suitecut_standalone})
 option(SUITECUT_CLIENT_SANITIZERS "Enable address and undefined behavior checks" OFF)
+set(suitecut_session_default OFF)
+if(suitecut_standalone AND NOT WIN32)
+  set(suitecut_session_default ON)
+endif()
+option(SUITECUT_CLIENT_BUILD_SESSION "Build the suitecut-session service" ${suitecut_session_default})
+if(SUITECUT_CLIENT_BUILD_SESSION AND WIN32)
+  message(FATAL_ERROR "suitecut-session is not ported to Windows yet")
+endif()
 
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -37,6 +47,10 @@ target_include_directories(suitecut_client PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_link_libraries(suitecut_client PRIVATE Threads::Threads OpenSSL::SSL OpenSSL::Crypto ZLIB::ZLIB)
+if(APPLE)
+  # embed.h's frame receiver and runtime signature check.
+  target_link_libraries(suitecut_client PRIVATE "-framework CoreFoundation" "-framework IOSurface" "-framework Security" bsm)
+endif()
 if(WIN32)
   target_link_libraries(suitecut_client PRIVATE ws2_32)
   if(BUILD_SHARED_LIBS)
@@ -49,6 +63,9 @@ if(SUITECUT_CLIENT_SANITIZERS)
   target_link_options(suitecut_client PUBLIC -fsanitize=address,undefined)
 endif()
 
+if(SUITECUT_CLIENT_BUILD_SESSION OR SUITECUT_CLIENT_BUILD_EXAMPLES)
+  add_subdirectory(session)
+endif()
 if(SUITECUT_CLIENT_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()

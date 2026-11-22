@@ -33,6 +33,7 @@
 
 #if defined(__APPLE__)
 #include "mac_capture.h"
+#include "surface_output.h"
 #endif
 #include "include/cef_app.h"
 #include "include/cef_audio_handler.h"

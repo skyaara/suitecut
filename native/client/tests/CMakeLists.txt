@@ -75,10 +75,55 @@ foreach(source IN LISTS client_unit_sources)
   endif()
   set_tests_properties(${name} PROPERTIES TIMEOUT 60 LABELS "client;unit")
 endforeach()
+add_executable(embed_header_test unit/embed_header_test.c)
+target_link_libraries(embed_header_test PRIVATE SuiteCut::Client)
+add_test(NAME embed_header_test COMMAND embed_header_test)
+set_tests_properties(embed_header_test PROPERTIES TIMEOUT 60 LABELS "client;unit;abi")
 add_executable(c_abi_test unit/c_abi_test.c)
 target_link_libraries(c_abi_test PRIVATE SuiteCut::Client)
 add_test(NAME c_abi_test COMMAND c_abi_test)
 set_tests_properties(c_abi_test PROPERTIES TIMEOUT 60 LABELS "client;unit;abi")
+
+# The session service against a fake engine: protocol 0 as embedding apps
+# send it today, and protocol 1. They need the service, so they are built
+# with it.
+if(NOT WIN32 AND TARGET suitecut-shared-session)
+  add_executable(session_fake_engine support/session_fake_engine.cpp)
+  target_link_libraries(session_fake_engine PRIVATE SuiteCut::Client)
+  if(APPLE)
+    # It sends real IOSurface frames to a view's bootstrap name.
+    target_link_libraries(session_fake_engine PRIVATE "-framework CoreFoundation" "-framework IOSurface")
+  endif()
+  add_executable(shared_session_test unit/shared_session_test.cpp)
+  target_include_directories(shared_session_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(shared_session_test PRIVATE SuiteCut::Client)
+  target_compile_options(shared_session_test PRIVATE -UNDEBUG)
+  add_dependencies(shared_session_test session_fake_engine suitecut-shared-session)
+  add_test(NAME shared_session_test COMMAND shared_session_test
+    $<TARGET_FILE:suitecut-shared-session> $<TARGET_FILE:session_fake_engine>)
+  # The same checks with protocol 1 off: the service as Napdock shipped it.
+  add_test(NAME shared_session_protocol0_only_test COMMAND shared_session_test
+    $<TARGET_FILE:suitecut-shared-session> $<TARGET_FILE:session_fake_engine> --protocol-1 off)
+  add_executable(session_protocol_test unit/session_protocol_test.cpp)
+  target_include_directories(session_protocol_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(session_protocol_test PRIVATE SuiteCut::Client)
+  target_compile_options(session_protocol_test PRIVATE -UNDEBUG)
+  add_dependencies(session_protocol_test session_fake_engine suitecut-session)
+  add_test(NAME session_protocol_test COMMAND session_protocol_test
+    $<TARGET_FILE:suitecut-session> $<TARGET_FILE:session_fake_engine>)
+  # embed.h, as an app uses it, against the service and the fake engine.
+  add_executable(embed_test unit/embed_test.cpp)
+  target_include_directories(embed_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(embed_test PRIVATE SuiteCut::Client)
+  if(APPLE)
+    target_link_libraries(embed_test PRIVATE "-framework IOSurface")
+  endif()
+  target_compile_options(embed_test PRIVATE -UNDEBUG)
+  add_dependencies(embed_test session_fake_engine suitecut-session)
+  add_test(NAME embed_test COMMAND embed_test $<TARGET_FILE:suitecut-session> $<TARGET_FILE:session_fake_engine>)
+  set_tests_properties(shared_session_test shared_session_protocol0_only_test session_protocol_test embed_test
+    PROPERTIES TIMEOUT 180 LABELS "client;unit;session")
+endif()
 
 set(client_integration_sources
   integration/cef_artifact_workflows.cpp
@@ -117,7 +162,7 @@ foreach(source IN LISTS client_integration_sources)
 endforeach()
 # Browser workflows run through tests/cef's supervisor, not an ambient browser.
 add_custom_target(client-integration-binaries DEPENDS ${client_integration_targets})
-add_custom_target(client-unit-binaries DEPENDS c_abi_test)
+add_custom_target(client-unit-binaries DEPENDS c_abi_test embed_header_test)
 foreach(source IN LISTS client_unit_sources)
   get_filename_component(name "${source}" NAME_WE)
   add_dependencies(client-unit-binaries ${name})
@@ -125,3 +170,35 @@ endforeach()
 add_custom_target(client-cef-binaries DEPENDS native-client-real-browser
   suitecut-native-cross_browser_features suitecut-native-cef_artifact_workflows
   suitecut-native-cef_restricted_bootstrap suitecut-native-cef_media_workflows)
+# Real-engine tests through embed.h. They need a SuiteCut runtime (an .app or
+# a directory with suitecut-browser and suitecut-session), so they exist only
+# when one is named:
+#   cmake -DSUITECUT_EMBED_RUNTIME=/path/to/SuiteCut.app ... && ctest -L embed-frames
+#   ... && ctest -L embed-host-events
+# Each starts its own session with a fresh folder and profile. Not in
+# tests/cef/manifests/cpp.json, whose cases have no platform field.
+set(SUITECUT_EMBED_RUNTIME "" CACHE PATH "A SuiteCut runtime for the opt-in embed real-engine tests")
+# Host events (loading, titles, stop, dialogs as prompts, cursor, IME, edits,
+# popups): Linux and macOS, headless.
+add_executable(suitecut-native-cef_host_events integration/cef_host_events.cpp)
+target_include_directories(suitecut-native-cef_host_events PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+target_link_libraries(suitecut-native-cef_host_events PRIVATE SuiteCut::Client)
+add_dependencies(client-cef-binaries suitecut-native-cef_host_events)
+if(SUITECUT_EMBED_RUNTIME)
+  add_test(NAME cef_host_events COMMAND suitecut-native-cef_host_events "${SUITECUT_EMBED_RUNTIME}"
+    "${CMAKE_CURRENT_BINARY_DIR}/cef_host_events")
+  set_tests_properties(cef_host_events PROPERTIES TIMEOUT 240 LABELS "cef;embed-host-events" RUN_SERIAL TRUE)
+endif()
+# Frames: macOS only.
+if(APPLE)
+  add_executable(suitecut-native-cef_embed_frames integration/cef_embed_frames.cpp)
+  target_include_directories(suitecut-native-cef_embed_frames PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/support")
+  target_link_libraries(suitecut-native-cef_embed_frames PRIVATE SuiteCut::Client "-framework IOSurface")
+  add_dependencies(client-cef-binaries suitecut-native-cef_embed_frames)
+  if(SUITECUT_EMBED_RUNTIME)
+    add_test(NAME cef_embed_frames COMMAND suitecut-native-cef_embed_frames "${SUITECUT_EMBED_RUNTIME}"
+      "${CMAKE_CURRENT_BINARY_DIR}/cef_embed_frames")
+    set_tests_properties(cef_embed_frames PROPERTIES TIMEOUT 240 LABELS "cef;embed-frames"
+      RUN_SERIAL TRUE)
+  endif()
+endif()

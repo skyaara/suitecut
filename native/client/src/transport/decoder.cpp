@@ -8,7 +8,7 @@
 
 namespace suitecut {
 namespace {
-constexpr std::string_view kTypes[] = {"ready","response","error","frame","audio","actionstage","binding","console","context","contextconsole","contextnetwork","contextnetworkbody","contextroute","contextroutemutation","contextworker","contextworkerpredicate","dialog","download","event","eventpredicate","filechooser","httplookup","navigation","network","networkbody","pagecrash","pageerror","pagerecovered","recording","streaming","urlpredicate","websocket","websocketroute","worker","workwatermark"};
+constexpr std::string_view kTypes[] = {"ready","response","error","frame","audio","actionstage","binding","console","context","contextconsole","contextnetwork","contextnetworkbody","contextroute","contextroutemutation","contextworker","contextworkerpredicate","dialog","download","event","eventpredicate","filechooser","host","httplookup","navigation","network","networkbody","pagecrash","pageerror","pagerecovered","recording","streaming","urlpredicate","websocket","websocketroute","worker","workwatermark"};
 } // namespace
 PacketDecoder::PacketDecoder(std::size_t max_header_bytes, std::size_t max_payload_bytes)
     : max_header_(max_header_bytes), max_payload_(max_payload_bytes) {

@@ -61,6 +61,14 @@ class SuiteCutDialogControls {
     closing_.clear();
     for (const auto& [id, state] : pending){if(state.decision)state.decision(false);if(answer)state.callback->Continue(false, CefString());}
   }
+  // A genuine CEF reset (navigation) as Clear(), but each dropped dialog is
+  // reported closed, so a window showing it as a prompt can take it down.
+  void Reset() {
+    auto pending = std::move(pending_); pending_.clear();
+    auto closing = std::move(closing_); closing_.clear();
+    for (auto& [id, state] : pending){if(state.decision)state.decision(false);closing.push_back(state.info);}
+    for (auto& info : closing){info->SetString("state", "closed");info->SetString("reason", "reset");emit_(info);}
+  }
   size_t Size() const { return pending_.size(); }
   bool AcceptedWorkReady()const noexcept{return pending_.empty()&&closing_.empty();}
  private:

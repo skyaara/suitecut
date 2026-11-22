@@ -166,6 +166,21 @@ AgentDriver::~AgentDriver() {
     (void)unused; try { transport_->cancel(id); } catch (...) {}
   }
 }
+void AgentDriver::forget_page(int id) {
+  if (id == 1) throw std::invalid_argument("The main page stays until the owning Browser closes");
+  const auto found = pages_.find(id);
+  if (found == pages_.end()) return;
+  // The engine already closed it; the page's own closePage then finds no page
+  // and is answered at once. Engine page IDs are never reused, so a stale ID
+  // cannot reach another page.
+  pages_.erase(found);
+  snapshots_.erase(id);
+  if (const auto context = contexts_.find(id); context != contexts_.end()) {
+    try { context->second.close(); } catch (...) {}
+    contexts_.erase(context);
+  }
+  if (active_ == id) active_ = 1;
+}
 void AgentDriver::set_credential_vault(std::shared_ptr<CredentialVault> vault) { vault_=std::move(vault); }
 Json AgentDriver::tools() {
   const auto str = schema("string"), obj = schema("object"),
@@ -256,7 +271,10 @@ Json AgentDriver::tools() {
     } else if (name == "dialog") {
       actions = {"list","handle"}; properties["accept"] = boolean; properties["promptText"] = str; properties["clear"] = boolean;
     } else if (name == "console") {
-      actions = {"messages","errors","clear"}; properties["clear"] = boolean;
+      // The engine's own console actions; filter picks the whole journal
+      // or only what came since the last navigation.
+      actions = {"list","errors","clear"};
+      properties["filter"] = Json{{"type","string"},{"enum",Json::array{"all","since-navigation"}}};
     } else if (name == "initScript") {
       actions = {"add","remove","list"}; properties["source"] = str; properties["identifier"] = str;
     } else if (name == "emulation") {
@@ -591,6 +609,14 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
       if (context) contexts_.emplace(id,std::move(*context));
       pages_.emplace(id,std::move(created)); active_ = id;
       return Json{{"pageId",id},{"isolatedContext",attached_}};
+    }
+    if (action == "adopt") {
+      // A page the engine opened by itself (a popup) joins the driver's pages.
+      const auto requested = args.at("pageId").as_int();
+      if (requested < 2 || requested > std::numeric_limits<int>::max()) throw std::invalid_argument("Invalid page ID");
+      const int id = static_cast<int>(requested);
+      if (!pages_.contains(id)) pages_.emplace(id,browser_.page(id));
+      return Json{{"pageId",id}};
     }
     if (action == "switch" || action == "close") {
       const auto requested = args.at("pageId").as_int();

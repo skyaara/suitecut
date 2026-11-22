@@ -3,6 +3,8 @@
 #include "context_settings.h"
 #include "network_authentication.h"
 #include "include/cef_auth_callback.h"
+#include <optional>
+#include <utility>
 namespace suitecut {
 inline NativeNetworkAuthentication::Provider NativeContextAuthentication(std::shared_ptr<const ContextSettings> config,NativeContextAuthenticationControls::Snapshot snapshot={}) {
   if(!config)return [](NativeNetworkAuthentication::Dict){auto response=CefDictionaryValue::Create();response->SetString("response","CancelAuth");return response;};
@@ -27,20 +29,27 @@ inline NativeNetworkAuthentication::Provider NativeContextAuthentication(std::sh
     return response;
   };
 }
-inline bool NativeContextAuthenticationCallback(std::shared_ptr<const ContextSettings> config,
-    NativeContextAuthenticationControls::Snapshot snapshot,bool open,const CefString&url,
-    bool proxy,CefRefPtr<CefAuthCallback> callback){
-  if(!callback)return false;
+// The credentials today's policy gives a challenge, if any.
+inline std::optional<std::pair<std::string,std::string>> NativeContextAuthenticationChoice(
+    const std::shared_ptr<const ContextSettings>& config,const NativeContextAuthenticationControls::Snapshot& snapshot,
+    bool open,const CefString&url,bool proxy){
   const auto credentials=snapshot?snapshot->Get():(config?std::make_shared<const NativeContextCredentials>(config->http_credentials_all.empty()&&config->http_credentials?NativeContextCredentials{*config->http_credentials}:config->http_credentials_all):nullptr);
   if(open&&config&&credentials){
-    if(proxy&&config->proxy&&config->proxy->authentication){callback->Continue(config->proxy->username,config->proxy->password);return true;}
+    if(proxy&&config->proxy&&config->proxy->authentication)return std::make_pair(config->proxy->username,config->proxy->password);
     if(!proxy){
       const auto origin=ContextSettings::CanonicalOrigin(url);const NativeContextCredential*chosen=nullptr;
       for(const auto&item:*credentials)if(!item.origin.empty()&&item.origin==origin){chosen=&item;break;}
       if(!chosen)for(const auto&item:*credentials)if(item.origin.empty()){chosen=&item;break;}
-      if(chosen){callback->Continue(chosen->username,chosen->password);return true;}
+      if(chosen)return std::make_pair(chosen->username,chosen->password);
     }
   }
+  return std::nullopt;
+}
+inline bool NativeContextAuthenticationCallback(std::shared_ptr<const ContextSettings> config,
+    NativeContextAuthenticationControls::Snapshot snapshot,bool open,const CefString&url,
+    bool proxy,CefRefPtr<CefAuthCallback> callback){
+  if(!callback)return false;
+  if(const auto chosen=NativeContextAuthenticationChoice(config,snapshot,open,url,proxy)){callback->Continue(chosen->first,chosen->second);return true;}
   callback->Cancel();return true;
 }
 

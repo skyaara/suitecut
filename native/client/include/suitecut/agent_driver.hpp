@@ -23,6 +23,10 @@ class AgentDriver {
   // Serialized, page-scoped calls only. Caps the native operation and nested
   // wait/batch budget; never changes the caller's persistent page timeout.
   Json call_with_timeout(const std::string& tool, const Json& arguments, Timeout timeout);
+  // Drops a page the engine has already closed (its page-closed event), with
+  // its refs and context. Unknown IDs are ignored; the main page cannot be
+  // forgotten.
+  void forget_page(int id);
  private:
   std::shared_ptr<CredentialVault> vault_;
   Browser& browser_;

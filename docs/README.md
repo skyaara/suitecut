@@ -23,6 +23,17 @@ Start with the [guide](guide.md). Component READMEs live next to their code:
 | [CEF real-browser regression suite](cef-regressions.md)                   | The local suite that runs the real CEF executable                                                   |
 | [Playwright feature matching specification](playwright-feature-parity.md) | Behavior reference and feature checklist, with backend limits                                       |
 
+## Embedding
+
+SuiteCut as a browser runtime other apps embed, share with an AI agent and
+control. The direction's decisions were made by delegation on 2026-11-20;
+the API design marks what is built and what is still proposed.
+
+| Document                                                             |
+| -------------------------------------------------------------------- |
+| [Direction: an embeddable browser runtime](embedding/direction.md)   |
+| [Embedding API and session protocol design](embedding/api-design.md) |
+
 ## Feature reference
 
 Behavior of individual native browser and runner features.

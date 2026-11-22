@@ -4,7 +4,7 @@ install(TARGETS suitecut_client EXPORT SuiteCutClientTargets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Explicit public inventory: private backend/transport headers cannot leak.
-set(client_public_headers client.h browser.hpp transport.hpp json.hpp credentials.hpp
+set(client_public_headers client.h embed.h browser.hpp transport.hpp json.hpp credentials.hpp
   image.hpp observation.hpp visual.hpp agent.hpp agent_driver.hpp agent_tools.hpp simple_agent.hpp)
 foreach(header IN LISTS client_public_headers)
   install(FILES "${PROJECT_SOURCE_DIR}/include/suitecut/${header}" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/suitecut)

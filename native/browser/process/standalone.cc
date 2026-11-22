@@ -182,7 +182,8 @@ std::vector<std::pair<void*, std::string>> Windows() {
   std::vector<std::pair<void*, std::string>> out;
   if (!Current()) return out;
   for (const auto& browser : Current()->client()->browsers())
-    out.emplace_back(browser->GetHost()->GetWindowHandle(), Current()->DirOf(browser));
+    // CefWindowHandle is a pointer on macOS and an X11 window id on Linux.
+    out.emplace_back(reinterpret_cast<void*>(browser->GetHost()->GetWindowHandle()), Current()->DirOf(browser));
   return out;
 }
 

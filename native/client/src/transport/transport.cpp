@@ -55,6 +55,7 @@ void validate(const LaunchOptions& options) {
     throw failure("Profile must be an absolute path without null bytes");
   // No suitecut viewport, FPS or storage cap; the engine and CEF enforce theirs.
   if (options.width < 2 || options.height < 2) throw failure("Viewport must be at least 2 by 2");
+  if (options.scale != 1 && options.scale != 2) throw failure("Native scale must be 1 or 2");
   if (!std::isfinite(options.frames_per_second) || options.frames_per_second < 1 ||
       options.frames_per_second > INT_MAX || std::floor(options.frames_per_second) != options.frames_per_second)
     throw failure("Native capture FPS must be a positive integer");
@@ -443,8 +444,9 @@ struct Transport::Impl {
       std::vector<std::string> args{options.executable};
       args.insert(args.end(), options.arguments.begin(), options.arguments.end());
       args.push_back("--suitecut-width=" + std::to_string(options.width));
+      if (options.host_events) args.push_back("--suitecut-host-events=1");
       args.push_back("--suitecut-height=" + std::to_string(options.height));
-      args.push_back("--suitecut-scale=1");
+      args.push_back("--suitecut-scale=" + std::to_string(options.scale));
       args.push_back("--suitecut-fps=" + std::to_string(static_cast<int>(options.frames_per_second)));
       // I420 keeps native recording bandwidth at 1.5 bytes/pixel. Preserve
       // exact odd viewport geometry through the existing BGRA path.
@@ -761,6 +763,12 @@ Packet Transport::wait_ready(int page_id, std::chrono::milliseconds timeout) {
   if (const auto found = state.page_ready.find(page_id); found != state.page_ready.end()) return found->second;
   if (state.terminal) std::rethrow_exception(state.terminal);
   throw failure("Native transport closed before page readiness");
+}
+std::optional<int> Transport::process_id() const {
+  if (impl_->cdp || impl_->bidi) return std::nullopt;
+  // Set once at launch, before the I/O thread starts, and never changed.
+  if (impl_->pid < 1) return std::nullopt;
+  return static_cast<int>(impl_->pid);
 }
 ClientStats Transport::stats() const { if (impl_->cdp) return impl_->cdp->stats(); if (impl_->bidi) return impl_->bidi->stats(); std::lock_guard lock(impl_->mutex); return impl_->counters; }
 void Transport::close() {

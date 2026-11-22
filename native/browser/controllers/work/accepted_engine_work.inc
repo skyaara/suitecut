@@ -106,7 +106,7 @@ void Engine::PumpAcceptedWork(){
       case Wire::Kind::Begin:
         if(!native_work_installed_||native_work_||message->challenge.nonce<=native_work_nonce_||message->challenge.borrow_generation<native_work_generation_||AcceptedWorkNow()>=message->challenge.deadline)throw std::runtime_error("Native Engine work challenge stale/expired");
         native_work_nonce_=message->challenge.nonce;
-        native_work_.emplace();native_work_->challenge=std::move(message->challenge);
+        native_work_.emplace(NativeWorkBarrier{});native_work_->challenge=std::move(message->challenge);
         break;
       case Wire::Kind::Observed:
         if(!native_work_||!native_work_->cuts||*native_work_->cuts!=message->cuts||native_work_->observed||native_work_->granted)throw std::runtime_error("Native Engine stdout observation foreign/replayed");

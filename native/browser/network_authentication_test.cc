@@ -17,4 +17,15 @@ int main(){assert(cef_api_hash(CEF_API_VERSION,0));using Auth=suitecut::NativeNe
  // A response Chromium never acknowledges is forgotten after 30 s, not fatal.
  auth.Event(input,"actual-session",2);auth.Tick(30002);assert(failure.empty()&&!auth.failed()&&auth.pending()==0);auth.Tick(60002);assert(failure.empty()&&auth.pending()==0);auth.Clear();assert(auth.pending()==0);pending.back()(true,"");
  std::vector<Auth::Result>rejected_callbacks;int failures=0;Auth rejected([&](const std::string&,const std::string&,Dict,Auth::Result done){rejected_callbacks.push_back(std::move(done));},[&](const std::string&){++failures;},[]{});rejected.Set([](Dict){auto decision=CefDictionaryValue::Create();decision->SetString("response","CancelAuth");return decision;});rejected.Event(input,"actual-rejected-session",0);assert(rejected.pending()==1);rejected_callbacks[0](false,"actual native response rejection");assert(!rejected.failed()&&rejected.pending()==0&&failures==0);rejected_callbacks[0](true,"");assert(rejected.pending()==0);rejected.Clear();assert(rejected.pending()==0);
+ // A person's prompt: "Ask" hands the challenge over, with no cap on how often
+ // a rejected answer asks again, and the answer is sent whenever it comes.
+ std::vector<Auth::Result>asked_callbacks;std::vector<Dict>asked_sent;Auth asking([&](const std::string&,const std::string&,Dict params,Auth::Result done){asked_sent.push_back(params->Copy(false));asked_callbacks.push_back(std::move(done));},[](const std::string&){},[]{});
+ asking.Set([](Dict){auto decision=CefDictionaryValue::Create();decision->SetString("response","Ask");return decision;});
+ std::vector<std::function<void(Dict)>>answers;asking.SetAsker([&](Dict actual,std::function<void(Dict)>answer){assert(actual->GetString("requestId")=="actual-fetch-identity");answers.push_back(std::move(answer));});
+ input->SetString("requestId","actual-fetch-identity");
+ for(int i=0;i<6;++i){asking.Event(input,"asking-session",1000000.0*i);assert(answers.size()==size_t(i+1)&&asked_sent.size()==size_t(i)&&asking.pending()==0);
+  auto decision=CefDictionaryValue::Create();decision->SetString("response","ProvideCredentials");decision->SetString("username","person");decision->SetString("password","guess");answers.back()(decision);
+  assert(asked_sent.size()==size_t(i+1)&&asked_sent.back()->GetDictionary("authChallengeResponse")->GetString("response")=="ProvideCredentials");asking.Tick(1e12);assert(asking.pending()==1);asked_callbacks.back()(true,"");assert(asking.pending()==0);}
+ asking.Event(input,"asking-session",0);asking.SessionDetached("asking-session");auto late=CefDictionaryValue::Create();late->SetString("response","CancelAuth");answers.back()(late);assert(asked_sent.size()==6);
+ asking.Clear();
 }

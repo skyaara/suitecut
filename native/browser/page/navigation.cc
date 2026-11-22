@@ -62,6 +62,11 @@ auto Source::OnLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> fram
 
 auto Source::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnTitleChange(browser, title);
+  {
+    auto fields = CefDictionaryValue::Create();
+    fields->SetString("title", title);
+    HostEvent("title", fields);
+  }
   if (!closing_page_ && network_ &&
       !engine_.network_archive().PageTitle(network_context_id_, "page:" + std::to_string(page_id_),
                                            title.ToString()))
@@ -79,6 +84,10 @@ auto Source::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> fram
     }
     ClearConsoleRawArguments(true);
     handles_.clear();
+    // The old document's file choosers and media requests go with it.
+    // Chromium resets dialog state only once a page has shown a dialog.
+    if (person_prompts_) person_prompts_->Reset();
+    agent_auth_tries_.Reset();
   }
 }
 

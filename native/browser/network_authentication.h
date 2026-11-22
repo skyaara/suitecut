@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <set>
+#include <limits>
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -17,11 +19,16 @@ class NativeNetworkAuthentication {
   using Dict=CefRefPtr<CefDictionaryValue>;
   using Result=std::function<void(bool,const std::string&)>;
   using Provider=std::function<Dict(Dict)>;
+  // A provider may answer {"response":"Ask"}: then |asker| gets the challenge
+  // and a function that answers it later, with no deadline of SuiteCut's own
+  // (a person's prompt).
+  using Asker=std::function<void(Dict input,std::function<void(Dict decision)> answer)>;
   using Send=std::function<void(const std::string&,const std::string&,Dict,Result)>;
   NativeNetworkAuthentication(Send send,std::function<void(const std::string&)>failure,std::function<void()>wake)
       :send_(std::move(send)),failure_(std::move(failure)),wake_(std::move(wake)){}
   ~NativeNetworkAuthentication(){Clear();}
   void Set(Provider provider){provider_=std::move(provider);}
+  void SetAsker(Asker asker){asker_=std::move(asker);}
   // Reports a challenge or correlation this control gives up on. A request it
   // can't own is answered with CancelAuth, so Chromium never waits on it.
   std::function<void(const std::string&)> degraded;
@@ -45,15 +52,26 @@ class NativeNetworkAuthentication {
     auto found=attempts_.find(key);
     if(found==attempts_.end())found=attempts_.emplace(key,Attempt{0,now+30000}).first;
     if(pending_.contains(key)){Drop("Native authentication challenge is already pending");return;}
-    auto decision=CefDictionaryValue::Create();
-    if(++found->second.count>3||now>=found->second.deadline)decision->SetString("response","CancelAuth");
-    else {
-      auto input=CefDictionaryValue::Create();auto actual_request=CefDictionaryValue::Create();actual_request->SetString("url",request->GetString("url"));input->SetDictionary("request",actual_request);
-      auto actual_challenge=CefDictionaryValue::Create();for(const auto* field:{"source","origin","realm","scheme"})actual_challenge->SetString(field,challenge->GetString(field));input->SetDictionary("authChallenge",actual_challenge);input->SetString("requestId",id);
-      decision=provider_(input);
+    auto input=CefDictionaryValue::Create();auto actual_request=CefDictionaryValue::Create();actual_request->SetString("url",request->GetString("url"));input->SetDictionary("request",actual_request);
+    auto actual_challenge=CefDictionaryValue::Create();for(const auto* field:{"source","origin","realm","scheme"})actual_challenge->SetString(field,challenge->GetString(field));input->SetDictionary("authChallenge",actual_challenge);input->SetString("requestId",id);
+    // A person answers as often as the server asks, whenever they answer.
+    Dict decision=asker_?provider_(input):nullptr;
+    if(decision&&decision->GetType("response")==VTYPE_STRING&&decision->GetString("response")=="Ask"){
+      if(asked_.contains(key)){Drop("Native authentication challenge is already asked");return;}
+      asked_.insert(key);
+      asker_(input,[this,alive=alive_,session,id,key](Dict answer){
+        if(!*alive||!asked_.erase(key))return;
+        Respond(session,id,key,answer,0);
+      });
+      return;
     }
+    if(++found->second.count>3||now>=found->second.deadline){decision=CefDictionaryValue::Create();decision->SetString("response","CancelAuth");}
+    else if(!decision)decision=provider_(input);
+    Respond(session,id,key,decision,found->second.deadline);
+  }
+  void Respond(const std::string&session,const std::string&id,const std::string&key,Dict decision,double deadline){
     if(!Valid(decision)){Cancel(session,id);Drop("Invalid native credential decision");return;}
-    const auto generation=++serial_;pending_.emplace(key,Pending{generation,found->second.deadline,false,false});
+    const auto generation=++serial_;pending_.emplace(key,Pending{generation,deadline>0?deadline:std::numeric_limits<double>::infinity(),false,false});
     auto response=CefDictionaryValue::Create();response->SetString("requestId",id);response->SetDictionary("authChallengeResponse",decision->Copy(false));
     send_(session,"Fetch.continueWithAuth",response,[this,alive=alive_,key,generation](bool ok,const std::string&error){
       if(!*alive)return;
@@ -72,6 +90,7 @@ class NativeNetworkAuthentication {
     for(auto it=pending_.begin();it!=pending_.end();)if(it->first.starts_with(prefix))it=pending_.erase(it);else++it;
     for(auto it=links_.begin();it!=links_.end();)if(it->first.starts_with(prefix)||it->second.session==session){const auto key=it->first;it=links_.erase(it);pending_.erase(key);EraseAttempt(key);}else++it;
     for(auto it=attempts_.begin();it!=attempts_.end();)if(it->first.starts_with(prefix))it=attempts_.erase(it);else++it;
+    for(auto it=asked_.begin();it!=asked_.end();)if(it->starts_with(prefix))it=asked_.erase(it);else++it;
   }
   void Tick(double now){
     if(disposed_||failed_)return;
@@ -87,20 +106,21 @@ class NativeNetworkAuthentication {
   size_t pending()const{return pending_.size();}
   size_t attempts()const{return attempts_.size();}
   size_t correlations()const{return links_.size();}
-  void Clear(){if(disposed_)return;disposed_=true;*alive_=false;provider_={};pending_.clear();attempts_.clear();links_.clear();}
+  void Clear(){if(disposed_)return;disposed_=true;*alive_=false;provider_={};asker_={};pending_.clear();attempts_.clear();links_.clear();asked_.clear();}
  private:
   struct Attempt{unsigned count;double deadline;};struct Pending{uint64_t generation;double deadline;bool completed,acknowledged;};struct Link{std::string session,network;double deadline;};
   void EraseAttempt(const std::string&key){attempts_.erase(key);}
   static bool Valid(Dict decision){
     if(!decision||decision->GetType("response")!=VTYPE_STRING)return false;
     const auto response=decision->GetString("response").ToString();
-    if(response=="CancelAuth")return true;
+    // Default hands the challenge to CEF's GetAuthCredentials (a person's prompt).
+    if(response=="CancelAuth"||response=="Default")return true;
     return response=="ProvideCredentials"&&decision->GetType("username")==VTYPE_STRING&&decision->GetType("password")==VTYPE_STRING;
   }
   void Fail(const std::string&error){if(disposed_||failed_)return;failed_=true;failure_(error);}
   void Drop(const std::string&error){if(degraded)degraded(error);}
   void Cancel(const std::string&session,const std::string&id){auto response=CefDictionaryValue::Create();response->SetString("requestId",id);auto decision=CefDictionaryValue::Create();decision->SetString("response","CancelAuth");response->SetDictionary("authChallengeResponse",decision);send_(session,"Fetch.continueWithAuth",response,[](bool,const std::string&){});}
-  Send send_;std::function<void(const std::string&)>failure_;std::function<void()>wake_;Provider provider_;
+  Send send_;std::function<void(const std::string&)>failure_;std::function<void()>wake_;Provider provider_;Asker asker_;std::set<std::string>asked_;
   bool disposed_=false,failed_=false;uint64_t serial_=0;std::shared_ptr<bool>alive_=std::make_shared<bool>(true);
   std::map<std::string,Attempt>attempts_;std::map<std::string,Pending>pending_;std::map<std::string,Link>links_;
 };

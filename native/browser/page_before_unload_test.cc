@@ -64,5 +64,17 @@ int main(){
     attempt.Force();const auto second=attempt.Begin("later",60000,1);assert(second>first);
     dialogs.Clear(true);assert(callback->calls==1&&!callback->accepted&&attempt.Pending()==second);
   }
+  {
+    // Under host events a reset reports each dropped dialog closed, and still
+    // invents no Continue.
+    std::vector<CefRefPtr<CefDictionaryValue>> events;
+    SuiteCutDialogControls dialogs([&](auto event){events.push_back(event);});dialogs.Subscribe(true);
+    CefRefPtr<ObservedDialog>callback=new ObservedDialog;
+    assert(dialogs.Show("confirm","","sure?","",callback,0));
+    dialogs.Reset();
+    assert(events.size()==2&&events[1]->GetString("state")=="closed"&&events[1]->GetString("reason")=="reset"&&events[1]->GetString("id")==events[0]->GetString("id"));
+    assert(callback->calls==0&&dialogs.AcceptedWorkReady());
+    dialogs.Reset();assert(events.size()==2);
+  }
   std::cout<<"Beforeunload native attempt and real dialog callback controls passed\n";
 }
