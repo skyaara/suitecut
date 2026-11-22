@@ -13,6 +13,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <thread>
 
 namespace suitecut {
 namespace {
@@ -24,6 +25,33 @@ std::string text(const Json& a, const char* key, const std::string& fallback = {
 }
 std::int64_t integer(const Json& a, const char* key, std::int64_t fallback) {
   return a.contains(key) ? a.at(key).as_int() : fallback;
+}
+// Whether a script failed only because its document is being replaced, as
+// after an input that starts a navigation: the CEF engine's annotation and
+// Chromium's own texts.
+bool context_lost(const std::exception& error) {
+  const std::string what = error.what();
+  for (const auto* reason : {"execution context unavailable after navigation", "Cannot find context",
+                             "Execution context was destroyed", "Cannot find default execution context",
+                             "Inspected target navigated"})
+    if (what.find(reason) != std::string::npos) return true;
+  return false;
+}
+// Reads a side-effect-free property of the active document (its URL, title or
+// text). Mid-navigation the old document's context is gone, so it reads again
+// in the new one, all within the page's one timeout.
+Json read_document(const Page& page, const std::string& expression) {
+  using Clock = std::chrono::steady_clock;
+  constexpr auto pause = std::chrono::milliseconds{50};
+  const auto deadline = Clock::now() + page.timeout();
+  for (;;) {
+    const auto left = std::chrono::ceil<Timeout>(deadline - Clock::now());
+    try { return page.with_timeout(std::max(left, Timeout{1})).evaluate(expression); }
+    catch (const std::exception& error) {
+      if (!context_lost(error) || Clock::now() + pause >= deadline) throw;
+    }
+    std::this_thread::sleep_for(pause);
+  }
 }
 std::string base64(const std::vector<std::uint8_t>& bytes) {
   static constexpr char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -394,8 +422,8 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
   if (name == "evaluate") return page.evaluate(args.at("expression").as_string());
   if (name == "get") {
     const auto kind = args.at("kind").as_string();
-    if (kind == "url") return page.evaluate("location.href");
-    if (kind == "title") return page.evaluate("document.title");
+    if (kind == "url") return read_document(page,"location.href");
+    if (kind == "title") return read_document(page,"document.title");
     auto element = target(page,args);
     if (kind == "text") return element.text_content();
     if (kind == "innerText") return element.inner_text();
@@ -465,7 +493,7 @@ Json AgentDriver::call(const std::string& name, const Json& args) {
     else throw std::invalid_argument("Unknown mouse action");
     return Json{};
   }
-  if (name == "read") return page.evaluate("({url:location.href,title:document.title,text:document.body?.innerText||''})");
+  if (name == "read") return read_document(page,"({url:location.href,title:document.title,text:document.body?.innerText||''})");
   if (name == "upload") {
     const auto& paths = args.at("files").as_array();
     std::vector<std::string> files;

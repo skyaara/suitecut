@@ -47,9 +47,23 @@ child.stderr.on('data', (chunk) => (stderr = `${stderr}${String(chunk)}`.slice(-
 /** @type {((line: string | Error) => void)[]} */
 const waiting = []
 const exited = new Promise((done) => child.on('close', done))
+/**
+ * Whether a stdout line is a reply: a JSON object with a boolean `ok`. The CLI
+ * prints keys in sorted order, so a failure starts `{"error":`, not `{"ok":`.
+ * @param {string} line One line of stdout.
+ * @returns {boolean} Whether it answers the oldest request.
+ */
+function isReply(line) {
+  if (!line.startsWith('{')) return false
+  try {
+    return typeof z.object({ ok: z.unknown() }).parse(JSON.parse(line)).ok === 'boolean'
+  } catch {
+    return false
+  }
+}
 // Each request gets exactly one reply line; anything else on stdout is not a reply.
 createInterface({ input: child.stdout, crlfDelay: Infinity }).on('line', (line) => {
-  if (line.startsWith('{"ok"')) waiting.shift()?.(line)
+  if (isReply(line)) waiting.shift()?.(line)
 })
 /** Set once the CLI has exited, so later calls fail at once instead of waiting. */
 let gone = ''
@@ -152,25 +166,11 @@ const act = async (args) =>
   void (await call('act', { ...args, response: 'none', timeoutMs: ACTION_MS }))
 
 /**
- * The page URL, as the harness checks a task's goal. This reads the URL an
- * observation reports, scoped to `<head>` so it costs a few milliseconds and
- * keeps a deadline. `get url` would be cheaper, but it evaluates
- * `location.href` with no deadline, and after a key press that navigates it
- * can wait for an answer that never comes, which stops the whole session. An
- * observation that fails because the navigation is replacing the document
- * reads as "not there yet", and the harness polls again within the same 20 s
- * goal deadline.
- * @returns {Promise<string>} The URL, or '' mid-navigation.
+ * The page URL, as the harness checks a task's goal. While a navigation is
+ * replacing the document, `get url` reads again until the new one answers.
+ * @returns {Promise<string>} `location.href` of the active page.
  */
-async function readURL() {
-  try {
-    const { result: seen } = await call('observe', { scope: 'head', timeoutMs: ACTION_MS })
-    return z.object({ url: z.string() }).parse(seen).url
-  } catch (error) {
-    if (/execution context|Cannot find context/u.test(message(error))) return ''
-    throw error
-  }
-}
+const readURL = async () => z.string().parse((await call('get', { kind: 'url' })).result)
 
 /** @type {BenchRun} */
 const result = { tool: 'suitecut', sites: [], tasks: [] }
