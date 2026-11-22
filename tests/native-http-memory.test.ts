@@ -1,23 +1,34 @@
 // SPDX-License-Identifier: MIT
 import { execFile } from 'node:child_process'
+import { createRequire } from 'node:module'
+import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 
 import { expect, it } from 'vitest'
 
 const execute = promisify(execFile)
+const typescript = pathToFileURL(createRequire(import.meta.url).resolve('typescript')).href
 
 it('does not revive discarded cached HTTP bodies when admitting an unrelated response', async () => {
   const program = `
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import { setImmediate as turn } from 'node:timers/promises';
+import ts from ${JSON.stringify(typescript)};
+// Transpile the sources here: Node 26 only strips types, and they use parameter properties.
 registerHooks({resolve(specifier, context, next) {
   if (specifier.endsWith('.js') && context.parentURL?.startsWith('file:')) {
     const candidate = new URL(specifier.slice(0, -3) + '.ts', context.parentURL);
     if (existsSync(candidate)) return next(candidate.href, context);
   }
   return next(specifier, context);
+}, load(url, context, next) {
+  if (!url.startsWith('file:') || !url.endsWith('.ts')) return next(url, context);
+  const { outputText } = ts.transpileModule(readFileSync(new URL(url), 'utf8'), {
+    compilerOptions: { target: ts.ScriptTarget.ES2023, module: ts.ModuleKind.ESNext },
+  });
+  return { format: 'module', source: outputText, shortCircuit: true };
 }});
 const { NativeAPIRequestContext } = await import(${JSON.stringify(new URL('../src/native-http.ts', import.meta.url).href)});
 const lifetime = new AbortController();
@@ -55,7 +66,7 @@ console.log('HTTP weak-body ownership checks passed');
 `
   const { stdout } = await execute(
     process.execPath,
-    ['--expose-gc', '--experimental-transform-types', '--input-type=module', '--eval', program],
+    ['--expose-gc', '--input-type=module', '--eval', program],
     { timeout: 30_000, maxBuffer: 1024 * 1024 },
   )
   expect(stdout.trim()).toBe('HTTP weak-body ownership checks passed')

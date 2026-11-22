@@ -152,15 +152,16 @@ describe('native IPC boundary', () => {
       expect(Math.max(...allocations.mock.calls.map(([size]) => size))).toBeLessThan(64)
       expect(() => decoder.end()).toThrow('Truncated')
       // A large payload fragmented across irregular reads still arrives byte for byte.
-      allocations.mockClear()
-      const received: Buffer[] = []
-      const frames = new NativePacketDecoder((_, data) => received.push(data))
       const data = Buffer.alloc(64 * 64 * 4)
       for (let i = 0; i < data.length; i++) data[i] = (i * 31) % 251
       const bytes = packet(
         { type: 'frame', timestampMs: 1, width: 64, height: 64, dropped: 0 },
         data,
       )
+      // Build the packet first: Node 22's Buffer.concat calls allocUnsafe itself.
+      allocations.mockClear()
+      const received: Buffer[] = []
+      const frames = new NativePacketDecoder((_, data) => received.push(data))
       const split = bytes.length - data.length + 100
       frames.push(bytes.subarray(0, split))
       expect(Math.max(...allocations.mock.calls.map(([size]) => size))).toBeLessThan(1024)

@@ -109,7 +109,13 @@ describe('native event payloads beyond V8 string length', () => {
     // An oversized command result rejects that command alone.
     const pending = browser.runAutomation('evaluate', { expression: '1' })
     await vi.waitFor(() => expect(input.readableLength).toBeGreaterThan(0))
-    const { id } = JSON.parse((input.read() as Buffer).toString()) as { id: number }
+    // The console acknowledgement may share the read, depending on Node's stream timing.
+    const commands = (input.read() as Buffer)
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as { id: number; command: string })
+    const { id } = commands.find((command) => command.command === 'evaluate')!
     emit({ type: 'response', id, ok: true }, oversized)
     await expect(pending).rejects.toBeInstanceOf(NativeEventPayloadError)
     expect(browser.state).toBe('running')
