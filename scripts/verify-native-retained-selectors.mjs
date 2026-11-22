@@ -346,11 +346,7 @@ try {
   )
   const saturationRoot = await page.$('#cleanup')
   assert(saturationRoot)
-  for (const handles of [
-    [],
-    [saturationRoot.id, saturationRoot.id],
-    ['not-an-id'],
-  ])
+  for (const handles of [[], [saturationRoot.id, saturationRoot.id], ['not-an-id']])
     await assert.rejects(
       source.runAutomation('handle', { action: 'disposeMany', handles }),
       /Invalid native handle disposal batch/,

@@ -94,10 +94,7 @@ try {
   )
   await largeHandle.dispose()
   await page.exposeFunction('oversizedValue', () => 'x'.repeat(2 * 1024 * 1024))
-  assert.equal(
-    await page.evaluate('oversizedValue().then(value=>value.length)'),
-    2 * 1024 * 1024,
-  )
+  assert.equal(await page.evaluate('oversizedValue().then(value=>value.length)'), 2 * 1024 * 1024)
   const stagedState = z
     .object({ bindingResultBytes: z.number() })
     .parse(await page.source.runAutomation('diagnostics'))

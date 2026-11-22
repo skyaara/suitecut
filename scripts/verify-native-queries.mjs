@@ -453,14 +453,11 @@ try {
           { engine: 'css', selector: 'body' },
           { engine: 'filter', hasText: { text: 'missing' } },
         ]).count()
+  /** @type {unknown} */
   const matched = await large
   assert.equal(Array.isArray(matched) ? matched.length : matched, 0)
   await page.setContent('<p>recovered</p>')
-  await query(
-    'query after a 20 MiB text node',
-    [{ engine: 'css', selector: 'p' }],
-    [''],
-  )
+  await query('query after a 20 MiB text node', [{ engine: 'css', selector: 'p' }], [''])
   results.push('20 MiB text node filtered whole without a byte limit')
   await page.setContent('<main><div id="branch-root"></div></main>')
   await page.evaluate(() => {

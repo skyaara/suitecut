@@ -97,23 +97,22 @@ await codec.encode([
   new ObservedBlob([new Uint8Array(220000)]),
 ])
 assert.equal(blobReads, 2)
-assert.doesNotThrow(
-  () =>
-    codec.decode({
-      version: 1,
-      root: [4, 0],
-      nodes: [
-        {
-          type: 'Array',
-          values: [
-            [4, 1],
-            [4, 2],
-          ],
-        },
-        { type: 'ArrayBuffer', data: 'A'.repeat(300000) },
-        { type: 'ArrayBuffer', data: 'A'.repeat(300000) },
-      ],
-    }),
+assert.doesNotThrow(() =>
+  codec.decode({
+    version: 1,
+    root: [4, 0],
+    nodes: [
+      {
+        type: 'Array',
+        values: [
+          [4, 1],
+          [4, 2],
+        ],
+      },
+      { type: 'ArrayBuffer', data: 'A'.repeat(300000) },
+      { type: 'ArrayBuffer', data: 'A'.repeat(300000) },
+    ],
+  }),
 )
 for (let index = 0; index < 10000; index++) {
   const shared = { index }

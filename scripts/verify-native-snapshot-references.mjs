@@ -201,9 +201,7 @@ try {
   await page
     .locator('.overflow')
     .evaluateAll((elements) => elements.forEach((element) => element.remove()))
-  checks.push(
-    'a 650-button page snapshot publishes whole with no byte limit and its refs resolve',
-  )
+  checks.push('a 650-button page snapshot publishes whole with no byte limit and its refs resolve')
   const newer = await page.locator('#alpha').ariaSnapshot({ mode: 'ai' }),
     newAlpha = named(newer, 'Alpha actual')
   assert.notEqual(newAlpha, alpha)

@@ -10,6 +10,9 @@ export default tseslint.config(
       'dist/**',
       'packages/*/dist/**',
       '.suitecut/**',
+      // Agent worktrees are whole checkouts of other branches; .venv* are Python envs.
+      '.claude/**',
+      '.venv*/**',
       'test-results/**',
       'site/.astro/**',
       'site/dist/**',
