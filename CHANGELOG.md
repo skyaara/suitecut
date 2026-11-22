@@ -2,6 +2,42 @@
 
 ## Unreleased
 
+- Pin CEF 156.0.30 (Chromium 156.0.8078.96, stable) instead of the 156.0.7
+  beta. Linux x64 uses CEF's official minimal archive. macOS arm64 uses
+  OpenArch's third-party build of the same tag with proprietary codecs, so
+  H.264, AAC and HEVC play there; it is not an official CEF build and carries
+  no codec patent licence. macOS arm64 is now the platform where codec playback
+  is verified, since the codec build can't be produced on Linux here. The
+  experimental `cef-patches` still target the 156.0.7 sources.
+- Remove every size, count, byte, depth, length, concurrency and retention
+  limit suitecut imposed itself, including the ones that copied a Chromium
+  number. Chromium, CEF, V8 and FFmpeg enforce their own limits and errors.
+  Timeouts, wire and file formats, overflow guards and validity checks stay;
+  `native/browser/LIMITS.md` lists them. Nothing is clipped, dropped or evicted
+  for size any more: journals and media queues are released with their page or
+  context, so a long-lived busy page holds more memory than before. This changes
+  public behaviour:
+  - `Network.enable` asks for 2,147,483,647 bytes for `maxTotalBufferSize`,
+    `maxResourceBufferSize` and `maxPostDataSize`, instead of Chromium's
+    defaults.
+  - `route.fetch()` and native API requests follow any number of redirects by
+    default (`maxRedirects` defaults to 2,147,483,647); a `maxRedirects` you
+    pass still applies.
+  - `NativeBrowserViewerState` no longer has `maxWidth` and `maxHeight`, and
+    the viewer and recordings no longer fit or clamp to 3840×2160. Launch
+    `deviceScaleFactor` takes any positive number, frame rates have no 120 FPS
+    maximum, and the viewer and native publishing no longer stop at eight
+    clients and four publishers.
+  - `native/client` option limits default to 0, meaning no limit; a value you
+    set is still enforced. The `CredentialVault::max_*` constants are deleted.
+    The simple agent's `act` takes any number of actions, and `observe`
+    returns every control unless `maxControls` or `maxTextBytes` is set (they
+    were 64, 100 and 8 KiB).
+  - The native runner no longer caps attachments, steps, hooks, soft errors,
+    output paths, stdout streams, file writers, retries, shards, projects,
+    workers, fixtures or JSON depth, and their budget-receipt fields are gone.
+    Timeouts stay, including the 120,000 ms `amendTimeout` ceiling.
+
 - Let a tab that a link or `window.open()` opens take commands as soon as its
   page commits. It used to wait for the page's load event, so on a site with
   slow images every snapshot, click and `page.url()` on the new tab waited

@@ -1,7 +1,7 @@
 # Shared Browser
 
 `@suitecut/shared-browser` opens one native browser window that you and an AI
-agent use at the same time. The window has SuiteCut's own tab strip and
+agent use at the same time. The window has suitecut's own tab strip and
 toolbar; every tab is a full Chromium page drawn in the window, not a stream.
 The agent drives tabs through a TypeScript SDK or an MCP server, and you can
 click, type and open tabs in the same window while it works.
@@ -13,7 +13,7 @@ This package is a preview (0.x). Its API may change before 1.0.
 - **Looks like a person.** Input arrives as trusted events. In our 2026-11-01 run, sannysoft, CreepJS, BrowserScan, incolumitas and BotD all reported a normal browser.
 - **Prompts stay yours.** Permission requests show Allow and Block in the toolbar. Dialogs wait for an answer from you or the agent.
 
-Requires Node.js 22 or newer, macOS on Apple silicon, and the SuiteCut browser
+Requires Node.js 22 or newer, macOS on Apple silicon, and the suitecut browser
 runtime (`suitecut-browser`), which is distributed separately from npm.
 
 ## MCP server

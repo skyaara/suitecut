@@ -1,6 +1,6 @@
-# SuiteCut native guide
+# suitecut native guide
 
-SuiteCut controls an offscreen CEF browser and captures its pixels and page audio
+suitecut controls an offscreen CEF browser and captures its pixels and page audio
 through native callbacks. The Node API currently handles source lifecycle,
 recording, presentation, publishing and FFmpeg composition.
 
@@ -65,10 +65,11 @@ Each family has scoped evidence and known gaps in the
 
 ## Capture settings and resampling
 
-Native launch controls CSS `width`/`height`, `deviceScaleFactor` (1 or 2),
-`framesPerSecond` (integer 1–120), and `pixelFormat` (`bgra` or `i420`). Root launch
-defaults are 1920×1080, scale 1, 60 FPS and I420. Physical size is bounded to
-3840×2160, and I420 requires even dimensions.
+Native launch controls CSS `width`/`height`, `deviceScaleFactor` (any positive
+number), `framesPerSecond` (an integer from 1), and `pixelFormat` (`bgra` or `i420`).
+Root launch defaults are 1920×1080, scale 1, 60 FPS and I420. suitecut sets no
+maximum size or frame rate; CEF and Chromium apply their own. I420 requires even
+dimensions.
 
 Recording `capture` accepts output `size`, output `framesPerSecond`,
 `narrationTailMs` and boolean `audio`. Output FPS defaults to each source's
@@ -124,7 +125,7 @@ try {
 ```
 
 `applicationStopSignal` is application-owned. Native streams accept RTMP/RTMPS URLs,
-output size, boolean audio, a fixed bitrate and fractional output rates through 120.
+output size, boolean audio, a fixed bitrate and fractional output rates from 1 up.
 `await health()` and `await status()` report actual native counters.
 `await selectSource(pageSource)` preserves the connection and clears old-source
 audio, requiring a real page in the same native helper. Graceful page/context
@@ -139,7 +140,7 @@ are not applied to a concurrent broadcast.
 ## Renderer and CLI
 
 The renderer consumes the same native manifests and supports MP4, WebM, MOV and
-MKV, dimensions, FPS 1–120, supported FFmpeg codecs/pixel formats, quality profiles,
+MKV, dimensions, any FPS from 1, supported FFmpeg codecs/pixel formats, quality profiles,
 source audio and narration controls. Inputs cannot be overwritten by the output.
 It writes a report with timing decisions and diagnostics.
 

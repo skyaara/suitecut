@@ -1,6 +1,6 @@
 # Native tracing and coverage
 
-SuiteCut records browser actions and captures in C++. The Node API supplies typed
+suitecut records browser actions and captures in C++. The Node API supplies typed
 options, caller locations and output paths. Browser contexts and API request
 contexts own separate trace sessions.
 
@@ -60,8 +60,8 @@ is a closed archive with its own resource names and exact captured bytes.
 Cancellation retires logical ownership immediately and retains accepted physical
 work until it actually completes. Already published live files remain on disk.
 An actual filesystem failure is reported at finalization. It does not create an
-unbounded stream of retries. Trace byte and writer limits can reject further
-capture; bounded traces are not guaranteed complete session histories.
+unbounded stream of retries. suitecut sets no trace byte or entry limit; an
+archive switches to ZIP64 when a ZIP32 count or offset would overflow.
 
 ## Current-document coverage
 
@@ -90,9 +90,8 @@ engine counters can be collected fails the recording with an explicit error.
 Navigation during collection also fails instead of combining partial documents.
 Actual renderer recovery is verified with new main/iframe sources and counts.
 
-Capture admits at most 32 actual root/iframe/opted-in worker targets, with a shared 48 MiB budget
-for retained sources, measurements and output. Results are bounded to 2 MiB and
-2048 entries. Native command queues retain their original deadlines. A canceled
-start retains actual pending acknowledgements and domain cleanup; a subsequent
-start is admitted once that cleanup has genuinely finished. Capture limits do
-not impose the same target limit on ordinary page activity after coverage stops.
+suitecut sets no limit on capture targets (root, iframe and opted-in worker),
+retained sources, measurements, result size or entry count. Native command
+queues retain their original deadlines. A canceled start retains actual pending
+acknowledgements and domain cleanup; a subsequent start is admitted once that
+cleanup has genuinely finished.

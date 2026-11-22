@@ -23,8 +23,9 @@ await routing.disable()
 ```
 
 `enable()` requires the actual backend to acknowledge
-`Network.suiteCutWebSocketConfigureV1` with revision 1 and the pinned capacity
-contract. It does not infer support from a version string, source patch, existing
+`Network.suiteCutWebSocketConfigureV1` with revision 2, the uncapped contract; a
+revision-1 backend built from the earlier capped patch is refused. Route `close`
+reasons follow RFC 6455 and must be at most 123 UTF-8 bytes. It does not infer support from a version string, source patch, existing
 observation events or a JavaScript socket replacement. The launch capability
 metadata remains conservatively false for the distributed stock backend; this
 explicit target probe is the authority for an attempted custom-backend session.
@@ -53,12 +54,11 @@ handshake, remote message delivery and completed closure.
 
 The native adapter scopes every command to a page-local routing generation and
 an actually observed socket identity. It accepts root-target events only and
-allows one pending event consumer. It retains at most 128 queued events and
-8 MiB of encoded event metadata/payload. Queue overflow or a queued event older
-than its original 30-second observation deadline disables the routing policy.
-It never extends the vendor channel's own pending-decision deadlines. Each
-payload is limited to 2 MiB; the vendor's 128-channel and per-channel 64-message
-limits also apply. Queued event deadlines use the existing single source timer.
+allows one pending event consumer. suitecut sets no limit on queued events,
+their encoded bytes or a payload's size; Chromium's own WebSocket message-size
+and connection limits apply. A queued event older than its original 30-second
+observation deadline disables the routing policy. It never extends the vendor
+channel's own pending-decision deadlines. Queued event deadlines use the existing single source timer.
 Disabling aborts routed channels through the vendor agent. The native adapter
 retains actual configure replies independently of logical command cancellation,
 keeps a configuration barrier until both the original enable and required
@@ -131,12 +131,12 @@ process lifetime when the native owner still exists.
 
 Context policy is registered with native targets directly. Global native push
 messages are decoded before Page lookup, so context callbacks can control a
-popup or worker before a Page facade exists. The packet header contains bounded
-metadata; incoming message bodies carry up to 2 MiB of raw binary data, avoiding
+popup or worker before a Page facade exists. The packet header contains the
+metadata; incoming message bodies carry their raw binary data whole, avoiding
 a base64 encode/decode round trip in SDK event delivery. Outgoing send/replace
 payloads above 24 KiB use native begin/append/commit staging with 24 KiB chunks.
-Each IPC command remains under the existing 64 KiB bound, and only commit invokes
-the original native send once. Native staging pins original ownership/deadline;
+The chunks only split the payload; suitecut sets no command size bound, and only
+commit invokes the original native send once. Native staging pins original ownership/deadline;
 command failure attempts actual staging abort rather than retrying a send.
 
 Frame facades reject page-owned registration. Independent server-close

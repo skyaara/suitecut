@@ -4,7 +4,7 @@ Import browser automation from the standalone `@suitecut/browser-control`
 package. It exposes native CEF process, context, page, frame, locator, handle,
 input, network, worker, storage,
 permission, screenshot/PDF, video, tracing, coverage, and debugger controls.
-It does not export the test runner, assertions, fixtures, or SuiteCut's narration,
+It does not export the test runner, assertions, fixtures, or suitecut's narration,
 rendering, broadcast, and publishing orchestration. Existing `suitecut/browser`
 and `suitecut/native` imports remain compatible.
 
@@ -13,10 +13,10 @@ type declarations, authenticated viewer and `browser-control` CLI. It does not
 bundle or download the native executable or CEF. Install the matching native
 runtime separately and keep its adjacent assets together.
 
-From this repository, run `pnpm --filter @suitecut/browser-control build`, then
+Install it with `npm install @suitecut/browser-control`. To try a local build,
+run `pnpm --filter @suitecut/browser-control build` in this repository, then
 install the local package or a locally packed `.tgz` in your application. Local
-builds and packs do not publish to npm; publication is a separate operation and
-has not been performed as part of this change.
+builds and packs do not publish to npm.
 
 `createBrowserViewer({ browser, page })` adds a local live viewer and human/AI
 handover to the same native session. The standalone command is
@@ -28,9 +28,8 @@ on `createBrowserViewer`. The toolbar also offers desktop/portrait presets and
 custom dimensions. Only the human owner resizes; read-only viewers do not change
 the browser. These are real CSS viewport changes, while capture and recording
 retain their launch canvas dimensions. Cropped viewer frames remove unused bars,
-and larger viewports can be downsampled. Maximum physical dimensions are
-3840 × 2160; higher device scale reduces the available CSS dimensions. The viewer
-reports and enforces the applicable limits. See [viewer usage and limits](native-browser-viewer.md).
+and larger viewports can be downsampled. suitecut sets no maximum viewport size;
+Chromium applies its own. See [viewer usage](native-browser-viewer.md).
 
 ```ts
 import { launchBrowser } from '@suitecut/browser-control'
@@ -59,7 +58,7 @@ for a context shared by multiple pages.
 
 ## Chrome window mode
 
-`windowMode: 'chrome'` shows SuiteCut's pages as ordinary Chrome windows that a
+`windowMode: 'chrome'` shows suitecut's pages as ordinary Chrome windows that a
 person can use while the SDK drives them: tabs, the address bar, back/forward,
 menus, find, zoom, bookmarks, history, downloads and right-click menus. Combine it
 with `userDataDir` to keep cookies, logins and storage across restarts. Pages in

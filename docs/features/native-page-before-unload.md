@@ -12,7 +12,7 @@ close can be requested. A dispatch acknowledgement never emits a close event
 or removes the page from its context. Default close and context/browser shutdown
 still force close and await their existing physical lifecycle.
 
-SuiteCut's windowless CEF browsers use Alloy. Genuine `DoClose` approval starts
+suitecut's windowless CEF browsers use Alloy. Genuine `DoClose` approval starts
 the existing HAR, recording, streaming and download cleanup before final browser
 destruction. The close's original native deadline is retained through that
 cleanup; dialog decisions do not renew it. Actual `OnBeforeClose` alone supplies

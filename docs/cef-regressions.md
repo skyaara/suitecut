@@ -1,6 +1,6 @@
 # CEF real-browser regression suite
 
-This suite runs the actual embedded CEF executable through SuiteCut's public
+This suite runs the actual embedded CEF executable through suitecut's public
 JavaScript and C++ SDKs. It owns local application servers and fresh browser
 profiles. It does not use public websites, external accounts, CAPTCHA solvers,
 fingerprint patches, or third-party uptime as a release gate.
@@ -105,19 +105,19 @@ the command, require exit status zero, and retain the directory and JUnit file
 The package entry point is `python3 tests/cef`; the existing
 `scripts/run-cef-regressions.py` remains a thin compatibility wrapper.
 
-| Component | Responsibility |
-| --- | --- |
-| `tests/cef/harness/catalogue.py` | Explicit inventory, schema checks and strict selection |
-| `tests/cef/harness/contracts.py` and `evidence.py` | Typed report contracts, assertion coverage and input inventories |
-| `tests/cef/harness/runner.py` | Bounded scheduling, immutable plan and attempt identity accounting |
-| `tests/cef/harness/supervisor.py` and `processes.py` | Deadlines, log limits and verified owned-process retirement |
-| `tests/cef/harness/reporting.py` | JSON/HTML/JUnit, including global integrity failures |
-| `tests/cef/harness/worker.mjs` | Browser/server lifetime, first-failure artifacts, cleanup assertions |
-| `tests/cef/fixtures/app.mjs` | Authenticated local app, media, frames, workers and held gates |
-| `tests/cef/scenarios/` | Separate application, frames, network, race, artifact and media modules |
-| `tests/cef/manifests/` | Proof/C++ cases, resource budgets and mandatory evidence contracts |
-| `tests/cef/unit/` | Supervisor, process ownership, signing and false-green negative controls |
-| `native/client/tests/{unit,integration,support}/` | Explicit standalone C++ targets and test-only fixtures |
+| Component                                            | Responsibility                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------ |
+| `tests/cef/harness/catalogue.py`                     | Explicit inventory, schema checks and strict selection                   |
+| `tests/cef/harness/contracts.py` and `evidence.py`   | Typed report contracts, assertion coverage and input inventories         |
+| `tests/cef/harness/runner.py`                        | Bounded scheduling, immutable plan and attempt identity accounting       |
+| `tests/cef/harness/supervisor.py` and `processes.py` | Deadlines, log limits and verified owned-process retirement              |
+| `tests/cef/harness/reporting.py`                     | JSON/HTML/JUnit, including global integrity failures                     |
+| `tests/cef/harness/worker.mjs`                       | Browser/server lifetime, first-failure artifacts, cleanup assertions     |
+| `tests/cef/fixtures/app.mjs`                         | Authenticated local app, media, frames, workers and held gates           |
+| `tests/cef/scenarios/`                               | Separate application, frames, network, race, artifact and media modules  |
+| `tests/cef/manifests/`                               | Proof/C++ cases, resource budgets and mandatory evidence contracts       |
+| `tests/cef/unit/`                                    | Supervisor, process ownership, signing and false-green negative controls |
+| `native/client/tests/{unit,integration,support}/`    | Explicit standalone C++ targets and test-only fixtures                   |
 
 See [the package contribution rules](../tests/cef/CONTRIBUTING.md).
 
@@ -141,7 +141,6 @@ actual upload before starting the restore-admission observation budget; the
 required native pending snapshot and physical lease are still asserted. Child
 screenshot preparation waits for a real HTML root in an already-created utility
 realm under the original operation deadline, with one cleanup record per realm.
-
 
 Before teardown, failed attempts retain page screenshots, HTML when available,
 native diagnostics, and the original error/stack. Then the worker releases
@@ -277,7 +276,7 @@ integration checks, not an Internet-dependent CI gate.
 Design inspiration: [Playwright test isolation and user-visible assertions](https://playwright.dev/docs/best-practices),
 [Playwright fixture lifetimes](https://playwright.dev/docs/test-fixtures), and
 [Web Platform Tests asynchronous harness](https://web-platform-tests.org/writing-tests/testharness-api.html).
-These inform the design; this suite drives SuiteCut's own SDK and does not
+These inform the design; this suite drives suitecut's own SDK and does not
 claim to run those upstream conformance suites.
 
 ## Cache-policy and platform fixtures
@@ -294,7 +293,7 @@ in its own CSS so a native scrollbar cannot occupy an asserted page-content pixe
 The HAR ownership proof captures its own genuine replay archive in each attempt.
 AI reference checks follow backend-node identity across snapshots and verify stale
 references after actual node replacement. Route fallback covers supported chunked
-900 KB bodies and rejects bodies exceeding 2 MiB before advancing the next handler.
+900 KB bodies and passes a body over 2 MiB whole to the next handler and origin.
 
 Service-worker request-body acknowledgement is asynchronous: its ownership proof
 records native diagnostics until both body owners and physical controls reach

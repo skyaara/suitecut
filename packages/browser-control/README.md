@@ -1,10 +1,10 @@
 # Browser Control
 
-`@suitecut/browser-control` is the standalone Node.js SDK for SuiteCut's native CEF browser, installed Chromium browsers through CDP, and Firefox through WebDriver BiDi. The CEF backend also includes a live viewer with human takeover. It does not depend on the SuiteCut narration, render orchestration, or test runner package, and the protocol adapters have no external browser-automation dependencies.
+`@suitecut/browser-control` is the standalone Node.js SDK for suitecut's native CEF browser, installed Chromium browsers through CDP, and Firefox through WebDriver BiDi. The CEF backend also includes a live viewer with human takeover. It does not depend on the suitecut narration, render orchestration, or test runner package, and the protocol adapters have no external browser-automation dependencies.
 
-Requires Node.js 22 or newer. Use an installed Chrome, Chromium, Edge, Brave or Firefox executable for protocol control, or the matching SuiteCut native runtime for CEF. The npm package contains the JavaScript SDK, declarations and native viewer; it does **not** bundle or download browsers or their runtimes.
+Requires Node.js 22 or newer. Use an installed Chrome, Chromium, Edge, Brave or Firefox executable for protocol control, or the matching suitecut native runtime for CEF. The npm package contains the JavaScript SDK, declarations and native viewer; it does **not** bundle or download browsers or their runtimes.
 
-For applications that do not use Node.js, the separate [native C++ SDK and C ABI](../../native/client/README.md) control SuiteCut's CEF engine or installed Chrome/Chromium directly. That standalone library does not require CEF headers to build and is distributed separately from this npm package and browser runtimes.
+For applications that do not use Node.js, the separate [native C++ SDK and C ABI](../../native/client/README.md) control suitecut's CEF engine or installed Chrome/Chromium directly. That standalone library does not require CEF headers to build and is distributed separately from this npm package and browser runtimes.
 
 ```sh
 npm install @suitecut/browser-control
@@ -113,7 +113,7 @@ Commands share one persistent, multiplexed WebSocket connection, and page sessio
 
 Native `launchBrowser()` defaults to `frameTransport: 'on-demand'`: raw pixels cross into Node only while a page has `onFrame` subscribers, including its viewer. The first subscription requests a current paint; delivery resumes asynchronously, and removing the last subscriber releases the SDK's cached frame. Browser rendering, screenshots, native recording and publishing continue independently. Set `frameTransport: 'always'` for continuous raw delivery and cached-frame replay; low-level `launchNativeBrowser()` retains that default. Use a matching SDK and native helper; newer SDKs fall back to continuous delivery with helpers that lack subscription support.
 
-Use an absolute path to an installed SuiteCut native binary and keep its adjacent runtime assets together:
+Use an absolute path to an installed suitecut native binary and keep its adjacent runtime assets together:
 
 ```sh
 npx browser-control view https://example.com \
@@ -127,9 +127,9 @@ Use `--resolution auto` to fit the browser viewport to the available viewer area
 
 The native capture canvas stays at its launch dimensions. The helper fits the current viewport into that canvas and supplies its content rectangle; the viewer removes letterboxing. Enlarging the page beyond the capture canvas does not add captured detail. Use appropriate launch dimensions when capture fidelity matters.
 
-The viewer allows CSS viewport dimensions up to 3840 × 2160, subject to the current device scale. The physical viewport must also fit within 3840 × 2160: at device scale 2, the maximum is 1920 × 1080 CSS pixels. Automatic mode clamps to these limits; unsupported fixed sizes are rejected. Live resolution changes require the matching updated native helper with frame geometry metadata.
+The viewer sets no maximum viewport size: automatic mode follows the viewer area, and fixed sizes are passed to the browser as given. Chromium applies its own limits. Live resolution changes require the matching updated native helper with frame geometry metadata.
 
-Run `browser-control view --help` for all options. `SUITECUT_NATIVE_EXECUTABLE` supplies the executable path when `--executable` is omitted; the development default is `.suitecut/native-build/suitecut-browser` relative to the working directory. Once published, the same package can be installed by name using `npm install @suitecut/browser-control`.
+Run `browser-control view --help` for all options. `SUITECUT_NATIVE_EXECUTABLE` supplies the executable path when `--executable` is omitted; the development default is `.suitecut/native-build/suitecut-browser` relative to the working directory.
 
 ```js
 import { launchBrowser, createBrowserViewer } from '@suitecut/browser-control'
@@ -159,7 +159,7 @@ console.log(snapshot)
 
 This is an ESM package. Its public API is exported from `@suitecut/browser-control`. With CEF, the browser runs offscreen; the viewer streams the same session and forwards human input. The AI decision loop is supplied by your application.
 
-The current native runtime is pinned to CEF `156.0.7+g47dbc1d+chromium-156.0.8078.17`. Features requiring custom CEF patches remain subject to the installed native backend's capabilities. This SDK does not add desktop-wide OS control or bypass those limits.
+The current native runtime is pinned to CEF `156.0.30+g6028375+chromium-156.0.8078.96` (stable): the official minimal build on Linux x64, and a third-party codec-enabled build (H.264, AAC, HEVC) on macOS arm64. Features requiring custom CEF patches remain subject to the installed native backend's capabilities. This SDK does not add desktop-wide OS control or bypass those limits.
 
 From the repository, build only this package with `pnpm --filter @suitecut/browser-control build`, then create a tarball with `pnpm --filter @suitecut/browser-control pack --pack-destination /absolute/output/directory`. Publishing is a separate operation; building or packing does not publish it.
 

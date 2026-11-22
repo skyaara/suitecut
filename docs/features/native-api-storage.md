@@ -20,18 +20,17 @@ behavior: they capture the owning browser context's current, mutable origin
 storage. This includes genuine localStorage, IndexedDB and OPFS changes made by
 browser documents. Their OPFS capture order is unchanged.
 
-The normal storage import limits remain 8 MiB per state, 512 KiB per origin and
-1024 origins. Every pending and committed independent API snapshot shares an
-additional 32 MiB native allocator budget per helper. This budget measures the
-snapshot vectors and strings, including simultaneous allocation replacements and
-native raw-JSON projections. Bounded parser scratch, CEF publication values and
-allocator bookkeeping are separate; the counter is not a process RSS measure.
-Serialized publication JSON is capped at 8 MiB before another origin is retained
-in the result. CEF UTF-16 values and bounded temporary copies are not a measured
-all-heap quota. Deadline checks run before parsing each origin, before admitting its retained
+suitecut sets no storage import limit per state, per origin or on the number
+of origins. Every pending and committed independent API snapshot shares one
+native allocator counter per helper. It measures the snapshot vectors and
+strings, including simultaneous allocation replacements and native raw-JSON
+projections, for diagnostics only and never refuses an allocation. Parser
+scratch, CEF publication values and allocator bookkeeping are separate; the
+counter is not a process RSS measure. Serialized publication JSON is not capped.
+Deadline checks run before parsing each origin, before admitting its retained
 entry, after snapshot construction, and again before commit/publication. Export
 checks bracket each origin projection. The parser is not preempted inside an
-individual 512 KiB origin scan.
+individual origin scan.
 Diagnostics expose current and peak allocated snapshot bytes and accepted or
 pending origin entry counts.
 

@@ -4,7 +4,7 @@
 callback with the actual native runner. Native code selects each invocation,
 interval, original deadline and final result. There is no SDK retry timer or
 retry loop. An omitted timeout means native default zero. Explicit timeout and
-interval values are nonnegative safe integers; interval arrays have 1–64 entries.
+interval values are nonnegative safe integers; interval arrays have at least one entry.
 
 The first slice supports actual body, beforeEach and afterEach callbacks,
 including real author steps. Construction only captures the function; invocation

@@ -1,7 +1,7 @@
 # Shared browser: SDK and MCP
 
 `@suitecut/shared-browser` (`packages/shared-browser`) is a preview. It runs one native CEF window with
-SuiteCut's own tab strip and toolbar instead of Chrome's. Every tab is a full
+suitecut's own tab strip and toolbar instead of Chrome's. Every tab is a full
 Chromium page in Alloy style. Nothing is streamed: the pages draw in the
 window, and a person can use the same tabs an agent is driving.
 
@@ -70,14 +70,14 @@ pipeline as `record()`.
   bot protection still let a test add a shoe to the bag while recording.
   `--suitecut-window-frames=off` restores Chromium's default, which disables
   recording.
-- **Rate:** `fps` (1 to 120, default 60) sets the video's rate. Only frames due
+- **Rate:** `fps` (at least 1, default 60) sets the video's rate. Only frames due
   at that rate are copied. When nothing repaints, the pipeline holds the last
   frame, so a static page costs nothing.
 - **Area:** the video is cropped to the tab in front, so switching tabs switches
   what is recorded. The tab strip and toolbar are drawn on a separate surface and
   aren't recorded yet.
 - **Size:** the captured area in device pixels by default (2560x1504 for a
-  1280x752 page on a 2x display), scaled to fit 3840x2160. When it matches the
+  1280x752 page on a 2x display), with no maximum. When it matches the
   video size, the crop and NV12 conversion stay on the GPU and go straight to
   hardware H.264. `width` and `height` change the size; the media worker then
   scales each frame.
@@ -110,7 +110,7 @@ RenderDocument, or from the process swap that BackForwardCache makes.
 - **How often:** 7 of 40 navigations without the fix.
 - **Why it matters:** Chrome never reports 0 for a visible window, and BotD
   classified such a page as headless Chrome.
-- **Fix:** the prototype starts Chromium with
+- **Fix:** the shared browser starts Chromium with
   `--disable-features=RenderDocument,BackForwardCache`. With that, 0 of 40
   navigations showed it, and about 1 in 80 in a second sample.
 - **Cost:** Back and Forward reload pages instead of restoring them from the
@@ -122,8 +122,9 @@ RenderDocument, or from the process swap that BackForwardCache makes.
 npx -y @suitecut/shared-browser --executable <path to suitecut-browser>
 ```
 
-It speaks MCP over stdio. The browser starts on the first tool call, and again if
-its window was closed. Example client configuration:
+It speaks MCP over stdio. `--executable` falls back to `SUITECUT_SHARED_BROWSER`.
+The browser starts on the first tool call, and again if its window was closed.
+Example client configuration:
 
 ```json
 {

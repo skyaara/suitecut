@@ -60,10 +60,9 @@ widget lookup. A fixed 30-second physical cleanup grace requests closure without
 fabricating an ACK or freeing accepted callbacks. Actual replies or actual
 Inspector/browser closure settle the physical work.
 
-The controller permits one unresolved completion per Source, with a shared
-64-record/16 MiB serialized-data-and-document-metadata budget and a 1 MiB
-per-record limit. Existing CEF/config envelopes and native allocator overhead
-are separate bounded resources. New pointer operations and raw Input commands
+The controller permits one unresolved completion per Source. Its records and
+serialized data and document metadata are counted process-wide but not limited;
+suitecut sets no record-count, byte or per-record bound. New pointer operations and raw Input commands
 conflict while that receipt owns the pointer. Controlled core23 and actual
 Source-include33 cases pass optimized and sanitizer builds, including late ACKs,
 queued refusal/cancellation, old/new incarnations, real-close boundaries and

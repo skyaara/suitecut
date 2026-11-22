@@ -18,7 +18,7 @@ Native C++ stores distinct `recognizedDeadline` raw outcome and
 `acceptedDeadline` receipt. JSON and JUnit expose `acceptedDeadline: true` and
 `acceptedMismatch: false`; HTML names the distinct receipt. No observed value is
 invented. A typed accepted-soft-failure predicate covers both mismatch and
-accepted deadline for attempt/step outcomes, history capacity and primary soft
+accepted deadline for attempt/step outcomes, history and primary soft
 error selection. The original Error/stack, call-site and actual step provenance
 remain retained separately from the native receipt classification.
 
@@ -35,8 +35,8 @@ callback PASS remains distinct from the eventual failed test. A softly failed
 step still resolves its genuine callback result only after the joint raw,
 soft, file and append fences. Expected-failure classification applies to a body
 soft failure, while an afterEach cleanup soft failure remains infrastructure
-failure. The 64 physical lease and 32 per-attempt accepted failure bounds remain
-shared across mismatch and deadline kinds, with no silent overflow drop.
+failure. Mismatch and deadline kinds share one journal, which has no lease or
+per-attempt failure limit and drops nothing.
 
 The Source reply must remain held until physical retirement. Earlier logical
 publication would require a separate authenticated physical-fence protocol and

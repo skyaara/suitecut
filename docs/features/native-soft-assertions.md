@@ -32,8 +32,8 @@ can be submitted as soft. The original object, name, message, and stack remain
 unchanged. Wrong-invocation, forged, or already-consumed receipts are rejected;
 late detached async work cannot create another receipt after settlement.
 Argument validation, raw transport/capture failures, arbitrary author errors,
-and native admission/settlement rejection remain hard. The native journal owns
-capacity rejection and retains protocol/cleanup failures rather than silently
+and native admission/settlement rejection remain hard. The native journal has no
+capacity limit and retains protocol/cleanup failures rather than silently
 dropping an assertion. `info.errors` currently exposes the acknowledged soft
 Error snapshot for this attempt, preserving its history across per-test hooks.
 It does not claim a complete raw-hard error journal; hard errors remain in their

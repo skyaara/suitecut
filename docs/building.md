@@ -25,10 +25,14 @@ support in its media tools. See [SDK setup](../native/client/README.md),
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
-pnpm build:browser-control
+pnpm build:packages
 pnpm typecheck
 pnpm exec vitest run --maxWorkers=2
 ```
+
+`pnpm build:packages` builds `@suitecut/browser-control` and
+`@suitecut/shared-browser`. `pnpm release:check` packs every npm package without
+publishing and checks its manifest, contents and version.
 
 Set `SUITECUT_NATIVE_EXECUTABLE` to the built browser executable when using CEF.
 On macOS this is the executable inside the complete `.app` bundle. Ordinary
@@ -74,7 +78,8 @@ fails the run. The CEF suite remains local; no CEF CI job is enabled.
 ## Platform and signing requirements
 
 Linux x64 and macOS ARM64 are separately qualified; Windows runtime packaging
-and Safari/WebKit are unsupported. CEF is currently a pinned beta. The latest
+and Safari/WebKit are unsupported. CEF is pinned to the 156.0.30 stable release;
+macOS arm64 uses a third-party codec-enabled build of it. The latest
 local macOS checks ran on macOS 27.0.1. Homebrew dylibs may require newer macOS
 than the engine's compilation target; older systems and Intel need their own
 dependency builds and qualification.

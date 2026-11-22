@@ -1,36 +1,31 @@
 # Native debugger collected-script cache
 
-SuiteCut keeps a real Inspector Debugger agent enabled for native factory
+suitecut keeps a real Inspector Debugger agent enabled for native factory
 breakpoints. Chromium's `Debugger.enable` defaults `maxScriptsCacheSize` to an
 unlimited cache of source text for scripts that V8 has already collected. A
 long-lived page doing repeated locator and evaluation operations can therefore
 retain source text despite stable JavaScript heap usage after garbage collection.
 
-The native DebuggerDomains arbiter applies these policies per actual Inspector
-session:
+suitecut no longer sets `maxScriptsCacheSize`: every `Debugger.enable` it sends
+leaves V8's own collected-script cache policy in place. The 8 MiB cache it used
+to request for internal factory consumers is gone. The native DebuggerDomains
+arbiter still tracks two states per actual Inspector session:
 
-- Internal factory consumers alone: 8 MiB collected-script source cache.
-- An explicit Developer or Coverage consumer: the existing unlimited historical
-  source policy while that consumer owns the domain, its paused capture, or real
-  source/group receipts awaiting completion.
+- Internal factory consumers alone.
+- An explicit Developer or Coverage consumer, while that consumer owns the
+  domain, its paused capture, or real source/group receipts awaiting completion.
 - After the last observer releases its physical ownership, a surviving internal
-  factory returns to 8 MiB before the observer's release succeeds. If no consumer
-  remains, the existing actual Debugger.disable cleanup retires the agent.
+  factory returns to the first state before the observer's release succeeds. If
+  no consumer remains, the existing actual Debugger.disable cleanup retires the
+  agent.
 
-Policy changes use another `Debugger.enable` on the same agent. The pinned V8
-implementation updates the limit before its already-enabled early return; it
-preserves breakpoints and paused execution. SuiteCut records the new policy only
+State changes use another `Debugger.enable` on the same agent, which preserves
+breakpoints and paused execution. suitecut records the new policy only
 on the actual protocol ACK, never from dispatch or logical cancellation. New
 observer acquisition waits for the historical-policy ACK. Failed configuration
 closes the actual channel rather than claiming the requested policy succeeded.
 A canceled or expired acquisition retains its accepted command and restores the
 factory policy through another actual ACK.
-
-This bound covers collected-script source text, not active scripts, renderer
-heaps, network caches, or the whole browser. Lowering an existing limit takes
-effect when V8 next trims its collected-script cache. Historical source evicted
-before an explicit observer starts cannot be recovered by raising its limit.
-Coverage/developer metadata and other native budgets retain their own limits.
 
 Diagnostics expose actual acknowledged cache states as
 `nativeDebuggerFactoryScriptCacheSessions` and

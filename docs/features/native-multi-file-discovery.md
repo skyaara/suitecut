@@ -6,11 +6,11 @@ filename filters. The SDK only serializes options and runs genuine callbacks.
 A declared glob is not interpreted by JavaScript. Omitted `testMatch` chooses
 `.spec`/`.test` JavaScript/TypeScript extension families; an explicit empty
 array selects no files. Symlink/special-file traversal and extended globs are
-currently excluded. Native file regular expressions use the shared bounded native matcher and its
+currently excluded. Native file regular expressions use the shared native matcher and its
 validated flags; compilation and matching poll the original stop/deadline.
 
-Discovery is sorted and bounded to 128 files, 32768 examined entries, depth64,
-16KiB paths and 2MiB retained pathname bytes. Real opened file owners preserve
+Discovery is sorted; suitecut sets no limit on files, examined entries, depth,
+path length or retained pathname bytes. Real opened file owners preserve
 canonical path, device, inode and file-version receipts across collection and
 execution. These checks do not claim atomic Node import or pin every transitive
 module. Native input paths and report destinations retain their existing IO
@@ -43,10 +43,8 @@ remaining throughput gap; lock exclusion and existing functional behavior stay
 intact. Unlocked invocations use the requested native worker ceiling.
 All actors run in the same native coordinator process and share the exact
 existing `RunState`: one original suite clock, worker/attempt ID allocators,
-maximum-failure authority, native declaration and metadata budgets, attachment
-file/publication budgets, output IO credits, step/soft journals and retained
-Source leases. No quota is multiplied per file and no authored counters become
-native resource ownership. A final unexpected attempt updates the shared native
+maximum-failure authority, output IO credits, step/soft journals and retained
+Source leases. No authored counters become native resource ownership. A final unexpected attempt updates the shared native
 failure policy before another attempt can start. Retry provisional failures do
 not consume a final-outcome failure slot. The next cohort cannot start until real
 host/descendant/file/step/soft/publication/Source retirement fences have closed.
@@ -54,8 +52,7 @@ host/descendant/file/step/soft/publication/Source retirement fences have closed.
 `No tests found` is decided once for the unsharded global selection, with
 `passWithNoTests`/`--pass-with-no-tests` as the explicit exception. An empty shard
 of a nonempty primary selection succeeds. Local file partitions do not impose
-independent no-tests rules. At most 128 execution sources are admitted; a larger
-plan fails before callbacks and records its selected segments as not run.
+independent no-tests rules. suitecut sets no limit on execution sources.
 
 The final atomic JSON report uses the existing native merged-report format plus
 a typed `directory` policy sidecar. It preserves actual file identities, complete
@@ -80,7 +77,7 @@ Owned focused checks:
   exception with a real held writer, exact-inode rollback, host and detached-child
   waitpid receipts, and truthful refusal to publish an incomplete source.
 - `check-native-runner-directory.py`: actual native public CLI/Node collection,
-  callbacks, native attachment publication, shared declaration limits, original
+  callbacks, native attachment publication, shared declarations past the former 128 cap, original
   deadline, project support/teardown and complete process-tree closure.
 
 The older private exec/socket experiment is not activated or shipped in this

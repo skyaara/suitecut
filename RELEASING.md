@@ -1,4 +1,4 @@
-# Releasing SuiteCut
+# Releasing suitecut
 
 Only maintainers with npm and GitHub release access should use this checklist.
 
@@ -22,12 +22,12 @@ Only maintainers with npm and GitHub release access should use this checklist.
    pnpm audit
    ```
 
-5. Inspect `npm pack --dry-run --json`. The SuiteCut tarball should contain only `dist`, the README,
+5. Inspect `npm pack --dry-run --json`. The suitecut tarball should contain only `dist`, the README,
    changelog, licenses, package metadata, cursor/Kokoro assets, and native browser source/build pins.
    Compiled CEF binaries and SDKs must stay out of the npm tarball. The Sherpa audio plugin
    packages live on the `audio-plugins` branch and are released from there.
 
-6. Publish SuiteCut. Use npm provenance when the npm account and repository are configured for it:
+6. Publish suitecut. Use npm provenance when the npm account and repository are configured for it:
 
    ```sh
    npm publish --provenance --access public
@@ -117,7 +117,7 @@ wrangler pages deploy site/dist --project-name suitecut --branch main
 Cloudflare builds use the default `https://suitecut.aakashreddy.com` origin and `/` base.
 Verify `/docs/streaming` after publishing.
 
-## 2.0 release artifact check
+## Release artifact check
 
 After building, pack the exact release tarball into `.suitecut/release/` and write
 `latest.json` containing its `version` and absolute `tarball` path. Run:

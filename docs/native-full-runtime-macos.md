@@ -2,7 +2,8 @@
 
 The macOS recipe builds three local release candidates: a static C++20/C SDK,
 a shared C++20/C SDK, and a full runtime containing the static SDK's native
-tools, the SuiteCut application, CEF 156 beta, FFmpeg/ffprobe, and the complete
+tools, the SuiteCut application, CEF 156.0.30 (a third-party codec-enabled build;
+see [playback codecs](../native/browser/CODECS.md)), FFmpeg/ffprobe, and the complete
 non-system dynamic-library dependency closure. Application dylibs live directly
 in `Contents/Frameworks`, including their transitive dependencies; custom
 subdirectories can fail during macOS code-signing clone launches. See
@@ -120,8 +121,8 @@ repetition, encoded cadence, dimensions, and frame counts. Audio cases decode
 PCM and verify the fixture's actual tone and audio/video duration agreement.
 `--case 3840x2160@30` selects a specific workload; `:audio` enables audio.
 
-The public cadence ceiling is 120 FPS. It does not guarantee 120 distinct
-frames. Resolution, page content, capture cost, encoding, and machine load
+suitecut sets no cadence ceiling; CEF applies its own. A 120 FPS request does
+not guarantee 120 distinct frames. Resolution, page content, capture cost, encoding, and machine load
 affect throughput. Retain the per-case reports and media; short fixture runs do
 not establish sustained performance for arbitrary websites or long recordings.
 
@@ -150,11 +151,12 @@ conversion. Live pixel subscribers, popup composition and screenshot tracing
 use the genuine full-pixel path. A stale CPU view is never sent to a new frame
 subscriber: it requests a fresh native paint first.
 
-GPU surfaces are pooled within 64 MiB of actual IOSurface allocation, with at
-most 32 idle buffers, and released when the recording physically settles. Only
-one GPU command is in flight per capture callback. The hardware encoder admits
-at most four in-flight frames. Pending input is independently capped at 200 ms
-and 64 MiB; oldest input is retired on sustained overload. There is one existing
+GPU surfaces come from a pool that keeps up to 64 MiB and 32 idle buffers for
+reuse; surfaces in use are not limited, and all are released when the recording
+physically settles. Only one GPU command is in flight per capture callback. The
+hardware encoder admits at most four in-flight frames and waits for the rest.
+Pending input is kept until the encoder takes it, however far it falls behind,
+so a sustained overload grows memory instead of dropping frames. There is one existing
 application media worker per recording, with no additional conversion worker.
 VideoToolbox manages its completion callbacks behind the four-frame admission
 bound. The native session requires and verifies hardware acceleration.
@@ -164,10 +166,11 @@ Actual frame counts therefore need no stream-copy warm-up trim. Static frames
 advance during capture with a bounded 500 ms playout margin; stop does not defer
 an entire static recording's encoding until finalization. The native encoder
 reports admission/drop errors explicitly. The software and resized-output
-fallbacks retain their existing native subprocess ownership and quotas.
+fallbacks retain their existing native subprocess ownership; a file-size quota
+applies only when the caller sets one.
 
 The bitmap fallback (`--suitecut-shared-texture=0`) fits/converts snapshots on
-the same media worker. A bounded 100 ms / 64 MiB lookahead reconstructs source
+the same media worker. A 100 ms lookahead reconstructs source
 time from subsequent genuine view arrivals and admitted capture sequence.
 Correction is bounded, monotonic, and never before admission. It adds processing
 latency without moving the audio clock. Sparse pages flush after 100 ms; stop
@@ -202,13 +205,13 @@ Accelerated static pages may produce no callback for `Invalidate`. Startup then
 observes their latest owned genuine surface once at the explicit snapshot time,
 only after 100 ms without a delivered paint. Animated sources keep waiting for
 their capture-time frames. One pending UI snapshot check per source is retained.
-That single retained surface shares the same 64 MiB GPU budget and is released
+That single retained surface comes from the same surface pool and is released
 with the recording; subsequent static CFR repeats remain counted as holds.
 
 Pause/resume maps native capture time through recent pause intervals, including
 video and PCM delivered after a transition. PCM packets split at the capture
-boundaries. Pause history is capped at 256 retained intervals and retired once
-older than the 500 ms delivery window. Stop seals its original capture-time
+boundaries. Pause intervals are retired once older than the 500 ms delivery
+window. Stop seals its original capture-time
 boundary and accepts only already-captured video/PCM within it for at most
 500 ms, bounded further by the caller's finalization deadline. Recording owners
 remain alive until physical encoder cleanup. A repeated stop can tighten the
@@ -282,8 +285,10 @@ private sibling and published atomically without replacing an existing target.
 An abrupt kill during that short final publication step can leave its named
 private staging file. Cancellation and normal shutdown remove owned staging.
 
-CEF uses stock playback codecs. Bundling FFmpeg does not add H.264/AAC playback
-to CEF. CEF WebSocket routing, directory upload, cross-navigation coverage, full
+The pinned macOS CEF is a third-party codec-enabled build that plays H.264, AAC
+and HEVC; it is not an official CEF build and carries no codec patent licence (see
+[playback codecs](../native/browser/CODECS.md)). Bundling FFmpeg does not add
+playback codecs to CEF. CEF WebSocket routing, directory upload, cross-navigation coverage, full
 clock control, and offscreen out-of-process-frame full-page capture remain
 outside this runtime's advertised capabilities. Embedded native streaming uses bounded FFmpeg subprocesses on Linux and macOS.
 The macOS regression verifies actual publisher startup and physical child

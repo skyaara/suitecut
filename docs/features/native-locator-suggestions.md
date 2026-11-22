@@ -1,8 +1,8 @@
 # Native locator suggestions
 
 `locator.suggest({ timeout?, signal? })` and
-`elementHandle.suggestLocator({ timeout?, signal? })` return up to five native
-recipes, readable code, diagnostics and creation provenance. Each suggestion
+`elementHandle.suggestLocator({ timeout?, signal? })` return every native
+recipe that verifies, readable code, diagnostics and creation provenance. Each suggestion
 also exposes an ordinary `locator`. Future use resolves that query normally;
 creation provenance is not a permanent uniqueness or DOM-stability guarantee.
 
@@ -25,18 +25,16 @@ Actual Inspector callbacks and native operation groups remain held after
 logical cancellation until their real ACK/group release or actual channel close.
 
 Omitted candidates are diagnostic facts: ambiguous queries, a unique query for a
-different node, unsupported/oversized text, or bounded observation exhaustion.
-Text observation uses a finite light-DOM window; the real built-in selector is
-still the verification authority. Accessible role/name facts use existing DOM
+different node, or unsupported text. Text observation reads the whole light-DOM
+text; the real built-in selector is still the verification authority. Accessible role/name facts use existing DOM
 selector semantics, not a claim of full external AX parity. Authored isolated
 UTF16/NUL test-ID values are omitted where a readable equivalent CSS recipe
-cannot faithfully represent them. Candidate and result capacities are 24 and 5;
-query and aggregate native DOM work are bounded under the original operation
-budget.
+cannot faithfully represent them. suitecut sets no candidate, result or DOM-work
+limit; the original operation deadline still applies.
 
 `page.pickLocator({ x, y }, options)` and the inherited frame method use native
 `DOM.getNodeForLocation` plus `DOM.resolveNode` in the captured session/utility
-realm. Points are bounded integer viewport CSS pixels. Same-process child-frame
+realm. Points are nonnegative integer viewport CSS pixels. Same-process child-frame
 coordinates use actual native viewport dimensions, frame-owner content quads
 and the existing projective mapping helper; native rounded Inspector pixels are
 reported separately. Every ancestor document and native parent/session mapping

@@ -1,6 +1,6 @@
 # Original-widget mouse control
 
-The native SDK can consume SuiteCut's isolated Chromium mouse-lease extension.
+The native SDK can consume suitecut's isolated Chromium mouse-lease extension.
 Stock CEF does not expose that extension. The engine probes its exact read-only
 protocol revision before publishing `originalWidgetInputReceipts`; source patch
 files or a CEF version string never enable this flag.
@@ -40,8 +40,9 @@ own paths.
 The exact native controller keeps leases across successful `down`/`up` SDK
 calls, forbids mixed pointer backends while a widget holds buttons, checks
 original operation deadlines before publishing completion, and preserves
-physical callbacks across logical cancellation. Its process-wide vendor budget
-includes detached held/uncertain orphan leases until actual widget destruction.
+physical callbacks across logical cancellation. Its process-wide vendor registry
+keeps detached held/uncertain orphan leases until actual widget destruction and
+caps neither leases nor pending receipts.
 
 The custom library needs the ordered `chromium156-widget-input-receipts.patch`
 and `chromium156-widget-input-receipt-probe.patch` under

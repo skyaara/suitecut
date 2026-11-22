@@ -1,14 +1,15 @@
 # Live browser viewer and human handover
 
-`@suitecut/browser-control` can show an existing SuiteCut native browser session
+`@suitecut/browser-control` can show an existing suitecut native browser session
 in a local web page. A person can take control, click, type, paste text, scroll,
 drag and navigate, then return
 control to an AI using the same page, cookies and storage.
 
-The standalone SDK requires Node.js 22 or newer. Build it from this repository
-with `pnpm --filter @suitecut/browser-control build`, then install the local
-package or its packed `.tgz` in your application. Building and packing do not
-publish it to npm; this package has not been published as part of this change.
+The standalone SDK requires Node.js 22 or newer. Install it with
+`npm install @suitecut/browser-control`. To try a local build, run
+`pnpm --filter @suitecut/browser-control build` in this repository, then install
+the local package or its packed `.tgz` in your application. Building and packing
+do not publish it to npm.
 The JavaScript package and matching native runtime are installed separately.
 Keep the native executable together with its adjacent CEF/runtime assets.
 
@@ -70,9 +71,9 @@ try {
 ```
 
 `viewer.state()` reports ownership, the selected page, current CSS viewport,
-resolution mode, supported maximum dimensions and frame progress.
+resolution mode and frame progress.
 `viewer.closed` observes shutdown. Only one viewer server can attach to a native
-helper. Up to eight clients can watch, with one client owning input across that
+helper. Any number of clients can watch, with one client owning input across that
 helper's contexts and pages. Tab selection is shared among those clients.
 
 Takeover closes new authored command admission at the shared SDK transport,
@@ -93,7 +94,7 @@ network traffic and timers continue; taking control does not freeze the website.
 
 Human input carries its ownership revision. Stale input, another client's input
 and overlapping server actions are rejected. The frontend serializes actions,
-coalesces unsent movement and wheel events and bounds its queue. Blur resets held
+coalesces unsent movement and wheel events and queues the rest. Blur resets held
 input. If heartbeats stop for 20 seconds, the server releases held input and keeps
 the AI paused until someone reconnects and explicitly returns control. Release
 failures keep human ownership for retry. Closing the viewer normally preserves
@@ -111,8 +112,8 @@ the `resolutionMode` option on `createBrowserViewer`, set to `'fixed'` or `'auto
 The toolbar offers **Native / current**, **Auto fit viewer**, desktop presets
 1280 × 720, 1920 × 1080, 2560 × 1440 and 3840 × 2160, and portrait presets
 390 × 844 and 768 × 1024. Custom width and height fields accept whole-number
-CSS dimensions from 2 up to the maximum supported at the page's device scale.
-Unavailable presets are disabled. **Apply** chooses a fixed resolution.
+CSS dimensions from 2 up; suitecut sets no maximum. **Apply** chooses a fixed
+resolution.
 
 Auto fitting follows the available viewer area after toolbar and padding space,
 with a 200 ms debounce. Only the human client currently owning control may
@@ -123,10 +124,9 @@ and until a frame from the acknowledged page revision arrives. Selecting another
 page uses that page's actual viewport. Resizing changes the website's real CSS
 viewport, so responsive layouts update; it does not merely scale the viewer image.
 
-The native physical viewport is limited to 3840 × 2160 pixels. Device pixel ratio
-reduces the maximum CSS dimensions: at scale 2, the maximum is 1920 × 1080 CSS
-pixels. The viewer exposes these limits and clamps automatic sizes to them;
-explicit sizes outside the limit are rejected.
+suitecut does not limit the viewport size: automatic sizes follow the viewer
+area and explicit sizes are passed to the browser as given. Chromium and the GPU
+apply their own limits.
 
 Capture and recording keep the canvas dimensions selected at launch. A viewport
 resize does not change that canvas or the capture/recording frame rate. Native
@@ -146,11 +146,11 @@ encodes a JPEG once and shares it with every viewer. There is at most one encode
 job, one replaceable pending raw frame and one published JPEG. Encoding requires
 current client demand and stops when that demand is served. Hidden viewers stop
 requesting images. Authenticated frame requests may use `wait=1` to wait for a
-current-revision image for up to one second, with at most 32 pending requests;
-disconnect, revision changes and shutdown release these waits. Immediate polling
+current-revision image for up to one second; disconnect, revision changes and
+shutdown release these waits. Immediate polling
 remains supported. The default encoding limit and frontend
-polling limit are 30 FPS; `framesPerSecond` can set the encoder's maximum from 1
-through 120, while the current frontend displays at most 30 FPS. Actual delivery
+polling limit are 30 FPS; `framesPerSecond` can set the encoder's maximum to any
+integer from 1, while the current frontend displays at most 30 FPS. Actual delivery
 depends on capture, encoding and the connection. This viewer does not change the
 native capture or recording rate.
 
@@ -166,7 +166,7 @@ into the viewer's own accessibility tree.
 
 noVNC and Apache Guacamole provide established open-source desktop viewers over
 VNC/RDP and related protocols. They need a corresponding desktop server. This
-viewer uses SuiteCut's offscreen CEF capture/input directly and does not include
+viewer uses suitecut's offscreen CEF capture/input directly and does not include
 or depend on either project. It does not change website bot-detection behavior.
 
 ## Verification

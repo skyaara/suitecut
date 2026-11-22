@@ -1,9 +1,9 @@
-# SuiteCut
+# suitecut
 
 Record and stream narrated browser flows using native embedded Chromium capture.
-SuiteCut saves source video and an action timeline, then renders a finished video.
+suitecut saves source video and an action timeline, then renders a finished video.
 
-Browser control is also available through a standalone [native C++ SDK and C ABI](native/client/README.md), which controls the SuiteCut CEF engine or installed Chrome/Chromium without Node.js. Its `suitecut-native-control` CLI also runs as an MCP server for agents. Browser runtimes remain separate distributions.
+Browser control is also available through a standalone [native C++ SDK and C ABI](native/client/README.md), which controls the suitecut CEF engine or installed Chrome/Chromium without Node.js. Its `suitecut-native-control` CLI also runs as an MCP server for agents. Browser runtimes remain separate distributions.
 
 ## Packages
 
@@ -25,7 +25,8 @@ package's manifest, tarball contents and version against npm.
 Requires Node.js 22+, pnpm 11, FFmpeg/FFprobe, and the separately built CEF
 executable. See [build requirements and component setup](docs/building.md).
 The native SDK builds independently of CEF; the embedded browser uses the pinned
-CEF 156 build (Chromium 156 beta channel). Linux x64 and macOS ARM64 have separate qualification scopes.
+CEF 156.0.30 build (stable Chromium 156.0.8078.96); on macOS ARM64 that is a third-party build with
+H.264, AAC and HEVC playback. Linux x64 and macOS ARM64 have separate qualification scopes.
 Windows runtime packaging is not implemented.
 
 ```sh
@@ -65,7 +66,8 @@ await renderSuiteCut({
 })
 ```
 
-Capture and output FPS accept integers from 1 through 120. Timestamp-based
+Capture FPS accepts any integer from 1, and output FPS any rate from 1; suitecut
+sets no maximum. Timestamp-based
 resampling holds or drops frames; it does not generate new motion. Actual browser
 capture throughput depends on page activity and host capacity. Page audio is off
 by default. Browser control includes locators, frames, input, network interception,
@@ -108,19 +110,19 @@ streaming, IPC and failure behavior.
 inputs, including 120 FPS output. `pnpm test:native` additionally requires the CEF
 binary and verifies real browser, recording and streaming behavior.
 
-The October 21 macOS ARM64 qualification passed all 90 full CEF regression cases,
+The October 21 macOS ARM64 qualification, on CEF 156.0.7, passed all 90 full CEF regression cases,
 with one regression worker, and all 17 standalone native SDK checks. The runtime
 split also passed 23 translation-unit checks without forced precompiled headers.
 These are local results on macOS 27.0.1, not qualification for older macOS or
 Intel hardware. The CEF suite is available locally and has not been added to CI.
 
-SuiteCut owns its native capture and media pipeline. The macOS runtime includes
+suitecut owns its native capture and media pipeline. The macOS runtime includes
 GPU pixel conversion and VideoToolbox H.264 encoding; the C++ SDK also exposes
 native recording tools. TypeScript provides narration and finished-video
 composition. See the platform recipes for supported paths and measured limits.
 
 ## License
 
-SuiteCut is [MIT licensed](LICENSE). Bundled Kokoro assets are Apache-2.0
+suitecut is [MIT licensed](LICENSE). Bundled Kokoro assets are Apache-2.0
 ([notice](assets/kokoro/NOTICE.md)); other third-party terms are in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

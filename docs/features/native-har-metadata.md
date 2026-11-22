@@ -4,17 +4,15 @@ HAR request `postData` includes `params`. Non-form-urlencoded bodies currently h
 an empty parameter list; multipart parameter decoding is not implemented. Actual `application/x-www-form-urlencoded` bodies produce
 ordered name/value pairs, preserving repeated names and empty values, decoding
 percent escapes and `+` spaces. The original captured body remains unchanged.
-The projection admits at most 256 nonempty form fields per entry before creating
-CEF parameter objects. A larger form retains its body, omits the unavailable
-parameter list and records `_paramsError`; it is neither truncated nor reported
-as an empty form. Existing capture body, metadata and entry limits also apply.
+Every nonempty form field is listed; suitecut sets no form-field, capture body,
+metadata or entry limit.
 
 For a captured response body, `content.compression` is zero only when native
 matched response metadata confirms an authoritative header observation is
 ready and all observed content codings are empty or `identity`. The private
 native `_nativeHeadersObserved` flag distinguishes genuine Chromium headers
 from an empty dictionary supplied by a missing-metadata DTO default. A genuine
-response ExtraInfo receipt can establish that provenance later. The bounded
+response ExtraInfo receipt can establish that provenance later. The
 SDK response schema strips this internal key.
 
 Compressed, unread, failed and header-unknown bodies keep compression unknown.
@@ -43,7 +41,7 @@ failure remains; no wire header or empty body was fabricated.
 
 `native/browser/har_metadata_test.cc` exercises the existing page/TLS/worker
 contracts and the POST, coding, missing-provenance, header-readiness, failed-body
-and parameter-capacity boundaries using actual CEF value objects. It does not
+and large form parameter lists using actual CEF value objects. It does not
 initialize CEF or substitute for a real browser/cross-process proof.
 
 `native/browser/har_response_provenance_test.cc` separately checks real empty
@@ -109,8 +107,8 @@ mirrors, workers, session migration, late enable, redirects and unproven cache
 metadata remain unknown. The dedicated consumer does not call the generic
 network event handler or change request migration, cursors, waiters or callbacks.
 
-It checks nonnegative integral chunk counts, at most 4096 observations and
-16 MiB for each decoded/encoded total. Known payload length requires a genuine
+It checks nonnegative integral chunk counts and that each decoded/encoded total
+fits a 64-bit counter; suitecut sets no observation-count or byte limit. Known payload length requires a genuine
 successful terminal, at least one chunk, positive encoded total, explicit
 uncached response observations and an exact decoded-total match to the actual
 captured body. Missing/failed/overflowing or conflicting observations stay
@@ -131,9 +129,9 @@ The actual terminal transfer total was 795, which was not used for payload
 length. Core and included HAR controls, plus the Source helper seam, pass strict
 optimized and ASan/UBSan/LSan builds. The final one-shot admission and retained
 original-pin capacity/retirement controls also pass both builds. Original pin
-string capacities have a separate 1 MiB retained metadata bound, included in
-native retained-byte accounting; transferred record pin/coding capacities enter
-the existing metadata budget. Existing fixed record/original count bounds remain.
+string capacities are counted in native retained-byte accounting for
+diagnostics, alongside transferred record pin/coding capacities; suitecut no
+longer bounds them, or the record and original counts.
 The previous expiry/cookie/metadata suites pass before the final one-shot guard;
 that final guard is exercised by the final included HAR controls. No component
 initializes CEF or replaces matching full Source compilation/browser proof.
@@ -169,9 +167,9 @@ initialization. Matching compiled browser proof remains pending for this
 separate slice.
 
 A separate following ZIP attachment slice writes real root-level
-`<SHA1>.html`, `.css`, `.js`, `.json`, `.txt` or `.png` members from the bounded,
+`<SHA1>.html`, `.css`, `.js`, `.json`, `.txt` or `.png` members from the
 case-insensitive observed MIME type (parameters ignored for suffix selection).
-Missing, malformed, oversized or other MIME values keep `.dat`. Names contain
+Missing, malformed or other MIME values keep `.dat`. Names contain
 only the actual body digest and a fixed suffix, never a URL or author path.
 Each `_file` points to the actual written member; identical bytes/types dedupe,
 while the same bytes under different MIME suffixes can have separate members.
@@ -186,5 +184,5 @@ favicon assertion. Fourteen MIME cases, raw ZIP member bytes/hashes, unchanged
 entry order, deduplication, replay, legacy and non-ZIP compatibility, original
 cancellation/deadline behavior and cleanup after actual temporary-file creation
 pass optimized and ASan/UBSan/LSan controls, alongside the existing HAR file suite.
-Atomic destination replacement and existing path/count/byte bounds remain in
-the same native writer. Matching compiled browser proof remains pending.
+Atomic destination replacement remains in the same native writer, which sets no
+count or byte bound of its own. Matching compiled browser proof remains pending.
