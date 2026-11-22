@@ -1,9 +1,25 @@
 ---
+import browserControlSource from '../../../../examples/browser-control/record-video.ts?raw'
+import frameRatesSource from '../../../../examples/engine/frame-rates.ts?raw'
 import nativeSource from '../../../../examples/native.ts?raw'
+import ebaySource from '../../../../examples/real-sites/ebay.ts?raw'
+import songMakerSource from '../../../../examples/real-sites/song-maker.ts?raw'
+import agentSource from '../../../../examples/shared-browser/agent.ts?raw'
+import liveViewerSource from '../../../../examples/browser-control/live-viewer.ts?raw'
+import Clip from '../../components/Clip.astro'
 import CodeBlock from '../../components/CodeBlock.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { streamExample } from '../../lib/api-reference.js'
 import { sitePath } from '../../lib/paths.js'
+
+const featured = [
+  ['#agent-window', 'An agent shops in a window you can see', 'shared browser, MCP'],
+  ['#narrated', 'A narrated shopping tour', 'the suitecut engine'],
+  ['#headless-video', 'A Playwright-style run with video', 'browser control, headless'],
+  ['#phone', 'Watch and take over from your phone', 'live viewer, any device'],
+  ['#frame-rates', 'One recording, any frame rate', 'the suitecut engine'],
+  ['#page-sound', "A page's own sound", 'the suitecut engine'],
+] as const
 
 const songMaker = `export SUITECUT_NATIVE_EXECUTABLE="/absolute/path/to/suitecut-browser"
 pnpm example:song-maker`
@@ -17,36 +33,18 @@ const browser = await launchBrowser({
 })
 try {
   const page = await browser.newPage()
-  await page.goto('https://example.com')
-  await page.getByRole('link', { name: 'More information' }).click()
-  console.log(await page.title())
+  await page.goto('https://www.ebay.com/')
+  await page.getByRole('combobox', { name: 'Search for anything' }).fill('mechanical keyboard')
+  await page.keyboard.press('Enter')
+  console.log(await page.getByRole('heading', { level: 1 }).first().textContent())
 } finally {
   await browser.close()
 }`
 
-const handover = `import { launchBrowser, createBrowserViewer } from '@suitecut/browser-control'
-
-const browser = await launchBrowser({
-  executablePath: '/absolute/path/to/suitecut-browser',
-  headless: true,
-  pixelFormat: 'bgra',
-})
-const page = await browser.newPage()
-await page.goto('https://example.com')
-const viewer = await createBrowserViewer({ browser, page, resolutionMode: 'auto' })
-console.log('Watch or take over at', viewer.url)
-
-try {
-  await viewer.runAgent(() => page.getByRole('link', { name: 'More information' }).click())
-} finally {
-  await viewer.close()
-  await browser.close()
-}`
-
-const cliAgent = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://example.com
+const cliAgent = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://www.ebay.com/
 suitecut-native-control --session shop snapshot
-suitecut-native-control --session shop --response none fill e12 'Ada'
-suitecut-native-control --session shop click e15
+suitecut-native-control --session shop --response none fill e12 'mechanical keyboard'
+suitecut-native-control --session shop press Enter
 suitecut-native-control --session shop close`
 
 const mcpConfig = `{
@@ -65,12 +63,12 @@ int main() {
   suitecut::LaunchOptions options;
   options.executable = "/usr/bin/firefox";
   auto browser = suitecut::Browser::launch_firefox(options);
-  browser.main_page().navigate("https://example.com");
+  browser.main_page().navigate("https://www.ebay.com/");
 
   suitecut::AgentDriver driver(browser);
   suitecut::SimpleAgent agent(driver);
   auto seen = agent.call("observe", {});
-  auto ready = agent.call("wait", {{"text", "Example Domain"}, {"timeoutMs", 2000}});
+  auto ready = agent.call("wait", {{"text", "Search for anything"}, {"timeoutMs", 5000}});
   browser.close();
 }`
 ---
@@ -83,17 +81,105 @@ int main() {
   <article class="page prose">
     <h1>Examples</h1>
     <p>
-      Each example uses the current packages. The recording examples need the built CEF executable
-      in <code>SUITECUT_NATIVE_EXECUTABLE</code>; the browser agent examples also work with an
-      installed Chrome or Firefox.
+      Every video here was recorded by suitecut, on a live public site, from the script printed
+      under it. Nothing was edited afterwards except to make web-sized copies. The runs only browse
+      and search: no sign-in, no cart and no checkout.
     </p>
+    <ul class="dp-rows">
+      {
+        featured.map(([href, title, detail]) => (
+          <li>
+            <a class="dp-link" href={href}>
+              {title}
+            </a>
+            <span class="dp-detail">{detail}</span>
+          </li>
+        ))
+      }
+    </ul>
 
-    <h2 id="record-and-render">Record and render</h2>
+    <h2 id="agent-window">An agent shops in a window you can see</h2>
     <p>
-      A narrated tour in the embedded browser with page audio, rendered to a video. This is
-      <code>examples/native.ts</code>; run it with <code>pnpm example:native</code>.
+      The <a href={sitePath('/docs/shared-browser')}>shared browser</a> opens a real window, and an agent
+      drives it through the MCP server while you watch or join in. Here the agent searches eBay, opens
+      a listing in a new tab, reads it and goes back to the results. The window records itself: the frames
+      come from Chromium's compositor, not a screen recording.
     </p>
-    <CodeBlock code={nativeSource} />
+    <Clip
+      name="agent-window"
+      title="Recorded by the shared browser at 30 fps while the agent worked."
+    >
+      {' '}The dark second is the new tab before the listing painted.
+    </Clip>
+    <p>
+      The script plays the part of the MCP host, so every step is a tool call a model could make:
+      <code>browser_snapshot</code> to find the search box by its name, <code>browser_type</code>,
+      <code>browser_click</code> on the listing's ref, and the two recording tools around it all.
+    </p>
+    <CodeBlock code={agentSource} label="examples/shared-browser/agent.ts" />
+
+    <h2 id="narrated">A narrated shopping tour</h2>
+    <p>
+      The <code>suitecut</code> package records a script in its own headless Chromium and turns it into
+      a finished video: the cursor, the typing, the highlights, the zoom and the voice are all steps in
+      the script. Play it with sound.
+    </p>
+    <Clip name="ebay" title="eBay, recorded and narrated by suitecut." sound />
+    <CodeBlock code={ebaySource} label="examples/real-sites/ebay.ts" />
+
+    <h2 id="headless-video">A Playwright-style run with video</h2>
+    <p>
+      <a href={sitePath('/docs/browser-control')}>Browser control</a> is the familiar API: locators, roles,
+      real keyboard input, history. Turn on <code>recordVideo</code> for a context, as in Playwright,
+      and every page in it is filmed while it runs headless.
+    </p>
+    <Clip name="browser-control" title="The context's own video, from the script below." />
+    <CodeBlock code={browserControlSource} label="examples/browser-control/record-video.ts" />
+
+    <h2 id="phone">Watch and take over from your phone</h2>
+    <p>
+      Every headless browser can stream itself. <code>createBrowserViewer</code> serves a live view of
+      the engine's own frames from your machine, with no extension, relay or cloud service. Pass
+      <code>network: true</code> and the printed link opens on a phone, a tablet or another computer on
+      the same network. Tap <b>Take control</b> and the agent pauses; tap <b>Resume AI</b> and it carries
+      on from wherever you left the page.
+    </p>
+    <Clip
+      name="phone-viewer"
+      title="A phone takes over an agent's eBay search, then hands it back."
+      portrait
+    >
+      {' '}With <code>resolutionMode: 'auto'</code> the page resizes to fit the screen in control, so
+      eBay switches to its phone layout. Recorded by suitecut at phone size.
+    </Clip>
+    <p>
+      The link carries its own key, and requests without it are refused. It is plain HTTP, so share
+      it on networks you trust; leave <code>network</code> off and the viewer stays on this machine. For
+      an audience rather than a co-pilot, <a href="#publish">publish the same browser</a> to RTMP instead.
+    </p>
+    <CodeBlock code={liveViewerSource} label="examples/browser-control/live-viewer.ts" />
+
+    <h2 id="frame-rates">One recording, any frame rate</h2>
+    <p>
+      Capture once at a high frame rate such as 120 a second, then render as many times as you like
+      at any rate, including 29.97 and 59.94. Lower rates keep the newest real frame for each tick;
+      higher ones never invent motion that wasn't painted.
+    </p>
+    <Clip
+      name="frame-rates"
+      title="Two renders of one 120 fps recording of Apple's store, side by side."
+    >
+      {' '}24 fps on the left, 60 on the right: watch the scroll.
+    </Clip>
+    <CodeBlock code={frameRatesSource} label="examples/engine/frame-rates.ts" />
+
+    <h2 id="page-sound">A page's own sound</h2>
+    <p>
+      Real clicks on Chrome Music Lab's Song Maker. The tune in the video is the page's own Web
+      Audio, captured from the renderer and mixed under the narration. Play it with sound.
+    </p>
+    <Clip name="song-maker" title="Song Maker, recorded with its sound." sound />
+    <CodeBlock code={songMakerSource} label="examples/real-sites/song-maker.ts" />
 
     <h2 id="song-maker">A real app at 1080p60</h2>
     <p>
@@ -110,6 +196,13 @@ int main() {
     </p>
     <CodeBlock label="Terminal" code={songMaker} />
 
+    <h2 id="record-and-render">The smallest recording</h2>
+    <p>
+      A narrated page with its audio, rendered to a video. This is <code>examples/native.ts</code>;
+      run it with <code>pnpm example:native</code>.
+    </p>
+    <CodeBlock code={nativeSource} />
+
     <h2 id="publish">Publish a source</h2>
     <p>
       Stream a page to RTMP or RTMPS. Your app owns the browser and the stop signal; keep stream
@@ -123,13 +216,6 @@ int main() {
       have.
     </p>
     <CodeBlock code={installedBrowser} />
-
-    <h2 id="handover">Agent with human handover</h2>
-    <p>
-      An agent works in the CEF engine while a person watches through the live viewer and can take
-      over at any point.
-    </p>
-    <CodeBlock code={handover} />
 
     <h2 id="cli-agent">Command-line agent session</h2>
     <p>A persistent session that any script or agent can drive one command at a time.</p>

@@ -1,0 +1,138 @@
+---
+// A hand-drawn diagram with its explanation: numbered steps under the drawing,
+// and the same numbers circled on the drawing. Pointing at a step inks the parts
+// of the diagram it talks about in red.
+import { type Explained } from '../data/diagrams.js'
+import { type Doodle as DoodleData, type DoodleNode } from '../lib/doodle.js'
+import Doodle from './Doodle.astro'
+
+interface Props {
+  explained: Explained
+}
+
+const { explained }: Props = Astro.props
+const byId = new Map(explained.doodle.nodes.map((node) => [node.id, node]))
+const badges: DoodleNode[] = explained.steps.flatMap((step, index) => {
+  const node = step.nodes[0] === undefined ? undefined : byId.get(step.nodes[0])
+  if (!node) return []
+  // Centred on the node's top-left corner, or top-right on a window so its dots show
+  // and on a crossed-out node so the cross doesn't cover it.
+  const size = 38
+  const right = node.shape === 'window' || explained.doodle.crossed?.includes(node.id) === true
+  const cornerX = right ? node.x + node.w : node.x
+  const x = Math.min(Math.max(2, cornerX - size / 2), explained.doodle.width - size - 2)
+  return [
+    {
+      id: `step-${index + 1}`,
+      x,
+      y: Math.max(2, node.y - size / 2),
+      w: size,
+      h: size,
+      label: String(index + 1),
+      shape: 'circle',
+      fill: 'paper',
+    },
+  ]
+})
+const doodle: DoodleData = { ...explained.doodle, nodes: [...explained.doodle.nodes, ...badges] }
+---
+
+<div class="explainer" data-explainer>
+  <Doodle doodle={doodle} class="explainer-art" />
+  <ol class="explainer-steps">
+    {
+      explained.steps.map((step) => (
+        <li data-nodes={step.nodes.join(' ')}>
+          <strong>{step.title}</strong>
+          <span>{step.text}</span>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<script>
+  function wire() {
+    for (const explainer of document.querySelectorAll<HTMLElement>('[data-explainer]')) {
+      if (explainer.dataset.wired) continue
+      explainer.dataset.wired = ''
+      for (const step of explainer.querySelectorAll<HTMLElement>('[data-nodes]')) {
+        const nodes = (step.dataset.nodes ?? '')
+          .split(' ')
+          .map((id) => explainer.querySelector(`[data-node="${CSS.escape(id)}"]`))
+        const mark = (on: boolean) =>
+          nodes.forEach((node) => node?.classList.toggle('is-focus', on))
+        step.addEventListener('pointerenter', () => mark(true))
+        step.addEventListener('pointerleave', () => mark(false))
+      }
+    }
+  }
+  document.addEventListener('astro:page-load', wire)
+</script>
+
+<style>
+  .explainer {
+    margin: var(--space-8) 0 var(--space-14);
+  }
+
+  /* The drawing takes the card's full width so its labels stay readable. */
+  .explainer :global(.explainer-art) {
+    margin: 0 calc(var(--space-6) - var(--gutter)) var(--space-6);
+  }
+
+  .explainer-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .explainer-steps li {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: var(--space-5) 0 var(--space-5) var(--space-14);
+    border-top: 1px solid var(--rule);
+    counter-increment: step;
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .explainer-steps li::before {
+    content: counter(step);
+    position: absolute;
+    top: var(--space-5);
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--heading);
+    border-radius: 50%;
+    color: var(--heading);
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .explainer-steps li:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .explainer-steps strong {
+    color: var(--heading);
+    font-weight: 600;
+  }
+
+  .explainer-steps span {
+    color: var(--muted);
+  }
+
+  @media (hover: hover) {
+    .explainer-steps li:hover::before {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+</style>

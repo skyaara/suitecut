@@ -1,8 +1,9 @@
 // Hand-drawn diagrams as static SVG. Each stroke wobbles a little and is drawn
-// twice, like a pen going over a line; fills are highlighter swipes. A seed
+// twice, like a pen going over a line; fills are coloured in just inside the
+// outline, in the node's own shape. A seed
 // makes every diagram come out the same on each build.
 
-export type Fill = 'yellow' | 'blue' | 'red' | 'chrome' | 'none'
+export type Fill = 'yellow' | 'blue' | 'red' | 'chrome' | 'paper' | 'none'
 
 export interface DoodleNode {
   readonly id: string
@@ -27,6 +28,8 @@ export interface DoodleEdge {
   readonly dashed?: boolean
   /** Arrowheads at both ends. */
   readonly both?: boolean
+  /** What travels along it when the diagram flows; frames by default. */
+  readonly carries?: 'frame' | 'sound' | 'command'
 }
 
 export interface DoodleText {
@@ -50,11 +53,13 @@ export interface Doodle {
   readonly texts?: readonly DoodleText[]
   /** Crossed-out strokes over a node, for "not this". */
   readonly crossed?: readonly string[]
+  /** Once drawn, send a token along each edge in turn, from the sources onwards. */
+  readonly flow?: boolean
 }
 
-type Random = () => number
+export type Random = () => number
 
-function random(seed: number): Random {
+export function random(seed: number): Random {
   let state = seed >>> 0 || 1
   return () => {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0
@@ -62,7 +67,7 @@ function random(seed: number): Random {
   }
 }
 
-const round = (value: number) => Math.round(value * 10) / 10
+export const round = (value: number) => Math.round(value * 10) / 10
 const point = (x: number, y: number) => `${round(x)} ${round(y)}`
 
 /** One pass of a wobbly line: a cubic whose ends and middle drift a little. */
@@ -80,7 +85,7 @@ function pass(rand: Random, x1: number, y1: number, x2: number, y2: number, roug
   return `M${point(x1 + jitter(), y1 + jitter())} C${point(c1x, c1y)} ${point(c2x, c2y)} ${point(x2 + jitter(), y2 + jitter())}`
 }
 
-function line(rand: Random, x1: number, y1: number, x2: number, y2: number, roughness = 1) {
+export function line(rand: Random, x1: number, y1: number, x2: number, y2: number, roughness = 1) {
   return `${pass(rand, x1, y1, x2, y2, roughness)} ${pass(rand, x1, y1, x2, y2, roughness * 0.8)}`
 }
 
@@ -123,7 +128,7 @@ function ellipse(rand: Random, cx: number, cy: number, rx: number, ry: number) {
   return `${draw()} ${draw()}`
 }
 
-function rectangle(rand: Random, x: number, y: number, w: number, h: number) {
+export function rectangle(rand: Random, x: number, y: number, w: number, h: number) {
   return [
     line(rand, x, y, x + w, y),
     line(rand, x + w, y, x + w, y + h),
@@ -156,12 +161,18 @@ function pill(rand: Random, x: number, y: number, w: number, h: number) {
   return `${draw()} ${draw()}`
 }
 
-/** A highlighter swipe a little off the shape, as if filled in by hand. */
-function swipe(rand: Random, x: number, y: number, w: number, h: number) {
-  const j = () => (rand() - 0.5) * 6
-  const dx = 5 + rand() * 3
-  const dy = 5 + rand() * 3
-  return `M${point(x + dx + j(), y + dy + j())} L${point(x + w + dx + j(), y + dy + j())} L${point(x + w + dx + j(), y + h + dy + j())} L${point(x + dx + j(), y + h + dy + j())} Z`
+/** Colour inside a node: its own shape, a little inside the ink so it never spills. */
+function colouring(rand: Random, node: DoodleNode) {
+  const inset = 2.5
+  const x = node.x + inset
+  const y = node.y + inset
+  const w = node.w - inset * 2
+  const h = node.h - inset * 2
+  if (node.shape === 'circle')
+    return ellipse(rand, x + w / 2, y + h / 2, w / 2, h / 2).split(' M')[0]
+  if (node.shape === 'round') return pill(rand, x, y, w, h).split(' M')[0]
+  const j = () => (rand() - 0.5) * 2
+  return `M${point(x + j(), y + j())} L${point(x + w + j(), y + j())} L${point(x + w + j(), y + h + j())} L${point(x + j(), y + h + j())} Z`
 }
 
 const fills: Record<Exclude<Fill, 'none'>, string> = {
@@ -169,6 +180,7 @@ const fills: Record<Exclude<Fill, 'none'>, string> = {
   blue: 'var(--doodle-blue, var(--marker-blue))',
   red: 'var(--doodle-red, var(--marker-red))',
   chrome: 'var(--doodle-chrome, rgba(150, 160, 172, 0.45))',
+  paper: 'var(--card)',
 }
 
 function escape(text: string) {
@@ -208,11 +220,63 @@ function exit(node: DoodleNode, tx: number, ty: number, gap = 10) {
   return [cx + dx * scale + (dx / length) * gap, cy + dy * scale + (dy / length) * gap] as const
 }
 
+/** How many edges lie between each node and the start of the diagram, on the longest path. */
+function depths(doodle: Doodle) {
+  const depth = new Map(doodle.nodes.map((node) => [node.id, 0]))
+  // At most one pass per node, so a loop in the edges can't run forever.
+  let passes = doodle.nodes.length
+  let changed = true
+  while (changed && passes-- > 0) {
+    changed = false
+    for (const edge of doodle.edges ?? []) {
+      const next = (depth.get(edge.from) ?? 0) + 1
+      if (next > (depth.get(edge.to) ?? 0)) {
+        depth.set(edge.to, next)
+        changed = true
+      }
+    }
+  }
+  return depth
+}
+
+const tokens = {
+  frame: '<rect class="dd-token dd-token-frame" x="-11" y="-8" width="22" height="16" rx="3"/>',
+  sound: '<circle class="dd-token dd-token-sound" r="7.5"/>',
+  command: '<circle class="dd-token dd-token-command" r="5.5"/>',
+}
+
+/**
+ * A token per edge that moves along it in its turn: an edge leaving a node at depth
+ * d moves during slot d, so a frame seems to be passed from part to part. SMIL, so
+ * it needs no script; the stylesheet hides it until the drawing is in.
+ */
+function flow(doodle: Doodle, routes: readonly { edge: DoodleEdge; d: string }[]) {
+  const depth = depths(doodle)
+  const slot = 0.9
+  const slots = Math.max(0, ...routes.map(({ edge }) => depth.get(edge.from) ?? 0)) + 1
+  const period = slots * slot + 0.8
+  const at = (seconds: number) => Number((seconds / period).toFixed(4))
+  return `<g class="dd-flow" aria-hidden="true">${routes
+    .map(({ edge, d }) => {
+      const start = at((depth.get(edge.from) ?? 0) * slot)
+      const end = at(((depth.get(edge.from) ?? 0) + 1) * slot - 0.08)
+      const times = `0;${start};${end};1`
+      // Discrete: each value holds until the next key time.
+      const seen =
+        start > 0
+          ? `values="0;1;0" keyTimes="0;${start};${end}"`
+          : `values="1;0" keyTimes="0;${end}"`
+      return `<g opacity="0">${tokens[edge.carries ?? 'frame']}<animateMotion dur="${round(period)}s" repeatCount="indefinite" path="${d}" keyPoints="0;0;1;1" keyTimes="${times}" calcMode="linear"/><animate attributeName="opacity" dur="${round(period)}s" repeatCount="indefinite" ${seen} calcMode="discrete"/></g>`
+    })
+    .join('')}</g>`
+}
+
 /** Renders a diagram to an SVG string whose strokes can draw themselves in, in order. */
 export function renderDoodle(doodle: Doodle): string {
   const rand = random(doodle.seed)
   const byId = new Map(doodle.nodes.map((node) => [node.id, node]))
   const parts: string[] = []
+  const routes: { edge: DoodleEdge; d: string }[] = []
   let order = 0
   const stroke = (d: string, extra = '') =>
     parts.push(`<path class="dd-ink" d="${d}" pathLength="1" style="--i:${order++}"${extra}/>`)
@@ -221,12 +285,8 @@ export function renderDoodle(doodle: Doodle): string {
     const { x, y, w, h } = node
     parts.push(`<g data-node="${node.id}">`)
     if (node.fill && node.fill !== 'none') {
-      const shape =
-        node.shape === 'circle'
-          ? ellipse(rand, x + w / 2 + 6, y + h / 2 + 6, w / 2, h / 2).split(' M')[0]
-          : swipe(rand, x, y, w, h)
       parts.push(
-        `<path class="dd-fill" d="${shape}" fill="${fills[node.fill]}" style="--i:${order}"/>`,
+        `<path class="dd-fill" d="${colouring(rand, node)}" fill="${fills[node.fill]}" style="--i:${order}"/>`,
       )
     }
     if (node.shape === 'circle') stroke(ellipse(rand, x + w / 2, y + h / 2, w / 2, h / 2))
@@ -295,6 +355,7 @@ export function renderDoodle(doodle: Doodle): string {
       return `M${point(sx + j(), sy + j())} Q${point(mx + j() * 2, my + j() * 2)} ${point(ex + j(), ey + j())}`
     }
     stroke(`${curve(3)} ${curve(2.4)}`, edge.dashed ? ' data-dashed=""' : '')
+    routes.push({ edge, d: `M${point(sx, sy)} Q${point(mx, my)} ${point(ex, ey)}` })
     const head = (hx: number, hy: number, ax: number, ay: number) => {
       const angle = Math.atan2(hy - ay, hx - ax)
       const size = 14
@@ -330,6 +391,8 @@ export function renderDoodle(doodle: Doodle): string {
       `<g class="dd-text" style="--i:${order}"${transform}>${textBlock(text.x, text.y, text.text.split('\n'), size, text.muted ? 'dd-detail' : 'dd-note', text.anchor ?? 'middle')}</g>`,
     )
   }
+
+  if (doodle.flow) parts.push(flow(doodle, routes))
 
   return `<svg class="doodle" viewBox="0 0 ${doodle.width} ${doodle.height}" role="img" aria-label="${escape(doodle.title)}" style="--strokes:${order}">${parts.join('')}</svg>`
 }

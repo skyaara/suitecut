@@ -1,42 +1,47 @@
 ---
+import Explainer from '../components/Explainer.astro'
+import { diagrams } from '../data/diagrams.js'
 import CodeBlock from '../components/CodeBlock.astro'
 import Film from '../components/Film.astro'
-import FlowDiagram from '../components/FlowDiagram.astro'
 import PackageRows from '../components/PackageRows.astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { recordExample } from '../lib/api-reference.js'
 import { clientRuns } from '../lib/benchmarks.js'
 import { sitePath } from '../lib/paths.js'
+import Clip from '../components/Clip.astro'
+import frameRatesSource from '../../../examples/engine/frame-rates.ts?raw'
+import ebaySource from '../../../examples/real-sites/ebay.ts?raw'
+import songMakerSource from '../../../examples/real-sites/song-maker.ts?raw'
 
 type Spec = [string, string]
 
 const engineSpecs: Spec[] = [
-  ['Pinned build', 'CEF 156.0.7 on Chromium 156.0.8078.17, beta channel'],
+  ['Pinned build', 'CEF 156.0.30 on Chromium 156.0.8078.96, stable channel'],
   ['Video', 'CefRenderHandler::OnPaint, BGRA8 or I420 frames with paint IDs'],
   ['Audio', 'CefAudioHandler::OnAudioStreamPacket, 48 kHz stereo PCM'],
   ['Not used', 'No screenshot loop, browser extension or open debugging port'],
   ['Process', 'One sandboxed helper per launch, hosting isolated contexts and many pages'],
   ['Modules', 'protocol, runtime, page and process, with one shutdown barrier'],
-  ['Backpressure', 'Callbacks never wait on pipes; one pending frame, 100 audio packets'],
-  ['Qualified', '90-case CEF regression package on macOS ARM64, October 21'],
+  ['Backpressure', 'Callbacks never wait on pipes; one pending frame, audio queued whole'],
+  ['Qualified', '90-case CEF regression package on macOS ARM64, October 21, on CEF 156.0.7'],
 ]
 
 const mediaSpecs: Spec[] = [
-  ['Capture', '1–120 FPS ceiling per page; actual paints follow page activity'],
-  ['Output rate', 'Any rate from 1–120, including 29.97 and 59.94'],
+  ['Capture', 'Any FPS from 1 per page; actual paints follow page activity'],
+  ['Output rate', 'Any rate from 1, including 29.97 and 59.94'],
   ['Resampling', 'Newest real image at each tick. Never blended or interpolated'],
   ['macOS path', 'IOSurface capture, Metal NV12 conversion, h264_videotoolbox'],
   ['Audio sync', 'Whole-sample boundaries per tick, so fractional rates never drift'],
-  ['Publishing', 'Up to four publishers, fixed bitrate, optional reconnect policy'],
+  ['Publishing', 'Any number of publishers, fixed bitrate, optional reconnect policy'],
   ['Health', 'Held images, audio gaps, pauses and source switches are counted'],
   ['Narration', 'Kokoro 82M with 28 voices, the macOS voice, Piper via plugins'],
 ]
 
 const agentSpecs: Spec[] = [
   ['Tools', 'observe, act and wait'],
-  ['Observations', 'Compact controls and text, 100 controls and 8 KiB by default'],
+  ['Observations', 'Compact controls and text, with optional control and byte limits'],
   ['Refs', 'Short element refs, replaced on every observation; stale refs rejected'],
-  ['Batches', 'Up to 64 known actions in one act, stopping on the first failure'],
+  ['Batches', 'Any number of known actions in one act, stopping on the first failure'],
   ['Deadlines', 'One shared deadline, 5 s by default and capped at 30 s'],
   ['Safety', 'Mutations are never retried. Password values are redacted'],
   ['Results', 'delivered confirms the browser received it; effect checks the UI'],
@@ -56,26 +61,46 @@ const viewerSpecs: Spec[] = [
   ['Take control', 'Waits for admitted agent work, then hands input to a person'],
   ['Resume AI', 'Releases held keys and buttons and returns control'],
   ['Same session', 'One page, cookies and storage for both people and agents'],
-  ['Private', 'Binds to 127.0.0.1 with a bearer token; no external scripts or CDNs'],
+  ['Any device', 'With network: true, open the link on a phone, tablet or another computer'],
+  ['Fits the screen', 'Touch input, and the page resizes to the screen in control'],
+  ['Private', 'A bearer token in the link, loopback only unless you opt in, no CDNs'],
 ]
+
+// The demos are the real-site examples, recorded by scripts/record-site-demos.mjs.
+// Each shows the body of the script that made it.
+const scriptOf = (source: string) =>
+  (source.split('async ({ page, suitecut }) => {\n')[1]?.split('\n  },\n')[0] ?? '')
+    .split('\n')
+    .map((line) => line.slice(4))
+    .join('\n')
 
 const demos = [
   {
-    name: 'agent-shops',
-    title: 'An agent does the shopping',
-    caption: 'It searches, adds two items and checks out, typing into a normal Chrome window.',
+    name: 'ebay',
+    path: 'examples/real-sites/ebay.ts',
+    title: 'Shop for a keyboard on eBay',
+    caption:
+      'Real typing in the search box, a highlight on the results, then a listing opened, its photo zoomed and its price pointed at. Play it with sound for the narration.',
+    script: scriptOf(ebaySource),
+    sound: true,
   },
   {
-    name: 'person-and-agent',
-    title: 'You and the agent share the browser',
+    name: 'frame-rates',
+    path: 'examples/engine/frame-rates.ts',
+    title: "Scroll Apple's iPhone store at 120 fps",
     caption:
-      'A person adds an item and opens checkout in a new tab. The agent picks up that tab and places the order.',
+      'One recording rendered twice, 24 fps on the left and 60 on the right. Watch the scroll.',
+    script: scriptOf(frameRatesSource),
+    sound: false,
   },
   {
-    name: 'stays-signed-in',
-    title: 'It remembers you',
+    name: 'song-maker',
+    path: 'examples/real-sites/song-maker.ts',
+    title: 'Write a tune in Song Maker',
     caption:
-      'Sign in once, quit, launch again: the profile keeps its cookies, so you are still signed in.',
+      "Real clicks on Chrome Music Lab. Play it with sound: the page's own audio is in the video.",
+    script: scriptOf(songMakerSource),
+    sound: true,
   },
 ]
 
@@ -94,7 +119,7 @@ const chromeWindowExample = `const browser = await launchBrowser({
   windowMode: 'chrome',
 })
 const page = browser.defaultContext().pages()[0]
-await page.goto('https://example.com')`
+await page.goto('https://www.ebay.com/')`
 
 const families = [
   'Browser lifecycle',
@@ -147,10 +172,10 @@ const externalSpecs: Spec[] = [
   ['Nothing extra', 'The CLI and C++ SDK need no CEF runtime, Node.js or automation library'],
 ]
 
-const externalExample = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://example.com
+const externalExample = `suitecut-native-control --session shop --browser /usr/bin/chromium open https://www.ebay.com/
 suitecut-native-control --session shop snapshot
-suitecut-native-control --session shop --response none fill e12 'Ada'
-suitecut-native-control --session shop click e15
+suitecut-native-control --session shop --response none fill e12 'mechanical keyboard'
+suitecut-native-control --session shop press Enter
 suitecut-native-control --session shop close`
 
 const externalNode = `import { launchBrowser } from '@suitecut/browser-control'
@@ -188,7 +213,8 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
         <span class="dp-marker dp-marker-red dp-marker-inline"
           >video and sound straight from the renderer</span
         >, with no screenshots, extensions or open debugging port. Drive it from TypeScript, C++ or
-        any MCP client, then record it, stream it live, or let an agent work while you watch.
+        any MCP client, then record it, stream it live to your phone or to an audience, or let an
+        agent work while you watch.
       </p>
       <p class="home-actions">
         <a class="tag" href={sitePath('/packages')}>See the packages</a>
@@ -206,29 +232,40 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     <h2 id="watch">Watch it work</h2>
     <p>
-      suitecut can also open as a regular Chrome window that you and an AI agent use together. These
-      are unedited screen recordings of that window on a sample shop running locally. The tabs,
-      address bar and password prompt are Chromium's own; the typing comes from suitecut's browser
-      control.
+      Real public sites, recorded by suitecut from the script under each video. The cursor,
+      highlights, zoom, captions and voice are all steps in that script, and nothing was edited
+      afterwards.
     </p>
     <div class="demos">
       {
         demos.map((demo) => (
           <figure class="demo">
-            <video
-              src={sitePath(`/demo/${demo.name}.mp4`)}
-              poster={sitePath(`/demo/${demo.name}.jpg`)}
-              autoplay
-              muted
-              loop
-              playsinline
-              preload="metadata"
-              aria-label={demo.title}
-            />
+            {demo.sound ? (
+              <video
+                src={sitePath(`/demo/${demo.name}.mp4`)}
+                poster={sitePath(`/demo/${demo.name}.jpg`)}
+                controls
+                playsinline
+                preload="none"
+                aria-label={demo.title}
+              />
+            ) : (
+              <video
+                src={sitePath(`/demo/${demo.name}.mp4`)}
+                poster={sitePath(`/demo/${demo.name}.jpg`)}
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                aria-label={demo.title}
+              />
+            )}
             <figcaption>
               <strong>{demo.title}</strong>
               {demo.caption}
             </figcaption>
+            <CodeBlock code={demo.script} label={demo.path} lang="typescript" />
           </figure>
         ))
       }
@@ -238,8 +275,10 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     <p>
       One engine sits in the middle. Everything you build talks to it through the same protocol, and
       everything it produces comes from its own paint and audio callbacks.
+      <a href={sitePath('/docs/how-it-works')}>How it works</a> follows a frame through every part, with
+      real recordings.
     </p>
-    <FlowDiagram />
+    <Explainer explained={diagrams.engine} />
 
     <h2 id="engine">Embedded CEF engine</h2>
     <p>
@@ -359,7 +398,18 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     </dl>
     <CodeBlock code={chromeWindowExample} />
 
-    <h3 id="viewer">Live viewer and human handover</h3>
+    <h3 id="viewer">Watch and take over from any device</h3>
+    <p>
+      Every headless browser streams itself. <code>createBrowserViewer</code> serves the engine's own
+      frames to a page you open on this machine or, with <code>network: true</code>, on your phone.
+      Take control from there, then hand it back to the agent.
+      <a href={sitePath('/examples#phone')}>See the example</a>.
+    </p>
+    <Clip
+      name="phone-viewer"
+      title="A phone takes over an agent's eBay search, then hands it back."
+      portrait
+    />
     <dl class="specs">
       {
         viewerSpecs.map(([key, value]) => (
@@ -428,7 +478,8 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
       <div><dt>Native SDK</dt><dd>Builds without Node.js or CEF headers</dd></div>
       <div>
         <dt>Playback</dt><dd>
-          Stock CEF lacks H.264 and AAC playback; a codec build profile is pinned
+          H.264, AAC and HEVC play on macOS ARM64 through a third-party codec build; Linux uses
+          stock CEF without them
         </dd>
       </div>
     </dl>
@@ -451,7 +502,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
   // Respect reduced motion: show the first frame with controls instead of looping.
   function setupDemos() {
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    for (const video of document.querySelectorAll<HTMLVideoElement>('.demo video')) {
+    for (const video of document.querySelectorAll<HTMLVideoElement>('.demo video[autoplay]')) {
       video.autoplay = false
       video.pause()
       video.controls = true
@@ -493,7 +544,7 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 1600 / 1172;
+    aspect-ratio: 16 / 9;
     border-radius: 0.5rem;
     background: var(--panel);
     box-shadow: 0 0 0 1px var(--line);

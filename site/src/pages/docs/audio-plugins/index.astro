@@ -22,7 +22,7 @@ const record = defineSuiteCut({
 })
 
 await record('Piper narration', async ({ page, suitecut }) => {
-  await page.goto('https://example.com')
+  await page.goto('https://www.ebay.com/')
   await suitecut.narrate('The report is ready.', {
     provider: 'piper-amy',
     voice: 'default',

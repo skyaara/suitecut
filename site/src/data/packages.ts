@@ -46,9 +46,10 @@ export interface Package {
 const recordCode = `import { record, renderSuiteCut } from 'suitecut'
 
 const run = await record('Tour', async ({ page, suitecut }) => {
-  await page.goto('https://example.com')
-  await suitecut.narrate('Welcome to the product tour.')
-  await suitecut.click(page.getByRole('link', { name: 'Pricing' }))
+  await page.goto('https://www.ebay.com/')
+  await suitecut.narrate('A live store, driven from a script.')
+  await suitecut.type(page.getByRole('combobox', { name: 'Search for anything' }), 'mechanical keyboard')
+  await page.keyboard.press('Enter')
   await suitecut.highlight(page.locator('h1'))
 })
 
@@ -377,8 +378,9 @@ const browser = await launchBrowser({
   executablePath: '/path/to/chrome',
 })
 const page = await (await browser.newContext()).newPage()
-await page.goto('https://example.com')
-await page.getByRole('link', { name: 'More information' }).click()
+await page.goto('https://www.ebay.com/')
+await page.getByRole('combobox', { name: 'Search for anything' }).fill('mechanical keyboard')
+await page.keyboard.press('Enter')
 await browser.close()`
 
 const sharedConfig = `{
@@ -395,10 +397,10 @@ const sharedCode = `import { launchSharedBrowser } from '@suitecut/shared-browse
 
 const browser = await launchSharedBrowser({ executablePath })
 const tab = await browser.activeTab()
-await tab.goto('https://example.com')
+await tab.goto('https://www.ebay.com/')
 console.log(await tab.snapshot()) // text and controls with refs
-await tab.fillRef('e3', 'Ada Lovelace')
-await tab.clickRef('e4') // you can keep using the window`
+await tab.fillRef('e3', 'mechanical keyboard')
+await tab.press('Enter') // you can keep using the window`
 
 const agentCode = `suitecut::AgentDriver driver(browser);
 suitecut::SimpleAgent agent(driver);
@@ -409,12 +411,13 @@ auto done = agent.call("act", {
 auto ready = agent.call("wait", {
     {"text", "Saved"}, {"timeoutMs", 2000}});`
 
-const cliCode = `alias sc='suitecut-native-control --session shop'
+const cliCode = `alias sc='suitecut-native-control --session wiki'
 
-sc --browser /usr/bin/chromium open https://example.com
+sc --browser /usr/bin/chromium \\
+  open https://www.ebay.com/
 sc snapshot
-sc fill e12 'Ada'
-sc click e15
+sc fill e12 'mechanical keyboard'
+sc press Enter
 
 suitecut-native-control --browser /usr/bin/chromium \\
   --mcp --tools core,network`
@@ -436,12 +439,12 @@ export const packages: readonly Package[] = [
     doodle: pipeline,
     examples: [{ title: 'Record a tour and render it', language: 'ts', code: recordCode }],
     facts: [
-      ['Capture', '1 to 120 frames a second, straight from the renderer'],
-      ['Output', 'MP4 at any rate from 1 to 120, including 29.97 and 59.94'],
+      ['Capture', 'Any frame rate from 1 a second, straight from the renderer'],
+      ['Output', 'MP4 at any rate from 1, including 29.97 and 59.94'],
       ['Audio', 'Page audio and narration on whole-sample boundaries, so nothing drifts'],
       ['Narration', 'Kokoro 82M runs locally, with word-by-word captions'],
       ['Effects', 'Cursor, click ripples, highlight, spotlight and zoom'],
-      ['Streaming', 'Up to four RTMP or RTMPS publishers, with reconnect'],
+      ['Streaming', 'Any number of RTMP or RTMPS publishers, with reconnect'],
       ['macOS', 'IOSurface capture, Metal colour conversion and VideoToolbox H.264'],
     ],
     limits: [
@@ -686,7 +689,7 @@ export const packages: readonly Package[] = [
     ],
     facts: [
       ['Library', 'C++20 headers and a stable, versioned C ABI, static or shared'],
-      ['Agent tools', 'observe, act and wait; up to 64 actions in one act'],
+      ['Agent tools', 'observe, act and wait; any number of actions in one act'],
       ['Refs', 'Short element refs, replaced on every observation; stale refs are rejected'],
       ['Safety', 'Mutations are never retried; password values are redacted'],
       ['CLI', 'Named sessions that stay alive between commands'],

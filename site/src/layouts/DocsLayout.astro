@@ -7,8 +7,11 @@ interface Props {
   description: string
   section:
     | 'overview'
+    | 'how-it-works'
+    | 'extending'
     | 'api'
     | 'browser-control'
+    | 'shared-browser'
     | 'agents'
     | 'kokoro'
     | 'audio-plugins'
@@ -25,6 +28,16 @@ const categories = [
     href: '/docs',
   },
   {
+    key: 'how-it-works',
+    label: 'How it works',
+    href: '/docs/how-it-works',
+  },
+  {
+    key: 'extending',
+    label: 'Extending suitecut',
+    href: '/docs/extending',
+  },
+  {
     key: 'api',
     label: 'API and CLI',
     href: '/docs/api',
@@ -33,6 +46,11 @@ const categories = [
     key: 'browser-control',
     label: 'Browser control',
     href: '/docs/browser-control',
+  },
+  {
+    key: 'shared-browser',
+    label: 'Shared browser',
+    href: '/docs/shared-browser',
   },
   {
     key: 'agents',

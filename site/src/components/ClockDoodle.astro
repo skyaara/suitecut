@@ -1,0 +1,30 @@
+---
+// The frame clock as a drawing: uneven paints in, even video frames out.
+import { renderClock } from '../lib/clock-doodle.js'
+---
+
+<figure class="doodle-figure clock" data-doodle="view" set:html={renderClock()} />
+
+<style is:global>
+  .clock {
+    margin: var(--space-8) 0;
+  }
+
+  .clock .dd-pulse {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 3;
+  }
+
+  .clock .dd-playhead {
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-dasharray: 6 7;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clock .dd-pulse {
+      display: none;
+    }
+  }
+</style>

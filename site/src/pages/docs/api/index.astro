@@ -6,7 +6,7 @@ import { recordExample, renderExample, streamExample } from '../../../lib/api-re
 const cliCommands = `node dist/cli.js install
 node dist/cli.js doctor
 node dist/cli.js render --manifest .suitecut/tour.json --output .suitecut/tour.mp4 --fps 60
-node dist/cli.js view https://example.com --executable /absolute/path/to/suitecut-browser
+node dist/cli.js view https://www.ebay.com/ --executable /absolute/path/to/suitecut-browser
 node dist/cli.js --help`
 
 const renderFlags = `node dist/cli.js render --manifest .suitecut/tour.json --output .suitecut/tour.webm \\
@@ -62,9 +62,8 @@ pnpm test:native`
 
   <h2 id="capture-options">Capture options</h2>
   <p>
-    Native launch sets CSS dimensions, device scale 1 or 2, an integer capture rate from 1 to 120
-    and BGRA or I420 pixels. Physical frames are bounded to 3840 × 2160. Other launch options
-    include
+    Native launch sets CSS dimensions, any positive device scale, an integer capture rate from 1 and
+    BGRA or I420 pixels. suitecut sets no maximum size or rate. Other launch options include
     <code>headless</code>, <code>userDataDir</code>, <code>downloadsPath</code>,
     <code>recordVideo</code>, <code>tracesDir</code>, <code>startupTimeoutMs</code> and
     <code>frameTransport</code>.

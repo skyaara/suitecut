@@ -1,17 +1,58 @@
 ---
+import Clip from '../../../components/Clip.astro'
+import Explainer from '../../../components/Explainer.astro'
+import { diagrams } from '../../../data/diagrams.js'
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { streamExample } from '../../../lib/api-reference.js'
 import { sitePath } from '../../../lib/paths.js'
+
+const otherDevice = `import { createBrowserViewer, launchBrowser } from '@suitecut/browser-control'
+
+const browser = await launchBrowser({ executablePath, headless: true, pixelFormat: 'bgra' })
+const page = await browser.newPage()
+const viewer = await createBrowserViewer({ browser, page, network: true, resolutionMode: 'auto' })
+console.log('Open on any device on this network:', viewer.url)
+
+// Agent steps wait while a person has control.
+await viewer.runAgent(() => page.goto('https://www.ebay.com/'))`
 ---
 
 <DocsLayout
   title="Live streaming"
-  description="Publish native CEF video and page audio to RTMP or RTMPS."
+  description="Stream a headless browser to your phone or another computer, or publish it to RTMP or RTMPS."
   section="streaming"
 >
   <h1>Native live streaming</h1>
-  <h2 id="publish-a-page">Publish a page</h2>
+  <p>
+    A suitecut browser streams itself. Both ways below are part of the engine and its SDK, with no
+    extension, relay or cloud service: watch and take over from another device you hold, or publish
+    the page, with its sound, to an audience.
+  </p>
+  <h2 id="other-devices">To your phone or another computer</h2>
+  <p>
+    <code>createBrowserViewer</code> serves a live view of the engine's own frames. With
+    <code>network: true</code> the printed link opens on any phone, tablet or computer on the same network;
+    it fits small screens and takes touch. <b>Take control</b> pauses the agent,
+    <b>Resume AI</b> hands the page back, and any number of screens can watch at once.
+  </p>
+  <Clip
+    name="phone-viewer"
+    title="A phone takes over an agent's eBay search, then hands it back."
+    portrait
+  >
+    {' '}The page resizes to the screen in control, so eBay shows its phone layout.
+  </Clip>
+  <CodeBlock code={otherDevice} />
+  <p>
+    The link carries its own key, and requests without it are refused. It is plain HTTP, so share it
+    on networks you trust; without <code>network</code> the viewer stays on this machine. From the command
+    line, <code>browser-control view https://www.ebay.com/ --network</code> does the same. The <a
+      href={sitePath('/examples#phone')}>full example</a
+    > runs an agent alongside it.
+  </p>
+  <h2 id="publish-a-page">To an audience, over RTMP</h2>
+  <Explainer explained={diagrams.streaming} />
   <CodeBlock code={streamExample} />
   <h2 id="stream-options">Stream options</h2>
   <p>
@@ -43,8 +84,8 @@ import { sitePath } from '../../../lib/paths.js'
   <h2 id="reconnect-and-stop">Reconnect and stop</h2>
   <p>
     Reconnect is off unless you pass
-    <code>reconnect: &#123; maxAttempts, initialDelayMs, maxDelayMs &#125;</code>. It allows 1 to 8
-    attempts per outage, with defaults of 3 attempts, 250 ms and 5000 ms. Without a policy, the
+    <code>reconnect: &#123; maxAttempts, initialDelayMs, maxDelayMs &#125;</code>. It allows one or
+    more attempts per outage, with defaults of 3 attempts, 250 ms and 5000 ms. Without a policy, the
     publisher makes one attempt.
   </p>
   <p>

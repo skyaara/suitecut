@@ -25,19 +25,31 @@ interface PresentationCursorInput {
 }
 
 /** Installs SuiteCut's non-interactive recording layer in the current document. */
-export function installSuiteCutPresentation(): void {
+export function installSuiteCutPresentation(): Promise<void> | undefined {
+  // Right after a click that navigates, the new document may not have a root element yet.
+  if (document.documentElement === null) {
+    return new Promise((resolve) => {
+      const observer = new MutationObserver(() => {
+        if (document.documentElement === null) return
+        observer.disconnect()
+        void installSuiteCutPresentation()
+        resolve()
+      })
+      observer.observe(document, { childList: true })
+    })
+  }
   const syncZoom = (host: HTMLElement): void => {
     const computedZoom = Number.parseFloat(getComputedStyle(document.documentElement).zoom)
     const rootZoom = Number.isFinite(computedZoom) && computedZoom > 0 ? computedZoom : 1
     host.style.setProperty('zoom', String(1 / rootZoom))
     host.style.setProperty('--suitecut-cursor-scale', String(rootZoom))
   }
-  const existingHost = document.documentElement.querySelector<HTMLElement>(
+  const existingHost = document.documentElement?.querySelector<HTMLElement>(
     '[data-suitecut-presentation]',
   )
   if (existingHost !== null) {
     syncZoom(existingHost)
-    return
+    return undefined
   }
 
   const host = document.createElement('div')
@@ -179,16 +191,17 @@ export function installSuiteCutPresentation(): void {
     requestAnimationFrame(updateCursor)
   }
   requestAnimationFrame(updateCursor)
+  return undefined
 }
 
 /** Removes SuiteCut's recording layer from the current document. */
 export function removeSuiteCutPresentation(): void {
-  document.documentElement.querySelector('[data-suitecut-presentation]')?.remove()
+  document.documentElement?.querySelector('[data-suitecut-presentation]')?.remove()
 }
 
 /** Animates the injected cursor to a viewport point. */
 export async function moveSuiteCutCursor(input: PresentationCursorInput): Promise<void> {
-  const host = document.documentElement.querySelector('[data-suitecut-presentation]')
+  const host = document.documentElement?.querySelector('[data-suitecut-presentation]')
   const cursor = host?.shadowRoot?.querySelector<HTMLElement>('#cursor')
   if (cursor === null || cursor === undefined) {
     throw new Error('SuiteCut cursor is not installed')
@@ -221,7 +234,7 @@ export async function moveSuiteCutCursor(input: PresentationCursorInput): Promis
 
 /** Draws a click ripple at the injected cursor's current position. */
 export async function pulseSuiteCutCursor(durationMs: number): Promise<void> {
-  const host = document.documentElement.querySelector('[data-suitecut-presentation]')
+  const host = document.documentElement?.querySelector('[data-suitecut-presentation]')
   const shadow = host?.shadowRoot
   const layer = shadow?.querySelector<HTMLElement>('#layer')
   const cursor = shadow?.querySelector<HTMLElement>('#cursor')
@@ -247,7 +260,7 @@ export async function pulseSuiteCutCursor(durationMs: number): Promise<void> {
 
 /** Shows a highlight inside the page so native capture records its animation. */
 export async function showSuiteCutHighlight(input: PresentationHighlightInput): Promise<void> {
-  const host = document.documentElement.querySelector('[data-suitecut-presentation]')
+  const host = document.documentElement?.querySelector('[data-suitecut-presentation]')
   const layer = host?.shadowRoot?.querySelector<HTMLElement>('#layer')
   if (layer === null || layer === undefined) {
     throw new Error('SuiteCut highlight layer is not installed')
@@ -329,7 +342,7 @@ export async function showSuiteCutHighlight(input: PresentationHighlightInput): 
 
 /** Shows a caption for an already measured narration clip. */
 export async function showSuiteCutCaption(input: PresentationCaptionInput): Promise<void> {
-  const host = document.documentElement.querySelector('[data-suitecut-presentation]')
+  const host = document.documentElement?.querySelector('[data-suitecut-presentation]')
   const layer = host?.shadowRoot?.querySelector<HTMLElement>('#layer')
   if (layer === null || layer === undefined) {
     throw new Error('SuiteCut caption layer is not installed')
@@ -372,7 +385,7 @@ export async function showSuiteCutCaption(input: PresentationCaptionInput): Prom
 /** Waits for application animations without waiting for SuiteCut's own recording layer. */
 export async function waitForSuiteCutPageAnimations(timeoutMs: number): Promise<void> {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  const host = document.documentElement.querySelector('[data-suitecut-presentation]')
+  const host = document.documentElement?.querySelector('[data-suitecut-presentation]')
   const animations = document.getAnimations().filter((animation) => {
     const target = animation.effect instanceof KeyframeEffect ? animation.effect.target : null
     return !(target instanceof Node && host?.shadowRoot?.contains(target))
@@ -389,21 +402,35 @@ async function ensurePresentation(page: PresentationPage): Promise<void> {
   await page.evaluate(installSuiteCutPresentation)
 }
 
+/**
+ * Installs the recording layer and runs one presentation step in the page. A click that
+ * navigates can commit the new document between the two, so a step that finds no layer
+ * installs it again and retries once.
+ */
+async function inPresentation(page: PresentationPage, step: () => Promise<void>): Promise<void> {
+  await ensurePresentation(page)
+  try {
+    await step()
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes('is not installed')) throw error
+    await ensurePresentation(page)
+    await step()
+  }
+}
+
 export async function movePresentationCursor(
   page: PresentationPage,
   point: SuiteCutPoint,
   durationMs: number,
 ): Promise<void> {
-  await ensurePresentation(page)
-  await page.evaluate(moveSuiteCutCursor, { point, durationMs })
+  await inPresentation(page, () => page.evaluate(moveSuiteCutCursor, { point, durationMs }))
 }
 
 export async function pulsePresentationCursor(
   page: PresentationPage,
   durationMs: number,
 ): Promise<void> {
-  await ensurePresentation(page)
-  await page.evaluate(pulseSuiteCutCursor, durationMs)
+  await inPresentation(page, () => page.evaluate(pulseSuiteCutCursor, durationMs))
 }
 
 export async function showPresentationHighlight(
@@ -412,8 +439,9 @@ export async function showPresentationHighlight(
   options: SuiteCutHighlightOptions,
   durationMs: number,
 ): Promise<void> {
-  await ensurePresentation(page)
-  await page.evaluate(showSuiteCutHighlight, { rect, options, durationMs })
+  await inPresentation(page, () =>
+    page.evaluate(showSuiteCutHighlight, { rect, options, durationMs }),
+  )
 }
 
 export async function showPresentationCaption(
@@ -422,12 +450,13 @@ export async function showPresentationCaption(
   durationMs: number,
   words?: SuiteCutWordTiming[],
 ): Promise<void> {
-  await ensurePresentation(page)
-  await page.evaluate(showSuiteCutCaption, {
-    text,
-    durationMs,
-    ...(words === undefined ? {} : { words }),
-  })
+  await inPresentation(page, () =>
+    page.evaluate(showSuiteCutCaption, {
+      text,
+      durationMs,
+      ...(words === undefined ? {} : { words }),
+    }),
+  )
 }
 
 export async function waitForPresentationAnimations(

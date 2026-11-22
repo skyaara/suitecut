@@ -1,4 +1,6 @@
 ---
+import Explainer from '../../../components/Explainer.astro'
+import { diagrams } from '../../../data/diagrams.js'
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { sitePath } from '../../../lib/paths.js'
@@ -81,11 +83,7 @@ const bellaSample = sitePath('/audio/kokoro-af-bella.wav')
   />
 
   <h2 id="timing">Timeline behavior</h2>
-  <p>
-    Narrations are serialized. suitecut pauses frame ingestion during synthesis, then records each
-    caption for the measured audio duration. Model startup time does not appear in the video. After
-    five seconds, suitecut prints a notice so a cold model load is not mistaken for a stalled test.
-  </p>
+  <Explainer explained={diagrams.narrationTimeline} />
 
   <h2 id="other-models">Other models</h2>
   <p>

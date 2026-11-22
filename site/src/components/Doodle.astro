@@ -45,6 +45,18 @@ const { doodle, draw = 'view', class: className } = Astro.props
     margin: 0;
   }
 
+  /* On a phone the drawing keeps a readable size and scrolls sideways instead. */
+  @media (max-width: 720px) {
+    .doodle-figure {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+    }
+
+    .doodle-figure .doodle {
+      min-width: 600px;
+    }
+  }
+
   .doodle {
     display: block;
     width: 100%;
@@ -92,6 +104,39 @@ const { doodle, draw = 'view', class: className } = Astro.props
     fill: var(--card);
   }
 
+  /* What moves along the arrows once the drawing is in: frames, sound, commands. */
+  .dd-token {
+    stroke: var(--heading);
+    stroke-width: 2.2;
+  }
+
+  .dd-token-frame {
+    fill: var(--doodle-yellow, var(--marker-yellow));
+  }
+
+  .dd-token-sound {
+    fill: var(--doodle-blue, var(--marker-blue));
+  }
+
+  .dd-token-command {
+    fill: var(--heading);
+  }
+
+  .js [data-doodle] .dd-flow {
+    opacity: 0;
+    transition: opacity var(--duration-enter) var(--ease-out)
+      calc(var(--strokes, 0) * var(--draw-gap, 32ms) + 300ms);
+  }
+
+  .js [data-doodle].is-drawn .dd-flow {
+    opacity: 1;
+  }
+
+  /* An explanation step points at its part of the drawing. */
+  .doodle [data-node].is-focus .dd-ink {
+    stroke: var(--accent);
+  }
+
   /* Drawing in: each stroke's dash slides from hidden to whole, one after another. */
   .js [data-doodle] .dd-ink {
     stroke-dasharray: 1 1;
@@ -115,6 +160,10 @@ const { doodle, draw = 'view', class: className } = Astro.props
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .dd-flow {
+      display: none;
+    }
+
     .js [data-doodle] .dd-ink {
       stroke-dashoffset: 0;
       transition: none;

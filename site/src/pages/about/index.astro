@@ -1,4 +1,6 @@
 ---
+import Explainer from '../../components/Explainer.astro'
+import { diagrams } from '../../data/diagrams.js'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { sitePath } from '../../lib/paths.js'
 
@@ -93,6 +95,7 @@ const packages = [
       a script, a model and a person in the live viewer can all work in one session, with the same
       page, cookies and storage.
     </p>
+    <Explainer explained={diagrams.together} />
 
     <h2 id="packages">Packages</h2>
     <div class="about-packages">

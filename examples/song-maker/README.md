@@ -102,8 +102,8 @@ lockfile remain available for inspection; the command prints their exact path.
 
 ## Run it in your own project
 
-The helper's output directory contains `suitecut-2.0.0.tgz` and
-`suitecut-browser-control-2.0.0.tgz`. These packages need not be published to npm.
+The helper's output directory contains `suitecut-2.1.0.tgz` and
+`suitecut-browser-control-2.1.0.tgz`. These packages need not be published to npm.
 Copy this example into a new directory, then install the archives:
 
 ```sh
@@ -111,8 +111,8 @@ mkdir my-song-maker
 cp examples/song-maker/package.json examples/song-maker/run.mjs \
   examples/song-maker/verify-media.mjs examples/song-maker/.env.example my-song-maker/
 cd my-song-maker
-npm install --save-exact /absolute/path/to/suitecut-2.0.0.tgz \
-  /absolute/path/to/suitecut-browser-control-2.0.0.tgz
+npm install --save-exact /absolute/path/to/suitecut-2.1.0.tgz \
+  /absolute/path/to/suitecut-browser-control-2.1.0.tgz
 cp .env.example .env
 # Edit .env to point to your built engine and media tools.
 npm start

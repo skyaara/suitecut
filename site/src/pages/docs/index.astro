@@ -1,7 +1,10 @@
 ---
+import Explainer from '../../components/Explainer.astro'
+import { diagrams } from '../../data/diagrams.js'
 import CodeBlock from '../../components/CodeBlock.astro'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { recordExample } from '../../lib/api-reference.js'
+import { sitePath } from '../../lib/paths.js'
 
 const installCommands = `git lfs install
 git clone https://github.com/skyaara/suitecut.git
@@ -21,10 +24,34 @@ node dist/cli.js doctor`
   section="overview"
 >
   <h1>Getting started</h1>
+  <p>
+    suitecut comes as four packages that share one engine. Pick the one you need on the
+    <a href={sitePath('/packages')}>packages page</a>; each has a short film and a diagram. This
+    guide sets up <code>suitecut</code> itself, which records, narrates and streams browser flows.
+  </p>
+  <p>
+    To see what happens between a paint and a finished video, read
+    <a href={sitePath('/docs/how-it-works')}>how it works</a>; to plug in your own code, read
+    <a href={sitePath('/docs/extending')}>extending suitecut</a>.
+  </p>
+  <ul class="dp-rows">
+    <li>
+      <a class="dp-link" href={sitePath('/docs/browser-control')}>@suitecut/browser-control</a>
+      <span class="dp-detail">One API for Chromium, Firefox and the suitecut engine</span>
+    </li>
+    <li>
+      <a class="dp-link" href={sitePath('/docs/shared-browser')}>@suitecut/shared-browser</a>
+      <span class="dp-detail">You and an AI agent in one browser window</span>
+    </li>
+    <li>
+      <a class="dp-link" href={sitePath('/docs/agents')}>SuiteCut::Client</a>
+      <span class="dp-detail">Browser control from C++, any language and MCP</span>
+    </li>
+  </ul>
   <h2 id="requirements">Requirements</h2>
   <p>
     Use Node.js 22 or newer, pnpm 11, FFmpeg and FFprobe, and a separately built native CEF browser.
-    The engine is a pinned CEF 156 build on the Chromium 156 beta channel.
+    The engine is pinned to CEF 156.0.30 on stable Chromium 156.0.8078.96.
   </p>
   <p>
     Linux x64 and macOS ARM64 are qualified separately. macOS is qualified on 27.0.1 with Apple
@@ -48,16 +75,23 @@ node dist/cli.js doctor`
 
   <h2 id="record-a-flow">Record a flow</h2>
   <CodeBlock code={recordExample} />
+  <p>
+    For complete scripts against live sites, such as eBay, Apple's store and Chrome Music Lab, see
+    the
+    <a href={sitePath('/examples#real-sites')}>real-site examples</a>; they are the demos on the
+    home page.
+  </p>
 
   <h2 id="run-and-render">Run and render</h2>
   <p>
     The recorder closes its primary browser, saves source clips and writes a manifest. The renderer
     composes selected intervals and mixes page audio with narration.
   </p>
+  <Explainer explained={diagrams.recordAndRender} />
 
   <h2 id="render-quality">Render quality</h2>
   <p>
-    Choose output dimensions, a frame rate up to 120 (fractional rates such as 29.97 work), quality
+    Choose output dimensions, any frame rate from 1 (fractional rates such as 29.97 work), quality
     profiles and supported FFmpeg encoders. Higher output rates can repeat captured images; they
     don't create motion the browser didn't capture.
   </p>

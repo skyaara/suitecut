@@ -1,4 +1,7 @@
 ---
+import Clip from '../../../components/Clip.astro'
+import Explainer from '../../../components/Explainer.astro'
+import { diagrams } from '../../../data/diagrams.js'
 import CodeBlock from '../../../components/CodeBlock.astro'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 
@@ -14,7 +17,7 @@ const browser = await launchBrowser({
 try {
   const context = await browser.newContext()
   const page = await context.newPage()
-  await page.goto('https://example.com')
+  await page.goto('https://www.ebay.com/')
   console.log(await page.getByRole('heading').innerText())
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.screenshot({ path: 'page.png' })
@@ -32,7 +35,7 @@ const firefox = await launchProtocolBrowser({
 })
 try {
   const page = await firefox.newPage()
-  await page.goto('https://example.com')
+  await page.goto('https://www.ebay.com/')
   console.log(await page.title())
 } finally {
   await firefox.close()
@@ -66,9 +69,9 @@ page.once('dialog', async (dialog) => {
   await dialog.accept()
 })`
 
-const viewerCli = `npx browser-control view https://example.com \\
+const viewerCli = `npx browser-control view https://www.ebay.com/ \\
   --executable /absolute/path/to/suitecut-browser \\
-  --resolution auto`
+  --resolution auto --network`
 
 const viewerExample = `import { launchBrowser, createBrowserViewer } from '@suitecut/browser-control'
 
@@ -78,13 +81,17 @@ const browser = await launchBrowser({
   pixelFormat: 'bgra',
 })
 const page = await browser.newPage()
-await page.goto('https://example.com')
-const viewer = await createBrowserViewer({ browser, page, resolutionMode: 'auto' })
+await page.goto('https://www.ebay.com/')
+// network: true lets a phone or another computer on the same network open the link.
+const viewer = await createBrowserViewer({ browser, page, network: true, resolutionMode: 'auto' })
 console.log(viewer.url)
 
 try {
   // One fully awaited agent step at a time. Each step waits during human control.
-  await viewer.runAgent(() => page.getByRole('link', { name: 'More information' }).click())
+  await viewer.runAgent(async () => {
+    await page.getByRole('combobox', { name: 'Search for anything' }).fill('mechanical keyboard')
+    await page.keyboard.press('Enter')
+  })
 } finally {
   await viewer.close()
   await browser.close()
@@ -108,14 +115,7 @@ npm install /absolute/path/to/suitecut-browser-control-2.0.0.tgz`
   </p>
 
   <h2 id="backends">Backends</h2>
-  <ul>
-    <li>
-      <code>cef</code>, the default: suitecut's embedded engine, with native capture and the live
-      viewer.
-    </li>
-    <li><code>cdp</code>: an installed Chrome, Chromium, Edge or Brave over CDP.</li>
-    <li><code>bidi</code>: an installed Firefox over WebDriver BiDi.</li>
-  </ul>
+  <Explainer explained={diagrams.backends} />
   <p class="note">
     The package doesn't bundle or download browsers. Safari and WebKit aren't supported.
   </p>
@@ -161,14 +161,22 @@ npm install /absolute/path/to/suitecut-browser-control-2.0.0.tgz`
 
   <h2 id="viewer">Live viewer</h2>
   <p>
-    With the CEF backend, the viewer streams the same browser session to a local web page. It binds
-    to <code>127.0.0.1</code> behind a private link; treat that link as a credential and forward the port
-    over SSH for remote machines.
+    With the CEF backend, the viewer streams the same browser session to a web page, built in, with
+    no relay or cloud service. By default it binds to <code>127.0.0.1</code> behind a private link. Add
+    <code>--network</code> (or <code>network: true</code>) and the link also opens on a phone,
+    tablet or another computer on the same network, with touch input and a layout for small screens.
+    Treat the link as a credential: it is plain HTTP, so use it on networks you trust, and forward
+    the port over SSH for machines further away.
   </p>
   <CodeBlock label="Terminal" code={viewerCli} />
+  <Clip
+    name="phone-viewer"
+    title="A phone takes over an agent's eBay search, then hands it back."
+    portrait
+  />
   <p>
     <code>--resolution auto</code> fits the page to the viewer while a person has control. Fixed sizes
-    such as <code>1920x1080</code> are also available, up to 3840 × 2160 physical pixels. Resizing changes
+    such as <code>1920x1080</code> are also available, with no maximum of suitecut's own. Resizing changes
     the page's real CSS viewport, not just the displayed image.
   </p>
 
@@ -181,7 +189,7 @@ npm install /absolute/path/to/suitecut-browser-control-2.0.0.tgz`
   <CodeBlock code={viewerExample} />
   <p>
     During human control, direct SDK calls fail explicitly. <code>viewer.runAgent()</code> waits for control
-    instead, so submit bounded steps through it. Up to eight clients can watch, with one owning input.
+    instead, so submit bounded steps through it. Any number of clients can watch, with one owning input.
   </p>
 
   <h2 id="build">Build and install</h2>

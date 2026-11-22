@@ -422,6 +422,17 @@
   phoneme run, instead of failing to map token durations to words.
 - Say "suitecut" as "suite cut" in Kokoro narration; espeak read the one word as
   "sooty-cut". Captions keep the written name.
+- Fix `suitecut.click()` on a link that navigates: the recording layer now waits
+  for the new document's root element and the step retries once, instead of
+  failing with "Cannot read properties of null" or "cursor is not installed".
+- Add `examples/real-sites` (Wikipedia, MDN and Chrome Music Lab's Song Maker),
+  recorded against the live sites; they replace the sample-shop demos on the home
+  page (`scripts/record-site-demos.mjs`). Point the other examples and snippets at
+  a live Wikipedia page instead of example.com.
+- Replace the site's flow chart with hand-drawn diagrams and numbered
+  explanations on the home page, About and the docs; colour each diagram node
+  inside its own outline; add a Shared browser docs page; and return to the wide
+  page layout.
 - Move the site onto Deli Paper, add a page per package under `/packages` with a
   hand-drawn diagram, quick start and limits, and add an explainer film for each
   package that suitecut records, narrates and renders itself

@@ -1,7 +1,7 @@
 export const recordExample = `import { record, renderSuiteCut } from 'suitecut'
 
 const result = await record('Native tour', async ({ page, suitecut }) => {
-  await page.goto('https://example.com')
+  await page.goto('https://www.ebay.com/')
   await suitecut.highlight(page.locator('h1'))
   await suitecut.narrate('Welcome to the tour.')
   await suitecut.checkpoint('Opening screen')
@@ -24,7 +24,7 @@ const applicationStopSignal = new Promise<void>((resolve) => process.once('SIGIN
 const source = await launchBrowser({ framesPerSecond: 120 })
 let broadcast
 try {
-  await source.navigate('https://example.com')
+  await source.navigate('https://www.ebay.com/')
   broadcast = await createBroadcast({
     source,
     stream: { url: process.env.RTMP_URL!, framesPerSecond: 60, audio: true },

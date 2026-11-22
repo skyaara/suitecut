@@ -10,9 +10,9 @@ const options = {
 const result = await record(
   'Embedded browser tour',
   async ({ page, suitecut }) => {
-    await page.goto('https://example.com')
-    await suitecut.highlight(page.locator('h1'))
-    await suitecut.narrate('Welcome to SuiteCut 2.0 and the embedded browser.')
+    await page.goto('https://www.apple.com/shop/buy-iphone', { waitUntil: 'domcontentloaded' })
+    await suitecut.highlight(page.getByRole('heading', { level: 1 }).first())
+    await suitecut.narrate('This is suitecut, recording a live store in the embedded browser.')
     await suitecut.checkpoint('Opening screen')
   },
   options,
