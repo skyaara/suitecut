@@ -73,7 +73,7 @@ class WorkerReusePool {
     if(!live||!Current(*live,borrow)||!record||record->receipt!=Receipt::Active||host_records_[*live->record].physical_retired||record->outcome||(outcome!=Outcome::Passed&&outcome!=Outcome::Failed&&outcome!=Outcome::Interrupted)||!CanChange())return false;
     record->outcome=outcome;Changed();if(outcome!=Outcome::Passed)Drain();return true;
   }
-  std::optional<IdleRequest> RequestIdle(const Borrow& borrow,const GroupFence& fence,double now,double deadline)noexcept{
+  std::optional<IdleRequest> RequestIdle(const Borrow& borrow,const GroupFence& fence,double now,double deadline){
     auto* live=Find(borrow.host);const auto* record=Find(borrow);
     if(stopped_||draining_||!live||live->state!=State::Busy||!Current(*live,borrow)||!record||record->outcome!=Outcome::Passed||
        !Clean(fence)||!Extends(live->fixtures,fence.retained)||!std::isfinite(now)||!std::isfinite(deadline)||now<host_records_[*live->record].last_observed||deadline<=now||
@@ -96,7 +96,7 @@ class WorkerReusePool {
        live->idle->borrow!=ack.borrow||live->idle->request!=ack.request||live->idle->fixtures!=ack.fixtures||!std::isfinite(now)||now<live->idle->requested||now<host_records_[*live->record].last_observed||!CanChange())return false;
     record->canceled_idle_request=ack.request;record->canceled_acknowledged=now;host_records_[*live->record].last_observed=now;Changed();return true;
   }
-  std::optional<Probe> InventoryProbe()const noexcept{
+  std::optional<Probe> InventoryProbe()const{
     if(stopped_||draining_||!physical_)return std::nullopt;
     Probe probe;probe.version=version_;probe.hosts.reserve(physical_);bool pending=false;
     for(const auto& live:live_)if(live.record){
@@ -105,7 +105,7 @@ class WorkerReusePool {
     }
     return pending?std::optional<Probe>(probe):std::nullopt;
   }
-  bool ConfirmInventory(const Inventory& inventory,std::span<const CohortFence> fences,double now)noexcept{
+  bool ConfirmInventory(const Inventory& inventory,std::span<const CohortFence> fences,double now){
     const auto expected=InventoryProbe();
     if(!expected||!inventory.complete||!inventory.children_clear||inventory.probe.version!=expected->version||inventory.probe.hosts.size()!=expected->hosts.size()||
        fences.size()!=expected->hosts.size()||!std::isfinite(now)||!std::isfinite(inventory.observed)||inventory.observed<0||inventory.observed>now||!CanChange())return false;

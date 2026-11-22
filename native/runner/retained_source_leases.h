@@ -3,9 +3,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <set>
 #include <span>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 
 namespace suitecut::runner {
@@ -43,14 +46,18 @@ class RetainedSourceLeases {
   }
   std::optional<Ticket> Reserve(const Owner& owner,Executable executable,double deadline,double now){
     if(stopped_||!Valid(owner)||!executable.inode||!Time(now)||!Time(deadline)||deadline<=now||(global_&&deadline>*global_))return std::nullopt;
-    for(const auto& row:records_){if((row.retired_batch&&row.ticket.owner.host==owner.host)||(row.state!=State::Retired&&row.ticket.owner.host.pid==owner.host.pid&&row.ticket.owner.host!=owner.host))return std::nullopt;}
-    const Ticket ticket{records_.size()+1,owner};auto& row=records_.emplace_back();row.ticket=ticket;row.executable=executable;row.startup_deadline=deadline;row.last_observed=now;++outstanding_;return ticket;
+    const auto host=HostKey(owner.host);if(retired_hosts_.contains(host))return std::nullopt;
+    if(const auto pid=hosts_.find(owner.host.pid);pid!=hosts_.end()&&(pid->second.size()>1||pid->second.begin()->first!=host))return std::nullopt;
+    const Ticket ticket{records_.size()+1,owner};auto& row=records_.emplace_back();row.ticket=ticket;row.executable=executable;row.startup_deadline=deadline;row.last_observed=now;
+    try{active_.insert(ticket.id);++hosts_[owner.host.pid][host];}catch(...){active_.erase(ticket.id);Release(hosts_,owner.host.pid,host);records_.pop_back();throw;}
+    ++outstanding_;return ticket;
   }
   bool Started(const Startup& receipt,double now)noexcept{
     auto* row=Find(receipt.ticket);if(!row||row->process||row->state==State::Retired||!At(*row,now)||receipt.emission!=1||
       receipt.observed_parent!=row->ticket.owner.host||receipt.credential_pid!=receipt.process.pid||!Valid(receipt.process)||
       receipt.process.parent!=row->ticket.owner.host.pid||receipt.process.start<row->ticket.owner.host.start||receipt.process.executable!=row->executable)return false;
-    for(const auto& other:records_)if(other.state!=State::Retired&&other.process&&other.process->pid==receipt.process.pid)return false;
+    if(processes_.contains(receipt.process.pid))return false;
+    try{processes_.insert(receipt.process.pid);}catch(...){return false;}
     row->process=receipt.process;row->emission=1;row->last_observed=now;++live_;
     row->state=stopped_||row->state==State::Closing||now>=row->startup_deadline?State::Closing:State::Active;return true;
   }
@@ -92,7 +99,9 @@ class RetainedSourceLeases {
   bool Retire(const Ticket& ticket,const HostRetirement& receipt,double now)noexcept{
     auto* row=Find(ticket);if(!row||row->state==State::Retired||receipt.host!=ticket.owner.host||!receipt.batch||!receipt.actual_waitpid||!receipt.channel_drained||!receipt.descendants_retired||!At(*row,now)||(row->process&&!row->exit_observed))return false;
     // Physical death invalidates pending work; it never fabricates settled ACKs.
-    if(row->process)--live_;
+    try{retired_hosts_.insert(HostKey(receipt.host));}catch(...){return false;}
+    if(row->process){--live_;processes_.erase(row->process->pid);}
+    active_.erase(ticket.id);Release(hosts_,ticket.owner.host.pid,HostKey(ticket.owner.host));
     row->state=State::Retired;row->retired_batch=receipt.batch;row->last_observed=now;--outstanding_;return true;
   }
   // Cancellation admission closes author startup authority, never physical
@@ -101,10 +110,10 @@ class RetainedSourceLeases {
     auto* row=Find(ticket);if(!row||row->state==State::Retired||row->state==State::Exited||!At(*row,now))return false;
     row->state=State::Closing;row->last_observed=now;return true;
   }
-  void Stop(double now)noexcept{if(!Time(now))return;stopped_=true;for(auto& row:records_)if(row.state!=State::Retired&&row.state!=State::Exited&&now>=row.last_observed){row.state=State::Closing;row.last_observed=now;}}
+  void Stop(double now)noexcept{if(!Time(now))return;stopped_=true;for(const auto id:active_){auto& row=records_[id-1];if(row.state!=State::Retired&&row.state!=State::Exited&&now>=row.last_observed){row.state=State::Closing;row.last_observed=now;}}}
   void Expire(double now)noexcept{
     if(!Time(now))return;
-    for(auto& row:records_){if(now<row.last_observed)continue;
+    for(const auto id:active_){auto& row=records_[id-1];if(now<row.last_observed)continue;
       if((row.state==State::Reserved&&now>=row.startup_deadline)||(row.state==State::AwaitingIdle&&now>=row.idle->deadline)||(global_&&now>=*global_&&row.state!=State::Retired&&row.state!=State::Exited)){row.state=State::Closing;row.last_observed=now;}}
   }
   bool IdleReady(const Ticket& ticket)const noexcept{const auto* row=Find(ticket);return !stopped_&&row&&row->state==State::Idle&&row->idle_ack&&!row->pending&&row->process&&!row->exit_observed;}
@@ -122,6 +131,15 @@ class RetainedSourceLeases {
   const Record* Find(const Ticket& ticket)const noexcept{return ticket.id&&ticket.id<=records_.size()&&records_[ticket.id-1].ticket==ticket?&records_[ticket.id-1]:nullptr;}
   Record* Next(const Ticket& ticket,uint64_t emission,double now)noexcept{auto* row=Find(ticket);return row&&row->process&&!row->exit_observed&&row->state!=State::Retired&&At(*row,now)&&row->emission!=UINT64_MAX&&emission==row->emission+1?row:nullptr;}
   static void Commit(Record& row,uint64_t emission,double now)noexcept{row.emission=emission;row.last_observed=now;}
+  using Hosted=std::tuple<uint64_t,unsigned,int64_t,uint64_t>;
+  static Hosted HostKey(const Host& host)noexcept{return {host.lease,host.worker,host.pid,host.start};}
+  static void Release(std::map<int64_t,std::map<Hosted,size_t>>& hosts,int64_t pid,const Hosted& host)noexcept{
+    const auto by_pid=hosts.find(pid);if(by_pid==hosts.end())return;const auto found=by_pid->second.find(host);
+    if(found!=by_pid->second.end()&&!--found->second){by_pid->second.erase(found);}if(by_pid->second.empty())hosts.erase(by_pid);
+  }
+  // Ledger indexes: unretired tickets, unretired hosts by pid, unretired child
+  // pids and hosts with a retirement batch. Retirement releases the live ones.
+  std::set<uint64_t> active_;std::map<int64_t,std::map<Hosted,size_t>> hosts_;std::set<int64_t> processes_;std::set<Hosted> retired_hosts_;
   std::vector<Record> records_;size_t outstanding_=0,live_=0;uint64_t nonce_=0;std::optional<double> global_;bool stopped_=false;
 };
 } // namespace suitecut::runner

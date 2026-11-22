@@ -6,16 +6,42 @@
 #include <map>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace suitecut::runner::merge_detail {
 // Scalars retain their original spelling, including isolated escaped UTF16.
 // Decoding is only used for field names, identifiers, and filesystem paths.
+// Nesting depth is bounded only by memory, so copy and destruction walk the
+// tree with an explicit worklist instead of recursing once per level.
 struct JSON {
   enum Kind { Object, Array, String, Number, Boolean, Null } kind=Null;
   std::string_view raw;
   std::map<std::u16string,JSON> fields;
   std::vector<JSON> items;
+  JSON()=default;
+  JSON(JSON&& other)noexcept:kind(other.kind),raw(other.raw),fields(std::move(other.fields)),items(std::move(other.items)){}
+  JSON(const JSON& other):kind(other.kind),raw(other.raw){
+    std::vector<std::pair<JSON*,const JSON*>> work{{this,&other}};
+    while(!work.empty()){const auto [to,from]=work.back();work.pop_back();
+      to->items.reserve(from->items.size());for(const auto& item:from->items)to->items.push_back(Shallow(item));
+      for(size_t index=0;index<from->items.size();++index)work.emplace_back(&to->items[index],&from->items[index]);
+      for(const auto& [key,value]:from->fields)work.emplace_back(&to->fields.emplace(key,Shallow(value)).first->second,&value);
+    }
+  }
+  JSON& operator=(JSON&& other)noexcept{if(this!=&other){JSON old(std::move(*this));kind=other.kind;raw=other.raw;fields=std::move(other.fields);items=std::move(other.items);}return *this;}
+  JSON& operator=(const JSON& other){if(this!=&other)*this=JSON(other);return *this;}
+  ~JSON(){
+    if(items.empty()&&fields.empty())return;
+    std::vector<JSON> pending;Detach(*this,pending);
+    while(!pending.empty()){JSON node(std::move(pending.back()));pending.pop_back();Detach(node,pending);}
+  }
+ private:
+  static JSON Shallow(const JSON& value){JSON result;result.kind=value.kind;result.raw=value.raw;return result;}
+  static void Detach(JSON& node,std::vector<JSON>& pending){
+    for(auto& item:node.items){pending.push_back(std::move(item));}node.items.clear();
+    for(auto& [key,value]:node.fields){pending.push_back(std::move(value));}node.fields.clear();
+  }
 };
 [[noreturn]] inline void Invalid(std::string_view reason){throw std::invalid_argument("Native report merge: "+std::string(reason));}
 inline std::u16string Units(std::string_view raw){

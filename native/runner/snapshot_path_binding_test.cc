@@ -35,7 +35,7 @@ int main(){
   const auto named=[](const sr::merge_detail::JSON&plan,std::string_view kind){const auto&paths=sr::merge_detail::UInt(plan,"version")==3?sr::merge_detail::Get(plan,"paths"):plan;std::string result;for(const auto&part:sr::merge_detail::Rows(paths,kind)){const auto type=sr::merge_detail::Text(sr::merge_detail::Get(part,"kind")),value=sr::merge_detail::Text(sr::merge_detail::Get(part,"value"));result+=type=="arg"?value+"tree":type=="ext"?value+".png":type=="suffix"?value+sr::merge_detail::Text(sr::merge_detail::Get(sr::merge_detail::Get(plan,"suffix"),"initial")):value;}return std::filesystem::path(result).lexically_normal().string();};
   Harness defaults;defaults.metadata_->projects={{"real project"}};defaults.metadata_->project_tests[1]=0;defaults.SendSnapshotContext(1);
   const auto default_raw=defaults.LastJSON();const auto default_json=sr::merge_detail::JSONParser(default_raw).Parse();
-  assert(sr::merge_detail::UInt(default_json,"version")==3&&sr::merge_detail::UInt(sr::merge_detail::Get(default_json,"suffix"),"maxBytes")==1024);
+  assert(sr::merge_detail::UInt(default_json,"version")==3&&!sr::merge_detail::Find(sr::merge_detail::Get(default_json,"suffix"),"maxBytes"));
   assert(named(default_json,"aria")=="/actual/a/b/test.mjs-snapshots/tree.png");
   assert(named(default_json,"snapshot")=="/actual/a/b/test.mjs-snapshots/tree-real-project-"+sr::NativeSnapshotPaths::Platform()+".png");
   assert(named(default_json,"screenshot")==named(default_json,"snapshot"));

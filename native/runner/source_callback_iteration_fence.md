@@ -21,8 +21,8 @@ Only the actual SDK pending-clear acknowledgement
 Successful snapshots contain the exact cuts, issued/resume epochs and actual
 native ingress timestamps; no raw-return timestamp is invented. Snapshot before
 `FinishCallbackIterationFence`, which clears one completed challenge and permits
-another under a strictly newer channel epoch. The 64-completed-history bound is
-retained. Refusal, expiry, foreign receipts and partial send failures cannot erase
+another under a strictly newer channel epoch. Completed history has no count
+limit. Refusal, expiry, foreign receipts and partial send failures cannot erase
 physical Source ownership. Canceled work retires through actual host waitpid,
 descendant domain, channel EOF and pidfd exit. `SourcesPhysical` is never zeroed
 by a successful work fence.

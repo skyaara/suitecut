@@ -27,11 +27,13 @@ int main(){unsigned controls=0;
   const TestWorkGroups default_groups(tests,suites,members,{},{true},{{1,3}},{false});const auto defaults=WorkGroupLockNames(default_groups,declarations);assert(defaults.size()==1&&defaults[0]==names[0]);++controls;}
  Reject([]{auto p=Pool(2);WorkGroupLocks locks(p,{{Name("A")}});});++controls;
  Reject([]{auto p=Pool(1);WorkGroupLocks locks(p,{{std::string("x")}});});++controls;
- Reject([]{
-   std::vector<WorkGroupTest> tests;std::vector<uint64_t> ids;for(uint64_t i=1;i<=100;++i){tests.push_back({i,0});ids.push_back(i);}
-   std::vector<std::string> inherited;for(unsigned i=0;i<64;++i)inherited.push_back(Name(std::string(1024,static_cast<char>('A'+i))));
+ { // Past former cap: 1025 groups x 64 inherited names = 65600 references (old max 65536) are all resolved.
+   std::vector<WorkGroupTest> tests;std::vector<uint64_t> ids;for(uint64_t i=1;i<=1025;++i){tests.push_back({i,0});ids.push_back(i);}
+   std::vector<std::string> inherited;for(unsigned i=0;i<64;++i)inherited.push_back(Name("n"+std::to_string(i)));
    const ResourceLockDeclarations declarations(ids,{},{},{},{},inherited);
-   const TestWorkGroups groups(tests,{},{},{},{true},{ids},{true});(void)WorkGroupLockNames(groups,declarations);
- });++controls;
+   const TestWorkGroups groups(tests,{},{},{},{true},{ids},{true});const auto names=WorkGroupLockNames(groups,declarations);
+   size_t references=0;for(const auto& group:names){assert(std::set<std::string>(group.begin(),group.end())==std::set<std::string>(inherited.begin(),inherited.end()));references+=group.size();}
+   assert(names.size()==1025&&references==65600);
+ }++controls;
  assert(controls==12);std::cout<<"Native typed work-group locks: "<<controls<<" controls passed\n";
 }

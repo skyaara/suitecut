@@ -60,10 +60,12 @@ export default defineNativeSuite({hooks:{beforeEach:[{run:hook}],afterEach:[{run
  }},
  {title:'actual append admission recovery permits later local and test skip',timeout:5000,run:async(_,info)=>{
   mark('body',info,{label:'append-skip'});let calls=0;
+  // Past former cap: all five appends (old physical maximum 4) are admitted, so the first
+  // invocation has no admission failure to recover from and passes as is.
   await expectNative(()=>{mark('invocation',info,{label:'append-skip'});if(++calls===1){
    info.attachments.push(...Array.from({length:5},(_,index)=>({name:'append-slot-'+index,contentType:'text/plain',body:Buffer.from('x')})));
   }}).toPass({timeout:2000,intervals:[10]});
-  assert.equal(calls,2);mark('append-recovered',info);
+  assert.equal(calls,1);mark('append-recovered',info);
   await info.step('local skip after append recovery',step=>{mark('local-skip-enter',info,{stepId:step.id});step.skip('actual local skip after recovery');mark('MUST_NOT_RUN',info);});
   mark('after-local-skip',info);info.skip('actual test skip after recovery');mark('MUST_NOT_RUN',info);
  }}

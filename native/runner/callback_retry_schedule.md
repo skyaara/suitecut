@@ -14,7 +14,7 @@ parallel iteration history or independent run quota.
 The component owns the fixed assertion origin, optional assertion deadline,
 current owner deadline, attempt count, one current invocation and backoff. The
 default intervals are 100, 250, 500 and 1000 milliseconds, repeating the final
-interval. An explicit interval list contains 1–64 nonnegative safe integers.
+interval. An explicit interval list contains one or more nonnegative safe integers.
 Timeout zero has no separate assertion deadline. All values are validated
 natively. A large interval saturates at the remaining original cap before
 addition, rather than overflowing or creating an arbitrary duration limit.

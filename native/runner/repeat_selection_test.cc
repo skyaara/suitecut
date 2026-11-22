@@ -50,7 +50,10 @@ int main(){
  Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{0,2}},1,2,limit,empty);});
  Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{3}},1,2,limit,empty);});
  Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{2}},0,2,limit,empty);});
- Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{2}},1,65537,limit,empty);});
+ // Past former cap: 65537 shards (old bound 65536) are planned; shard 1 owns the first group, the last shard owns no work.
+ {const auto wide=sr::SelectNativeRepeatPrimary(*catalog,{{2}},1,65537,limit,empty);assert((Keys(wide)==std::vector<std::pair<uint64_t,uint64_t>>{{0,1},{0,2}})&&wide.unsharded_logical_tests==6&&wide.first==0&&wide.last==1);
+  const auto tail=sr::SelectNativeRepeatPrimary(*catalog,{{2}},65537,65537,limit,empty);assert(tail.slices.empty()&&tail.first==6&&tail.last==6);++controls;}
+ Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{2}},65538,65537,limit,empty);});
  Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{2}},1,1,{16384,2,64*1024*1024},empty);});
  Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{2}},1,1,{16384,128,1},empty);});
  size_t polls=0;Reject([&]{(void)sr::SelectNativeRepeatPrimary(*catalog,{{2}},1,1,limit,empty,[&]{if(++polls==4)throw std::runtime_error("original native suite stopped");});});assert(polls==4);

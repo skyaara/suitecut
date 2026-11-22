@@ -198,9 +198,9 @@ int main(int argc,char** argv){
     auto stale=std::vector<std::string>{"TOPASS_RAW","1","0","1","4","0","1","0","P","-","0","0","0"};Reject([&]{f.retries->Packet(stale,f.now,false);});++controls;
   }
   {
-    // The former 64-operation physical cap is gone: a 65th concurrent operation is admitted.
+    // Past former cap: the 64-operation physical cap is gone; a 65th concurrent operation is admitted and run.
     Fixture f;for(size_t i=0;i<64;++i)f.Begin("-","0");const auto sequence=f.budget.sequence;
-    f.Begin();assert(f.sent.back().starts_with("TOPASS_ADMITTED 65 0 1 4 ")&&!f.sent.back().starts_with("TOPASS_ADMITTED 65 0 1 4 0 0 ")&&f.budget.sequence>sequence&&f.retries->Physical()==65&&f.steps->Physical()==65);
+    const auto id=f.Begin();assert(id==65&&f.sent.size()>=2&&f.sent[f.sent.size()-2]=="TOPASS_ADMITTED 65 0 1 4 65 1 -"&&f.sent.back().starts_with("TOPASS_RUN 65 0 1 4 65 ")&&f.budget.sequence==sequence+1&&f.retries->Physical()==65&&f.steps->Physical()==65&&f.steps->Find(id));
     Reject([&]{f.retries->Packet({"TOPASS_BEGIN","66","0","9","4","0","-","0","-","0","0","0"},f.now,false);});++controls;
   }
   {

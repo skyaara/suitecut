@@ -38,5 +38,17 @@ int main(){size_t groups=0;const auto test=[&](auto action){Fixture f;action(f);
  test([](Fixture& f){f.Start();assert(!f.pool.RequestIdle(f.ticket,10,0));assert(!f.pool.Accepted(f.ticket,2,1,0));assert(!f.pool.ObservedExit(f.ticket,f.process,0));assert(!f.pool.Retire(f.ticket,f.Retirement(),0));});
  test([](Fixture& f){f.Start();f.pool.Expire(10000);assert(!f.pool.RequestIdle(f.ticket,10020,10001));const auto close=*f.pool.RequestClose(f.ticket,10020,10001);assert(f.pool.ObserveClose({f.ticket,2,close.nonce,0},10002)&&f.pool.LiveChildren()==1);});
  test([](Fixture& f){assert(f.pool.Retire(f.ticket,f.Retirement(),1));assert(!f.pool.Reserve(f.owner,f.executable,100,2));for(size_t i=1;i<=256;++i){auto owner=f.owner;owner.host.lease+=i;owner.host.worker+=static_cast<unsigned>(i);owner.host.pid+=static_cast<int64_t>(i);owner.host.start+=i;const auto ticket=*f.pool.Reserve(owner,f.executable,100,2);assert(f.pool.Retire(ticket,{owner.host,i+1,true,true,true},3));}assert(!f.pool.Reserve(f.owner,f.executable,100,4)&&f.pool.Records().size()==257);});
- assert(groups==22);std::cout<<"Retained Source lease policy: "<<groups<<" controlled registration/accepted-work/idle/close/retirement groups passed; no Source/OS proof\n";
+ // Run-lifetime ledger scale: Reserve/Started/Expire/Retire use host, pid and
+ // unretired-ticket indexes; 100k retired leases with pid reuse stay linear.
+ test([](Fixture& f){assert(f.pool.Retire(f.ticket,f.Retirement(),1));
+  for(size_t i=1;i<=100000;++i){const double now=1+static_cast<double>(i)*0.05;auto owner=f.owner;owner.host.lease+=i;owner.host.start+=i;owner.host.pid=101+static_cast<int64_t>(i%50);
+   const auto ticket=f.pool.Reserve(owner,f.executable,now+100,now);assert(ticket);const Policy::Process child{1000000+static_cast<int64_t>(i%7),owner.host.pid,owner.host.start,f.executable};
+   assert(f.pool.Started({*ticket,1,child,owner.host,child.pid},now));f.pool.Expire(now);assert(f.pool.ObservedExit(*ticket,child,now)&&f.pool.Retire(*ticket,{owner.host,i+1,true,true,true},now));}
+  assert(f.pool.Records().size()==100001&&f.pool.Outstanding()==0&&f.pool.LiveChildren()==0);
+  auto retired=f.owner;retired.host.lease+=5;retired.host.start+=5;retired.host.pid=106;assert(!f.pool.Reserve(retired,f.executable,6100,6000));
+  auto live=f.owner;live.host={900000,3,500,7};const auto a=f.pool.Reserve(live,f.executable,6100,6000);auto foreign=live;++foreign.host.lease;assert(a&&!f.pool.Reserve(foreign,f.executable,6100,6000));
+  auto sibling=live;++sibling.fixture.token;const auto b=f.pool.Reserve(sibling,f.executable,6100,6000);assert(b&&f.pool.Outstanding()==2);
+  const Policy::Process child{777,500,7,f.executable};assert(f.pool.Started({*a,1,child,live.host,777},6001)&&!f.pool.Started({*b,1,child,sibling.host,777},6001));
+  assert(f.pool.ObservedExit(*a,child,6002)&&f.pool.Retire(*a,{live.host,1,true,true,true},6002)&&f.pool.Started({*b,1,child,sibling.host,777},6003));});
+ assert(groups==23);std::cout<<"Retained Source lease policy: "<<groups<<" controlled registration/accepted-work/idle/close/retirement groups passed; no Source/OS proof\n";
 }

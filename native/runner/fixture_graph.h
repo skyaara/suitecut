@@ -37,11 +37,21 @@ class FixtureGraph {
     return result;
   }
  private:
-  void Visit(const std::string& name,std::map<std::string,int>& seen,std::vector<std::string>& result)const{
-    auto& status=seen[name];
-    if(status==2)return;
-    if(status==1)throw std::invalid_argument("Fixture dependency cycle at: "+name);
-    status=1;for(const auto& dep:Get(name).dependencies)Visit(dep,seen,result);status=2;result.push_back(name);
+  // Explicit-stack DFS: dependency depth is bounded only by memory. Same 0/1/2
+  // states, postorder and first-detected cycle/unknown errors as recursion.
+  void Visit(const std::string& root,std::map<std::string,int>& seen,std::vector<std::string>& result)const{
+    struct Frame {const std::string* name;const std::vector<std::string>* dependencies;size_t next;};std::vector<Frame> stack;
+    const auto enter=[&](const std::string& name){
+      auto& status=seen[name];
+      if(status==2)return;
+      if(status==1)throw std::invalid_argument("Fixture dependency cycle at: "+name);
+      status=1;const auto& fixture=Get(name);stack.push_back({&fixture.name,&fixture.dependencies,0});
+    };
+    enter(root);
+    while(!stack.empty()){auto& top=stack.back();
+      if(top.next<top.dependencies->size()){enter((*top.dependencies)[top.next++]);continue;}
+      seen[*top.name]=2;result.push_back(*top.name);stack.pop_back();
+    }
   }
   std::vector<Fixture> definitions_;std::map<std::string,size_t> indices_;
 };

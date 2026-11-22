@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "directory_report.h"
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 namespace sr=suitecut::runner;
@@ -83,8 +84,21 @@ void RepeatChecks(){
   report.repeat_selection=make_selection({0,0,1},{{0,0,ids({1,2})}});report.segments={first};report.Validate({{"repeat-zero",{1,2}}},{{"repeat-zero",false}});const auto zero=report.JSON();assert(zero.find("\"effectiveRepeatEach\":0,\"executions\":1")!=zero.npos);
   wrong=report;wrong.repeat_selection.reset();Reject([&]{wrong.Validate({{"repeat-zero",{1,2}}},{{"repeat-zero",false}});});
 }
+void PastFormerCapChecks(){
+  // Past former cap: more than 4096 selected tests are reported whole; an
+  // unselected identity above 4096 is reported false instead of throwing.
+  sr::CollectedSuiteFile file;file.file={81,4,9};file.path="/controlled/many.spec.mjs";
+  for(uint64_t id=1;id<=5000;++id)file.catalog.tests.push_back({id,100,0,false,"\"T"+std::to_string(id)+"\"",{}});
+  sr::DirectoryReport report;report.catalog=std::make_shared<const sr::MultiFileCatalog>(std::vector<sr::CollectedSuiteFile>{file});report.selection_resolved=true;report.selection=report.catalog->Select();
+  const auto project=report.catalog->AnonymousProject();assert(report.selection.project_tests.at(project).size()==5000);
+  auto count=[](const std::string& json,const std::string& needle){size_t n=0;for(auto at=json.find(needle);at!=json.npos;at=json.find(needle,at+1))++n;return n;};
+  auto json=report.JSON();assert(count(json,"\"selected\":true")==5000&&json.find("\"title\":\"T5000\",\"selected\":true")!=json.npos);
+  auto& ids=report.selection.project_tests.at(project);ids.erase(std::remove(ids.begin(),ids.end(),uint64_t{4500}),ids.end());
+  json=report.JSON();assert(count(json,"\"selected\":true")==4999&&json.find("\"title\":\"T4500\",\"selected\":false")!=json.npos);
+}
 int main(){
   FileRowChecks();
+  PastFormerCapChecks();
   GroupChecks();
   RepeatChecks();
   sr::CollectedSuiteFile f;f.file={1,4,9};f.path="/controlled/actual.spec.mjs";f.catalog.protocol="Exact controlled native collection\n";f.catalog.tests.push_back({1,100,0,false,"\"controlled declaration\"",{}});

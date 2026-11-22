@@ -34,7 +34,7 @@ inline bool ProjectMetadataJSON(std::string_view text){
         else if(!Number())return false;
         for(;;){if(open.empty())return true;Space();if(at>=text.size())return false;const char delimiter=text[at++];
           if(delimiter==open.back()){open.pop_back();continue;}
-          if(delimiter!=',')return false;Space();if(open.back()=='}'&&!Member())return false;break;}
+          if(delimiter!=','){return false;}Space();if(open.back()=='}'&&!Member()){return false;}break;}
       }
     }
   } parser{text};

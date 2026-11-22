@@ -40,7 +40,7 @@ struct FixtureLiteral {
           else if(!Number())return false;
           for(;;){if(open.empty())return true;Space();if(at>=text.size())return false;const auto next=text[at++];
             if(next==open.back()){open.pop_back();continue;}
-            if(next!=',')return false;Space();if(open.back()=='}'&&!Member())return false;break;}
+            if(next!=','){return false;}Space();if(open.back()=='}'&&!Member()){return false;}break;}
         }
       }
     } parser{json};

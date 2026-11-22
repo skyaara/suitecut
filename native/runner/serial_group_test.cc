@@ -83,10 +83,12 @@ int main(){
  {SerialGroup p(Tests(1));assert(p.Begin(first));Finish(p,first,Admit(p,first,1,1),Outcome::Skipped);p.ExcludeQueued({2,3});
   assert(p.Current()==State::Retiring&&p.Results().size()==1&&p.Omissions().empty());assert(p.Retired(first)&&p.Current()==State::Passed&&p.Classify(2)==Classification::NotRun);++controls;}
  {SerialGroup p(Tests());p.ExcludeQueued({1});assert(!p.LastSelected(1)&&p.LastSelected(3)&&p.Begin(first));Finish(p,first,Admit(p,first,1,2));Finish(p,first,Admit(p,first,2,3));assert(p.Retired(first)&&p.Classify(1)==Classification::NotRun);++controls;}
- // Metadata and projected whole-group replay remain explicitly bounded.
+ // Empty groups, duplicate ids and unknown classifications stay invalid. Past
+ // former cap: 101 retries and a 100x101 projected replay (over the old 8192) are admitted.
  {Reject([]{SerialGroup p(std::vector<TestCase>{});});Reject([]{SerialGroup p({{1,"x",{},0,false},{1,"y",{},0,false}});});
-  Reject([]{SerialGroup p({{1,"x",{},101,false}});});
+  {SerialGroup past({{1,"x",{},101,false}});assert(past.MaxRetries()==101&&past.Begin(first));Finish(past,first,Admit(past,first,1,1));}
   std::vector<TestCase> tests;for(uint64_t id=1;id<=100;++id)tests.push_back({id,"x",{},0,false});tests.back().retries=100;
-  Reject([&]{SerialGroup p(tests);});SerialGroup p(Tests());Reject([&]{p.Classify(999);});++controls;}
+  {SerialGroup past(tests);assert(past.MaxRetries()==100&&past.Begin(first));Finish(past,first,Admit(past,first,1,1));}
+  SerialGroup p(Tests());Reject([&]{p.Classify(999);});++controls;}
  std::cout<<"Native serial-group policy "<<controls<<" controls passed; actual process/hook integration remains separate\n";
 }

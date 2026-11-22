@@ -26,11 +26,13 @@ int main(){unsigned controls=0;
   const NativeTestGroupTree default_tree(tests,suites,members,{});const FileWorkGroups default_groups({1,2,3},default_tree,{1,3},false);const auto defaults=FileGroupLockNames(default_groups,declarations);assert(defaults.size()==1&&defaults[0]==names[0]);++controls;}
  Reject([]{auto p=Pool(2);FileGroupLocks locks(p,{{Name("A")}});});++controls;
  Reject([]{auto p=Pool(1);FileGroupLocks locks(p,{{std::string("x")}});});++controls;
- Reject([]{
-   std::vector<uint64_t> ids;for(uint64_t i=1;i<=100;++i)ids.push_back(i);
-   std::vector<std::string> inherited;for(unsigned i=0;i<64;++i)inherited.push_back(Name(std::string(1024,static_cast<char>('A'+i))));
+ { // Past former cap: 1025 groups x 64 inherited names = 65600 references (old max 65536) are all resolved.
+   std::vector<uint64_t> ids;for(uint64_t i=1;i<=1025;++i)ids.push_back(i);
+   std::vector<std::string> inherited;for(unsigned i=0;i<64;++i)inherited.push_back(Name("n"+std::to_string(i)));
    const ResourceLockDeclarations declarations(ids,{},{},{},{},inherited);
-   const NativeTestGroupTree tree(ids,{},{},{});const FileWorkGroups groups({1,2,3},tree,ids,true);(void)FileGroupLockNames(groups,declarations);
- });++controls;
+   const NativeTestGroupTree tree(ids,{},{},{});const FileWorkGroups groups({1,2,3},tree,ids,true);const auto names=FileGroupLockNames(groups,declarations);
+   size_t references=0;for(const auto& group:names){assert(std::set<std::string>(group.begin(),group.end())==std::set<std::string>(inherited.begin(),inherited.end()));references+=group.size();}
+   assert(names.size()==1025&&references==65600);
+ }++controls;
  assert(controls==12);std::cout<<"Native typed file work-group locks: "<<controls<<" controls passed\n";
 }

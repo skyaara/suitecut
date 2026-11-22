@@ -5,7 +5,7 @@
 #include "directory_actor_timing.h"
 #include "repeat_execution.h"
 #include "repeat_group_partition.h"
-#include <array>
+#include <vector>
 #include <memory>
 #include <tuple>
 
@@ -131,7 +131,7 @@ struct DirectoryReport {
     // MultiFileCatalog appends global Tests in Files()/catalog.tests order.
     // Reuse that immutable correspondence and index selected native IDs once;
     // a foreign project's list must never select another project's test.
-    std::array<unsigned char,4097> selected_ids{};
+    std::vector<unsigned char> selected_ids(catalog?catalog->Tests().size()+1:0);
     if(catalog&&selection_resolved)for(size_t project=0;project<selection.project_tests.size();++project)
       for(auto id:selection.project_tests[project])if(id&&id<=catalog->Tests().size()&&catalog->Tests()[id-1].project==project)selected_ids[id]=1;
     size_t global_test=0;

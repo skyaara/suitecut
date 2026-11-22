@@ -74,7 +74,7 @@ Status is `passed|timedOut|canceled|infrastructure`; receipt is
 
 All integers are canonical unsigned decimal; `-` marks omitted option data.
 Error and location fields use the existing checked UTF-16 hex convention.
-Native validates vector/count/frame/error bounds before author admission.
+Native validates vector, count, frame and error fields before author admission.
 
 Host to native:
 
@@ -178,7 +178,7 @@ checks both authenticated Source RESUMED and this real SDK receipt before
 adapter reset and iteration retirement. It never fabricates rawReturned from a
 datagram. The adapter retains exact identity across either channel ordering.
 
-The existing 64 completed-watermark replay-history bound remains. Expiry,
+The completed-watermark replay history has no count limit. Expiry,
 refusal, unknown producers, unregistered used Sources or stale identities cannot
 be converted into successful physical evidence. Source process lifetime stays
 charged through actual host/domain/EOF/pidfd retirement; no browser reuse is

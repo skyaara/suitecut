@@ -9,7 +9,9 @@ template<class F>void Reject(F f){bool rejected=false;try{f();}catch(const std::
 int main(int argc,char**argv){
  const StepOwner owner{1,1,0,1,1,1,getpid()};unsigned groups=0;
  const auto custom=PrepareStepLocation("640075006d006d0079002d00660069006c0065002e0074007300",123,45,2);assert(custom&&custom->explicit_location&&custom->file_json=="\"\\u0064\\u0075\\u006d\\u006d\\u0079\\u002d\\u0066\\u0069\\u006c\\u0065\\u002e\\u0074\\u0073\"");++groups;
- for(const auto& f:std::vector<std::function<void()>>{[]{PrepareStepLocation("-",1,1,0);},[]{PrepareStepLocation("6100",0,1,2);},[]{PrepareStepLocation("6100",1,2147483648ULL,2);},[]{PrepareStepLocation("-",1,1,2);},[]{PrepareStepLocation("6100",1,1,3);},[]{PrepareStepLocation(std::string(4097*4,'0'),1,1,2);}}){Reject(f);}
+ for(const auto& f:std::vector<std::function<void()>>{[]{PrepareStepLocation("-",1,1,0);},[]{PrepareStepLocation("6100",0,1,2);},[]{PrepareStepLocation("6100",1,2147483648ULL,2);},[]{PrepareStepLocation("-",1,1,2);},[]{PrepareStepLocation("6100",1,1,3);}}){Reject(f);}
+ // past former cap: a 4097-unit file location (old maximum 4096) is admitted whole.
+ {const auto wide=PrepareStepLocation(std::string(4096*4,'0')+"6100",1,1,2);assert(wide&&wide->file_json.size()==4097*6+2&&wide->file_json.ends_with("\\u0000\\u0061\""));}
  ++groups;
  TestSteps native;assert(native.Open(owner,1000,0));const auto id=native.Begin(owner,0,"\"custom\"",10,1,custom);assert(id&&native.Find(*id)->location==custom&&native.Find(*id)->deadline==11);assert(!native.Begin(owner,0,"\"invalid\"",0,2,StepLocation{"not scalar",1,1,true}));assert(native.Inspect().records==1);++groups;
  const auto callsite=PrepareStepLocation("610000d80000",7,9,1);const auto child=native.Begin(owner,*id,"\"child\"",0,2,callsite);assert(child&&native.Find(*child)->parent==*id&&native.Find(*child)->location==callsite&&native.Find(*child)->deadline==11);++groups;

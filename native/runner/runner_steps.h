@@ -150,7 +150,7 @@ class RunnerSteps {
   // Original worker OS exit is required by the runner before this call.
   void WorkerExited(unsigned index,int64_t pid,double now){steps_.ConfirmedWorkerExit(index,pid,now);steps_.TakeEvents();for(const auto&[key,callback]:owners_){(void)key;if(!steps_.Retire(callback.owner))throw std::runtime_error("Native step worker exit did not retire actual callback ownership");}owners_.clear();managed_.clear();}
   std::optional<std::string> PendingError()const{for(const auto&[key,callback]:owners_){(void)key;if(callback.forward&&callback.actual_error)return callback.actual_error;}return std::nullopt;}
-  bool HasLocalSkipPhysical()const{for(const auto& step:steps_.Records())if(step.step_skip&&step.receipt==StepReceipt::Pending)return true;return false;}
+  bool HasLocalSkipPhysical()const{return steps_.HasPendingLocalSkip();}
   size_t Physical()const{return steps_.Inspect().physical;}
   bool IdleReady()const{return owners_.empty()&&managed_.empty()&&!Physical();}
   const std::vector<StepRecord>& Records()const{return steps_.Records();}
@@ -173,13 +173,9 @@ class RunnerSteps {
     else if(step.status==StepStatus::Failed&&step.soft_error_id&&step.callback_received&&step.callback_ok&&!step.attachment_error_json){hooks_.send("STEP_SOFT_RESULT "+identity+" "+std::to_string(step.soft_error_id)+" "+StepWire(step.error_json));}
     else{const auto tail=identity+" "+StepStatusName(event.status)+" "+StepWire(step.error_json)+(step.status==StepStatus::Skipped?" "+std::to_string(step.test_skip->request):"");if(event.abort)hooks_.send("STEP_ABORT "+tail);hooks_.send("STEP_RESULT "+tail);}
   }}
-  size_t Pending(const StepOwner& owner)const{size_t count=0;for(const auto& step:steps_.Records())if(step.owner==owner&&step.receipt==StepReceipt::Pending)++count;return count;}
-  bool PendingDescendant(const StepOwner& owner,uint64_t root)const{
-    for(const auto& step:steps_.Records())if(step.owner==owner&&step.id!=root&&step.receipt==StepReceipt::Pending){
-      for(auto* ancestor=&step;ancestor&&ancestor->parent;ancestor=steps_.Find(ancestor->parent))if(ancestor->parent==root)return true;
-    }
-    return false;
-  }
+  // Live pending indexes, not scans of the run-lifetime step ledger.
+  size_t Pending(const StepOwner& owner)const{return steps_.PendingCount(owner);}
+  bool PendingDescendant(const StepOwner& owner,uint64_t root)const{const auto* step=steps_.Find(root);return step&&step->owner==owner&&steps_.HasPendingDescendant(root);}
   void DrainManaged(){
     if(managed_draining_||!managed_dirty_)return;
     managed_draining_=true;

@@ -14,7 +14,20 @@ struct Harness {
  void Ready(){auto e=events.back();assert(e.kind==FixtureOwners::EventKind::Setup);manager.Ready(e.token,e.test,e.generation,0);}
  void Settle(bool ok=true){auto e=events.back();assert(e.kind!=FixtureOwners::EventKind::Setup);manager.Settled(e.token,e.test,e.generation,ok,ok?"":"actual teardown exception",1);}
 };
+void DeepChainChecks(){
+  // Past former depth: a 50k-deep dependency chain plans without recursion, and
+  // a cycle through it reports the same first-detected fixture.
+  constexpr size_t depth=50000;std::vector<Fixture> chain;
+  for(size_t i=0;i<depth;++i)chain.push_back({"f"+std::to_string(i),Scope::Test,i?std::vector<std::string>{"f"+std::to_string(i-1)}:std::vector<std::string>{}});
+  const FixtureGraph graph(chain);const auto plan=graph.Plan({"f"+std::to_string(depth-1)});
+  assert(plan.size()==depth);for(size_t i=0;i<depth;++i)assert(plan[i]=="f"+std::to_string(i));
+  chain[0].dependencies={"f"+std::to_string(depth-1)};std::string error;
+  try{FixtureGraph cyclic(chain);(void)cyclic;}catch(const std::invalid_argument& e){error=e.what();}assert(error=="Fixture dependency cycle at: f0");
+  chain[0].dependencies={"missing"};error.clear();
+  try{FixtureGraph unknown(chain);(void)unknown;}catch(const std::invalid_argument& e){error=e.what();}assert(error=="Unknown fixture: missing");
+}
 int main(){
+ DeepChainChecks();
  { FixtureGraph g({{"automaticTest",Scope::Test,{},true},{"automaticWorker",Scope::Worker,{},true}});assert(g.Plan({})==std::vector<std::string>({"automaticWorker","automaticTest"})); }
  { FixtureGraph g({});bool rejected=false;try{g.Plan(std::vector<std::string>(257,"x"));}catch(const std::invalid_argument&){rejected=true;}assert(rejected); }
  auto invalid=[](std::vector<Fixture> defs){try{FixtureGraph graph(std::move(defs));(void)graph;return false;}catch(const std::invalid_argument&){return true;}};

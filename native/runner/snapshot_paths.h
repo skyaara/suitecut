@@ -133,7 +133,7 @@ class NativeSnapshotPaths {
     return plan.mutable_suffix?SuffixContext(paths):paths;
   }
  private:
-  static std::string SuffixContext(const std::string&paths){return "{\"version\":3,\"suffix\":{\"initial\":"+Quote(Platform())+",\"maxBytes\":1024,\"policy\":\"filenameComponent\"},\"paths\":"+paths+"}";}
+  static std::string SuffixContext(const std::string&paths){return "{\"version\":3,\"suffix\":{\"initial\":"+Quote(Platform())+",\"policy\":\"filenameComponent\"},\"paths\":"+paths+"}";}
   struct Values {std::string config,test,snapshot,file_dir,file_path,file_name,file_base,project,title,platform;};
   static std::string Quote(const std::string&value){
     static constexpr char digits[]="0123456789abcdef";

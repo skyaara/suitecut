@@ -36,7 +36,10 @@ int main(){using K=HookKind;
   assert(RuntimeSkipReason("610000d80000")=="\"\\u0061\\ud800\\u0000\"");
   std::string maximum;for(size_t n=0;n<8192;++n)maximum+="00d8";
   assert(JsonString(RuntimeSkipReason(maximum)));
-  for(const auto& invalid:std::vector<std::string>{"", "000", "000x", maximum+"0000"}){
+  // Past former cap: 8193 code units (the old 8192 maximum plus one) are kept whole.
+  const auto past=RuntimeSkipReason(maximum+"0000");
+  assert(JsonString(past)&&past.size()==8193*6+2&&past.substr(past.size()-7)=="\\u0000\"");
+  for(const auto& invalid:std::vector<std::string>{"", "000", "000x"}){
     bool rejected=false;try{(void)RuntimeSkipReason(invalid);}catch(const std::invalid_argument&){rejected=true;}assert(rejected);
   }
 

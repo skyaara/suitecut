@@ -35,10 +35,11 @@ int main(int argc,char** argv){
   ProjectDescendants descendants;RetainedSourceLeases policy(DedicatedRealMilliseconds()+10000);DedicatedHostProcess* actual=nullptr;Sources sources(policy,{[&](const std::string& line){assert(actual&&actual->Send(line));}});
   DedicatedHostProcess host(Executable(),{startup?"--host-startup":"--host-boundary"},sources.PeerDescriptor());actual=&host;const auto identity=Native::ReadStat(host.Pid());const RetainedSourceLeases::Host owner{1,1,host.Pid(),identity.start};const auto batch=descendants.Enroll(1,host);sources.HostLaunched(owner,host);sources.Enable();
   const auto now=DedicatedRealMilliseconds();const auto setup=sources.Setup({3,11,7,5,5,13,"nativeFixture11",Scope::Worker,FixtureOptionCatalog::Origin::Callback,now+5000},now);assert(setup&&host.Send(*setup));++controls;
-  // Filling optional sidecar history never overwrites the actual registered
-  // callback below and never rejects ordinary fixture admission at the bound.
+  // Growing sidecar history never overwrites the actual registered callback
+  // below. Past former cap: the 65th context (old fixed history held 64) is
+  // admitted with a real setup packet instead of falling back to fresh-only.
   for(uint64_t token=8;token<71;++token)assert(sources.Setup({3,token,token,5,5,13,"nativeFixtureOther",Scope::Worker,FixtureOptionCatalog::Origin::Callback,now+5000},now));
-  assert(!sources.Setup({3,71,71,5,5,13,"nativeFixtureOther",Scope::Worker,FixtureOptionCatalog::Origin::Callback,now+5000},now));++controls;
+  {const auto past_former_cap=sources.Setup({3,71,71,5,5,13,"nativeFixtureOther",Scope::Worker,FixtureOptionCatalog::Origin::Callback,now+5000},now);assert(past_former_cap&&!past_former_cap->empty());}++controls;
   bool rejected=false;try{(void)sources.Setup({3,11,7,5,5,13,"nativeFixture11",Scope::Worker,FixtureOptionCatalog::Origin::Callback,now+5000},now);}catch(const std::runtime_error&){rejected=true;}assert(rejected);++controls;
   std::exception_ptr original;pid_t child=-1;
   const auto pump=[&](auto predicate){const auto end=DedicatedRealMilliseconds()+5000;while(!predicate()){

@@ -52,9 +52,8 @@ through ignored cancellation and active file/append/Source fences. A ready
 worker callback remains a physical lease while it may be eligible for reuse.
 The timing controller does not infer a callback exit or manufacture a process
 receipt. It is a sidecar to existing FixtureOwners/ScopedFixtures, not a new
-scheduler or subreaper. History is bounded to 8,192 phase records and 64 physical
-fixture leases per worker controller. Admission reserves records before any
-charged-time mutation, and overflow rejects before starting author work.
+scheduler or subreaper. History has no phase-record or physical fixture-lease count limit.
+Admission records the phase before any charged-time mutation.
 
 ## Required central integration (not implemented yet)
 

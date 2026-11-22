@@ -27,10 +27,13 @@ int main() {
   }
   for (const sr::TestSelection& bad : {sr::TestSelection{{7,7}},sr::TestSelection{{8}},
       sr::TestSelection{{0}},sr::TestSelection{{},0,1},sr::TestSelection{{},1,0},
-      sr::TestSelection{{},2,1},sr::TestSelection{{},1,65537}}) {
+      sr::TestSelection{{},2,1}}) {
     bool rejected=false; try {sr::SelectTestIndices(actual,bad);} catch(const std::invalid_argument&) {rejected=true;}
     assert(rejected);
   }
+  // Past former cap: a shard total above 65536 is valid; extra shards are empty.
+  assert((sr::SelectTestIndices(actual, {{},1,65537}) == std::vector<size_t>{0}));
+  assert(sr::SelectTestIndices(actual, {{},65537,65537}).empty());
   for (const std::vector<uint64_t>& bad : {std::vector<uint64_t>{0},std::vector<uint64_t>{7,7}}) {
     bool rejected=false; try {sr::SelectTestIndices(bad,{});} catch(const std::invalid_argument&) {rejected=true;}
     assert(rejected);

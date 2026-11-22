@@ -48,14 +48,16 @@ int main(){
   Reject([]{sr::NativeSuiteTree value({{1,0,0,{}}},{{1,2,0}});});
   Reject([]{sr::NativeSuiteTree value({{1,0,0,{{K::BeforeAll,1},{K::AfterAll,1}}}},{});});
   Reject([]{sr::NativeSuiteTree value({{1,0,0,{{static_cast<K>(77),1}}}},{});});
+  // Past former cap: 65 nested suites, 8193 tests and >1Mi route references are admitted.
   std::vector<sr::SuiteDeclaration> deep;for(uint64_t id=1;id<=65;++id)deep.push_back({id,id-1,0,{}});
-  Reject([&]{sr::NativeSuiteTree value(deep,{});});
+  {sr::NativeSuiteTree past(deep,{{1,65,0}});const auto route=past.Plan({1});assert(route.size()==1&&route[0].ancestors.size()==65&&route[0].ancestors.front()==1&&route[0].ancestors.back()==65&&route[0].finish_suites.size()==65);}
   std::vector<sr::SuiteTestDeclaration> maximum;for(uint64_t id=1;id<=8192;++id)maximum.push_back({id,1,static_cast<uint32_t>(id-1)});
   sr::NativeSuiteTree full({{1,0,0,{}}},maximum);assert(full.TestOrder().size()==8192);assert(full.Plan({1,8192}).size()==2);
-  maximum.push_back({8193,1,8192});Reject([&]{sr::NativeSuiteTree value({{1,0,0,{}}},maximum);});
+  maximum.push_back({8193,1,8192});{sr::NativeSuiteTree past({{1,0,0,{}}},maximum);assert(past.TestOrder().size()==8193&&past.TestOrder().back()==8193);}
   sr::SuiteDeclaration expensive{1,0,0,{}};
   for(uint64_t id=1;id<=4096;++id)expensive.hooks.push_back({K::BeforeEach,id});
-  maximum.resize(1024);std::set<uint64_t> selection;for(const auto& test:maximum)selection.insert(test.id);
-  sr::NativeSuiteTree bounded({expensive},maximum);Reject([&]{bounded.Plan(selection);});
-  std::cout<<"PASS native hierarchy order, ancestor hooks, selected branch lifetimes and invalid/bounded declarations\n";
+  maximum.resize(257);std::set<uint64_t> selection;for(const auto& test:maximum)selection.insert(test.id);
+  sr::NativeSuiteTree past({expensive},maximum);const auto routes_past=past.Plan(selection);
+  assert(routes_past.size()==257&&routes_past.back().before_each.size()==4096&&routes_past.back().before_each.back()==4096&&routes_past.back().finish_suites==std::vector<uint64_t>{1});
+  std::cout<<"PASS native hierarchy order, ancestor hooks, selected branch lifetimes and invalid declarations, past former caps\n";
 }

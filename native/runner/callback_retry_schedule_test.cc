@@ -147,7 +147,11 @@ int main(){
   {
     std::array<uint64_t,65> large{};std::array<uint64_t,1> unsafe{Schedule::kSafeDuration+1};
     Reject([&]{Schedule s(Identity(),{0,std::span<const uint64_t>{}},1000,100);});
-    Reject([&]{Schedule s(Identity(),{0,std::span<const uint64_t>(large)},1000,100);});
+    // Past former cap: 65 intervals (old bound 64) are kept whole; the 65th backoff uses the 65th interval.
+    for(size_t i=0;i<large.size();++i)large[i]=i+1;
+    {Schedule s(Identity(),{0,std::span<const uint64_t>(large)},1000000,100);double now=100;uint64_t step=10;
+      for(size_t i=0;i<large.size();++i){assert(s.Ready(now));ThrowAndDrain(s,s.Start(step++,now),now,now);assert(s.NextWake()==now+static_cast<double>(large[i]));now+=static_cast<double>(large[i]);}
+      assert(s.Attempts()==65&&s.Result()==Verdict::Pending);}
     Reject([&]{Schedule s(Identity(),{0,std::span<const uint64_t>(unsafe)},1000,100);});
     Reject([&]{Schedule s(Identity(),{Schedule::kSafeDuration+1,std::nullopt},1000,100);});++controls;
   }

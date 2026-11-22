@@ -5,12 +5,14 @@
 using namespace suitecut::runner;
 template<class Call>void Rejected(Call call){bool rejected=false;try{call();}catch(const std::invalid_argument&){rejected=true;}assert(rejected);}
 int main(){
-  for(const auto& pattern:std::vector<std::string>{"",std::string(257,'a'),std::string("a\0b",3)})Rejected([&]{ProjectPattern value(pattern);});
+  for(const auto& pattern:std::vector<std::string>{"",std::string("a\0b",3)})Rejected([&]{ProjectPattern value(pattern);});
+  // Past former cap: 257-byte patterns and names (old max 256) match exactly.
+  assert(ProjectPattern(std::string(257,'A')).Matches(std::string(257,'a'))&&!ProjectPattern(std::string(257,'a')).Matches(std::string(256,'a')));
   assert(ProjectPattern("SUite2").Matches("suite2"));assert(ProjectPattern("*oj*t-Na*e").Matches("project-name"));
   assert(ProjectPattern("**a**b***").Matches("AzzB"));assert(ProjectPattern("*").Matches(""));
   assert(!ProjectPattern("a").Matches("aa"));assert(!ProjectPattern("a?b").Matches("axb"));assert(ProjectPattern("a?b").Matches("a?b"));
   assert(ProjectPattern("[a].(b)+$").Matches("[A].(B)+$"));assert(ProjectPattern("π*").Matches("πx"));assert(!ProjectPattern("π*").Matches("Πx"));
-  assert(ProjectPattern(std::string(256,'A')).Matches(std::string(256,'a')));assert(!ProjectPattern("*").Matches(std::string(257,'a')));
+  assert(ProjectPattern(std::string(256,'A')).Matches(std::string(256,'a')));assert(ProjectPattern("*").Matches(std::string(257,'a'))); // past former cap
   // Independent small whole-language oracle for the bounded NFA's overlapping
   // star paths; deliberately uses a recursive recognizer, not its bitset logic.
   const auto oracle=[](auto&& self,std::string_view pattern,std::string_view name)->bool {

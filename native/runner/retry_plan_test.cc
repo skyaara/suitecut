@@ -10,7 +10,9 @@ int main(){
  a=plan.Next(10);assert(a&&a->test.id==2&&a->retry==0);assert(plan.Finish(10,a->generation,Outcome::Failed,"actual exception"));assert(plan.NeedsWorkerRetirement());assert(!plan.Next(20));assert(!plan.WorkerExited(20));assert(!plan.Next(20));assert(plan.WorkerExited(10));
  a=plan.Next(20);assert(a&&a->test.id==2&&a->retry==1);assert(plan.Finish(20,a->generation,Outcome::Passed,""));a=plan.Next(20);assert(a&&a->test.id==3);assert(plan.Finish(20,a->generation,Outcome::Failed,"expected actual exception"));assert(plan.Done());assert(plan.Results().size()==4);
  RetryPlan unexpected({{1,"unexpected pass",{},1,true}});a=unexpected.Next(1);assert(unexpected.Finish(1,a->generation,Outcome::Passed,""));assert(!unexpected.Next(2));unexpected.WorkerExited(1);a=unexpected.Next(2);assert(a&&a->retry==1);assert(unexpected.Finish(2,a->generation,Outcome::Failed,""));assert(unexpected.Done());
- { bool rejected=false;try{RetryPlan oversized({{1,std::string(4097,'x'),{},0,false}});}catch(const std::invalid_argument&){rejected=true;}assert(rejected); }
+ // Past former cap: a 4097-byte title, 257 fixtures and 101 retries are admitted and kept whole.
+ { RetryPlan past({{1,std::string(4097,'x'),std::vector<std::string>(257,"fixture"),101,false}});const auto first=past.Next(1);assert(first&&first->test.title==std::string(4097,'x')&&first->test.fixtures.size()==257&&first->test.retries==101);const std::string error(8193,'e');assert(past.Finish(1,first->generation,Outcome::Failed,error));assert(past.Results().size()==1&&past.Results()[0].error==error); }
+ { bool rejected=false;try{RetryPlan invalid({{0,"zero id",{},0,false}});}catch(const std::invalid_argument&){rejected=true;}assert(rejected);rejected=false;try{RetryPlan duplicate({{1,"a",{},0,false},{1,"b",{},0,false}});}catch(const std::invalid_argument&){rejected=true;}assert(rejected); }
  { RetryPlan exhausted({{1,"test",{},0,false}});RetryPlanTestAccess::Exhaust(exhausted);bool rejected=false;try{exhausted.Next(1);}catch(const std::overflow_error&){rejected=true;}assert(rejected&&exhausted.Results().empty()); }
  std::cout<<"Native retry physical-worker fence tests passed\n";
 }

@@ -22,7 +22,8 @@ int main(int argc,char** argv){assert(argc==2);const AttemptErrorOwner owner{1,2
  {auto bad=report;++bad.attempts[0].secondary_errors[0].source.attempt.generation;Reject([&]{report_detail::Validate(bad);});++n;}
  {auto bad=report;++bad.attempts[0].secondary_errors[0].source.attempt.pid;Reject([&]{report_detail::Validate(bad);});++n;}
  {auto bad=report;bad.attempts[0].secondary_errors[0].error_json="{}";Reject([&]{report_detail::Validate(bad);});++n;}
- {auto bad=report;bad.attempts[0].secondary_errors.resize(257,report.attempts[0].secondary_errors[0]);Reject([&]{report_detail::Validate(bad);});++n;}
+ {auto wide=report;wide.attempts[0].secondary_errors.resize(257,report.attempts[0].secondary_errors[0]);assert(report_detail::Validate(wide).unexpected==1); // past former cap: 257 secondary errors (old bound 256) are all kept
+  const std::filesystem::path dir=argv[1];std::filesystem::create_directories(dir);WriteRunnerJson(wide,dir/"past-former-cap.json");std::ifstream input(dir/"past-former-cap.json");const std::string bytes{std::istreambuf_iterator<char>(input),{}};size_t count=0;for(auto at=bytes.find("distinct owner-bound wrapper");at!=std::string::npos;at=bytes.find("distinct owner-bound wrapper",at+1))++count;assert(count==257);++n;}
  const std::filesystem::path root=argv[1];std::filesystem::create_directories(root);WriteRunnerJson(report,root/"actual.json");WriteRunnerJUnit(report,root/"actual.xml");WriteRunnerHTML(report,root/"actual.html");++n;
  report.global_errors_json={"\"genuine unassociated worker error\""};assert(report_detail::Validate(report).errors==1);WriteRunnerJson(report,root/"with-global.json");++n;
  auto merged=MergedRunnerReport::Read({{"actual",root/"actual.json"}});merged.WriteJSON(root/"merged.json");merged.WriteJUnit(root/"merged.xml");merged.WriteHTML(root/"merged.html");++n;

@@ -46,5 +46,13 @@ int main(){
   RejectViewReceipt([&]{AttachmentViewReceipts::OriginalDeadline(actual,100,&actual_step);});
   auto without_step=actual;without_step.step_id=0;
   assert(AttachmentViewReceipts::OriginalDeadline(without_step,100)==100);++controls;
+  // Run-lifetime ledger scale: issue/ack/tick/exit use ticket, artifact and
+  // unended-ticket indexes, so 100k publications with a tick each stay linear.
+  {unsigned late=0;AttachmentViewReceipts many({[&](const auto&){++late;},[](const auto&){}});const auto held=many.Issue(actual,1e9,2);
+   for(uint64_t n=1;n<=100000;++n){auto published=actual;published.id=1000+n;published.committed=2.0+static_cast<double>(n)-0.5;published.received=2.0+static_cast<double>(n);const auto ticket=many.Issue(published,1e9,published.received);
+     assert(many.Find(ticket)->artifact==published.id);many.Acknowledge(ticket,owner,published.id,n,true,published.received);many.Tick(published.received);}
+   RejectViewReceipt([&]{auto replay=actual;replay.id=1000+50000;replay.committed=200002.5;replay.received=200003;many.Issue(replay,1e9,200003);});
+   assert(many.Records().size()==100001&&many.PendingCount()==1&&many.NeedsTick()&&many.PendingOwner(owner)&&!late);
+   many.WorkerExited(1,101,200004);assert(many.PendingCount()==0&&many.Find(held)->end==AttachmentViewReceipts::End::WorkerExited&&!many.NeedsTick()&&!many.PendingOwner(owner));++controls;}
   std::cout<<"PASS "<<controls<<" publication-view ACK/death/deadline controls; native metadata fixtures, no file or host-process receipt claim\n";
 }

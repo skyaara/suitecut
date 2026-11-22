@@ -2,6 +2,9 @@
 #pragma once
 #include "test_attachments.h"
 #include <functional>
+#include <map>
+#include <set>
+#include <vector>
 
 namespace suitecut::runner {
 // Native callback metadata fence only. A real writer's COMMITTED/waitpid/drain
@@ -41,13 +44,16 @@ class AttachmentViewReceipts {
        !std::isfinite(original_deadline+kCleanupGrace)||sequence_==UINT64_MAX||
        (budget_&&budget_->sequence==UINT64_MAX))
       throw std::invalid_argument("Native attachment view publication admission rejected");
-    for(const auto& record:records_)if(record.artifact==actual.id)
+    if(artifacts_.contains(actual.id))
       throw std::invalid_argument("Native attachment view publication already owns this artifact");
     Record next{budget_?budget_->sequence+1:sequence_+1,actual.id,actual.owner,actual.step_id,
                 now,original_deadline,original_deadline+kCleanupGrace,false,false,std::nullopt,std::nullopt,0,false,actual.callback_retry};
-    records_.push_back(std::move(next));++sequence_;++pending_;
+    records_.push_back(std::move(next));const auto ticket=records_.back().ticket;
+    try{tickets_.emplace(ticket,records_.size()-1);artifacts_.insert(actual.id);open_.insert(ticket);}
+    catch(...){tickets_.erase(ticket);artifacts_.erase(actual.id);records_.pop_back();throw;}
+    ++sequence_;++pending_;
     if(budget_){++budget_->sequence;++budget_->pending;}
-    return records_.back().ticket;
+    return ticket;
   }
   const Record& Pending(uint64_t ticket,const StepOwner& actual,uint64_t artifact)const{
     const auto* record=Find(ticket);
@@ -59,33 +65,32 @@ class AttachmentViewReceipts {
     Time(now);const auto& valid=Pending(ticket,actual,artifact);
     if(!mutation_request||now<valid.issued)throw std::invalid_argument("Native attachment view ACK has no actual mutation request");
     if(native_accepted&&(valid.expired||now>=valid.deadline))throw std::invalid_argument("Native attachment view cannot accept an expired publication");
-    auto* record=Mutable(ticket);record->end=End::Acknowledged;record->received=now;record->mutation_request=mutation_request;record->accepted=native_accepted;
+    auto* record=Mutable(ticket);record->end=End::Acknowledged;open_.erase(ticket);record->received=now;record->mutation_request=mutation_request;record->accepted=native_accepted;
     --pending_;if(budget_)--budget_->pending;
   }
   void WorkerExited(unsigned index,int64_t pid,double now){
     Time(now);
-    for(const auto& record:records_)if(!record.end&&record.owner.worker_index==index&&record.owner.pid==pid&&now<record.issued)
-      throw std::invalid_argument("Native attachment view host exit preceded publication");
-    for(auto& record:records_)if(!record.end&&record.owner.worker_index==index&&record.owner.pid==pid){
-      record.end=End::WorkerExited;record.received=now;--pending_;if(budget_)--budget_->pending;
+    std::vector<uint64_t> exited;
+    for(const auto ticket:open_){const auto& record=*Find(ticket);if(record.owner.worker_index==index&&record.owner.pid==pid){if(now<record.issued)throw std::invalid_argument("Native attachment view host exit preceded publication");exited.push_back(ticket);}}
+    for(const auto ticket:exited){auto& record=*Mutable(ticket);
+      record.end=End::WorkerExited;record.received=now;open_.erase(ticket);--pending_;if(budget_)--budget_->pending;
     }
   }
   bool PendingOwner(const StepOwner& owner)const{
-    for(const auto& record:records_)if(!record.end&&record.owner==owner)return true;
+    for(const auto ticket:open_)if(Find(ticket)->owner==owner)return true;
     return false;
   }
   template<class Within>bool PendingStep(const StepOwner& owner,uint64_t step,Within&& within)const{
-    for(const auto& record:records_)if(!record.end&&record.owner==owner&&((record.step_id&&within(record.step_id,step))||(!record.callback_retry.Empty()&&within(record.callback_retry.iteration_step,step))))return true;
+    for(const auto ticket:open_)if(const auto& record=*Find(ticket);record.owner==owner&&((record.step_id&&within(record.step_id,step))||(!record.callback_retry.Empty()&&within(record.callback_retry.iteration_step,step))))return true;
     return false;
   }
   void Tick(double now){
     Time(now);
     // Bound iteration to ingress-existing tickets. Hooks may synchronously
     // deliver genuine worker death; re-find the record after each callback.
-    const auto count=records_.size();
-    for(size_t index=0;index<count;++index){
-      auto& record=records_[index];if(record.end)continue;
-      const auto ticket=record.ticket;
+    const std::vector<uint64_t> open(open_.begin(),open_.end());
+    for(const auto ticket:open){
+      auto& record=*Mutable(ticket);if(record.end)continue;
       if(!record.expired&&now>=record.deadline){
         record.expired=true;const auto observed=record;hooks_.expired(observed);
       }
@@ -96,12 +101,14 @@ class AttachmentViewReceipts {
     }
   }
   size_t PendingCount()const{return pending_;}
-  bool NeedsTick()const{for(const auto& record:records_)if(!record.end&&!record.close_requested)return true;return false;}
+  bool NeedsTick()const{for(const auto ticket:open_)if(!Find(ticket)->close_requested)return true;return false;}
   const std::vector<Record>& Records()const{return records_;}
-  const Record* Find(uint64_t ticket)const{for(const auto& record:records_)if(record.ticket==ticket)return &record;return nullptr;}
+  const Record* Find(uint64_t ticket)const{const auto found=tickets_.find(ticket);return found==tickets_.end()?nullptr:&records_[found->second];}
  private:
   static void Time(double now){if(!std::isfinite(now)||now<0)throw std::invalid_argument("Invalid native attachment view receipt time");}
-  Record* Mutable(uint64_t ticket){for(auto& record:records_)if(record.ticket==ticket)return &record;return nullptr;}
+  Record* Mutable(uint64_t ticket){const auto found=tickets_.find(ticket);return found==tickets_.end()?nullptr:&records_[found->second];}
   Hooks hooks_;Budget* budget_;uint64_t sequence_=0;size_t pending_=0;std::vector<Record> records_;
+  // Run-lifetime ledger indexes: ticket, published artifact, unended tickets in issue order.
+  std::map<uint64_t,size_t> tickets_;std::set<uint64_t> artifacts_,open_;
 };
 } // namespace suitecut::runner

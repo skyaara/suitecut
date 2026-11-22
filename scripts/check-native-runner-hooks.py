@@ -123,7 +123,9 @@ export default defineNativeSuite({hooks:{beforeAll:Array.from({length:65},(_,ind
 ''', 1)
 assert output.decode().splitlines() == ['actual callback'+str(index) for index in range(65)], output
 assert value['workers'][0]['signal'] == 9 and value['attempts'][0]['status'] == 'timedOut'
-assert value['globalErrors'] == []
+# Past former cap: all 65 never-settling raw callbacks stay held, so the worker is retired by the
+# same physical cleanup deadline as never-afterAll-retained-then-confirmed-kill, not a capacity error.
+assert value['globalErrors'] == ['Hook raw callback physical cleanup deadline expired'], value['globalErrors']
 assert not any('capacity' in row['error'] for row in value['attempts'][0].get('secondaryErrors', []))
 
 value, output, elapsed = execute('independent-all-hook-original-budgets', '''

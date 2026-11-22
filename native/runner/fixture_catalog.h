@@ -51,18 +51,25 @@ class FixtureCatalog {
   std::vector<std::string> Roots(const std::vector<std::string>& names)const{std::vector<std::string> roots;roots.reserve(names.size());for(const auto& name:names)roots.push_back(Effective(name).key);return roots;}
   static bool Name(const std::string& name){if(name.empty())return false;for(size_t i=0;i<name.size();++i){const unsigned char c=name[i];if((c>='A'&&c<='Z')||(c>='a'&&c<='z')||c=='_'||(i&&c>='0'&&c<='9'))continue;return false;}return true;}
  private:
-  void Resolve(uint64_t id,std::map<uint64_t,unsigned>& seen){
-    if(seen[id]==2)return;
-    if(seen[id]==1)throw std::invalid_argument("Native fixture dependency cycle at: "+Get(id).name);
-    seen[id]=1;
-    auto& version=versions_.at(id-1);version.active=true;std::set<std::string> bound;
-    for(const auto& name:version.dependencies){if(!bound.insert(name).second)continue;
+  // Explicit-stack DFS: dependency depth is bounded only by memory. Same 0/1/2
+  // states, binding order and first-detected errors as the recursive walk.
+  void Resolve(uint64_t root,std::map<uint64_t,unsigned>& seen){
+    struct Frame {uint64_t id;size_t next;std::set<std::string> bound;};std::vector<Frame> stack;
+    const auto enter=[&](uint64_t id){
+      if(seen[id]==2)return;
+      if(seen[id]==1)throw std::invalid_argument("Native fixture dependency cycle at: "+Get(id).name);
+      seen[id]=1;
+      versions_.at(id-1).active=true;stack.push_back({id,0,{}});
+    };
+    enter(root);
+    while(!stack.empty()){auto& frame=stack.back();auto& version=versions_[frame.id-1];
+      if(frame.next==version.dependencies.size()){seen[frame.id]=2;stack.pop_back();continue;}
+      const auto& name=version.dependencies[frame.next++];if(!frame.bound.insert(name).second)continue;
       uint64_t target=0;if(name==version.name){if(!version.previous)throw std::invalid_argument("Native fixture self dependency has no previous declaration: "+name);target=version.previous;}
       else{const auto found=effective_.find(name);if(found==effective_.end())throw std::invalid_argument("Unknown native fixture dependency: "+name);target=found->second;}
       const auto& dependency=Get(target);if(version.scope==Scope::Worker&&dependency.scope==Scope::Test)throw std::invalid_argument("Native worker fixture "+version.name+" cannot depend on test fixture "+name);
-      version.bindings.push_back({name,dependency.key,target});Resolve(target,seen);
+      version.bindings.push_back({name,dependency.key,target});enter(target);
     }
-    seen[id]=2;
   }
   std::vector<Version> versions_;std::map<std::string,uint64_t> effective_;std::vector<std::string> visible_order_;std::vector<Fixture> definitions_;
 };

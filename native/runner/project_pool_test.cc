@@ -7,7 +7,10 @@ template<class F>void Rejected(F f){bool yes=false;try{f();}catch(const std::inv
 ProjectPool::Admission Admit(ProjectPool& pool,size_t index){const auto next=pool.Next();assert(next&&next->index==index);return *next;}
 int main(){
   ProjectGraph graph({{"bodyA",{"setup"}},{"bodyB",{"setup"}},{"setup",{},"cleanup",false},{"independent"},{"cleanup",{},std::nullopt,false}});
-  for(size_t limit:{0U,9U})Rejected([&]{ProjectPool pool(graph,{graph.Select(),false},limit);});
+  Rejected([&]{ProjectPool pool(graph,{graph.Select(),false},0);});
+  { // Past former cap: 9 workers (old max 8) are admitted and every ready project starts at once.
+    ProjectPool pool(graph,{graph.Select(),false},9);const auto setup=Admit(pool,2),independent=Admit(pool,3);assert(pool.Active()==2&&!pool.Next()&&setup.generation!=independent.generation);
+  }
   Rejected([&]{ProjectPool pool(graph,{{true,false,false,false,false},false},2);});
   {
     ProjectPool pool(graph,{graph.Select(),false},2);const auto setup=Admit(pool,2),independent=Admit(pool,3);assert(pool.Active()==2&&!pool.Next());

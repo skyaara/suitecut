@@ -86,7 +86,7 @@ class RunnerAttachments {
     const auto found=callbacks_.find(Key(token,scope,generation));
     if(!request||!std::isfinite(now)||found==callbacks_.end()||found->second.closed||found->second.mutation_error||found->second.test_skip||now>=found->second.deadline||
        (found->second.owner.callback_kind!="body"&&found->second.owner.callback_kind!="beforeEach"))return false;
-    for(const auto& declaration:declarations_.Records())if(declaration.owner==found->second.owner&&!declaration.retry_failure_disposed&&(declaration.receipt==AttachmentDeclarations::Receipt::Failed||declaration.receipt==AttachmentDeclarations::Receipt::Rejected))return false;
+    if(declarations_.HasUndisposedFailure(found->second.owner))return false;
     for(const auto&[id,job]:jobs_){(void)id;if(Match(job.owner,token,scope,generation)){
       if(job.test_skip||now>=job.job_cap)return false;
       // An earlier accepted local skip is not an ordinary file error. A later
@@ -194,7 +194,7 @@ class RunnerAttachments {
       job.process=std::make_unique<DedicatedHostProcess>("/proc/self/exe",std::vector<std::string>{"--native-attachment-worker"});
       const auto packet="INIT "+std::to_string(job.id)+" "+(job.kind=="P"?"P":"B")+" "+std::to_string(expected)+" "+attachment_files::Hex(parent_.string())+" "+attachment_files::Hex(job.basename)+" "+attachment_files::Hex(path)+" "+std::to_string(job.job_cap)+" "+"0 0"+(retry.Empty()?"":" R");
       if(!job.process->Send(packet))throw std::runtime_error("Native attachment worker initialization failed");
-      if(budget_)++budget_->physical;jobs_.emplace(job.id,std::move(job));
+      if(budget_){++budget_->physical;}jobs_.emplace(job.id,std::move(job));
     }else{
       if(f.size()!=(f[0]=="ATTACH_CHUNK"?7:5))throw std::runtime_error("Invalid native attachment byte packet");
       const auto id=attachment_files::UInt(f[1]),token=attachment_files::UInt(f[2]),scope=attachment_files::UInt(f[3]),generation=attachment_files::UInt(f[4]);const auto found=jobs_.find(id);

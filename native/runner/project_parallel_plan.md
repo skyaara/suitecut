@@ -1,7 +1,7 @@
 # Native project worker parallelism: next implementation contract
 
 The native `ProjectPool` and C++20 continuation controller are implemented and
-component-tested. The native event-pump adapter now admits1..8 project workers
+component-tested. The native event-pump adapter now admits the caller's worker count (at least one)
 with one coordinator; tests within each project remain serial. Project selectors and primary/support composition are complete before
 worker admission; the callback host sends declarations and callback receipts.
 It never assigns work, advances dependencies or computes schedules.

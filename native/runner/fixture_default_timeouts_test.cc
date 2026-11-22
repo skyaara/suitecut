@@ -13,7 +13,7 @@ int main(){unsigned n=0;
  {FixtureDefaultTimeouts c;c.Root(1000);assert(c.Test(0)==0&&c.Default()==1000);++n;}
  {FixtureDefaultTimeouts c;c.Root(0);Reject([&]{c.Root(1000);});++n;}
  {FixtureDefaultTimeouts c;c.Project(0,0);Reject([&]{c.Project(0,1000);});++n;}
- {FixtureDefaultTimeouts c;Reject([&]{c.Project(128,100);});Reject([&]{(void)c.Default(128);});++n;}
+ {FixtureDefaultTimeouts c;c.Project(128,100);assert(c.Default(128)==100&&c.Test(std::nullopt,128)==100&&c.Default(129)==30000);Reject([&]{c.Project(128,200);});++n;} // past former cap: project index 128 (old bound 128 projects) keeps its timeout
  {FixtureDefaultTimeouts c;Reject([&]{c.Root(120001);});Reject([&]{(void)c.Test(120001);});++n;}
  assert(n==10);std::cout<<"PASS "<<n<<" native fixture/project default timeout controls\n";
 }

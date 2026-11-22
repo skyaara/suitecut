@@ -10,8 +10,12 @@ Plan::Admission Next(Plan& plan,size_t index,bool teardown=false){const auto nex
 void Finish(Plan& plan,Plan::Admission next,Plan::Outcome outcome=Plan::Outcome::Passed){const int64_t pid=100+static_cast<int64_t>(next.index);assert(plan.WorkerStarted(next.generation,pid));assert(plan.Complete(next.generation,outcome));assert(!plan.Next());assert(plan.Physical());assert(plan.WorkerExited(next.generation,pid));assert(!plan.Physical());}
 int main(){
   Rejected([]{ProjectGraph graph({});});
-  Rejected([]{ProjectGraph graph(std::vector<ProjectDeclaration>(129,{"a"}));});
-  for(const auto& name:std::vector<std::string>{"",std::string(257,'a'),std::string("a\0b",3)})Rejected([&]{ProjectGraph graph({{name}});});
+  { // Past former cap: 129 declarations (old max 128) and a 257-byte name (old max 256) are admitted whole.
+    std::vector<ProjectDeclaration> many;for(size_t i=0;i<129;++i)many.push_back({"p"+std::to_string(i)});
+    const ProjectGraph graph(std::move(many));assert(graph.Declarations().size()==129&&graph.Select().size()==129);
+    const ProjectGraph named({{std::string(257,'a')}});assert(named.Declarations()[0].name==std::string(257,'a')&&named.Select()==std::vector<bool>{true});
+  }
+  for(const auto& name:std::vector<std::string>{"",std::string("a\0b",3)})Rejected([&]{ProjectGraph graph({{name}});});
   Rejected([]{ProjectGraph graph({{"a"},{"a"}});});
   Rejected([]{ProjectGraph graph({{"a",{"missing"}}});});
   Rejected([]{ProjectGraph graph({{"a",{"a"}}});});

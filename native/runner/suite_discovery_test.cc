@@ -1,12 +1,32 @@
 // SPDX-License-Identifier: MIT
 #include "suite_discovery.h"
+#include "suite_discovery_config.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
 
 namespace sr=suitecut::runner;
 template<class F>void Reject(F&& f){bool caught=false;try{f();}catch(const std::exception&){caught=true;}assert(caught);}
+void DeepJSONChecks(){
+  // Nesting is bounded only by memory: 200k levels parse, copy, assign and
+  // destroy without one native stack frame per level.
+  namespace md=sr::merge_detail;constexpr size_t depth=200000;
+  const std::string arrays=std::string(depth,'[')+std::string(depth,']');
+  {auto parsed=md::JSONParser(arrays).Parse();assert(parsed.kind==md::JSON::Array&&parsed.raw.size()==2*depth);
+    const md::JSON* node=&parsed;size_t levels=1;while(!node->items.empty()){assert(node->items.size()==1);node=&node->items[0];++levels;}assert(levels==depth);
+    auto copy=parsed;assert(copy.raw==parsed.raw);node=&copy;levels=1;while(!node->items.empty()){node=&node->items[0];++levels;}assert(levels==depth);
+    md::JSON assigned;assigned=copy;copy=std::move(parsed);assert(assigned.items.size()==1&&copy.items.size()==1&&parsed.items.empty());
+    assigned=std::move(assigned.items[0].items[0]);assert(assigned.kind==md::JSON::Array&&assigned.items.size()==1);
+  }
+  std::string objects;for(size_t n=0;n<depth;++n)objects+="{\"k\":";objects+="null";objects+=std::string(depth,'}');
+  {const auto parsed=md::JSONParser(objects).Parse();const md::JSON* node=&parsed;size_t levels=0;while(node->kind==md::JSON::Object){node=&md::Get(*node,"k");++levels;}assert(levels==depth&&node->kind==md::JSON::Null);}
+  // A truncated deep document is rejected and its partial tree released.
+  Reject([&]{(void)md::JSONParser(std::string_view(arrays).substr(0,arrays.size()-1)).Parse();});
+  // Discovery configuration rejects a deep non-string entry after parsing it whole.
+  sr::SuiteDiscoveryOptions options;Reject([&]{sr::NativeDiscoveryConfiguration(options,"--test-match-json","["+arrays+"]");});
+}
 int main(){
+  DeepJSONChecks();
   char temporary[]="/tmp/suitecut-discovery-controls-XXXXXX";const auto* directory=::mkdtemp(temporary);assert(directory);
   struct Cleanup {std::filesystem::path path;~Cleanup(){std::filesystem::remove_all(path);}} cleanup{directory};
   const auto root=std::filesystem::canonical(directory);

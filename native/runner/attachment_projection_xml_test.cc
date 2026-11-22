@@ -18,9 +18,10 @@ int main(int argc,char** argv){
   report.attempts.push_back({1,1,0,1,getpid(),"\"controlled projection report\"","\"\"","passed",true,35});
   report.attachment_declarations=declarations.Records();UpsertAttachmentProjection(report.attachment_views,native,{});
   const auto original=AttachmentProjectionJSON(report.attachment_views);assert(original.size()>8192);
-  // This is the exact former production call. Its refusal proves the case
-  // crosses the unrelated path bound rather than only exercising tiny output.
-  bool refused=false;try{(void)AttachmentPathJSON(original);}catch(const std::invalid_argument&){refused=true;}assert(refused);
+  // Past former cap: the former production path call used to refuse this
+  // >8192-byte value; with no suitecut path bound it now quotes it whole.
+  const auto as_path=AttachmentPathJSON(original);assert(JsonString(as_path)&&as_path.size()>original.size()+2&&as_path.front()=='"'&&as_path.back()=='"');
+  bool refused=false;
   const auto quoted=AttachmentProjectionQuotedJSON(original);assert(JsonString(quoted));
   assert(report_detail::XML(quoted).sanitized==0);
   WriteRunnerJson(report,output/"large.json");WriteRunnerJUnit(report,output/"large.xml");WriteRunnerHTML(report,output/"large.html");

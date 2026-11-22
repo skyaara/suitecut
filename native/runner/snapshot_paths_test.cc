@@ -33,7 +33,7 @@ int main(){
   const auto mutable_wire=sr::NativeSnapshotPaths::Serialize(mutable_plan);const auto mutable_json=sr::merge_detail::JSONParser(mutable_wire).Parse();
   assert(sr::merge_detail::UInt(mutable_json,"version")==3);
   const auto&suffix=sr::merge_detail::Get(mutable_json,"suffix");
-  assert(sr::merge_detail::UInt(suffix,"maxBytes")==1024&&sr::merge_detail::Text(sr::merge_detail::Get(suffix,"initial"))==sr::NativeSnapshotPaths::Platform());
+  assert(!sr::merge_detail::Find(suffix,"maxBytes")&&suffix.fields.size()==2&&sr::merge_detail::Text(sr::merge_detail::Get(suffix,"initial"))==sr::NativeSnapshotPaths::Platform());
   auto explicit_suffix=settings;explicit_suffix.path_template="{platform}/{snapshotSuffix}/{-snapshotSuffix}/{arg}{ext}";
   const auto suffix_ops=sr::NativeSnapshotPaths::Bind(facts,explicit_suffix,true);
   assert(suffix_ops.common_kind_plan&&suffix_ops.snapshot.front().value==sr::NativeSnapshotPaths::Platform()+"/");

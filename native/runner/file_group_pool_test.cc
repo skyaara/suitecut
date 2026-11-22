@@ -29,7 +29,7 @@ int main(){unsigned controls=0;
  {NativeTestGroupTree tree({1,2,3},{},{},{});FileWorkGroups groups({11,23,47},tree,{3,1},false);assert(groups.Groups().size()==1&&groups.Groups()[0].tests==std::vector<uint64_t>({1,3}));++controls;}
  {NativeTestGroupTree tree({},{{1,0,0,{}}},{},{});FileGroupPool p(FileWorkGroups({1,2,3},tree,{},true),1);const auto a=*p.Next();assert(p.Plan().Groups()[0].tests.empty()&&p.WorkerStarted(a,1,101)&&p.Complete(a,O::Passed)&&!p.Done()&&p.WorkerExited(a,1,101)&&p.Done());++controls;}
  Reject([]{(void)Pool(0);});++controls;
- Reject([]{(void)Pool(9);});++controls;
+ {auto p=Pool(9);const auto a=*p.Next(),b=*p.Next(),c=*p.Next();assert(p.Active()==3&&a.index==0&&b.index==1&&c.index==2&&!p.Next());++controls;} // past former cap: 9 workers (old max 8)
  Reject([]{NativeTestGroupTree tree({1},{},{},{});(void)FileWorkGroups({0,1,2},tree,{1},true);});++controls;
  Reject([]{NativeTestGroupTree tree({1},{},{},{});(void)FileWorkGroups({1,1,2},tree,{1,1},true);});++controls;
  assert(controls==17);std::cout<<"Native anonymous file group policy: "<<controls<<" controls passed\n";

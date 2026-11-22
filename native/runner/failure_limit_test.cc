@@ -56,6 +56,11 @@ int main(){
     assert(plan.WorkerExited(51)&&plan.Done());
     assert(!plan.FailureLimitReached()&&plan.UnexpectedTestFailures()==2);
   }
-  bool rejected=false;try{sr::RetryPlan invalid({},4097);}catch(const std::invalid_argument&){rejected=true;}
-  assert(rejected);
+  {
+    // Past former cap: a maximum failure count above 4096 is accepted and not reached by one failure.
+    sr::RetryPlan plan({{1,"one",{},0,false},{2,"two",{},0,false}},4097);
+    auto test=*plan.Next(60);assert(plan.Finish(60,test.generation,sr::Outcome::Failed,"one"));
+    assert(!plan.FailureLimitReached()&&plan.UnexpectedTestFailures()==1);
+    assert(plan.WorkerExited(60));test=*plan.Next(61);assert(test.test.id==2);
+  }
 }

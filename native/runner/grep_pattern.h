@@ -140,7 +140,7 @@ class GrepPattern {
   unsigned Number(){
     if(position_==source_.size()||source_[position_]<'0'||source_[position_]>'9')Fail("bounded quantifier requires a number");
     unsigned value=0;while(position_<source_.size()&&source_[position_]>='0'&&source_[position_]<='9'){
-      if(value>(std::numeric_limits<unsigned>::max()-9)/10)Fail("quantifier bound overflows");value=value*10+(source_[position_++]-'0');}return value;
+      if(value>(std::numeric_limits<unsigned>::max()-9)/10){Fail("quantifier bound overflows");}value=value*10+(source_[position_++]-'0');}return value;
   }
   size_t Term(){const auto atom=Atom();if(position_==source_.size())return atom;
     const auto c=source_[position_];unsigned minimum=0,maximum=0;bool repeat=true;
@@ -224,7 +224,7 @@ class GrepPattern {
   Fragment Compile(size_t id){GrepStackCheck();const auto& node=nodes_[id];
     if(node.kind==Kind::Empty)return Empty();
     if(node.kind==Kind::Concat){const auto parts=Chain(id,Kind::Concat);auto result=Compile(parts[0]);
-      for(size_t i=1;i<parts.size();++i)result=Join(std::move(result),Compile(parts[i]));return result;}
+      for(size_t i=1;i<parts.size();++i){result=Join(std::move(result),Compile(parts[i]));}return result;}
     if(node.kind==Kind::Alternative){const auto parts=Chain(id,Kind::Alternative);auto result=Compile(parts[0]);
       for(size_t i=1;i<parts.size();++i){auto right=Compile(parts[i]);const auto split=Emit({Kind::Split,result.start,right.start});
         result.ends.insert(result.ends.end(),right.ends.begin(),right.ends.end());result.start=split;}

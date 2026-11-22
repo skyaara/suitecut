@@ -9,6 +9,7 @@
 #include <limits>
 #include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -75,7 +76,8 @@ class TestSteps {
     if(!std::isfinite(own)||!std::isfinite(deadline)||deadline<=now)return std::nullopt;
     const auto id=budget_?++budget_->sequence:++sequence_;
     records_.push_back(StepRecord{id,parent,owner,std::move(title_json),now,deadline,own,std::nullopt,std::nullopt,StepStatus::Running,StepReceipt::Pending,"\"\"","\"\"",depth,false,timeout});
-    try{indices_.emplace(id,records_.size()-1);}catch(...){records_.pop_back();throw;}
+    try{indices_.emplace(id,records_.size()-1);running_.insert({deadline,id});pending_[owner.Key()].insert(id);if(parent)children_[parent].insert(id);}
+    catch(...){indices_.erase(id);running_.erase({deadline,id});Forget(pending_,owner.Key(),id);if(parent)Forget(children_,parent,id);records_.pop_back();throw;}
     records_.back().location=std::move(location);records_.back().box=std::move(box);
     ++physical_;++scope->second.physical;if(budget_)++budget_->physical;return id;
   }
@@ -90,7 +92,7 @@ class TestSteps {
     }
     const auto id=Begin(owner,parent,"\"expect.toPass invocation\"",0,now);if(!id)return std::nullopt;
     auto& actual=*Mutable(*id);actual.callback_iteration=CallbackIterationOrigin{assertion?assertion:*id,invocation};actual.callback_deadline=own_cap;
-    if(own_cap)actual.deadline=std::min(actual.deadline,*own_cap);
+    if(own_cap)Reschedule(actual,std::min(actual.deadline,*own_cap));
     return id;
   }
   bool SetCallbackSourceFence(const StepOwner& owner,uint64_t id,const SourceCallbackIterationReceipt& receipt){
@@ -113,7 +115,7 @@ class TestSteps {
   std::optional<uint64_t> DeclareSkipped(const StepOwner& owner,uint64_t parent,std::string title_json,uint64_t timeout,uint64_t request,double now,std::optional<StepLocation> location=std::nullopt,StepBox box={}){
     if(!request)return std::nullopt;
     const auto id=Begin(owner,parent,std::move(title_json),timeout,now,std::move(location),std::move(box));if(!id)return std::nullopt;
-    auto* step=Mutable(*id);step->status=StepStatus::Skipped;step->ended=now;step->receipt=StepReceipt::NotInvoked;step->received=now;step->declared_skip_request=request;
+    auto* step=Mutable(*id);step->status=StepStatus::Skipped;running_.erase({step->deadline,*id});step->ended=now;Received(*step,StepReceipt::NotInvoked);step->received=now;step->declared_skip_request=request;
     --physical_;if(budget_)--budget_->physical;--owners_.at(owner.Key()).physical;return id;
   }
   // Native raw ingress and joint physical settlement are separate receipts.
@@ -147,7 +149,7 @@ class TestSteps {
   bool Complete(const StepOwner& owner,uint64_t id,double now,const std::optional<std::string>& attachment_error=std::nullopt){
     Time(now);if(attachment_error&&!JsonString(*attachment_error))return false;
     TickAt(now);auto* step=Mutable(id);if(!step||step->owner!=owner||step->receipt!=StepReceipt::Pending||!step->callback_received)return false;
-    step->attachment_error_json=attachment_error;step->receipt=StepReceipt::Settled;step->received=now;
+    step->attachment_error_json=attachment_error;Received(*step,StepReceipt::Settled);step->received=now;
     step->receipt_ok=step->callback_ok;step->receipt_test_skip=step->callback_test_skip;step->receipt_step_skip=step->callback_step_skip;
     --physical_;if(budget_)--budget_->physical;--owners_.at(owner.Key()).physical;
     if(step->status==StepStatus::Running)Finish(*step,(attachment_error||step->soft_error_id)?StepStatus::Failed:StepStatus::Passed,attachment_error.value_or(step->soft_error_id?step->soft_error_json:"\"\""),now,false);
@@ -161,12 +163,12 @@ class TestSteps {
   bool UpdateOwnerDeadline(const StepOwner& owner,double deadline,double now){
     Time(now);TickAt(now);const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline||!std::isfinite(deadline)||deadline<0)return false;
     scope->second.deadline=deadline;
-    for(auto& step:records_)if(step.owner==owner&&step.status==StepStatus::Running){step.deadline=std::min(deadline,step.own_deadline);if(step.callback_deadline)step.deadline=std::min(step.deadline,*step.callback_deadline);if(step.parent)step.deadline=std::min(step.deadline,Find(step.parent)->deadline);}
+    for(const auto id:Owned(owner)){auto& step=*Mutable(id);if(step.status!=StepStatus::Running)continue;auto next=std::min(deadline,step.own_deadline);if(step.callback_deadline)next=std::min(next,*step.callback_deadline);if(step.parent)next=std::min(next,Find(step.parent)->deadline);Reschedule(step,next);}
     TickAt(now);return true;
   }
   bool Close(const StepOwner& owner,double now,const std::string& error_json="\"Native owning callback settled before its step\""){
     Time(now);if(!JsonString(error_json))return false;TickAt(now);const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||!scope->second.accepting)return false;scope->second.accepting=false;
-    for(auto& step:records_)if(step.owner==owner&&step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,error_json,now,true);
+    for(const auto id:Owned(owner)){auto& step=*Mutable(id);if(step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,error_json,now,true);}
     return true;
   }
   // Called only after the runner has accepted this exact native test-skip
@@ -175,7 +177,7 @@ class TestSteps {
     Time(now);if(!request||!JsonString(reason_json))return false;TickAt(now);
     const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline)return false;
     scope->second.accepting=false;scope->second.test_skip=StepSkipCause{request,reason_json};
-    for(auto& step:records_)if(step.owner==owner&&step.receipt==StepReceipt::Pending){step.test_skip=scope->second.test_skip;if(step.status==StepStatus::Running)Finish(step,StepStatus::Skipped,"\"\"",now,true);}
+    for(const auto id:Owned(owner)){auto& step=*Mutable(id);step.test_skip=scope->second.test_skip;if(step.status==StepStatus::Running)Finish(step,StepStatus::Skipped,"\"\"",now,true);}
     return true;
   }
   // Native local-step skip never changes the owning test expectation or
@@ -185,7 +187,9 @@ class TestSteps {
     const auto scope=owners_.find(owner.Key());const auto* source=Find(id);
     if(scope==owners_.end()||!scope->second.accepting||now>=scope->second.deadline||!source||source->owner!=owner||source->status!=StepStatus::Running||source->receipt!=StepReceipt::Pending)return false;
     const LocalStepSkipCause cause{request,id,reason_json,description_present};
-    for(auto& step:records_)if(step.owner==owner&&step.receipt==StepReceipt::Pending&&Within(step.id,id)&&!step.step_skip){step.step_skip=cause;if(step.status==StepStatus::Running)Finish(step,StepStatus::Skipped,"\"\"",now,true);}
+    // Pending subtree members in record order; the index holds every pending descendant.
+    std::vector<uint64_t> subtree{id};Descendants(id,[&](uint64_t member){if(Find(member)->receipt==StepReceipt::Pending)subtree.push_back(member);});std::sort(subtree.begin(),subtree.end());
+    for(const auto member:subtree){auto& step=*Mutable(member);if(!step.step_skip){step.step_skip=cause;if(step.status==StepStatus::Running)Finish(step,StepStatus::Skipped,"\"\"",now,true);}}
     return true;
   }
   bool Retire(const StepOwner& owner){const auto scope=owners_.find(owner.Key());if(scope==owners_.end()||scope->second.accepting||scope->second.physical)return false;owners_.erase(scope);return true;}
@@ -193,34 +197,63 @@ class TestSteps {
   // Call only after the actual waitpid-confirmed worker exit. Sending abort,
   // killing a PID, closing a channel or a logical timeout is not this receipt.
   bool ConfirmedWorkerExit(unsigned worker_index,int64_t pid,double now){
-    Time(now);if(pid<=0)return false;TickAt(now);bool found=false;
-    for(auto& step:records_)if(step.owner.worker_index==worker_index&&step.owner.pid==pid&&step.receipt==StepReceipt::Pending){
-      found=true;if(step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,"\"Actual native worker exited before step callback receipt\"",now,false);
-      step.receipt=StepReceipt::WorkerExited;step.received=now;--physical_;if(budget_)--budget_->physical;--owners_.at(step.owner.Key()).physical;
+    Time(now);if(pid<=0)return false;TickAt(now);std::vector<uint64_t> exited;
+    for(const auto&[key,ids]:pending_)if(std::get<5>(key)==worker_index&&std::get<6>(key)==pid)exited.insert(exited.end(),ids.begin(),ids.end());
+    std::sort(exited.begin(),exited.end());const bool found=!exited.empty();
+    for(const auto id:exited){auto& step=*Mutable(id);
+      if(step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,"\"Actual native worker exited before step callback receipt\"",now,false);
+      Received(step,StepReceipt::WorkerExited);step.received=now;--physical_;if(budget_)--budget_->physical;--owners_.at(step.owner.Key()).physical;
     }
     for(auto&[key,owner]:owners_){if(std::get<5>(key)==worker_index&&std::get<6>(key)==pid)owner.accepting=false;}
     return found;
   }
   const std::vector<StepRecord>& Records()const{return records_;}
   const StepRecord* Find(uint64_t id)const{const auto found=indices_.find(id);return found==indices_.end()?nullptr:&records_[found->second];}
+  // Receipt-pending steps of one callback owner, and whether a step has a
+  // receipt-pending descendant; both read live indexes, not the run ledger.
+  size_t PendingCount(const StepOwner& owner)const{return Owned(owner).size();}
+  bool HasPendingDescendant(uint64_t root)const{return children_.contains(root);}
+  bool HasPendingLocalSkip()const{for(const auto&[key,ids]:pending_)for(const auto id:ids)if(Find(id)->step_skip)return true;return false;}
   std::vector<Event> TakeEvents(){auto events=std::move(events_);events_.clear();return events;}
   State Inspect()const{return{owners_.size(),physical_,records_.size(),events_.size()};}
  private:
   using Key=decltype(StepOwner{}.Key());struct Owner {double deadline;bool accepting;size_t physical;std::optional<StepSkipCause> test_skip=std::nullopt;};
   static bool ValidOwner(const StepOwner& owner){return owner.test_id&&owner.attempt_generation&&owner.scope&&owner.scope_generation&&owner.pid>0&&owner.pid<=INT32_MAX&&(owner.callback_kind=="body"||owner.callback_kind=="beforeEach"||owner.callback_kind=="afterEach"||owner.callback_kind=="beforeAll"||owner.callback_kind=="afterAll")&&(owner.callback_kind=="body"||owner.callback_token);}
-  bool Within(uint64_t id,uint64_t root)const{for(const auto* node=Find(id);node;node=Find(node->parent))if(node->id==root)return true;return false;}
+  template<class Map,class K>static void Forget(Map& map,const K& key,uint64_t id){const auto found=map.find(key);if(found==map.end())return;found->second.erase(id);if(found->second.empty())map.erase(found);}
+  // Receipt-pending steps of exactly this owner (Key omits callback_kind), in record order.
+  std::vector<uint64_t> Owned(const StepOwner& owner)const{std::vector<uint64_t> ids;const auto found=pending_.find(owner.Key());if(found!=pending_.end())for(const auto id:found->second)if(Find(id)->owner==owner)ids.push_back(id);return ids;}
+  // Leaving Pending releases the step from the live indexes. A non-pending step
+  // stays in its parent's child set only while it still has a pending descendant.
+  void Received(StepRecord& step,StepReceipt receipt){
+    step.receipt=receipt;Forget(pending_,step.owner.Key(),step.id);
+    for(const auto* node=&step;node->parent&&node->receipt!=StepReceipt::Pending&&!children_.contains(node->id);node=Find(node->parent))Forget(children_,node->parent,node->id);
+  }
+  // Explicit-stack preorder over indexed descendants, children in record order.
+  template<class Visit>void Descendants(uint64_t root,Visit&& visit)const{
+    std::vector<std::pair<std::set<uint64_t>::const_iterator,std::set<uint64_t>::const_iterator>> stack;
+    const auto push=[&](uint64_t id){const auto found=children_.find(id);if(found!=children_.end())stack.emplace_back(found->second.begin(),found->second.end());};
+    push(root);
+    while(!stack.empty()){auto& top=stack.back();if(top.first==top.second){stack.pop_back();continue;}const auto id=*top.first++;visit(id);push(id);}
+  }
   void Time(double now){if(!std::isfinite(now)||now<0||now<last_now_)throw std::invalid_argument("Native step clock must be finite and monotonic");last_now_=now;}
   StepRecord* Mutable(uint64_t id){const auto found=indices_.find(id);return found==indices_.end()?nullptr:&records_[found->second];}
+  // Re-key a running step's deadline in place; a node handle cannot allocate.
+  void Reschedule(StepRecord& step,double deadline){auto node=running_.extract({step.deadline,step.id});step.deadline=deadline;if(node){node.value()={deadline,step.id};running_.insert(std::move(node));}}
   void Finish(StepRecord& step,StepStatus status,const std::string& error,double now,bool abort){
     if(step.status!=StepStatus::Running)return;
-    step.status=status;step.ended=now;step.error_json=error;events_.push_back({step.id,abort,status});
+    step.status=status;running_.erase({step.deadline,step.id});step.ended=now;step.error_json=error;events_.push_back({step.id,abort,status});
   }
-  void TickAt(double now){for(auto& step:records_)if(step.status==StepStatus::Running&&now>=step.deadline){
+  // Running steps are indexed by deadline; expired ones finish in record order.
+  void TickAt(double now){std::vector<uint64_t> expired;for(auto it=running_.begin();it!=running_.end()&&now>=it->first;++it)expired.push_back(it->second);std::sort(expired.begin(),expired.end());
+    for(const auto id:expired){auto& step=*Mutable(id);
     const bool own=step.own_deadline==step.deadline&&step.own_deadline<owners_.at(step.owner.Key()).deadline&&(!step.parent||step.own_deadline<Find(step.parent)->deadline);
     Finish(step,StepStatus::TimedOut,own?"\"Step timeout of "+std::to_string(step.timeout_ms)+"ms exceeded.\"":"\"Native owning callback or ancestor original deadline exceeded\"",now,true);
   }}
-  void InterruptDescendants(uint64_t parent,double now,const std::string& reason){for(auto& step:records_)if(step.parent==parent){if(step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,reason,now,true);InterruptDescendants(step.id,now,reason);}}
+  // Steps without a pending descendant cannot be running, so the pending index
+  // reaches every running descendant in the original preorder.
+  void InterruptDescendants(uint64_t parent,double now,const std::string& reason){Descendants(parent,[&](uint64_t id){auto& step=*Mutable(id);if(step.status==StepStatus::Running)Finish(step,StepStatus::Interrupted,reason,now,true);});}
   std::map<Key,Owner> owners_;std::vector<StepRecord> records_;std::vector<Event> events_;
+  std::set<std::pair<double,uint64_t>> running_;std::map<Key,std::set<uint64_t>> pending_;std::map<uint64_t,std::set<uint64_t>> children_;
   Budget* budget_;std::map<uint64_t,size_t> indices_;
   uint64_t sequence_=0;size_t physical_=0;double last_now_=0;
 };

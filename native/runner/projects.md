@@ -1,7 +1,7 @@
 # Native serial project planning
 
 `ProjectGraph` validates uniquely named declarations and their dependency
-edges before callbacks run; native imposes no count limit. Selection uses bounded whole-name `*` patterns with ASCII case-insensitive
+edges before callbacks run; native imposes no count limit. Selection uses whole-name `*` patterns with ASCII case-insensitive
 matching; other UTF8 bytes match literally. Without selectors, only
 `default_enabled` ordinary projects are roots; dependencies and associated
 teardown projects are included even when their default flag is false. Cycles,
@@ -130,7 +130,7 @@ recognizer. Pinned public oracles are `config.spec.ts`, `deps.spec.ts`, and publ
 CLI/global-setup docs at606ecd8b34bac100db32561b6278ffd76e5eb3cd; they are read-only
 behavioral references, not copied runner implementations or unchanged-suite proof.
 
-`--workers N` (SDK `workers`) selects a native pool of1..8 project workers. Tests
+`--workers N` (SDK `workers`) selects a native pool of N project workers (at least one, no upper limit). Tests
 within a project remain serial. One native coordinator retains the original
 suite deadline, failure policy and global identity/quotas. The first actual
 catalog worker is reused; exact host/raw callback/file and conservative shared

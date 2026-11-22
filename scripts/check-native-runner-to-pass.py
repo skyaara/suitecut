@@ -98,7 +98,7 @@ def check_scope(name, doc, events, case):
             row = body_row(doc, event)
             label = event['label']
             assert row['status'] == 'passed'
-            assert row['attempts'] == {'retry': 4, 'saved': 1, 'attachment': 2, 'append-skip': 2}[label]
+            assert row['attempts'] == {'retry': 4, 'saved': 1, 'attachment': 2, 'append-skip': 1}[label]
             invocation_label = 'body' if label == 'retry' else 'saved-later-owner' if label == 'saved' else label
             actual_callbacks = [beacon for beacon in events if beacon['phase'] == 'invocation' and beacon.get('label') == invocation_label and all(beacon[key] == event[key] for key in ('testId', 'pid', 'retry', 'workerIndex'))]
             assert len(actual_callbacks) == row['attempts']
@@ -138,12 +138,11 @@ def check_scope(name, doc, events, case):
         provenance = {'id': append_row['id'], 'invocation': '1', 'stepId': append_iterations[0]['id']}
         declarations = [record for record in doc['attachmentDeclarations'] if record.get('callbackAssertion', {}).get('id') == append_row['id']]
         assert len(declarations) == 5 and all(record['callbackAssertion'] == provenance for record in declarations)
-        assert {record['name'] for record in declarations if record['receipt'] == 'committed'} == {f'append-slot-{index}' for index in range(4)}
-        rejected = [record for record in declarations if record['receipt'] == 'failed']
-        assert len(rejected) == 1 and rejected[0]['name'] == 'append-slot-4' and rejected[0]['error']
-        assert append_iterations[0]['status'] == 'failed' and append_iterations[0]['receiptMonotonicMs'] <= append_iterations[1]['startedMonotonicMs']
+        # Past former cap: the fifth append (old physical maximum 4) commits like the others.
+        assert all(record['receipt'] == 'committed' for record in declarations) and {record['name'] for record in declarations} == {f'append-slot-{index}' for index in range(5)}
+        assert len(append_iterations) == 1 and append_iterations[0]['status'] == 'passed'
         append_artifacts = [record for record in doc['attachments'] if record.get('callbackAssertion', {}).get('id') == append_row['id']]
-        assert len(append_artifacts) == 4 and all(record['callbackAssertion'] == provenance for record in append_artifacts)
+        assert len(append_artifacts) == 5 and all(record['callbackAssertion'] == provenance for record in append_artifacts)
         for record in append_artifacts:
             path = Path(record['path']);stat = path.stat()
             assert path.read_bytes() == b'x' and stat.st_dev == int(record['device']) and stat.st_ino == int(record['inode'])

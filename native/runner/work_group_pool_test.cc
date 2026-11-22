@@ -31,6 +31,6 @@ int main(){unsigned controls=0;
  {auto p=Pool(2,false);const auto a=p.Next([](size_t index){return index!=0;});assert(a&&a->index==1&&a->generation==1&&p.Active()==1);const auto b=p.Next([](size_t index){return index>1;});assert(b&&b->index==2&&p.Active()==2);++controls;}
  {auto p=Pool(2,false,true);const auto a=Next(p,0),b=Next(p,0);assert(!a.teardown&&!b.teardown);Finish(p,a,1,101);Finish(p,b,2,102);Next(p,1);assert(p.Projects()[2].state==S::NotSelected);++controls;}
  Reject([]{(void)Pool(0);});++controls;
- Reject([]{(void)Pool(9);});++controls;
+ {auto p=Pool(9,false);const auto a=Next(p,0),b=Next(p,0),c=Next(p,1),d=Next(p,1);assert(p.Active()==4&&a.index!=b.index&&c.index!=d.index);++controls;} // past former cap: 9 workers (old max 8)
  assert(controls==15);std::cout<<"Native work-group pool: "<<controls<<" controls passed\n";
 }

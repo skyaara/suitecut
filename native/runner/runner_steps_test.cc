@@ -44,5 +44,11 @@ int main(){
   else assert(*ledger.Records()[0].received==packet_now);
   bool backwards=false;try{ledger.Tick(packet_now-1);}catch(const std::invalid_argument&){backwards=true;}assert(backwards);
  }
- std::cout<<"PASS6 native step callback composition/drain/kill/expired-admission groups\n";
+ // Run-lifetime ledger scale: pending/descendant/tick checks read live indexes,
+ // so 50k settled steps under one callback stay linear.
+ {std::vector<std::string> lines;RunnerSteps ledger({[&](const auto& line){lines.push_back(line);},[](const auto&){assert(false);}});const StepOwner body{3,1,0,5,1,4,104};ledger.WorkerStarted();ledger.BeginCallback(body,1e12,0);
+  for(uint64_t n=1;n<=50000;++n){const auto at=static_cast<double>(n);assert(ledger.Packet({"STEP_BEGIN",std::to_string(n),"0","5","1","0","2261637475616c22","0"},at,false));assert(ledger.Packet({"STEP_SETTLED",std::to_string(n),"0","5","1","1","-"},at,false));ledger.Tick(at);}
+  assert(ledger.Records().size()==50000&&ledger.Physical()==0&&!ledger.HasLocalSkipPhysical()&&!ledger.HasPending(0,5,1)&&lines.back()=="STEP_RECEIVED 50000 0 5 1");
+  bool done=false;ledger.Settled(0,5,1,[&]{done=true;},50001);assert(!done&&ledger.Packet({"STEP_CALLBACK_SETTLED","0","5","1"},50001,false));assert(done&&ledger.IdleReady());}
+ std::cout<<"PASS7 native step callback composition/drain/kill/expired-admission groups\n";
 }

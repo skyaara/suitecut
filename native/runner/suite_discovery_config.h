@@ -2,6 +2,7 @@
 #pragma once
 #include "suite_discovery.h"
 #include "report_merge_json.h"
+#include "test_listing.h"
 namespace suitecut::runner {
 inline std::string NativeDiscoveryDirectory(const std::string& value){
   if(value.empty()||value.front()!='/'||value.find('\0')!=value.npos||!JsonString(listing_detail::Quote(value)))throw std::invalid_argument("Native testDir must be absolute filesystem UTF8");

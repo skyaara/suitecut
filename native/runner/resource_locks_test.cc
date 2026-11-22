@@ -78,11 +78,14 @@ int main(){unsigned controls=0;
  // Native locks cannot be acquired with a stale teardown flag or after logical
  // admission has already created the physical worker owner.
  {auto p=Pool(1);ResourceLocks l(p,{{Name("x")}});auto a=p.Next();assert(a);auto bad=*a;bad.teardown=true;assert(!l.Acquire(bad)&&!l.Records()[0]);assert(l.Acquire(*a)&&!l.Acquire(*a));++controls;}
- // Unknown declaration owner, malformed UTF16 and excessive metadata are hard
- // native errors before any resource or callback reservation.
- {Reject([]{ResourceLockName("");});Reject([]{ResourceLockName("00");});Reject([]{ResourceLockName("00zz");});Reject([]{ResourceLockName(std::string(4100,'0'));});
+ // Unknown declaration owner and malformed UTF16 are hard native errors before
+ // any resource or callback reservation.
+ {Reject([]{ResourceLockName("");});Reject([]{ResourceLockName("00");});Reject([]{ResourceLockName("00zz");});
   Reject([]{ResourceLockDeclarations d({1},{},{},{{2,{Name("x")}}},{});});Reject([]{ResourceLockDeclarations d({1},{},{},{},{{1,{Name("x")}}});});
-  Reject([]{ResourceLockDeclarations d({1},{},{},{{1,std::vector<std::string>(65,Name("x"))}},{});});
   Reject([]{auto p=Pool(1);ResourceLocks l(p,{{std::string(1,'x')}});});Reject([]{auto p=Pool(1);ResourceLocks l(p,{});});++controls;}
+ // Past former cap: a 1025-unit name and 65 names on one declaration are admitted whole.
+ {const auto long_name=ResourceLockName(std::string(4100,'0'));assert(long_name==std::string(2050,'\0')&&ResourceLockJSON(long_name).size()==1025*6+2);
+  std::vector<std::string> many;for(unsigned i=0;i<65;++i)many.push_back(Name("n"+std::to_string(i)));ResourceLockDeclarations d({1},{},{},{{1,many}},{});const auto resolved=d.Resolve({1});assert(resolved.size()==65);
+  auto p=Pool(2);ResourceLocks l(p,{resolved,{long_name,many.back()}});Admit(p,l,0);assert(l.Names(0).size()==65&&!l.CanAcquire(1));++controls;}
  std::cout<<"Native resource-lock policy "<<controls<<" controls passed; physical process adapter proof is separate\n";
 }
