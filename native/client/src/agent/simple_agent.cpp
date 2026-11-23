@@ -555,8 +555,9 @@ Json SimpleAgent::call(const std::string& tool,const Json& args) {
       for(const auto* key:{"format","query","delta","maxControls","maxTextBytes"})prepared.as_object().erase(key);
     } else {
       presentation["format"]=response=="full"?"full":"compact";if(response=="delta")presentation["delta"]=true;
-      // The observation an action or wait returns takes observe's own limits.
+      // The observation an action or wait returns takes observe's own limits, which bound only a compact one.
       for(const auto* key:{"maxControls","maxTextBytes"})if(prepared.contains(key)) {
+        require(response=="compact"||response=="delta","maxControls and maxTextBytes need a compact or delta response");
         presentation[key]=prepared.at(key);prepared.as_object().erase(key);
       }
     }

@@ -53,9 +53,11 @@ publishes only these three tools and rejects raw evaluation and driver calls.
 their supported actions and separate text context. Inert layout nodes are not
 advertised as controls, and neither is an image or wrapper that shows a pointer
 only because it sits inside a clickable control: the cursor is inherited, and a
-click on it reaches the control, which is listed already. A nameless control
-carries a short `label` read from its own visible text (never a password
-field's), so neighbours such as menu headers can be told apart. `scope` selects a CSS subtree, `query` filters literal
+click on it reaches the control, which is listed already; a generic inside one
+is kept, since it is there for a handler of its own. A nameless control
+carries a short `label` read from its own visible text, whole or not at all,
+and never from a field's typed or picked value, so neighbours such as menu
+headers can be told apart. `scope` selects a CSS subtree, `query` filters literal
 case-insensitive text, and optional `maxControls`/`maxTextBytes` bound the control
 output when a caller sets them (by default there is no limit). Truncation is explicit. Compact input controls omit current values;
 password values are also redacted by the underlying observation projection.
@@ -69,7 +71,8 @@ old refs. A similar-looking node is never assigned an old ref. Diffs flag
 ambiguity and suppress removals when their input was incomplete.
 
 `act` and `wait` accept `response:full|compact|delta|none`, and the same
-`maxControls`/`maxTextBytes` as `observe` for the observation they return. The
+`maxControls`/`maxTextBytes` as `observe` for the compact or delta
+observation they return (other responses refuse them). The
 C++ API keeps its existing full default. `none` avoids the post-action snapshot and its browser
 round trips; refs remain usable for a known sequence until a later snapshot or
 navigation. Inspect the UI before treating an acknowledgement as success. A

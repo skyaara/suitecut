@@ -48,12 +48,24 @@ bool semantic_control(const Json& node) {
   return truth(node, "focusable") || truth(node, "editable") || truth(node, "interactive") ||
          truth(node, "clickable") || !text(node, "inputType").empty();
 }
-bool interactive(const Json& node) { return semantic_control(node) || pointer(node); }
-// The cursor is inherited, so an image or wrapper inside a clickable control shows a pointer too; clicking it
-// clicks the control, which is listed already.
-bool decoration(const Json& node, bool inside_pointer) { return inside_pointer && pointer(node) && !semantic_control(node); }
+// Whether a node belongs in the controls-only view. The cursor is inherited, so an image or wrapper inside a clickable
+// control shows a pointer too; clicking it clicks the control, which is listed already. The snapshot emits a pointer
+// generic only where the pointer starts, so a generic inside one is there for a reason of its own (a handler, a focus
+// stop, an editor) and stays.
+bool listed(const Json& node, bool inside_pointer) {
+  return semantic_control(node) || (pointer(node) && (!inside_pointer || text(node, "role") == "generic"));
+}
+// A node whose text is what a person typed or picked, not a caption: fields, pickers, and a generic emitted without a
+// pointer, which the snapshot keeps only for an input, a focus stop or an editor.
+bool holds_value(const Json& node) {
+  if (password(node) || truth(node, "editable") || !text(node, "inputType").empty()) return true;
+  const auto role = text(node, "role");
+  for (const auto candidate : {"textbox", "searchbox", "combobox", "listbox", "spinbutton", "slider"})
+    if (role == candidate) return true;
+  return role == "generic" && !pointer(node);
+}
 // A nameless control's own visible text, so it can be told apart from its neighbours: a few words, read from a
-// bounded walk of its subtree.
+// bounded walk of its subtree that never enters a field's contents.
 std::string visible_text(const Json& node) {
   constexpr std::size_t kBytes = 80, kVisits = 64;
   std::string result;
@@ -61,14 +73,15 @@ std::string visible_text(const Json& node) {
   for (std::size_t visits = 0; !pending.empty() && visits < kVisits && result.size() < kBytes; ++visits) {
     const auto current = pending.back();
     pending.pop_back();
-    if (password(*current)) continue; // Never a protected field's contents.
+    if (current->is_object() && holds_value(*current)) continue;
     auto value = current->is_string() ? std::string_view(current->as_string())
                  : text(*current, "role") == "text" ? text(*current, "text") : std::string_view{};
     while (!value.empty() && value.front() == ' ') value.remove_prefix(1);
     while (!value.empty() && value.back() == ' ') value.remove_suffix(1);
     if (!value.empty()) {
       if (!result.empty()) result += ' ';
-      result += value;
+      // One byte past the cap shows whether a cut is needed; the rest of a long text is never copied.
+      result += value.substr(0, kBytes + 1 - std::min(result.size(), kBytes + 1));
     }
     const auto children = field(*current, "children");
     if (children && children->is_array())
@@ -260,12 +273,13 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     if (!node.is_object() && !node.is_string()) continue;
     const bool protected_parent = frame.protected_parent;
     const bool hidden = protected_parent || password(node);
-    if (!options.interactive_only || (interactive(node) && !decoration(node, frame.pointer))) {
+    if (!options.interactive_only || listed(node, frame.pointer)) {
       if (options.max_nodes && output.size() >= options.max_nodes) { node_limit = true; break; }
       auto made = make_node(node, index, hidden, protected_parent, budget);
-      // Controls are listed without the text around them, so a nameless one carries its own.
-      if (options.interactive_only && !hidden && !made.contains("name") && field(node, "children"))
-        if (const auto label = visible_text(node); !label.empty()) budget.copy(made, "label", label);
+      // Controls are listed without the text around them, so a nameless one carries its own. Whole or not at all:
+      // a cut label would name the same control differently from one observation to the next.
+      if (options.interactive_only && !hidden && !made.contains("name") && !holds_value(node) && field(node, "children"))
+        if (const auto label = visible_text(node); !label.empty()) budget.copy(made, "label", label, true);
       if (const auto at = enclosing(); at != kNone) made["parent"] = at;
       output.push_back(std::move(made));
     }
