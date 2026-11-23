@@ -175,7 +175,15 @@ struct StreamChild {
     args.insert(args.end(), {"-map", "0:v:0"});
     if (options.audio) args.insert(args.end(), {"-map", "1:a:0", "-c:a", options.audio_codec == "aac" ? "aac" : "libopus", "-b:a", "160k"});
     else args.push_back("-an");
-    args.insert(args.end(), {"-vf", filter, "-c:v", options.video_codec == "h264" ? "libx264" : "libvpx-vp9", "-pix_fmt", "yuv420p", "-threads", "4", "-b:v", std::to_string(options.bitrate_kbps) + "k"});
+#ifdef __APPLE__
+    // macOS encodes H.264 with VideoToolbox, so the bundled FFmpeg needs no
+    // GPL x264. Elsewhere the host's FFmpeg provides libx264.
+    const char* h264_encoder = "h264_videotoolbox";
+#else
+    const char* h264_encoder = "libx264";
+#endif
+    const std::string keyframes = std::to_string(static_cast<int>(std::ceil(options.frames_per_second * 2)));
+    args.insert(args.end(), {"-vf", filter, "-c:v", options.video_codec == "h264" ? h264_encoder : "libvpx-vp9", "-pix_fmt", "yuv420p", "-threads", "4", "-b:v", std::to_string(options.bitrate_kbps) + "k"});
     if (options.i420) {
       // Preserve the actual Source BT.709 limited-range I420 interpretation at
       // raw decoder admission as well as tagging the encoded stream.
@@ -183,7 +191,11 @@ struct StreamChild {
       args.insert(std::find(args.begin(), args.end(), "-i"), color.begin(), color.end());
       args.insert(args.end(), color.begin(), color.end());
     }
-    if (options.video_codec == "h264") args.insert(args.end(), {"-preset", "veryfast", "-tune", "zerolatency", "-g", std::to_string(static_cast<int>(std::ceil(options.frames_per_second * 2))), "-sc_threshold", "0"});
+#ifdef __APPLE__
+    if (options.video_codec == "h264") args.insert(args.end(), {"-realtime", "1", "-prio_speed", "1", "-bf", "0", "-g", keyframes});
+#else
+    if (options.video_codec == "h264") args.insert(args.end(), {"-preset", "veryfast", "-tune", "zerolatency", "-g", keyframes, "-sc_threshold", "0"});
+#endif
     else args.insert(args.end(), {"-deadline", "realtime", "-cpu-used", "5", "-row-mt", "1", "-lag-in-frames", "0"});
     if (options.container == "webm") args.insert(args.end(), {"-live", "1", "-cluster_time_limit", "100", "-cluster_size_limit", "65536"});
     if (options.tcp_send_buffer_bytes) args.insert(args.end(), {"-send_buffer_size", std::to_string(options.tcp_send_buffer_bytes)});

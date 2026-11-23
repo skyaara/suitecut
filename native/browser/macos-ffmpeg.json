@@ -1,0 +1,24 @@
+{
+  "note": "Sources of the LGPL FFmpeg the macOS runtime bundles, built for macOS 14 by scripts/build-runtime-ffmpeg-macos.py. URLs and sha256 match the Homebrew formulae of the same versions. OpenSSL comes from the embed kit's static libraries (macos-kit-deps.json).",
+  "deploymentTarget": "14.0",
+  "packages": {
+    "opus": {
+      "version": "1.6.1",
+      "url": "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.6.1.tar.gz",
+      "sha256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1",
+      "license": "BSD-3-Clause"
+    },
+    "libvpx": {
+      "version": "1.17.0",
+      "url": "https://github.com/webmproject/libvpx/archive/refs/tags/v1.17.0.tar.gz",
+      "sha256": "1020f184046187baa2985dbde38e0691f49c44088bca7a1842b0236c6081dc0a",
+      "license": "BSD-3-Clause"
+    },
+    "ffmpeg": {
+      "version": "9.0.2",
+      "url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+      "sha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+      "license": "LGPL-3.0-or-later"
+    }
+  }
+}

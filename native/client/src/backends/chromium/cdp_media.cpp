@@ -482,7 +482,12 @@ Json CdpMedia::command(CdpRuntime& runtime,CdpPage& page,const Json& fields,Dead
         "-f","concat","-safe","0","-i",(r->destination->spool/"frames.ffconcat").string(),"-an","-vf",
         "scale="+std::to_string(width)+":"+std::to_string(height)+":force_original_aspect_ratio=decrease,pad="+std::to_string(width)+":"+std::to_string(height)+":(ow-iw)/2:(oh-ih)/2",
         "-r",decimal(r->fps),"-frames:v",std::to_string(count),"-pix_fmt","yuv420p"};
+#ifdef __APPLE__
+      // VideoToolbox, so the FFmpeg suitecut bundles on macOS needs no GPL x264.
+      if(std::filesystem::path(r->path).extension()==".mp4")args.insert(args.end(),{"-c:v","h264_videotoolbox","-allow_sw","1","-b:v","16M","-movflags","+faststart"});
+#else
       if(std::filesystem::path(r->path).extension()==".mp4")args.insert(args.end(),{"-c:v","libx264","-preset","ultrafast","-threads","2","-movflags","+faststart"});
+#endif
       else args.insert(args.end(),{"-c:v","libvpx-vp9","-deadline","realtime","-cpu-used","8","-threads","2"});
       args.push_back(video.string());
       s.run_tool(std::move(args),r->destination->spool/"encoder.stdout",r->destination->spool/"encoder.stderr",deadline);
