@@ -18,6 +18,7 @@
 #include <cerrno>
 #include <condition_variable>
 #include <cstring>
+#include <type_traits>
 #include <deque>
 #include <filesystem>
 #include <mutex>
@@ -219,6 +220,14 @@ Program Run(const std::vector<std::string>& argv, std::chrono::milliseconds time
 // ---- Handles ---------------------------------------------------------------
 
 namespace {
+// A C caller may pass any int where the ABI takes a C enum. In C++, reading
+// an enum object whose value is outside its enumerators' range is undefined,
+// so the ABI reads the bytes as the underlying integer before checking them.
+template <class E> std::underlying_type_t<E> raw_enum(const E& value) {
+  std::underlying_type_t<E> out;
+  std::memcpy(&out, &value, sizeof out);
+  return out;
+}
 bool safe(const char* text, const char* extra) {
   if (!text || !*text) return false;
   for (const char* c = text; *c; ++c)
@@ -585,7 +594,8 @@ sc_status sc_session_open(const sc_session_options* options, sc_session** out, s
     if (!safe(options->owner, "._:-")) throw std::invalid_argument("The owner is letters, digits, '.', '_', ':' and '-'");
     if (!options->directory || !std::filesystem::path(options->directory).is_absolute())
       throw std::invalid_argument("The session directory is absolute");
-    if (options->role != SC_ROLE_HOST && options->role != SC_ROLE_AGENT) throw std::invalid_argument("Unknown role");
+    const auto role = raw_enum(options->role);
+    if (role != SC_ROLE_HOST && role != SC_ROLE_AGENT) throw std::invalid_argument("Unknown role");
     if (options->flags & ~(SC_SESSION_START | SC_SESSION_PROMPTS)) throw std::invalid_argument("Unknown session flags");
     auto core = std::make_shared<SessionCore>();
     core->socket_path = std::string(options->directory) + "/" + options->name + ".sock";
@@ -616,7 +626,7 @@ sc_status sc_session_open(const sc_session_options* options, sc_session** out, s
       }
     }
     Json hello{{"protocols", Json::array{Json(1)}}, {"owner", options->owner},
-               {"role", options->role == SC_ROLE_AGENT ? "agent" : "host"}};
+               {"role", raw_enum(options->role) == SC_ROLE_AGENT ? "agent" : "host"}};
     if (options->grant) hello["grant"] = options->grant;
     // Each of this handle's connections says so: the session holds dialogs
     // while any of them is open.
@@ -744,8 +754,9 @@ sc_status sc_tab_navigate(sc_session* session, int32_t page, const char* url, sc
 
 sc_status sc_tab_history(sc_session* session, int32_t page, sc_history step, sc_tab* out, sc_error* error) {
   return boundary(error, [&] {
-    const char* name = step == SC_HISTORY_BACK ? "back" : step == SC_HISTORY_FORWARD ? "forward"
-                       : step == SC_HISTORY_RELOAD ? "reload" : nullptr;
+    const auto kind = raw_enum(step);
+    const char* name = kind == SC_HISTORY_BACK ? "back" : kind == SC_HISTORY_FORWARD ? "forward"
+                       : kind == SC_HISTORY_RELOAD ? "reload" : nullptr;
     if (!name) throw std::invalid_argument("Unknown history step");
     if (out) check_struct(out, "tab");
     fill_tab(core_of(session).Request("tabs.navigate", Json{{"page", page}, {"history", name}}), out);
@@ -824,12 +835,13 @@ sc_status sc_view_attach(sc_session* session, const sc_view_options* options, sc
       *out = view.release();
       return;
     }
-    if (options->sink->kind == SC_SINK_LIBRARY) {
+    const auto sink = raw_enum(options->sink->kind);
+    if (sink == SC_SINK_LIBRARY) {
       view->receiver = embed::FrameReceiver::Create();
       const auto& engine = core.hello_reply.contains("engine") ? core.hello_reply.at("engine") : Json{};
       if (engine.contains("pid")) view->receiver->ExpectSender(static_cast<int>(engine.at("pid").as_int()));
       name = view->receiver->Name();
-    } else if (options->sink->kind == SC_SINK_MACH_BOOTSTRAP) {
+    } else if (sink == SC_SINK_MACH_BOOTSTRAP) {
       if (!options->sink->name || !*options->sink->name) throw std::invalid_argument("Name the bootstrap service");
       name = options->sink->name;
     } else {
@@ -919,16 +931,17 @@ sc_status sc_view_pointer(sc_view* view, const sc_pointer_event* event, sc_error
   return boundary(error, [&] {
     check_struct(event, "pointer event");
     Json params{{"x", std::max(0.0, event->x)}, {"y", std::max(0.0, event->y)}};
-    if (event->action == SC_POINTER_MOVE) {
+    const auto action = raw_enum(event->action), pressed = raw_enum(event->button);
+    if (action == SC_POINTER_MOVE) {
       params["action"] = "move";
       input(view, "input.pointer", std::move(params), true);
       return;
     }
-    if (event->action != SC_POINTER_DOWN && event->action != SC_POINTER_UP) throw std::invalid_argument("Unknown pointer action");
-    const char* button = event->button == SC_BUTTON_RIGHT ? "right" : event->button == SC_BUTTON_MIDDLE ? "middle"
-                         : event->button == SC_BUTTON_LEFT ? "left" : nullptr;
+    if (action != SC_POINTER_DOWN && action != SC_POINTER_UP) throw std::invalid_argument("Unknown pointer action");
+    const char* button = pressed == SC_BUTTON_RIGHT ? "right" : pressed == SC_BUTTON_MIDDLE ? "middle"
+                         : pressed == SC_BUTTON_LEFT ? "left" : nullptr;
     if (!button) throw std::invalid_argument("Unknown button");
-    params["action"] = event->action == SC_POINTER_DOWN ? "down" : "up";
+    params["action"] = action == SC_POINTER_DOWN ? "down" : "up";
     params["button"] = button;
     params["clickCount"] = static_cast<std::int64_t>(std::max<uint32_t>(1, event->click_count));
     input(view, "input.pointer", std::move(params), false);
@@ -987,8 +1000,9 @@ sc_status sc_view_ime_cancel(sc_view* view, sc_error* error) {
 sc_status sc_view_edit(sc_view* view, sc_edit_command command, sc_error* error) {
   return boundary(error, [&] {
     static const char* const names[] = {nullptr, "copy", "cut", "paste", "undo", "redo", "selectAll", "delete"};
-    if (command < SC_EDIT_COPY || command > SC_EDIT_DELETE) throw std::invalid_argument("Unknown edit command");
-    input(view, "input.edit", Json{{"command", names[command]}}, false);
+    const auto kind = raw_enum(command);
+    if (kind < SC_EDIT_COPY || kind > SC_EDIT_DELETE) throw std::invalid_argument("Unknown edit command");
+    input(view, "input.edit", Json{{"command", names[kind]}}, false);
   });
 }
 

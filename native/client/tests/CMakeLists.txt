@@ -8,6 +8,13 @@ target_include_directories(suitecut_client_test_internals INTERFACE
   "${PROJECT_SOURCE_DIR}/src/transport" "${PROJECT_SOURCE_DIR}/src/wire"
   "${PROJECT_SOURCE_DIR}/src/backends/chromium" "${PROJECT_SOURCE_DIR}/src/backends/firefox"
   "${PROJECT_SOURCE_DIR}/src/agent")
+# ASan and UBSan make the unit tests several times slower (simple_agent_test
+# runs past a minute under them), so sanitizer builds get more time.
+if(SUITECUT_CLIENT_SANITIZERS)
+  set(suitecut_unit_timeout 600)
+else()
+  set(suitecut_unit_timeout 60)
+endif()
 find_package(Python3 QUIET COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
   add_test(NAME client_layout COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/check-layout.py")
@@ -73,16 +80,16 @@ foreach(source IN LISTS client_unit_sources)
   else()
     target_compile_options(${name} PRIVATE -UNDEBUG)
   endif()
-  set_tests_properties(${name} PROPERTIES TIMEOUT 60 LABELS "client;unit")
+  set_tests_properties(${name} PROPERTIES TIMEOUT ${suitecut_unit_timeout} LABELS "client;unit")
 endforeach()
 add_executable(embed_header_test unit/embed_header_test.c)
 target_link_libraries(embed_header_test PRIVATE SuiteCut::Client)
 add_test(NAME embed_header_test COMMAND embed_header_test)
-set_tests_properties(embed_header_test PROPERTIES TIMEOUT 60 LABELS "client;unit;abi")
+set_tests_properties(embed_header_test PROPERTIES TIMEOUT ${suitecut_unit_timeout} LABELS "client;unit;abi")
 add_executable(c_abi_test unit/c_abi_test.c)
 target_link_libraries(c_abi_test PRIVATE SuiteCut::Client)
 add_test(NAME c_abi_test COMMAND c_abi_test)
-set_tests_properties(c_abi_test PROPERTIES TIMEOUT 60 LABELS "client;unit;abi")
+set_tests_properties(c_abi_test PROPERTIES TIMEOUT ${suitecut_unit_timeout} LABELS "client;unit;abi")
 
 # The session service against a fake engine: protocol 0 as embedding apps
 # send it today, and protocol 1. They need the service, so they are built

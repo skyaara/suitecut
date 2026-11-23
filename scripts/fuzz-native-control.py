@@ -41,10 +41,18 @@ def main():
             return value['result']
 
         def memory(pid):
-            status = Path(f'/proc/{pid}/status').read_text().splitlines()
-            rss = next(int(line.split()[1])*1024 for line in status if line.startswith('VmRSS:'))
-            return {'rss': rss, 'fds': len(list(Path(f'/proc/{pid}/fd').iterdir())),
-                    'threads': len(list(Path(f'/proc/{pid}/task').iterdir()))}
+            if Path('/proc').is_dir():
+                status = Path(f'/proc/{pid}/status').read_text().splitlines()
+                rss = next(int(line.split()[1])*1024 for line in status if line.startswith('VmRSS:'))
+                return {'rss': rss, 'fds': len(list(Path(f'/proc/{pid}/fd').iterdir())),
+                        'threads': len(list(Path(f'/proc/{pid}/task').iterdir()))}
+            # macOS has no /proc: ps gives RSS (KiB) and one line per thread,
+            # lsof one 'f' line per open descriptor.
+            rss = int(subprocess.check_output(['/bin/ps', '-o', 'rss=', '-p', str(pid)], text=True).strip())*1024
+            fds = subprocess.check_output(['/usr/sbin/lsof', '-n', '-P', '-a', '-p', str(pid), '-d', '0-65535', '-F', 'f'],
+                                          text=True).splitlines()
+            threads = subprocess.check_output(['/bin/ps', '-M', '-p', str(pid)], text=True).splitlines()
+            return {'rss': rss, 'fds': sum(line.startswith('f') for line in fds), 'threads': len(threads) - 1}
 
         def exchange(wire):
             with socket.socket(socket.AF_UNIX) as client:

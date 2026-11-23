@@ -8,6 +8,7 @@
 #include <limits>
 #include <mutex>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 struct sc_client { std::shared_ptr<suitecut::Transport> transport; };
@@ -21,6 +22,14 @@ struct sc_request {
 };
 struct sc_packet { suitecut::Packet packet; };
 namespace {
+// A C caller may pass any int where the ABI takes a C enum. In C++, reading
+// an enum object whose value is outside its enumerators' range is undefined,
+// so the ABI reads the bytes as the underlying integer before checking them.
+template <class E> std::underlying_type_t<E> raw_enum(const E& value) {
+  std::underlying_type_t<E> out;
+  std::memcpy(&out, &value, sizeof out);
+  return out;
+}
 sc_status result(sc_error *error, sc_status code, const char *message = "") noexcept {
   if (error) {
     error->code = code;
@@ -127,13 +136,14 @@ sc_status sc_client_connect_firefox(const char *endpoint, const sc_launch_option
 sc_status sc_client_connect_remote(sc_remote_backend backend, const char *endpoint,
                                  const sc_launch_options *options, const sc_connection_options *connection,
                                  sc_client **out, sc_error *error) {
-  if(!endpoint || !*endpoint || (backend!=SC_REMOTE_CHROMIUM && backend!=SC_REMOTE_FIREFOX)) {
+  const auto kind=raw_enum(backend);
+  if(!endpoint || !*endpoint || (kind!=SC_REMOTE_CHROMIUM && kind!=SC_REMOTE_FIREFOX)) {
     if(out)*out=nullptr;
     return boundary(error,[]{throw std::invalid_argument("Remote connection requires a supported backend and endpoint");});
   }
   sc_launch_options defaults;
   if(!options){sc_launch_options_init(&defaults);options=&defaults;}
-  return launch_client(options,out,error,backend==SC_REMOTE_FIREFOX?suitecut::BrowserBackend::firefox:suitecut::BrowserBackend::chromium,endpoint,connection);
+  return launch_client(options,out,error,kind==SC_REMOTE_FIREFOX?suitecut::BrowserBackend::firefox:suitecut::BrowserBackend::chromium,endpoint,connection);
 }
 sc_status sc_client_close(sc_client *client, sc_error *error) {
   return boundary(error, [&] { check_client(client); client->transport->close(); });

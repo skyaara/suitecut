@@ -27,7 +27,9 @@ corresponding source.
 1. Build the engine and client from a clean checkout against the pinned CEF SDK
    (`native/browser/cef-build.json`) and libyuv commit. Record the commit.
 2. Run the client tests in Release and with `SUITECUT_CLIENT_SANITIZERS=ON`. Set
-   `ASAN_OPTIONS=detect_leaks=1:halt_on_error=1` and
+   `ASAN_OPTIONS=detect_leaks=1:halt_on_error=1` on Linux and
+   `ASAN_OPTIONS=halt_on_error=1` on macOS, where ASan has no leak detector
+   (`detect_leaks=1` aborts every test there), and
    `UBSAN_OPTIONS=halt_on_error=1`. Run the heavy JSON/packet and observation
    campaigns with `SUITECUT_CLIENT_FUZZ_ITERATIONS` and
    `SUITECUT_AGENT_FUZZ_ITERATIONS`; ordinary CTest uses smaller finite defaults.
