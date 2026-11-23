@@ -1,17 +1,25 @@
 # Changelog
 
-## 0.1.0 (native) — unreleased
+## 0.1.0 alpha (native) — unreleased
 
-The first native-only release of suitecut, for **macOS arm64 (Apple Silicon,
-macOS 14 or later)**. It ships:
+The first native-only release of suitecut, an **alpha for macOS arm64 (Apple
+Silicon)**. Interfaces can still change before 1.0. It has four archives:
 
-- `suitecut-browser`, the CEF 156.0.30 engine (Chromium 156.0.8078.96), as a
-  signed app bundle;
-- the C++20 client SDK and C ABI (`SC_ABI_VERSION` 1), with CMake package
-  exports;
-- `suitecut-native-control`, the browser-control CLI and MCP server for agents;
-- the full runtime archive (SDK, CLI and engine together) and the signed embed
-  kit (`suitecut-session`, `SC_EMBED_ABI_VERSION` 1).
+| Archive | What it is | Needs | Public release |
+| --- | --- | --- | --- |
+| `SuiteCutClient-0.1.0-macos-arm64-shared` | C++20 SDK and C ABI as a shared library, with `suitecut-native-control` (the browser-control CLI and MCP server), the agent skill and CMake exports | macOS 14 | yes |
+| `SuiteCutClient-0.1.0-macos-arm64-static` | The same as a static library | macOS 14; the program that links it supplies OpenSSL 3.5 or newer | yes |
+| `suitecut-embed-kit-0.1.0-macos-arm64` | The signed embed kit: `suitecut-browser.app` (official CEF 156.0.30, no proprietary codecs) and `suitecut-session`, for showing and sharing a live page inside a macOS app | macOS 14 | yes |
+| `SuiteCutRuntime-0.1.0-macos-arm64` | Everything in one folder: the SDK, the CLI with a `suitecut` launcher, the codec-enabled engine and FFmpeg for recording | macOS 15 | held |
+
+The runtime archive is built and verified but held from public release: its
+bundled FFmpeg is Homebrew's GPLv3 build (with x264 and x265), which may not be
+redistributed without its complete corresponding source. Its engine is also the
+third-party codec build of CEF, which carries no codec patent licence. The SDK
+archives and the embed kit contain neither.
+
+`SC_ABI_VERSION` and `SC_EMBED_ABI_VERSION` are both 1. Every binary is signed
+with a Developer ID certificate.
 
 Versioning restarts at 0.1.0 for the native line; 2.x was the Node.js package,
 which now lives only on the `archive/node` branch. The version is set in one
@@ -30,12 +38,15 @@ Known issues:
   and the recorder pads the gap. `.mp4` recordings (VideoToolbox H.264/AAC)
   wait for the first audio packet and open within about 10 ms. Record to
   `.mp4` when the opening audio matters.
-- Recording throughput depends on machine load. In one full 12-case run a
-  2560×1440 at 120 FPS recording failed with "Native encoder video pipe
-  failed"; it passed alone (119.8 distinct FPS) and in the next full run
-  (120). Release recordings: `.mp4` 12 of 12 cases, up to 3840×2160 at 120
-  FPS with 120 distinct FPS; `.webm` 10 of 12, the two audio cases failing on
-  the opening silence above.
+- Recording throughput depends on the encoder and on machine load. On the
+  release build, `.mp4` passed 12 of 12 cases, up to 3840×2160 at 120 FPS with
+  120 distinct FPS. `.webm` passed 10 of 12: the two audio cases fail on the
+  opening silence above, and software VP9 kept 96 distinct FPS at 2560×1440
+  and 44 at 3840×2160 when asked for 120. In one earlier full run a 2560×1440
+  `.webm` recording failed with "Native encoder video pipe failed" under load
+  and passed when run alone.
+- Not notarized yet: a downloaded copy of the embed kit's or runtime's app is
+  blocked by Gatekeeper until it is.
 
 - Fix `get url`, `get title` and `read` failing right after an input that
   navigates. They ran in the document being replaced and failed with "Cannot
@@ -46,6 +57,18 @@ Known issues:
   `{"error":`, not `{"ok":`.
 - Read the engine bundle's and the packagers' version from the client project
   instead of `package.json`, which no longer has one.
+- Build macOS archives that run on macOS 14 and 15, not only on the build
+  host's macOS. The engine, the CLI and the SDKs link the static OpenSSL, curl,
+  libpsl and Brotli the embed kit builds for macOS 14 instead of bundling
+  Homebrew's dylibs, which need the host's macOS (27). The packager's new
+  `--require-macos` fails when any file needs a newer macOS, its manifest
+  records the real minimum, and `--system-library` links FFmpeg to macOS's own
+  liblzma. The shared SDK's CMake package no longer asks its consumers for
+  OpenSSL.
+- Fix undefined behaviour in the C ABI when a C caller passes an out-of-range
+  enum value (`sc_view_edit`, `sc_tab_history`, pointer events, session role,
+  sink kind, remote backend): the value is now read as an integer before it is
+  range-checked.
 
 ### Changes since 2.0.0
 

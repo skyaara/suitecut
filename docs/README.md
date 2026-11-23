@@ -19,6 +19,7 @@ for apps. Component READMEs live next to their code:
 | [Shared-browser prototype](shared-browser.md)                    | The engine's own-tab-strip window mode and its stdin/stdout control protocol   |
 | [CEF real-browser regression suite](cef-regressions.md)          | The local suite that runs the C++ workflows against the real CEF executable    |
 | [Benchmarks](benchmarks.md)                                      | Latest capture measurements and the commands that reproduce them               |
+| [0.1.0 alpha release record](releases/0.1.0-alpha.md)            | The archives, their hashes and sources, and what was checked                   |
 
 The competitor benchmark (suitecut against agent-browser and browser-use) has
 its own [README](../benchmarks/README.md).
