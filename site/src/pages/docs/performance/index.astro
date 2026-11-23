@@ -74,8 +74,9 @@ const reproduce = `python3 scripts/verify-native-macos-recording.py \\
   <h2 id="release-recordings">0.1.0 release recordings</h2>
   <p>
     The 0.1.0 release ran the macOS recording verifier over twelve cases in each container. In
-    <code>.mp4</code>, {recordingChecks.mp4}. In <code>.webm</code>, {recordingChecks.webm}. One
-    2560×1440 recording at 120 FPS failed in a full run under load and passed when run again; the
+    <code>.mp4</code>, {recordingChecks.mp4}. In <code>.webm</code>, {recordingChecks.webm}. Asked
+    for 120 FPS, software VP9 kept 96 distinct frames per second at 2560×1440 and 44 at 3840×2160;
+    the
     <a href={sitePath('/docs/recording#known-issues')}>known issues</a> have the details.
   </p>
   <h2 id="reproduce">Reproduce</h2>

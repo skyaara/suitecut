@@ -194,9 +194,15 @@ const streamingActions: Row[] = [
     and opens within about 10 ms. Record to <code>.mp4</code> when the opening audio matters.
   </p>
   <p>
-    Recording throughput depends on machine load. In one full 12-case run a 2560×1440 recording at
-    120 FPS failed with <code>Native encoder video pipe failed</code>; it passed alone, at 119.8
-    distinct frames per second, and in the next full run, at 120.
+    Recording throughput depends on the encoder and on machine load. Asked for 120 FPS, software VP9
+    kept 96 distinct frames per second at 2560×1440 and 44 at 3840×2160, while hardware H.264 kept
+    120 up to 3840×2160. In one earlier full run a 2560×1440 <code>.webm</code> recording failed under
+    load with
+    <code>Native encoder video pipe failed</code>, and passed when run alone.
+  </p>
+  <p>
+    Nothing is notarized yet, so Gatekeeper blocks a downloaded copy of the embed kit's or the
+    runtime's app until it is.
   </p>
 
   <h2 id="limits">Limits</h2>

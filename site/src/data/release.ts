@@ -48,5 +48,5 @@ export const archives: readonly Archive[] = [
 /** Results of the 0.1.0 release recording checks on macOS ARM64. */
 export const recordingChecks = {
   mp4: '12 of 12 cases passed, up to 3840×2160 at 120 FPS with 120 distinct frames per second',
-  webm: '10 of 12 cases passed; the two with audio failed on the opening silence',
+  webm: '10 of 12 cases passed; the two with audio failed on the opening silence, and software VP9 fell short of 120 FPS above 1920×1080',
 } as const
