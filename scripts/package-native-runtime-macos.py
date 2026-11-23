@@ -184,11 +184,13 @@ def bundle_dependencies(stage, origins, identity, system=()):
     return provenance
 
 
-def bundle_media_source(work, stage, notices):
+def bundle_media_source(work, tools, stage, notices):
     """Copy the LGPL FFmpeg's source tarball, build record and licenses."""
     record = json.loads((work / 'prefix/runtime-ffmpeg.json').read_text())
+    # Check the tools as given: the bundled copies are re-signed, which
+    # changes their hashes.
     for tool, expected in record['tools'].items():
-        if digest(stage / 'bin' / tool) != expected:
+        if digest(tools[tool]) != expected:
             raise ValueError(f'bin/{tool} is not the FFmpeg that {work} built')
     source = stage / 'share/src'
     source.mkdir(parents=True, exist_ok=True)
@@ -308,7 +310,9 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
         if '--enable-gpl' in configuration or '--enable-nonfree' in configuration:
             holds.append('The bundled FFmpeg is a GPL or nonfree build.')
         if args.media_source:
-            media = bundle_media_source(args.media_source.resolve(strict=True), stage, notices)
+            media = bundle_media_source(args.media_source.resolve(strict=True),
+                                        {'ffmpeg': args.ffmpeg.resolve(), 'ffprobe': args.ffprobe.resolve()},
+                                        stage, notices)
         else:
             holds.append('FFmpeg\'s corresponding source is not bundled (--media-source).')
     # Notarize the finished, signed tree before listing its files: stapling
