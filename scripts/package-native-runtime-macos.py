@@ -60,7 +60,7 @@ def dependencies(path):
 
 def minimum_macos(path):
     """The minimum macOS a Mach-O file declares, as a version tuple (or None)."""
-    commands = run('/usr/bin/otool', '-l', path)
+    commands = run('/usr/bin/otool', '-m', '-l', path)
     found = re.search(r'cmd LC_BUILD_VERSION\n(?:.*\n)*?\s+minos (\S+)', commands)
     found = found or re.search(r'cmd LC_VERSION_MIN_MACOSX\n(?:.*\n)*?\s+version (\S+)', commands)
     return tuple(int(x) for x in found.group(1).split('.')) if found else None
