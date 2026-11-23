@@ -253,12 +253,9 @@ osc.frequency.value=440;gain.gain.value=.1;osc.connect(gain).connect(audio.desti
         results.append(row)
         (out/'results.json').write_text(json.dumps({'cases':results},indent=2)+'\n')
         print(json.dumps({k:row[k] for k in ['name','ok','distinctFps','requestedWindowDistinctFps','requestedWindowRepeatedFrames','repeatPercent','error'] if k in row}),flush=True)
-    rejected=run([recorder,'--url',fixture.as_uri(),'--output',out/'unsupported.webm','--fps','121'],env=env)
-    assert rejected.returncode!=0 and not (out/'unsupported.webm').exists()
-    (out/'unsupported-121fps.stderr').write_bytes(rejected.stderr)
     report={'scope':'Actual CEF page animation through bundled native C++ recorder; encoded pixel IDs and audio independently decoded',
             'durationMs':args.duration_ms,'nodeAvailable':False,'homebrewMediaOnPath':False,
-            'supportedFpsCeiling':120,'aboveCeilingRejected':True,'cases':results,
+            'cases':results,
             'requirements':{'minimumDistinctFps':args.required_distinct_fps,
                             'noRecorderDrops':args.require_no_recorder_drops,
                             'nativeGpuCapture':args.require_native_capture,

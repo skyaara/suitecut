@@ -23,6 +23,20 @@ builds from source but was not tested for 0.1.0; Windows runtime packaging
 does not exist), and codec playback acceptance and folder upload have no
 native checks yet (their old checks were Node only).
 
+Known issues:
+
+- A `.webm` recording with audio (software VP9/Opus) can open with about
+  140 ms of silence: that path admits video before CEF's first audio packet,
+  and the recorder pads the gap. `.mp4` recordings (VideoToolbox H.264/AAC)
+  wait for the first audio packet and open within about 10 ms. Record to
+  `.mp4` when the opening audio matters.
+- Recording throughput depends on machine load. In one full 12-case run a
+  2560×1440 at 120 FPS recording failed with "Native encoder video pipe
+  failed"; it passed alone (119.8 distinct FPS) and in the next full run
+  (120). Release recordings: `.mp4` 12 of 12 cases, up to 3840×2160 at 120
+  FPS with 120 distinct FPS; `.webm` 10 of 12, the two audio cases failing on
+  the opening silence above.
+
 - Fix `get url`, `get title` and `read` failing right after an input that
   navigates. They ran in the document being replaced and failed with "Cannot
   find context with specified id"; they now read again in the new document
