@@ -410,6 +410,22 @@ int main(int argc, char** argv) {
     assert(DecodedFrames(argv[1],o.output_path,{true,true,false,false,true,true})==6);
   }
   {
+    // Software VP9 has no hardware warm-up to arm the first-PCM gate. It waits
+    // for the first PCM and opens at that sample with the newest earlier
+    // paint, so no leading silence is padded in; the older paint coalesces.
+    auto o=options("native-audio-opening.webm");o.frames_per_second=o.capture_frames_per_second=120;
+    o.capture_timestamps_exact=o.audio=true;std::atomic<double> opened{-1};
+    MediaPipeline pipeline(o,{},[&](double timestamp){opened=timestamp;});
+    pipeline.Frame(Frame(false),100);pipeline.Frame(Frame(true),120);
+    pipeline.Audio(PCM(),140);pipeline.Audio(PCM(),160);
+    pipeline.Stop(180,Clock::now()+std::chrono::seconds(15));pipeline.Frame(Frame(false),181);pipeline.Join();
+    auto result=pipeline.Snapshot();CheckSuccess(result);
+    assert(opened==140&&result.first_timestamp_ms==140&&result.duration_ms==40);
+    // Only the end is padded, to fill the last 1/120 s video slot.
+    assert(result.coalesced_frames==1&&result.audio_gap_frames==80&&result.audio_output_frames==2000);
+    assert(DecodedFrames(argv[1],o.output_path,{true,true,true,true,true})==5);
+  }
+  {
     // A complete missing source interval must insert a hold even though
     // sub-slot callback phase noise is retained at matching capture cadence.
     auto o=options("lookahead-one-missing.webm");

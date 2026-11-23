@@ -767,6 +767,10 @@ struct MediaPipeline::Impl {
       uint64_t audio_frame = 0;
       double first = -1;
       bool encoder_spawned = false;
+      // Software encoding has no hardware warm-up to arm the first-PCM gate,
+      // so it waits for the page's first PCM itself before choosing its start.
+      bool software_audio_gate = options.audio && options.capture_timestamps_exact && !options.hardware_h264;
+      Clock::time_point audio_gate_until{};
       uint64_t preparation_packets = 0;
       const auto prepared=[&]{
               {
@@ -898,6 +902,31 @@ struct MediaPipeline::Impl {
           frame = std::move(front); lookahead.pop_front();
         }
         stop = stop && no_pending && lookahead.empty();
+        if (frame && first < 0 && software_audio_gate) {
+          // Audio capture starts a little after the first paint. Wait up to
+          // one second for its first sample so the recording opens with sound.
+          // The newest paint at or before that sample is still on screen then,
+          // so it opens the recording at the sample's time; older paints are
+          // coalesced into it rather than padded with silence.
+          std::unique_lock lock(mutex);
+          if (audio_gate_until == Clock::time_point{}) {
+            audio_gate_until = Clock::now() + std::chrono::seconds(1);
+            if (options.first_frame_deadline != Clock::time_point{})
+              audio_gate_until = std::min(audio_gate_until, options.first_frame_deadline);
+          }
+          changed.wait_until(lock, audio_gate_until, [&] { return !audio.empty() || canceled || stop_requested; });
+          if (!canceled && !audio.empty() && audio.front().timestamp > frame->timestamp) {
+            const double opening = audio.front().timestamp;
+            if (!pending.empty() && pending.front().timestamp <= opening) {
+              lock.unlock();
+              ++finished.coalesced_frames;
+              continue;
+            }
+            frame->timestamp = opening;
+          }
+          software_audio_gate = false;
+        }
+        Check();
         {
           std::lock_guard lock(mutex);
           if (first >= 0 || frame) { packets.swap(audio); audio_bytes = 0; }
