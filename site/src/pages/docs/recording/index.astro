@@ -3,6 +3,7 @@ import CodeBlock from '../../../components/CodeBlock.astro'
 import Explainer from '../../../components/Explainer.astro'
 import { snippets } from '../../../data/components.js'
 import { diagrams } from '../../../data/diagrams.js'
+import { recordingChecks } from '../../../data/release.js'
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { sitePath } from '../../../lib/paths.js'
 
@@ -172,6 +173,30 @@ const streamingActions: Row[] = [
     >). Audio advances in 20 ms chunks on a 48 kHz timeline; audio that isn't there by its playout
     time becomes counted silence. <code>maxWriteLagMs</code> (default 2000) fails a publisher whose pipe
     falls that far behind.
+  </p>
+
+  <h2 id="known-issues">Known issues in 0.1.0</h2>
+  <p>The 0.1.0 release recordings on macOS ARM64 came out like this:</p>
+  <ul class="dp-rows">
+    <li>
+      <code>.mp4</code>
+      <span class="dp-detail">{recordingChecks.mp4}</span>
+    </li>
+    <li>
+      <code>.webm</code>
+      <span class="dp-detail">{recordingChecks.webm}</span>
+    </li>
+  </ul>
+  <p>
+    A <code>.webm</code> recording with audio, which uses software VP9 and Opus, can open with about 140
+    ms of silence: that path admits video before CEF's first audio packet, and the recorder pads the gap.
+    A <code>.mp4</code> recording, which uses VideoToolbox H.264 and AAC, waits for the first audio packet
+    and opens within about 10 ms. Record to <code>.mp4</code> when the opening audio matters.
+  </p>
+  <p>
+    Recording throughput depends on machine load. In one full 12-case run a 2560×1440 recording at
+    120 FPS failed with <code>Native encoder video pipe failed</code>; it passed alone, at 119.8
+    distinct frames per second, and in the next full run, at 120.
   </p>
 
   <h2 id="limits">Limits</h2>

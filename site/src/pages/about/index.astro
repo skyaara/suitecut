@@ -87,12 +87,17 @@ import { sitePath } from '../../lib/paths.js'
     <h2 id="status">Where things stand</h2>
     <ul>
       <li>
-        Linux x64 and macOS ARM64 are qualified separately. Windows runtime packaging isn't
+        The current version is 0.1.0, an alpha for macOS ARM64 and the first that is native only.
+        Interfaces can still change before 1.0.
+      </li>
+      <li>
+        Linux x64 builds from source but wasn't tested for 0.1.0. Windows runtime packaging isn't
         implemented yet.
       </li>
       <li>
-        Nothing is published to a package registry. You build the SDK, the engine and the embed kit
-        from the repository; Linux x64 also has a full runtime archive.
+        Nothing is published to a package registry, and the
+        <a href={sitePath('/docs#release')}>0.1.0 archives</a> aren't published yet. You build the SDK,
+        the engine and the embed kit from the repository.
       </li>
       <li>
         The earlier Node.js packages, including the npm package and the video renderer, were removed

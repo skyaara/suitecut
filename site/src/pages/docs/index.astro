@@ -2,8 +2,10 @@
 import CodeBlock from '../../components/CodeBlock.astro'
 import ComponentRows from '../../components/ComponentRows.astro'
 import Explainer from '../../components/Explainer.astro'
+import ReleaseArchives from '../../components/ReleaseArchives.astro'
 import { snippets } from '../../data/components.js'
 import { diagrams } from '../../data/diagrams.js'
+import { release } from '../../data/release.js'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { sitePath } from '../../lib/paths.js'
 
@@ -42,6 +44,25 @@ const runtime = `./bin/suitecut --session demo open https://example.com
     <a href={sitePath('/docs/how-it-works')}>how it works</a>.
   </p>
 
+  <h2 id="release">The {release.name}</h2>
+  <p>
+    {release.version} is the first native-only version of suitecut, an alpha for {release.platform}.
+    Interfaces can still change before 1.0. It has four archives, each signed with a Developer ID
+    certificate:
+  </p>
+  <ReleaseArchives />
+  <p>
+    None of them is published yet, so for now you build from this repository. The runtime archive is
+    built and verified but held from public release: its bundled FFmpeg is a GPLv3 build with x264
+    and x265, which may not be redistributed without its complete source, and its engine is the
+    third-party codec build of CEF, which carries no codec patent licence. The SDK archives and the
+    embed kit contain neither.
+  </p>
+  <p>
+    Version numbers restart at {release.version} for the native line; 2.x was the Node.js package.
+    <code>SC_ABI_VERSION</code> and <code>SC_EMBED_ABI_VERSION</code> are both 1.
+  </p>
+
   <h2 id="requirements">Requirements</h2>
   <p>
     The C++ SDK needs CMake 3.20 or newer, a C++20 compiler, and the threads, OpenSSL and ZLIB
@@ -54,8 +75,10 @@ const runtime = `./bin/suitecut --session demo open https://example.com
     on stable Chromium 156.0.8078.96. Recording and streaming need FFmpeg and FFprobe.
   </p>
   <p>
-    Linux x64 and macOS ARM64 are qualified separately. macOS is qualified on 27.0.1 with Apple
-    silicon; older releases and Intel Macs aren't. Windows runtime packaging isn't implemented. The <a
+    {release.version} is qualified on macOS ARM64. Its SDK archives and embed kit are built for macOS
+    14 and its full runtime for macOS 15; they were built and checked on macOS 27 with Apple silicon,
+    and Intel Macs aren't supported. Linux x64 builds from source but wasn't tested for
+    {release.version}. Windows runtime packaging isn't implemented. The <a
       href={`${repo}/docs/building.md`}>build requirements</a
     > list every dependency.
   </p>
@@ -65,7 +88,9 @@ const runtime = `./bin/suitecut --session demo open https://example.com
   <CodeBlock label="Terminal" lang="bash" code={buildSdk} />
   <p>
     Consumers find the installed package with CMake and link one target. Use
-    <code>-DBUILD_SHARED_LIBS=ON</code> in a separate build directory for a shared library.
+    <code>-DBUILD_SHARED_LIBS=ON</code> in a separate build directory for a shared library. A project
+    that links the static library also finds Threads, OpenSSL and ZLIB; one that links the shared library
+    needs none of them, and the {release.version} shared archive carries OpenSSL inside the library.
   </p>
   <CodeBlock label="CMake" lang="plaintext" code={snippets.clientStart} />
 
@@ -78,8 +103,12 @@ const runtime = `./bin/suitecut --session demo open https://example.com
   </p>
   <CodeBlock label="Terminal" lang="bash" code={snippets.engineStart} />
   <p>
-    On Linux x64, the <a href={`${repo}/docs/native-full-runtime.md`}>full runtime archive</a> holds the
-    SDK, the C ABI, the command line, the recorder, the engine, CEF and FFmpeg in one relocatable directory:
+    The <a href={`${repo}/docs/native-full-runtime.md`}>full runtime archive</a> holds the SDK, the C
+    ABI, the command line, the recorder, the engine, CEF and FFmpeg in one relocatable directory. You
+    package it yourself, on Linux x64 or with the
+    <a href={`${repo}/docs/native-full-runtime-macos.md`}>macOS recipe</a>, which links the engine
+    and the SDK against static libraries built for macOS 14 so the archive doesn't need the build
+    host's macOS:
   </p>
   <CodeBlock label="Terminal" lang="bash" code={runtime} />
 

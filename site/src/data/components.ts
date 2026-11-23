@@ -440,7 +440,7 @@ export const components: readonly Component[] = [
     slug: 'engine',
     name: 'suitecut-browser',
     kind: 'CEF 156 engine',
-    status: 'Linux x64 · macOS ARM64',
+    status: 'macOS ARM64 · Linux x64',
     line: 'Chromium embedded through CEF, with frames and sound taken from the renderer',
     marker:
       'Each frame comes from the paint callback and the sound from the audio stream, so there is no screenshot loop.',
@@ -464,8 +464,10 @@ export const components: readonly Component[] = [
       ['Recording', 'WebM, or hardware H.264 MP4 on macOS, at any output rate'],
       ['Publishing', 'RTMP, RTMPS or TCP, with an optional reconnect policy'],
       ['Playback', 'H.264, AAC and HEVC on macOS ARM64 through a third-party codec build'],
+      ['Release', '0.1.0 alpha for macOS ARM64, signed with a Developer ID certificate'],
     ],
     limits: [
+      'Linux x64 builds from source but was not tested for 0.1.0.',
       'Windows configuration fails on purpose until its sandbox and packaging exist.',
       'The official Linux CEF build plays no H.264 or AAC.',
       'The macOS codec build is a third-party build and carries no codec patent licence.',
@@ -482,7 +484,7 @@ export const components: readonly Component[] = [
     slug: 'native-sdk',
     name: 'SuiteCut::Client',
     kind: 'C++20 library and C ABI',
-    status: 'Linux · macOS ARM64',
+    status: 'macOS ARM64 · Linux',
     line: 'Browser control from C++ and any language, for the engine, Chrome and Firefox',
     marker: 'Three agent tools: observe, act and wait.',
     intro: [
@@ -499,6 +501,10 @@ export const components: readonly Component[] = [
     ],
     facts: [
       ['Library', 'C++20 headers and a versioned C ABI, static or shared'],
+      [
+        '0.1.0 archives',
+        'Shared, with OpenSSL inside the library, or static, where your program supplies OpenSSL 3.5 or newer; both need macOS 14',
+      ],
       ['Backends', 'suitecut engine, Chrome or Chromium over CDP, Firefox over BiDi'],
       ['Attach', 'Connect to a running browser, with headers and TLS client certificates'],
       ['Agent tools', 'observe, act and wait; any number of actions in one act'],
@@ -507,7 +513,7 @@ export const components: readonly Component[] = [
       ['Extras', 'Encrypted credential vault, PNG comparison, Chromium recording and tracing'],
     ],
     limits: [
-      'Linux and macOS on Apple silicon are qualified separately. Windows transport is not implemented.',
+      '0.1.0 is qualified on macOS ARM64. Linux builds from source but was not tested for it. Windows transport is not implemented.',
       'Safari and WebKit are not supported.',
       'Feature support differs by backend; unsupported calls fail with an explicit error.',
     ],
@@ -522,7 +528,7 @@ export const components: readonly Component[] = [
     slug: 'native-control',
     name: 'suitecut-native-control',
     kind: 'CLI and MCP server',
-    status: 'Linux · macOS ARM64',
+    status: 'macOS ARM64 · Linux',
     line: 'A command line with persistent sessions that also runs as an MCP server',
     marker: 'It is one native executable; your host brings the agent.',
     intro: [
@@ -545,6 +551,7 @@ export const components: readonly Component[] = [
       ['Sessions', 'Named sessions keep a browser alive; idle after ten minutes'],
       ['Artifacts', 'Screenshots as image content, PDFs as embedded resources'],
       ['Remote', 'Connection headers and TLS client certificates for remote browsers'],
+      ['Ships in', 'Both 0.1.0 SDK archives, with the agent skill'],
     ],
     limits: [
       'Named sessions and exclusive output files need POSIX.',
@@ -582,6 +589,7 @@ export const components: readonly Component[] = [
       ['Agents', 'Grants that name tool groups and can expire or be revoked'],
       ['Signing', 'Developer ID, hardened runtime, JIT only for the GPU and renderer helpers'],
       ['Size', '333 MB, mostly the CEF framework'],
+      ['0.1.0 archive', 'suitecut-embed-kit-0.1.0-macos-arm64, for macOS 14 or newer'],
     ],
     limits: [
       'The kit is not notarized.',

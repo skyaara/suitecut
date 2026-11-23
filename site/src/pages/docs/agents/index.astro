@@ -88,14 +88,15 @@ suitecut-native-control --connect 9222 --mcp`
 
   <h2 id="build">Build and install</h2>
   <p>
-    You need a C++20 compiler, threads, OpenSSL and ZLIB. Linux and a separately qualified macOS
-    ARM64 build are supported.
+    You need a C++20 compiler, threads, OpenSSL and ZLIB. 0.1.0 is qualified on macOS ARM64; Linux
+    builds from source but wasn't tested for it.
   </p>
   <CodeBlock label="Terminal" code={buildCommands} />
   <p>
     Add <code>-DBUILD_SHARED_LIBS=ON</code> for a shared library. Downstream CMake projects use
     <code>find_package(SuiteCutClient CONFIG REQUIRED)</code> and link <code>SuiteCut::Client</code
-    >. The C ABI is declared in <code>suitecut/client.h</code>.
+    >. A project that links the static library also finds Threads, OpenSSL and ZLIB; one that links
+    the shared library needs none of them. The C ABI is declared in <code>suitecut/client.h</code>.
   </p>
 
   <h2 id="cpp-api">C++ API</h2>

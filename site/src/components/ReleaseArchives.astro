@@ -1,0 +1,30 @@
+---
+import { archives } from '../data/release.js'
+---
+
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Archive</th>
+        <th>What it holds</th>
+        <th>Needs</th>
+        <th>Public release</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        archives.map((archive) => (
+          <tr>
+            <td>
+              <code>{archive.name}</code>
+            </td>
+            <td>{archive.holds}</td>
+            <td>{archive.needs}</td>
+            <td>{archive.publicRelease}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

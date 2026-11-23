@@ -4,6 +4,7 @@ import ComponentRows from '../components/ComponentRows.astro'
 import Explainer from '../components/Explainer.astro'
 import { snippets } from '../data/components.js'
 import { diagrams } from '../data/diagrams.js'
+import { recordingChecks, release } from '../data/release.js'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { captureRuns, clientRuns } from '../lib/benchmarks.js'
 import { sitePath } from '../lib/paths.js'
@@ -29,6 +30,7 @@ const mediaSpecs: Spec[] = [
   ['Files', 'WebM with page audio, or hardware H.264 MP4 on macOS'],
   ['Publishing', 'RTMP, RTMPS or TCP, fixed bitrate, optional reconnect policy'],
   ['Health', 'Held images, audio gaps, pauses and source switches are counted'],
+  [`${release.version} checks`, `MP4: ${recordingChecks.mp4}`],
 ]
 
 const agentSpecs: Spec[] = [
@@ -271,10 +273,22 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     <h2 id="platforms">Platforms</h2>
     <dl class="specs">
-      <div><dt>Runtime</dt><dd>Linux x64 and macOS ARM64, each with its own qualification</dd></div>
+      <div>
+        <dt>Release</dt><dd>
+          {release.name} for {release.platform}; interfaces can still change before 1.0
+        </dd>
+      </div>
+      <div>
+        <dt>macOS</dt><dd>
+          The SDK archives and the embed kit need macOS 14; the full runtime needs macOS 15
+        </dd>
+      </div>
+      <div>
+        <dt>Linux x64</dt><dd>Builds from source, but was not tested for {release.version}</dd>
+      </div>
       <div><dt>Not yet</dt><dd>Windows runtime packaging and Safari or WebKit backends</dd></div>
       <div>
-        <dt>Requires</dt><dd>
+        <dt>From source</dt><dd>
           CMake, a C++20 compiler, FFmpeg for recording and a separately built CEF engine
         </dd>
       </div>
@@ -291,8 +305,9 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     <h2 id="start">Get started</h2>
     <p class="muted">
-      Build the C++ SDK with CMake, build the engine against the pinned CEF SDK, or use the Linux
-      x64 runtime archive that holds both.
+      Build the C++ SDK with CMake and the engine against the pinned CEF SDK. The {release.name} archives
+      for macOS ARM64 are built and verified but not published yet;
+      <a href={sitePath('/docs#release')}>the guide lists them</a>.
     </p>
     <p class="home-links">
       <a class="tag" href={sitePath('/docs')}>Read the guide</a>
