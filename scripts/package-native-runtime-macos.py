@@ -27,15 +27,31 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def cef_provenance(pin):
-    cef = {key: value for key, value in pin.items() if key in ['cefVersion', 'chromiumVersion', 'channel']}
-    build = pin.get('macosarm64')
-    if build:
-        # The macOS pin is a third-party build of the same CEF tag with
-        # proprietary codecs, not an official CEF distribution: say so.
-        cef.update({'build': 'third-party-codec', 'officialCefBuild': False,
-                    'url': build['url'], 'sha256': build['sha256'], 'size': build.get('size'),
-                    'codecs': build.get('codecs')})
+CEF_PIN = json.loads((ROOT / 'native/browser/cef-build.json').read_text())
+PIN_MARKER = '.suitecut-cef-pin.json'  # written by package-embed-kit-macos.py fetch-cef
+
+
+def engine_cef(app, kind, sdk):
+    """Check the engine app was built against `sdk`, the pinned CEF of `kind`."""
+    sdk = sdk.resolve(strict=True)
+    marker = sdk / PIN_MARKER
+    marker = json.loads(marker.read_text()) if marker.exists() else {}
+    pin = CEF_PIN['macosarm64Official' if kind == 'official' else 'macosarm64']
+    if kind == 'official' and (marker.get('cef') != 'official' or marker.get('sha256') != pin['sha256']):
+        raise ValueError(f'{sdk} is not the pinned official CEF SDK (package-embed-kit-macos.py fetch-cef)')
+    if marker and marker.get('cef') != kind:
+        raise ValueError(f'{sdk} is the {marker.get("cef")} CEF SDK, not {kind}')
+    if CEF_PIN['cefVersion'] not in sdk.name and not marker:
+        raise ValueError(f'{sdk} is not CEF {CEF_PIN["cefVersion"]}')
+    cache = app.parent / 'CMakeCache.txt'
+    if not cache.exists():
+        raise ValueError(f'Pass the app inside its engine build folder: no {cache}')
+    root = next((line.split('=', 1)[1] for line in cache.read_text().splitlines() if line.startswith('CEF_ROOT:')), '')
+    if Path(root).resolve() != sdk:
+        raise ValueError(f'The engine was built against {root}, not {sdk}')
+    cef = {key: CEF_PIN[key] for key in ['cefVersion', 'chromiumVersion', 'channel']}
+    cef.update({'build': kind, 'officialCefBuild': kind == 'official', 'url': pin['url'], 'sha256': pin['sha256'],
+                'size': pin.get('size'), 'codecs': pin.get('codecs')})
     return cef
 
 
@@ -204,6 +220,9 @@ def main():
     parser.add_argument('--sdk', type=Path, required=True)
     parser.add_argument('--kind', choices=['static', 'shared', 'runtime'], required=True)
     parser.add_argument('--app', type=Path)
+    parser.add_argument('--cef', choices=['official', 'codecs'], default='official',
+                        help='The CEF the engine was built against: official (the default; publishable) or codecs')
+    parser.add_argument('--cef-sdk', type=Path, help='That CEF SDK; the runtime checks the engine build used it')
     parser.add_argument('--ffmpeg', type=Path)
     parser.add_argument('--ffprobe', type=Path)
     parser.add_argument('--output', type=Path, required=True)
@@ -228,8 +247,9 @@ def main():
     stage = output / name
     clone(args.sdk.resolve(strict=True), stage)
     if args.kind == 'runtime':
-        if not all([args.app, args.ffmpeg, args.ffprobe]):
-            raise ValueError('Runtime requires --app, --ffmpeg and --ffprobe')
+        if not all([args.app, args.cef_sdk, args.ffmpeg, args.ffprobe]):
+            raise ValueError('Runtime requires --app, --cef-sdk, --ffmpeg and --ffprobe')
+        cef = engine_cef(args.app.resolve(strict=True), args.cef, args.cef_sdk)
         app = stage / 'libexec/suitecut/suitecut-browser.app'
         clone(args.app.resolve(strict=True), app)
         for tool, source in [('ffmpeg', args.ffmpeg), ('ffprobe', args.ffprobe)]:
@@ -281,6 +301,9 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
         # A GPL FFmpeg could ship only with its complete corresponding source
         # and GPL terms for the whole runtime; the LGPL build ships with its
         # source tarball and licenses inside the archive.
+        # The codec build of CEF plays H.264, AAC and HEVC with no patent licence.
+        if not cef['officialCefBuild']:
+            holds.append('The engine is the third-party codec build of CEF.')
         configuration = run(stage / 'bin/ffmpeg', '-hide_banner', '-buildconf')
         if '--enable-gpl' in configuration or '--enable-nonfree' in configuration:
             holds.append('The bundled FFmpeg is a GPL or nonfree build.')
@@ -310,7 +333,7 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
                 'minimumMacOSTested': platform.mac_ver()[0],
                 'minimumMacOS': '.'.join(map(str, minimum)) if minimum else None,
                 'systemLibraries': sorted(args.system_library),
-                'cef': cef_provenance(json.loads((ROOT/'native/browser/cef-build.json').read_text())) if args.kind == 'runtime' else None,
+                'cef': cef if args.kind == 'runtime' else None,
                 'packagerSha256': digest(Path(__file__).resolve()),
                 'media': media,
                 'redistributionReady': not holds,

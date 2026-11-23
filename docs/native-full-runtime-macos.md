@@ -97,15 +97,18 @@ M=$PWD/.suitecut/runtime-ffmpeg
 
 python3 scripts/package-native-runtime-macos.py \
   --sdk build/macos-sdk-static --kind runtime \
-  --app build/macos-engine/suitecut-browser.app \
+  --app build/macos-engine/suitecut-browser.app --cef-sdk "$CEF_ROOT" \
   --ffmpeg $M/prefix/bin/ffmpeg --ffprobe $M/prefix/bin/ffprobe --media-source $M \
   --require-macos 14.0 --output build/macos-runtime-artifact
 ```
 
 Build the engine against the official CEF SDK
 (`scripts/package-embed-kit-macos.py fetch-cef --cef official`), as the embed
-kit does. The third-party codec build plays H.264, AAC and HEVC in pages but
-carries no codec patent licence, so it is for local builds only.
+kit does. The packager checks the engine build's `CEF_ROOT` is `--cef-sdk` and
+that it is the pinned official SDK. The third-party codec build plays H.264,
+AAC and HEVC in pages but carries no codec patent licence, so it is for local
+builds only: package it with `--cef codecs` and the manifest records a
+publication hold.
 
 The shared `libsuitecut_client` carries OpenSSL inside it, so a program that
 links it needs no OpenSSL of its own. A program that links the static
@@ -345,16 +348,18 @@ private sibling and published atomically without replacing an existing target.
 An abrupt kill during that short final publication step can leave its named
 private staging file. Cancellation and normal shutdown remove owned staging.
 
-The pinned macOS CEF is a third-party codec-enabled build that plays H.264, AAC
-and HEVC; it is not an official CEF build and carries no codec patent licence (see
+The release runtime's engine is the official CEF build, which plays no H.264,
+AAC or HEVC in pages. The third-party codec build plays them but is not an
+official CEF build and carries no codec patent licence (see
 [playback codecs](../native/browser/CODECS.md)). Bundling FFmpeg does not add
-playback codecs to CEF. CEF WebSocket routing, directory upload, cross-navigation coverage, full
+playback codecs to CEF; recording to `.mp4` encodes H.264 through VideoToolbox
+either way. CEF WebSocket routing, directory upload, cross-navigation coverage, full
 clock control, and offscreen out-of-process-frame full-page capture remain
 outside this runtime's advertised capabilities. Embedded native streaming uses bounded FFmpeg subprocesses on Linux and macOS.
 The macOS regression verifies actual publisher startup and physical child
 retirement after renderer failure; it does not qualify every live destination. Firefox needs a separately supplied browser and separate
 macOS validation.
 
-Retain the bundled dependency notices and exact media provenance. GPL-enabled
-FFmpeg builds need complete corresponding source and applicable notices before
-public redistribution. These local archives retain that publication hold.
+Retain the bundled dependency notices and exact media provenance. The
+manifest's `publicationHold` names anything that blocks public redistribution:
+a GPL or nonfree FFmpeg, FFmpeg source not bundled, or the codec CEF build.
