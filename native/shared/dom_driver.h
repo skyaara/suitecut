@@ -11,9 +11,11 @@ inline constexpr char kSuiteCutDOMDriverStateKey[] = "__suitecutNativeChromeDOM1
 inline std::string SuiteCutDOMDriverSource() {
   return std::string("(()=>{const query=(")+kSuiteCutDomQuery+");const snapshot=("+kSuiteCutDOMSemanticSnapshot+");const jsonFormat=("+kSuiteCutNativeAriaJSON+");const yamlFormat=("+kSuiteCutNativeAriaFormatter+R"JS();
   let owner=document, generation=0, refs=new Map(), identities=new WeakMap(), nextIdentity=0, dragSource=null;
-  const nonce=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
-  let prefix=nonce();
-  const reset=()=>{if(owner!==document){owner=document;generation=0;refs.clear();identities=new WeakMap();nextIdentity=0;prefix=nonce();}};
+  // Refs are s<ticket>e<index>, as the formatters and the reference engine require. Each document starts its tickets
+  // at a random 40-bit base, so a ref kept from another document misses here instead of naming an unrelated element.
+  const nonce=()=>{const [high,low]=crypto.getRandomValues(new Uint32Array(2));return (high&0xff)*0x100000000+low;};
+  let base=nonce();
+  const reset=()=>{if(owner!==document){owner=document;generation=0;refs.clear();identities=new WeakMap();nextIdentity=0;base=nonce();}};
   const parent=e=>e.assignedSlot||e.parentElement||(e.parentNode?.nodeType===11&&e.parentNode.host)||null;
   const reference=(root,token)=>{
     reset();if(typeof token!=='string'||!/^s[1-9][0-9]*e(?:0|[1-9][0-9]*)$/.test(token))throw new Error('Invalid native snapshot reference token');
@@ -102,8 +104,8 @@ inline std::string SuiteCutDOMDriverSource() {
     const scope=one(request);if(!scope)return {ready:false};
     if(request.referenceDepth!==undefined&&(!Number.isInteger(request.referenceDepth)||request.referenceDepth<0))throw new Error('Invalid native reference snapshot depth');
     const captured=snapshot(scope,query,{ai:true,boxes:request.accessibilityBoxes===true,captureReferences:true});
-    const newRefs=new Map();if(++generation>Number.MAX_SAFE_INTEGER)throw new Error('Native snapshot generation counter overflowed');
-    for(const [node,index] of captured.entries){const token='r'+prefix+'_'+generation+'_'+index;node.ref=token;newRefs.set(token,new WeakRef(captured.elements[index]));}
+    const newRefs=new Map(),ticket=base+ ++generation;if(ticket>Number.MAX_SAFE_INTEGER)throw new Error('Native snapshot generation counter overflowed');
+    for(const [node,index] of captured.entries){const token='s'+ticket+'e'+index;node.ref=token;newRefs.set(token,new WeakRef(captured.elements[index]));}
     refs=newRefs;
     const opts={mode:'ai',boxes:request.accessibilityBoxes===true};if(request.referenceDepth!==undefined)opts.depth=request.referenceDepth;
     if(request.referenceFormat==='json')return {ready:true,value:{snapshotJSON:JSON.stringify(jsonFormat(captured.forest,opts))}};

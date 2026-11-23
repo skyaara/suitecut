@@ -131,7 +131,7 @@ int main() {
           expect(request.at("referenceFormat").as_string() == "json",
                  "Wrong stable-reference format");
           result = Json{{"snapshotJSON",
-                         "[{\"role\":\"button\",\"name\":\"Save\",\"ref\":\"rFixture_1_0\"}]"}};
+                         "[{\"role\":\"button\",\"name\":\"Save\",\"ref\":\"s1e0\"}]"}};
         } else if (command == "artifact") {
           expect(request.at("action").as_string() == "screenshot" &&
                      request.at("format").as_string() == "png",

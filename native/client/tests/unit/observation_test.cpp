@@ -14,7 +14,7 @@ template<class F> void rejects(F work) {
   try { work(); } catch (const std::exception&) { rejected = true; }
   check(rejected, "Expected bounded observation input rejection");
 }
-Json control(const char* name, const char* ref = "rFixture_1_0") {
+Json control(const char* name, const char* ref = "s1e0") {
   return Json{{"role", "button"}, {"name", name}, {"ref", ref}};
 }
 }
@@ -46,13 +46,13 @@ int main() {
     options.interactive_only = true;
     auto controls = compact_observation(forest, options);
     check(controls.at("nodes").as_array().size() == 3, "Interactive filtering incorrect");
-    check(controls.at("nodes").at(0).at("ref").as_string() == "rFixture_1_0", "Reference lost");
+    check(controls.at("nodes").at(0).at("ref").as_string() == "s1e0", "Reference lost");
     check(controls.at("ancestors").at(static_cast<std::size_t>(controls.at("nodes").at(0).at("parent").as_int())).at("name").as_string() == "Checkout",
           "Filtering lost context");
     const auto custom = compact_observation(Json::array{
-      Json{{"role", "generic"}, {"ref", "rFixture_1_2"}, {"name", "Custom handle"},
+      Json{{"role", "generic"}, {"ref", "s1e2"}, {"name", "Custom handle"},
            {"cursor", "pointer"}, {"box", Json::array{1, 2, 10, 20}}},
-      Json{{"role", "generic"}, {"ref", "rFixture_1_3"}, {"name", "Inert referenced layout"}}
+      Json{{"role", "generic"}, {"ref", "s1e3"}, {"name", "Inert referenced layout"}}
     }, options);
     check(custom.at("nodes").as_array().size() == 1 &&
           custom.at("nodes").at(0).at("box") == Json(Json::array{1, 2, 10, 20}),
@@ -60,7 +60,7 @@ int main() {
     // The cursor is inherited: icons inside a clickable control are not controls of their own, and a nameless
     // control carries its own text so it can be told apart.
     const auto headers = [](const char* stamp) {
-      const auto ref = [stamp](int at) { return std::string("rFixture_") + stamp + "_" + std::to_string(at); };
+      const auto ref = [stamp](int at) { return std::string("s") + stamp + "e" + std::to_string(at); };
       return Json::array{
         Json{{"role", "generic"}, {"ref", ref(0)}, {"cursor", "pointer"}, {"children", Json::array{
           Json{{"role", "img"}, {"ref", ref(1)}, {"cursor", "pointer"}}, "Elements",
@@ -85,16 +85,16 @@ int main() {
     // A generic inside a clickable control is there for a handler of its own (the snapshot emits a pointer generic
     // only where the pointer starts), so it stays. Labels never carry what was typed or picked.
     const auto row = compact_observation(Json::array{
-      Json{{"role", "generic"}, {"ref", "rFixture_6_0"}, {"cursor", "pointer"}, {"children", Json::array{
+      Json{{"role", "generic"}, {"ref", "s6e0"}, {"cursor", "pointer"}, {"children", Json::array{
         "Invoice 12",
-        Json{{"role", "generic"}, {"ref", "rFixture_6_1"}, {"cursor", "pointer"}, {"children", Json::array{"Dismiss"}}},
-        Json{{"role", "generic"}, {"ref", "rFixture_6_2"}, {"children", Json::array{"draft-in-editor"}}},
-        Json{{"role", "combobox"}, {"ref", "rFixture_6_3"}, {"cursor", "pointer"}, {"children", Json::array{"picked-option"}}},
-        Json{{"role", "generic"}, {"ref", "rFixture_6_4"}, {"cursor", "pointer"}, {"editable", true},
+        Json{{"role", "generic"}, {"ref", "s6e1"}, {"cursor", "pointer"}, {"children", Json::array{"Dismiss"}}},
+        Json{{"role", "generic"}, {"ref", "s6e2"}, {"children", Json::array{"draft-in-editor"}}},
+        Json{{"role", "combobox"}, {"ref", "s6e3"}, {"cursor", "pointer"}, {"children", Json::array{"picked-option"}}},
+        Json{{"role", "generic"}, {"ref", "s6e4"}, {"cursor", "pointer"}, {"editable", true},
              {"children", Json::array{"typed-text"}}}}}}
     }, options);
     const auto& row_nodes = row.at("nodes").as_array();
-    check(row_nodes.size() == 4 && row_nodes.at(1).at("ref").as_string() == "rFixture_6_1" &&
+    check(row_nodes.size() == 4 && row_nodes.at(1).at("ref").as_string() == "s6e1" &&
           row_nodes.at(1).at("label").as_string() == "Dismiss",
           "A handler-backed control inside a clickable one was dropped");
     check(row_nodes.at(0).at("label").as_string() == "Invoice 12 Dismiss" && !row_nodes.at(2).contains("label") &&
@@ -103,13 +103,13 @@ int main() {
           "A label carried a field's typed or picked value");
     options.max_text_bytes = 30; // Room for the role and ref, not the whole label.
     const auto tight = compact_observation(Json::array{
-      Json{{"role", "generic"}, {"ref", "rFixture_7_0"}, {"cursor", "pointer"}, {"children", Json::array{"A long caption here"}}}
+      Json{{"role", "generic"}, {"ref", "s7e0"}, {"cursor", "pointer"}, {"children", Json::array{"A long caption here"}}}
     }, options);
     check(!tight.at("nodes").at(0).contains("label") && tight.at("textLimit").as_bool(), "A label was cut to fit the budget");
     options.max_text_bytes = 0;
     const std::string huge(1 << 20, 'x');
     const auto long_label = compact_observation(Json::array{
-      Json{{"role", "generic"}, {"ref", "rFixture_8_0"}, {"cursor", "pointer"}, {"children", Json::array{huge}}}
+      Json{{"role", "generic"}, {"ref", "s8e0"}, {"cursor", "pointer"}, {"children", Json::array{huge}}}
     }, options);
     check(long_label.at("nodes").at(0).at("label").as_string().size() == 80, "A long caption's label is not capped");
 
@@ -139,15 +139,15 @@ int main() {
     check(!compact_observation(Json::array{control("Pay")}, options).at("truncated").as_bool(), "Zero node option limited output");
     check(!compact_observation(Json::array{}, options).at("truncated").as_bool(), "Empty forest falsely truncated");
 
-    auto previous = compact_observation(Json::array{control("Save"), control("Cancel", "rFixture_1_1")});
-    auto current = compact_observation(Json::array{control("Cancel", "rFixture_99_8"), control("Save", "rFixture_99_9")});
+    auto previous = compact_observation(Json::array{control("Save"), control("Cancel", "s1e1")});
+    auto current = compact_observation(Json::array{control("Cancel", "s99e8"), control("Save", "s99e9")});
     auto diff = observation_diff(previous, current);
     check(diff.at("changed").as_array().empty() && diff.at("added").as_array().empty() &&
           diff.at("removed").as_array().empty(), "References/reordering caused semantic changes");
-    current = compact_observation(Json::array{control("Saved", "rFixture_2_0"), control("Cancel", "rFixture_2_1")});
+    current = compact_observation(Json::array{control("Saved", "s2e0"), control("Cancel", "s2e1")});
     diff = observation_diff(previous, current);
     check(diff.at("changed").as_array().size() == 1 && diff.at("added").as_array().empty() &&
-          diff.at("changed").at(0).at("after").at("ref").as_string() == "rFixture_2_0", "Rename/current ref lost");
+          diff.at("changed").at(0).at("after").at("ref").as_string() == "s2e0", "Rename/current ref lost");
     auto before_value = Json{{"role", "textbox"}, {"name", "Email"}, {"value", "a@example.org"}, {"disabled", false}};
     auto after_value = before_value;
     after_value["value"] = "b@example.org";
@@ -158,7 +158,7 @@ int main() {
                             compact_observation(Json::array{"Instruction one", "Instruction three"}));
     check(!diff.at("ambiguous").as_bool() && diff.at("changed").as_array().size() == 1,
           "Distinct text nodes were treated as duplicate controls");
-    auto duplicates = compact_observation(Json::array{control("Same"), control("Same", "rFixture_1_1")});
+    auto duplicates = compact_observation(Json::array{control("Same"), control("Same", "s1e1")});
     diff = observation_diff(duplicates, duplicates);
     check(diff.at("ambiguous").as_bool() && diff.at("changed").as_array().empty() &&
           diff.at("added").as_array().size() == 2 && diff.at("removed").as_array().size() == 2,
