@@ -1,7 +1,11 @@
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
-find_dependency(Threads)
-find_dependency(OpenSSL)
-find_dependency(ZLIB)
+# A static libsuitecut_client.a leaves these for its consumer to link. A shared
+# library links them itself, so its consumers need none of them installed.
+if(NOT "@BUILD_SHARED_LIBS@")
+  find_dependency(Threads)
+  find_dependency(OpenSSL)
+  find_dependency(ZLIB)
+endif()
 include("${CMAKE_CURRENT_LIST_DIR}/SuiteCutClientTargets.cmake")
 check_required_components(SuiteCutClient)

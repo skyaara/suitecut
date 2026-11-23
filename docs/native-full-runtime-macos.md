@@ -48,35 +48,43 @@ and block navigation and shutdown until macOS settles that request.
 ## Build and package
 
 Use the exact macOS ARM64 distribution of the CEF version pinned in
-`native/browser/cef-build.json`, the pinned libyuv source, CMake, Ninja, an Apple
-C++20 toolchain, OpenSSL 3 or newer, libpsl, Brotli, and ZLIB. Full API extra-CA
-coverage requires curl built with the same OpenSSL major as the engine. Apple's
-SecureTransport curl cannot provide that capability. Set `CURL_INCLUDE_DIR`,
-`CURL_LIBRARY_RELEASE`, and `OPENSSL_ROOT_DIR` explicitly when reusing a build
-cache that previously selected Apple's curl. The runtime packager bundles the
-selected curl/OpenSSL dylibs; preserve their actual minimum macOS requirements.
-Keep a few GB free for builds, archives, and an independent extraction.
+`native/browser/cef-build.json`, the pinned libyuv source, CMake, Ninja and an
+Apple C++20 toolchain. Link the engine, the CLI and the SDKs against the static
+OpenSSL, curl, libpsl and Brotli that `scripts/build-embed-kit-deps-macos.py`
+builds for macOS 14 (pinned in `native/browser/macos-kit-deps.json`), not
+against Homebrew's: Homebrew builds its libraries for the host's macOS, so a
+bundled Homebrew dylib makes the archive need that macOS (27 on the 0.1.0 build
+host) whatever the engine itself needs. Keep a few GB free for builds,
+archives, and an independent extraction.
 
 ```sh
+python3 scripts/build-embed-kit-deps-macos.py fetch --work .suitecut/kit-deps
+python3 scripts/build-embed-kit-deps-macos.py build --work .suitecut/kit-deps
+P=$PWD/.suitecut/kit-deps/prefix
+
 cmake -S native/browser -B build/macos-engine -G Ninja \
   -DCEF_ROOT="$CEF_ROOT" -DLIBYUV_ROOT="$LIBYUV_ROOT" \
   -DPROJECT_ARCH=arm64 -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_PREFIX_PATH=/opt/homebrew \
-  -DCURL_INCLUDE_DIR=/opt/homebrew/opt/curl/include \
-  -DCURL_LIBRARY_RELEASE=/opt/homebrew/opt/curl/lib/libcurl.dylib \
-  -DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@4 \
+  -DCMAKE_PREFIX_PATH=$P "-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew;/usr/local" \
+  -DOPENSSL_ROOT_DIR=$P -DOPENSSL_USE_STATIC_LIBS=ON \
+  -DSUITECUT_PSL_INCLUDE_DIR=$P/include -DSUITECUT_PSL=$P/lib/libpsl.a \
+  -DSUITECUT_BROTLI_INCLUDE_DIR=$P/include \
+  -DSUITECUT_BROTLI_DECODER=$P/lib/libsuitecut-brotlidec.a \
+  -DSUITECUT_BROTLI_ENCODER=$P/lib/libsuitecut-brotlienc.a \
   -DCMAKE_CXX_FLAGS=-D_LIBCPP_ENABLE_EXPERIMENTAL
-cmake --build build/macos-engine --target suitecut-browser --parallel 1
+cmake --build build/macos-engine --target suitecut-browser --parallel 2
 
-cmake -S native/client -B build/macos-client-static -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/homebrew
+cmake -S native/client -B build/macos-client-static -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_PREFIX_PATH=$P "-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew;/usr/local" \
+  -DOPENSSL_ROOT_DIR=$P -DOPENSSL_USE_STATIC_LIBS=ON
 cmake --build build/macos-client-static --parallel 2
 ctest --test-dir build/macos-client-static --output-on-failure
 cmake --install build/macos-client-static --prefix "$PWD/build/macos-sdk-static"
 
-cmake -S native/client -B build/macos-client-shared -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON \
-  -DCMAKE_PREFIX_PATH=/opt/homebrew -DCMAKE_INSTALL_RPATH='@loader_path/../lib'
+cmake -S native/client -B build/macos-client-shared -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_RPATH='@loader_path/../lib' \
+  -DCMAKE_PREFIX_PATH=$P "-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew;/usr/local" \
+  -DOPENSSL_ROOT_DIR=$P -DOPENSSL_USE_STATIC_LIBS=ON
 cmake --build build/macos-client-shared --parallel 2
 ctest --test-dir build/macos-client-shared --output-on-failure
 cmake --install build/macos-client-shared --prefix "$PWD/build/macos-sdk-shared"
@@ -85,8 +93,21 @@ python3 scripts/package-native-runtime-macos.py \
   --sdk build/macos-sdk-static --kind runtime \
   --app build/macos-engine/suitecut-browser.app \
   --ffmpeg /opt/homebrew/bin/ffmpeg --ffprobe /opt/homebrew/bin/ffprobe \
+  --system-library liblzma.5.dylib --require-macos 15.0 \
   --output build/macos-runtime-artifact
 ```
+
+The shared `libsuitecut_client` carries OpenSSL inside it, so a program that
+links it needs no OpenSSL of its own. A program that links the static
+`libsuitecut_client.a` supplies OpenSSL 3.5 or newer and zlib itself.
+
+The bundled media tools are Homebrew's FFmpeg, built for macOS 15, so the
+runtime archive needs macOS 15; the SDK archives need macOS 14.
+`--system-library liblzma.5.dylib` links FFmpeg to macOS's own liblzma instead
+of bundling Homebrew's, which is built for the host's macOS. `--require-macos`
+fails packaging if any file in the archive needs a newer macOS, and the
+manifest records the archive's real minimum as `minimumMacOS`. Package the SDK
+prefixes with `--require-macos 14.0`.
 
 Package the two SDK prefixes with the same script, `--kind static` or
 `--kind shared`, and a separate new output directory. The script refuses to

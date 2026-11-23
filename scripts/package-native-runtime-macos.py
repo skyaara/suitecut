@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Build an offline, relocatable macOS ARM64 native SDK or full runtime candidate."""
 import argparse
+import ctypes
 import hashlib
 import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import tarfile
@@ -56,8 +58,32 @@ def dependencies(path):
     return [entry for entry in entries if entry not in ids]
 
 
-def bundle_dependencies(stage, origins, identity):
-    """Copy the complete non-system Mach-O dependency closure, then relocate it."""
+def minimum_macos(path):
+    """The minimum macOS a Mach-O file declares, as a version tuple (or None)."""
+    commands = run('/usr/bin/otool', '-l', path)
+    found = re.search(r'cmd LC_BUILD_VERSION\n(?:.*\n)*?\s+minos (\S+)', commands)
+    found = found or re.search(r'cmd LC_VERSION_MIN_MACOSX\n(?:.*\n)*?\s+version (\S+)', commands)
+    return tuple(int(x) for x in found.group(1).split('.')) if found else None
+
+
+def system_library(name):
+    """The macOS copy of a library, which lives in the dyld shared cache."""
+    path = f'/usr/lib/{name}'
+    try:
+        ctypes.CDLL(path)
+    except OSError as error:
+        raise ValueError(f'--system-library {name}: macOS has no {path}') from error
+    return path
+
+
+def bundle_dependencies(stage, origins, identity, system=()):
+    """Copy the complete non-system Mach-O dependency closure, then relocate it.
+
+    A dependency named in `system` is linked to macOS's own copy in /usr/lib
+    instead of being bundled: Homebrew builds for the host's macOS, so a
+    bundled copy can raise the archive's minimum macOS above its own code's.
+    """
+    system = {name: system_library(name) for name in system}
     shared_lib = stage / 'lib'
     shared_lib.mkdir(exist_ok=True)
     pending = [p for p in stage.rglob('*') if macho(p)]
@@ -81,6 +107,9 @@ def bundle_dependencies(stage, origins, identity):
         lib.mkdir(parents=True, exist_ok=True)
         for dependency in dependencies(binary):
             if dependency.startswith(('/usr/lib/', '/System/Library/')):
+                continue
+            if Path(dependency).name in system:
+                changes.extend(['-change', dependency, system[Path(dependency).name]])
                 continue
             original = origins.get(binary, binary)
             if dependency.startswith('@rpath/'):
@@ -147,6 +176,10 @@ def main():
     parser.add_argument('--ffprobe', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--signing-identity', help='Pinned certificate fingerprint; - explicitly selects ad-hoc')
+    parser.add_argument('--system-library', action='append', default=[], metavar='NAME',
+                        help='Link this dependency (e.g. liblzma.5.dylib) to macOS\'s /usr/lib copy instead of bundling it')
+    parser.add_argument('--require-macos', metavar='VERSION',
+                        help='Fail if any packaged Mach-O file needs a newer macOS than this')
     args = parser.parse_args()
     if platform.system() != 'Darwin' or platform.machine() != 'arm64':
         raise ValueError('This recipe requires a native macOS ARM64 host')
@@ -184,7 +217,12 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
                 origins[path] = args.app.resolve() / path.relative_to(app)
         origins[stage/'bin/ffmpeg'] = args.ffmpeg.resolve()
         origins[stage/'bin/ffprobe'] = args.ffprobe.resolve()
-    provenance = bundle_dependencies(stage, origins, identity)
+    provenance = bundle_dependencies(stage, origins, identity, args.system_library)
+    minimums = {str(p.relative_to(stage)): minimum_macos(p) for p in stage.rglob('*') if macho(p)}
+    minimum = max((v for v in minimums.values() if v), default=None)
+    if args.require_macos and minimum and minimum > tuple(int(x) for x in args.require_macos.split('.')):
+        newer = sorted(k for k, v in minimums.items() if v and v > tuple(int(x) for x in args.require_macos.split('.')))
+        raise ValueError(f'Needs macOS {".".join(map(str, minimum))}, above --require-macos {args.require_macos}: {newer}')
     # Retain formula license files for bundled Homebrew dependencies and media.
     sources = [Path(p['input']) for p in provenance]
     if args.kind == 'runtime':
@@ -217,6 +255,8 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
                 'signingIdentity': identity, 'signature': signature(app) if args.kind == 'runtime' else None,
                 'timestamped': identity != '-', 'notarized': False, 'published': False,
                 'minimumMacOSTested': platform.mac_ver()[0],
+                'minimumMacOS': '.'.join(map(str, minimum)) if minimum else None,
+                'systemLibraries': sorted(args.system_library),
                 'cef': cef_provenance(json.loads((ROOT/'native/browser/cef-build.json').read_text())) if args.kind == 'runtime' else None,
                 'packagerSha256': digest(Path(__file__).resolve()),
                 'redistributionReady': False,
