@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "suitecut/agent.hpp"
+#include "document_reads.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -164,7 +165,7 @@ Json execute(const Page& page, const Json& a) {
       a.contains("waitUntil") ? a.at("waitUntil").as_string() : "load");
   if (op == "observe") return page.observe(a.contains("boxes") && a.at("boxes").as_bool(),
       a.contains("depth") ? static_cast<int>(a.at("depth").as_int()) : -1);
-  if (op == "evaluate") return page.evaluate(a.at("expression").as_string());
+  if (op == "evaluate") return detail::evaluate_script(page, a.at("expression").as_string());
   if (op == "command") return page.command(a.at("family").as_string(),a.at("fields"));
   if (op == "back") return page.go_back(a.contains("waitUntil") ? a.at("waitUntil").as_string() : "load");
   if (op == "forward") return page.go_forward(a.contains("waitUntil") ? a.at("waitUntil").as_string() : "load");

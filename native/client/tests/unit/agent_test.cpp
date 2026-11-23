@@ -31,7 +31,8 @@ int engine() {
   packet(Json{{"type", "ready"}, {"pageId", 1}, {"cefVersion", "agent-test"}, {"timestampMs", 1}});
   std::size_t mutations = 0;
   std::string input, url;
-  bool slow_readback = false, slow_observation = false;
+  bool slow_readback = false, slow_observation = false, refused = false;
+  std::int64_t script_runs = 0;
   std::string line;
   while (std::getline(std::cin, line)) {
     const auto request = Json::parse(line);
@@ -50,8 +51,21 @@ int engine() {
         result = Json{{"result", Json{{"value", Json::array{Json("primitive"), Json(1)}}}}};
       else result = Json{{"result", Json{{"value", input}}}};
     } else if (command == "evaluate") {
-      check(request.at("expression").as_string() == "location.href", "Only fixed URL readback is allowed");
-      result = Json{{"result", Json{{"value", url}}}};
+      // Scripts that meet a navigation: refused once before they start, or
+      // lost while they run. Each run of either is counted.
+      const auto& expression = request.at("expression").as_string();
+      if (expression == "refusedOnce()") {
+        ++script_runs;
+        if (!refused) { refused = true; ok = false; error = "Cannot find default execution context"; }
+        else result = Json{{"result", Json{{"value", "ran"}}}};
+      } else if (expression == "lostWhileRunning()") {
+        ++script_runs; ok = false; error = "Execution context was destroyed.";
+      } else if (expression == "scriptRuns()") {
+        result = Json{{"result", Json{{"value", script_runs}}}};
+      } else {
+        check(expression == "location.href", "Only fixed URL readback is allowed");
+        result = Json{{"result", Json{{"value", url}}}};
+      }
     } else if (command == "locator" && request.at("action").as_string() == "inputValue") {
       if (slow_readback) {
         slow_readback = false;
@@ -101,6 +115,12 @@ int main(int argc, char** argv) {
     bool scoped_failure=false;
     try{driver.call_with_timeout("get",Json{{"kind","unsupported"},{"selector","input"}},5ms);}catch(const std::invalid_argument&){scoped_failure=true;}
     check(scoped_failure&&driver.call("snapshot").at(0).at("timeoutMs").as_int()==original_timeout,"Bounded driver restores the page timeout after exceptions");
+    check(driver.call("evaluate",Json{{"expression","refusedOnce()"}}).as_string()=="ran",
+          "A script refused before it started runs in the new document");
+    std::string lost;
+    try{driver.call("evaluate",Json{{"expression","lostWhileRunning()"}});}catch(const std::exception& error){lost=error.what();}
+    check(lost.find("was not run again")!=std::string::npos,"A script lost while running reports that it was not rerun");
+    check(driver.call("evaluate",Json{{"expression","scriptRuns()"}}).as_int()==3,"Only the refused script runs twice");
     suitecut::AgentBatchOptions no_observe; no_observe.final_observation = false;
     const Json invalid = Json::array{
         Json{{"action", "click"}, {"target", target("css", "#submit")}},
