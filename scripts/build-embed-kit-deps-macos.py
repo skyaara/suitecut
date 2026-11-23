@@ -102,15 +102,18 @@ def build(work):
              '-DBUILD_SHARED_LIBS=OFF']
 
     source = extract(work, 'openssl')
+    # OpenSSL compiles its whole compiler command line in (openssl version -f),
+    # so it gets no -ffile-prefix-map: it builds in-tree with relative names.
+    openssl_env = {**env, 'CFLAGS': env['CFLAGS'].replace(f' -ffile-prefix-map={work}/=', '')}
     run(['./Configure', 'darwin64-arm64-cc', 'no-shared', 'no-module', 'no-tests', 'no-docs',
          f'--prefix={OPENSSL_PREFIX}', '--libdir=lib', f'--openssldir={OPENSSL_PREFIX}',
-         f'-mmacosx-version-min={minimum}', f'-ffile-prefix-map={work}/='], source, env)
-    run(['make', f'-j{JOBS}', 'build_libs'], source, env)
+         f'-mmacosx-version-min={minimum}'], source, openssl_env)
+    run(['make', f'-j{JOBS}', 'build_libs'], source, openssl_env)
     # Install through DESTDIR, then point the pkg-config and CMake files at
     # the real prefix the other builds use.
     stage = work / 'openssl-stage'
     shutil.rmtree(stage, ignore_errors=True)
-    run(['make', 'install_dev', f'DESTDIR={stage}'], source, env)
+    run(['make', 'install_dev', f'DESTDIR={stage}'], source, openssl_env)
     shutil.copytree(stage / OPENSSL_PREFIX.lstrip('/'), prefix, dirs_exist_ok=True, symlinks=True)
     shutil.rmtree(stage)
     for path in [*(prefix / 'lib/pkgconfig').glob('*.pc'), *(prefix / 'lib/cmake').rglob('*.cmake')]:
