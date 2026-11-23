@@ -5,6 +5,7 @@ Run under the repository proof supervisor; it owns/reaps the persistent worker.
 The engine must speak the SuiteCut protocol. This is not CEF execution evidence.
 """
 import argparse
+import errno
 import json
 import os
 from pathlib import Path
@@ -59,7 +60,13 @@ def main():
                 client.settimeout(3)
                 client.connect(directory+'/fuzz.sock')
                 client.sendall(wire)
-                client.shutdown(socket.SHUT_WR)
+                try:
+                    client.shutdown(socket.SHUT_WR)
+                except OSError as error:
+                    # macOS refuses shutdown once the worker has closed the
+                    # connection (Linux allows it); a rejection is fine.
+                    if error.errno != errno.ENOTCONN:
+                        raise
                 # Drain every response so a successful parse exercises write framing.
                 data = bytearray()
                 while True:
@@ -104,8 +111,9 @@ def main():
                     wire = struct.pack('<I', len(payload))+payload
                 try:
                     exchange(wire)
-                except ConnectionResetError:
-                    # Rejecting an oversized prefix may leave unread caller bytes.
+                except (ConnectionResetError, BrokenPipeError):
+                    # Rejecting an oversized prefix may leave unread caller
+                    # bytes, or close before the rest is sent.
                     pass
                 if iteration in {min(499, args.iterations//3), args.iterations-1}:
                     assert cli('status')['pid'] == pid
