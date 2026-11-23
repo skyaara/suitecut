@@ -20,25 +20,29 @@ void send_packet(const suitecut::Json& header) {
   const auto text = header.dump();
   const auto size = static_cast<std::uint32_t>(text.size());
   const char prefix[] = {static_cast<char>(size), static_cast<char>(size >> 8),
-                        static_cast<char>(size >> 16), static_cast<char>(size >> 24)};
+                         static_cast<char>(size >> 16), static_cast<char>(size >> 24)};
   std::cout.write(prefix, 4);
   std::cout.write(text.data(), static_cast<std::streamsize>(text.size()));
   std::cout.flush();
 }
 int fake_engine() {
-  send_packet(suitecut::Json::object{{"version", 1}, {"type", "ready"}, {"pageId", 1}, {"bytes", 0}});
+  send_packet(
+      suitecut::Json::object{{"version", 1}, {"type", "ready"}, {"pageId", 1}, {"bytes", 0}});
   std::string line;
   while (std::getline(std::cin, line)) {
     const auto command = suitecut::Json::parse(line);
     if (command.at("command").as_string() == "hold") std::this_thread::sleep_for(300ms);
-    send_packet(suitecut::Json::object{{"version", 1}, {"type", "response"},
-      {"id", command.at("id")}, {"ok", true}, {"bytes", 0}});
+    send_packet(suitecut::Json::object{{"version", 1},
+                                       {"type", "response"},
+                                       {"id", command.at("id")},
+                                       {"ok", true},
+                                       {"bytes", 0}});
   }
   return 0;
 }
 using Client = std::unique_ptr<sc_client, decltype(&sc_client_destroy)>;
 using Request = std::unique_ptr<sc_request, decltype(&sc_request_destroy)>;
-}
+}  // namespace
 
 int main(int argc, char** argv) {
   try {
@@ -59,8 +63,9 @@ int main(int argc, char** argv) {
     Client client(raw_client, sc_client_destroy);
     constexpr char command[] = "{\"command\":\"hold\"}";
     sc_request* raw_request = nullptr;
-    require(sc_client_submit(client.get(), command, sizeof(command) - 1, 1500,
-      &raw_request, &error) == SC_OK, error.message);
+    require(sc_client_submit(client.get(), command, sizeof(command) - 1, 1500, &raw_request,
+                             &error) == SC_OK,
+            error.message);
     Request request(raw_request, sc_request_destroy);
     std::atomic<bool> started{false}, done{false};
     std::atomic<sc_status> first_status{SC_ERROR};
@@ -80,27 +85,28 @@ int main(int argc, char** argv) {
     const auto status = sc_request_wait(request.get(), 1, &packet, &error);
     const auto elapsed = std::chrono::steady_clock::now() - begin;
     require(status == SC_TIMEOUT && packet == nullptr,
-      "Short concurrent waiter must time out independently of long waiter");
+            "Short concurrent waiter must time out independently of long waiter");
     require(elapsed < 100ms, "Concurrent waiter exceeded its own deadline budget");
     const auto zero_begin = std::chrono::steady_clock::now();
     require(sc_request_wait(request.get(), 0, &packet, &error) == SC_TIMEOUT,
-      "Zero-time concurrent poll must not wait for another waiter");
+            "Zero-time concurrent poll must not wait for another waiter");
     require(std::chrono::steady_clock::now() - zero_begin < 100ms,
-      "Zero-time concurrent poll blocked on another waiter");
+            "Zero-time concurrent poll blocked on another waiter");
     first.join();
     require(first_status.load() == SC_OK, "Original waiter did not receive response");
     require(sc_request_wait(request.get(), 0, &packet, &error) == SC_ALREADY_CONSUMED,
-      "A response must be consumed exactly once");
+            "A response must be consumed exactly once");
     sc_request* surviving_raw = nullptr;
-    require(sc_client_submit(client.get(), command, sizeof(command) - 1, 1500,
-      &surviving_raw, &error) == SC_OK, error.message);
+    require(sc_client_submit(client.get(), command, sizeof(command) - 1, 1500, &surviving_raw,
+                             &error) == SC_OK,
+            error.message);
     Request surviving(surviving_raw, sc_request_destroy);
     require(sc_client_close(client.get(), &error) == SC_OK, error.message);
     client.reset();
     require(sc_request_wait(surviving.get(), 0, &packet, &error) == SC_ERROR,
-      "A request may outlive the closed/destroyed client and report its close error");
+            "A request may outlive the closed/destroyed client and report its close error");
     require(sc_request_wait(surviving.get(), 0, &packet, &error) == SC_ALREADY_CONSUMED,
-      "A close error must also be consumed exactly once");
+            "A close error must also be consumed exactly once");
     std::cout << "Concurrent C ABI waits and surviving-request lifecycle passed\n";
     return 0;
   } catch (const std::exception& error) {

@@ -22,8 +22,12 @@ static bool g_standalone = false;
 }
 @end
 @implementation SuiteCutApplication
-- (BOOL)isHandlingSendEvent { return handling_; }
-- (void)setHandlingSendEvent:(BOOL)value { handling_ = value; }
+- (BOOL)isHandlingSendEvent {
+  return handling_;
+}
+- (void)setHandlingSendEvent:(BOOL)value {
+  handling_ = value;
+}
 - (void)sendEvent:(NSEvent*)event {
   CefScopedSendingEvent sending;
   [super sendEvent:event];
@@ -31,8 +35,10 @@ static bool g_standalone = false;
 // Cmd+Q, the Dock's Quit and logging out all arrive here. Opened from Finder
 // the windows close first, so pages can ask to keep unsaved work.
 - (void)terminate:(id)sender {
-  if (g_standalone) standalone::Quit();
-  else [super terminate:sender];
+  if (g_standalone)
+    standalone::Quit();
+  else
+    [super terminate:sender];
 }
 @end
 

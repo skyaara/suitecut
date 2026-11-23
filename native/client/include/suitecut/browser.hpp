@@ -93,7 +93,7 @@ class Page {
   Json go_back(const std::string& wait_until = "load") const;
   Json go_forward(const std::string& wait_until = "load") const;
   Json reload(const std::string& wait_until = "load") const;
-  Json navigation_history() const; // Chromium history entries and current index.
+  Json navigation_history() const;  // Chromium history entries and current index.
   std::string url() const;
   std::string title() const;
   std::string content() const;
@@ -193,7 +193,8 @@ class Page {
   Json bidi(const std::string& method, Json params = Json::object{}) const;
   // Chromium capture uses bounded source frames and sample-and-hold resampling.
   // Requested output FPS does not imply the browser produced unique frames.
-  Json start_recording(const std::string& path, double fps = 30, Json options = Json::object{}) const;
+  Json start_recording(const std::string& path, double fps = 30,
+                       Json options = Json::object{}) const;
   Json stop_recording() const;
   Json recording_status() const;
   void cancel_recording() const;
@@ -232,7 +233,8 @@ class Frame {
   Frame frame_locator(const std::string& css) const;
   Locator locator(const std::string& css) const;
   Locator locator_query(Json query, std::string description = "native frame locator") const;
-  Locator get_by_role(const std::string& role, const std::string& name = "", bool exact = true) const;
+  Locator get_by_role(const std::string& role, const std::string& name = "",
+                      bool exact = true) const;
   Locator get_by_label(const std::string& text, bool exact = true) const;
   Locator get_by_text(const std::string& text, bool exact = true) const;
   Locator get_by_placeholder(const std::string& text, bool exact = true) const;
@@ -249,9 +251,11 @@ class Frame {
   void wait_for_text(const std::string& text, bool exact = false) const;
   Json observe(bool boxes = false, int depth = -1) const;
   Json command(const std::string& family, Json fields = Json::object{}) const;
+
  private:
   friend class Page;
-  Frame(std::shared_ptr<Transport> transport, int page, std::string frame, Json path, Timeout timeout);
+  Frame(std::shared_ptr<Transport> transport, int page, std::string frame, Json path,
+        Timeout timeout);
   Page view() const;
   std::shared_ptr<Transport> transport_;
   int page_ = 0;
@@ -273,8 +277,8 @@ class Context {
   Json cookies(Timeout timeout = Timeout{30000}) const;
   void add_cookies(Json cookies, Timeout timeout = Timeout{30000}) const;
   void clear_cookies(Json filter = Json::object{}, Timeout timeout = Timeout{30000}) const;
-  void grant_permissions(const std::vector<std::string>& permissions, const std::string& origin = "",
-                         Timeout timeout = Timeout{30000}) const;
+  void grant_permissions(const std::vector<std::string>& permissions,
+                         const std::string& origin = "", Timeout timeout = Timeout{30000}) const;
   void clear_permissions(Timeout timeout = Timeout{30000}) const;
   // Chromium context cookies and a current page origin's local/session storage.
   Json storage_state(Timeout timeout = Timeout{30000}) const;

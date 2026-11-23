@@ -93,7 +93,8 @@ auto Source::WakeChildBootstraps() -> void {
           found->second.phase = 1;
           const int tree = self->AllocateDevToolsId();
           if (!tree) {
-            self->FailChildBootstrap("Native child frame bootstrap DevTools command id unavailable");
+            self->FailChildBootstrap(
+                "Native child frame bootstrap DevTools command id unavailable");
             break;
           }
           if (!found->second.ignored && !self->NativeFrameDebuggerTreePrepare(tree, session)) break;

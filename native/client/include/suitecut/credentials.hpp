@@ -25,10 +25,11 @@ class CredentialVault {
   CredentialVault& operator=(const CredentialVault&) = delete;
   void put(const std::string& name, Json credential);
   Json get(const std::string& name) const;
-  std::vector<std::string> list() const; // Names only; credentials remain private.
+  std::vector<std::string> list() const;  // Names only; credentials remain private.
   bool remove(const std::string& name);
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-} // namespace suitecut
+}  // namespace suitecut

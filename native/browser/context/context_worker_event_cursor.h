@@ -5,12 +5,12 @@
 #include "work/dictionary_number.h"
 #include "context/context_worker_cursor.h"
 namespace suitecut {
-inline std::optional<double> NativeContextWorkerAfterSequence(
-    CefRefPtr<CefDictionaryValue> params, uint64_t current) {
+inline std::optional<double> NativeContextWorkerAfterSequence(CefRefPtr<CefDictionaryValue> params,
+                                                              uint64_t current) {
   const auto value = DictionaryNumber(params, "afterSequence");
   if (!std::isfinite(value) || value < 0 || std::floor(value) != value ||
-      value > double(NativeContextWorkerCursors::kMaxSequence) ||
-      value > double(current)) return {};
+      value > double(NativeContextWorkerCursors::kMaxSequence) || value > double(current))
+    return {};
   return value;
 }
 }  // namespace suitecut

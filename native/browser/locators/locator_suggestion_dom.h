@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 // Observation only: C++ owns strategy ranking and final recipe selection.
-inline constexpr char kSuiteCutLocatorSuggestionObserve[]=R"JS(function(query){
+inline constexpr char kSuiteCutLocatorSuggestionObserve[] = R"JS(function(query){
  const target=this;if(!(target instanceof Element)||target.ownerDocument!==document||!target.isConnected)throw new Error('Locator suggestions require a connected Element in its captured document');
  const tools=query([],document,{accessibilityTools:true}),candidates=[],omitted=[];
  const value=text=>typeof text==='string'&&text.isWellFormed();
@@ -28,7 +28,7 @@ inline constexpr char kSuiteCutLocatorSuggestionObserve[]=R"JS(function(query){
 })JS";
 // One synchronous verification boundary for ALL native-ranked candidates. Each
 // query compares the exact selected node.
-inline constexpr char kSuiteCutLocatorSuggestionVerify[]=R"JS(function(query,recipes){
+inline constexpr char kSuiteCutLocatorSuggestionVerify[] = R"JS(function(query,recipes){
  if(!(this instanceof Element)||this.ownerDocument!==document||!this.isConnected)throw new Error('Native locator suggestion target was detached or adopted');
  const results=[];
  for(const steps of recipes){const nodes=query(steps,document);results.push({matches:nodes.length,same:nodes.length===1&&nodes[0]===this});}

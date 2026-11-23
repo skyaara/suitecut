@@ -49,31 +49,33 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
     std::function<void(const Scope&, const std::string&)> close_channel;
   };
 
-  static std::shared_ptr<DragCompletions> Create(Hooks hooks,
-                                                std::shared_ptr<Budget> budget) {
-    if (!budget || !hooks.now || !hooks.wake || !hooks.send ||
-        !hooks.operation_current || !hooks.incarnation_current ||
-        !hooks.logical || !hooks.close_channel) return nullptr;
+  static std::shared_ptr<DragCompletions> Create(Hooks hooks, std::shared_ptr<Budget> budget) {
+    if (!budget || !hooks.now || !hooks.wake || !hooks.send || !hooks.operation_current ||
+        !hooks.incarnation_current || !hooks.logical || !hooks.close_channel)
+      return nullptr;
     return std::shared_ptr<DragCompletions>(
         new DragCompletions(std::move(hooks), std::move(budget)));
   }
   ~DragCompletions() { assert(records_.empty()); }
 
-  bool Begin(Scope scope, Kind kind, size_t bytes, double deadline,
-             Payload payload) {
+  bool Begin(Scope scope, Kind kind, size_t bytes, double deadline, Payload payload) {
     const double now = hooks_.now();
-    if (closed_ || !records_.empty() || !scope.channel || !scope.incarnation ||
-        scope.owner < 1 || !scope.generation || !payload ||
-        !std::isfinite(now) || !std::isfinite(deadline) || deadline < 0 ||
-        (deadline > 0 && (now >= deadline || !std::isfinite(deadline + kGrace))))
+    if (closed_ || !records_.empty() || !scope.channel || !scope.incarnation || scope.owner < 1 ||
+        !scope.generation || !payload || !std::isfinite(now) || !std::isfinite(deadline) ||
+        deadline < 0 || (deadline > 0 && (now >= deadline || !std::isfinite(deadline + kGrace))))
       return false;
     auto record = std::make_shared<Record>();
-    record->scope = scope; record->kind = kind; record->bytes = bytes;
-    record->deadline = deadline; record->payload = std::move(payload);
+    record->scope = scope;
+    record->kind = kind;
+    record->bytes = bytes;
+    record->deadline = deadline;
+    record->payload = std::move(payload);
     // Insert before reserving counters: an allocation exception cannot leave a
     // counter ghost or claim any native command was admitted.
     records_.emplace(scope.incarnation, record);
-    ++budget_->records; budget_->bytes += bytes; record->reserved = true;
+    ++budget_->records;
+    budget_->bytes += bytes;
+    record->reserved = true;
     Dispatch(record, Stage::Drop);
     return true;
   }
@@ -96,8 +98,7 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
   }
   bool NeedsTick() const {
     for (const auto& [id, record] : records_)
-      if (!record->closing && (record->deadline > 0 || record->retirement > 0))
-        return true;
+      if (!record->closing && (record->deadline > 0 || record->retirement > 0)) return true;
     return false;
   }
   void ChannelClosed() {
@@ -144,8 +145,8 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
     const double limit = hooks_.now() + kGrace;
     const double original = record->deadline > 0 ? record->deadline + kGrace : limit;
     const double retirement = std::min(limit, original);
-    record->retirement = record->retirement > 0
-                             ? std::min(record->retirement, retirement) : retirement;
+    record->retirement =
+        record->retirement > 0 ? std::min(record->retirement, retirement) : retirement;
     hooks_.wake();
   }
   void Fail(const std::shared_ptr<Record>& record, const std::string& error) {
@@ -158,7 +159,9 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
   void Expire(const std::shared_ptr<Record>& record) {
     if (!record->logical) return;
     if (!hooks_.operation_current(record->scope)) {
-      record->logical = false; ArmRetirement(record); return;
+      record->logical = false;
+      ArmRetirement(record);
+      return;
     }
     if (record->deadline > 0 && hooks_.now() >= record->deadline)
       Fail(record, "Native drag original operation timed out");
@@ -172,9 +175,12 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
   }
   void Retire(const std::shared_ptr<Record>& record) {
     if (!record->reserved) return;
-    record->reserved = false; record->waiting = false; record->logical = false;
+    record->reserved = false;
+    record->waiting = false;
+    record->logical = false;
     assert(budget_->records && budget_->bytes >= record->bytes);
-    --budget_->records; budget_->bytes -= record->bytes;
+    --budget_->records;
+    budget_->bytes -= record->bytes;
     record->payload.reset();
     const auto it = records_.find(record->scope.incarnation);
     if (it != records_.end() && it->second == record) records_.erase(it);
@@ -192,17 +198,19 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
   void Dispatch(const std::shared_ptr<Record>& record, Stage stage) {
     if (!Live(record) || record->closing) return;
     if (!hooks_.incarnation_current(record->scope)) {
-      Close(record, "Native drag owner changed before physical cleanup"); return;
+      Close(record, "Native drag owner changed before physical cleanup");
+      return;
     }
-    record->stage = stage; record->waiting = true;
+    record->stage = stage;
+    record->waiting = true;
     const auto sequence = ++record->sequence;
     auto self = shared_from_this();
     bool owned = false;
     try {
       owned = hooks_.send(record->scope, stage, record->payload,
-          [self, record, sequence](Outcome outcome, const std::string& error) {
-            self->Acknowledged(record, sequence, outcome, error);
-          });
+                          [self, record, sequence](Outcome outcome, const std::string& error) {
+                            self->Acknowledged(record, sequence, outcome, error);
+                          });
     } catch (...) {
       // An exception is not proof of transport refusal or successful cleanup.
       // Expose failure and request real channel closure, retaining this bounded
@@ -210,19 +218,20 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
       Close(record, "Native drag transport failed while establishing ownership");
       return;
     }
-    if (!owned) Acknowledged(record, sequence, Outcome::Refused,
-                            "Native drag command was not admitted");
+    if (!owned)
+      Acknowledged(record, sequence, Outcome::Refused, "Native drag command was not admitted");
     if (Live(record)) hooks_.wake();
   }
-  void Acknowledged(const std::shared_ptr<Record>& record, uint64_t sequence,
-                    Outcome outcome, const std::string& error) {
+  void Acknowledged(const std::shared_ptr<Record>& record, uint64_t sequence, Outcome outcome,
+                    const std::string& error) {
     if (!Live(record) || !record->waiting || record->sequence != sequence) return;
     record->waiting = false;
     Expire(record);
     if (!Live(record)) return;
     if (record->closing) return;
     if (!hooks_.incarnation_current(record->scope)) {
-      Close(record, "Native drag owner changed before physical cleanup"); return;
+      Close(record, "Native drag owner changed before physical cleanup");
+      return;
     }
     if (outcome != Outcome::Acknowledged) {
       Fail(record, error.empty() ? "Native drag command failed" : error);
@@ -237,14 +246,20 @@ class DragCompletions : public std::enable_shared_from_this<DragCompletions> {
     // widget lookup. Public CEF has no immutable widget delivery lease here;
     // actual owning-channel closure is the conservative settlement boundary.
     if (!record->logical && record->kind == Kind::Helper) {
-      Close(record, "Native canceled helper drag requires owning-channel closure"); return;
+      Close(record, "Native canceled helper drag requires owning-channel closure");
+      return;
     }
     switch (record->stage) {
       case Stage::Drop:
-        Dispatch(record, record->kind == Kind::Helper
-                             ? Stage::MouseRelease : Stage::DisableIntercept); break;
-      case Stage::MouseRelease: Dispatch(record, Stage::DisableIntercept); break;
-      case Stage::DisableIntercept: Finished(record); break;
+        Dispatch(record,
+                 record->kind == Kind::Helper ? Stage::MouseRelease : Stage::DisableIntercept);
+        break;
+      case Stage::MouseRelease:
+        Dispatch(record, Stage::DisableIntercept);
+        break;
+      case Stage::DisableIntercept:
+        Finished(record);
+        break;
     }
   }
   Hooks hooks_;

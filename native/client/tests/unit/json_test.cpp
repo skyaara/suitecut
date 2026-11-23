@@ -7,48 +7,111 @@
 
 using suitecut::Json;
 namespace {
-void check(bool value, const char* message) { if (!value) throw std::runtime_error(message); }
-template<class F> void rejects(F&& work) { bool rejected = false; try { work(); } catch (const std::exception&) { rejected = true; } check(rejected, "Expected JSON rejection"); }
+void check(bool value, const char* message) {
+  if (!value) throw std::runtime_error(message);
 }
+template <class F>
+void rejects(F&& work) {
+  bool rejected = false;
+  try {
+    work();
+  } catch (const std::exception&) {
+    rejected = true;
+  }
+  check(rejected, "Expected JSON rejection");
+}
+}  // namespace
 int main() {
   try {
-    Json value{{"null", nullptr}, {"bool", true}, {"integer", 9223372036854775807LL},
-               {"text", "literal is a string"}, {"array", Json::array{1, 2.5, false}}};
+    Json value{{"null", nullptr},
+               {"bool", true},
+               {"integer", 9223372036854775807LL},
+               {"text", "literal is a string"},
+               {"array", Json::array{1, 2.5, false}}};
     check(value.at("text").is_string(), "Literal converted to bool");
-    check(value.at("integer").as_int() == std::numeric_limits<std::int64_t>::max(), "Integer lost precision");
+    check(value.at("integer").as_int() == std::numeric_limits<std::int64_t>::max(),
+          "Integer lost precision");
     check(Json::parse(value.dump()) == value, "Object roundtrip changed value");
-    check(Json::parse("-9223372036854775808").as_int() == std::numeric_limits<std::int64_t>::min(), "Minimum int64 failed");
-    check(!Json::parse("9223372036854775808").is_integer(), "Overflowing integer was truncated to int64");
-    check(Json::parse("100000000000000000000").as_double() == 1e20, "Large JavaScript number rejected");
-    check(Json::parse("-9223372036854775809").as_double() == -9223372036854775808.0, "Finite large negative number rejected");
-    Json empty; empty["created"] = "field"; check(empty.at("created").as_string() == "field", "Null object promotion failed");
+    check(Json::parse("-9223372036854775808").as_int() == std::numeric_limits<std::int64_t>::min(),
+          "Minimum int64 failed");
+    check(!Json::parse("9223372036854775808").is_integer(),
+          "Overflowing integer was truncated to int64");
+    check(Json::parse("100000000000000000000").as_double() == 1e20,
+          "Large JavaScript number rejected");
+    check(Json::parse("-9223372036854775809").as_double() == -9223372036854775808.0,
+          "Finite large negative number rejected");
+    Json empty;
+    empty["created"] = "field";
+    check(empty.at("created").as_string() == "field", "Null object promotion failed");
     check(!empty.contains("absent") && !Json(1).contains("a"), "contains changed type");
-    rejects([&] { (void)value.at("absent"); }); rejects([&] { (void)value.at("integer").as_string(); });
-    rejects([&] { (void)value.at("array").at(9); }); rejects([&] { (void)Json(1.0).as_int(); });
+    rejects([&] { (void)value.at("absent"); });
+    rejects([&] { (void)value.at("integer").as_string(); });
+    rejects([&] { (void)value.at("array").at(9); });
+    rejects([&] { (void)Json(1.0).as_int(); });
     rejects([&] { (void)Json(std::numeric_limits<std::uint64_t>::max()); });
     rejects([&] { (void)Json(std::numeric_limits<double>::infinity()); });
     rejects([&] { (void)Json(std::numeric_limits<double>::quiet_NaN()); });
     rejects([&] { (void)Json{{"same", 1}, {"same", 2}}; });
-    for (const double number : {0.0, -0.0, 1.0, -2.5, 1e100, 1e-100, std::numeric_limits<double>::max(), std::numeric_limits<double>::denorm_min()}) {
+    for (const double number :
+         {0.0, -0.0, 1.0, -2.5, 1e100, 1e-100, std::numeric_limits<double>::max(),
+          std::numeric_limits<double>::denorm_min()}) {
       const auto roundtrip = Json::parse(Json(number).dump());
-      check(roundtrip.is_number() && roundtrip.as_double() == number, "Double roundtrip changed number");
+      check(roundtrip.is_number() && roundtrip.as_double() == number,
+            "Double roundtrip changed number");
       check(std::signbit(roundtrip.as_double()) == std::signbit(number), "Negative zero lost sign");
     }
     const auto unicode = Json::parse(R"("A\u0000\u20ac\ud83d\ude00\/\b\f\n\r\t")").as_string();
-    check(unicode == std::string("A\0", 2) + "\xe2\x82\xac\xf0\x9f\x98\x80/\b\f\n\r\t", "Unicode escape decoding failed");
-    check(Json::parse(Json(unicode).dump()).as_string() == unicode, "Unicode string roundtrip failed");
-    std::string controls; for (int i = 0; i < 32; ++i) controls += static_cast<char>(i);
+    check(unicode == std::string("A\0", 2) + "\xe2\x82\xac\xf0\x9f\x98\x80/\b\f\n\r\t",
+          "Unicode escape decoding failed");
+    check(Json::parse(Json(unicode).dump()).as_string() == unicode,
+          "Unicode string roundtrip failed");
+    std::string controls;
+    for (int i = 0; i < 32; ++i) controls += static_cast<char>(i);
     check(Json::parse(Json(controls).dump()).as_string() == controls, "Control quoting failed");
-    check(Json::parse(" \n\t\r {\"a\": [null,true,false,-1,1e2]} \r").at("a").as_array().size() == 5, "JSON whitespace failed");
-    for (const auto text : {"", " ", "null x", "truefalse", "[1,]", "{\"a\":1,}", "{a:1}", "{\"a\" 1}",
-                           "{\"a\":1,\"a\":2}", "{\"a\":1,\"\\u0061\":2}", "[", "{", "\"", "'text'", "NaN", "Infinity",
-                           "00", "01", "-01", "+1", "1.", ".1", "1e", "1e+", "--1", "1e9999", "1e-9999",
-                           "\"\\x20\"", "\"\\u123\"", "\"\\uZZZZ\"",
-                           "\"\\ud800\"", "\"\\udc00\"", "\"\\ud800x\"", "\"\\ud800\\u0041\"", "\"line\nfeed\""})
+    check(
+        Json::parse(" \n\t\r {\"a\": [null,true,false,-1,1e2]} \r").at("a").as_array().size() == 5,
+        "JSON whitespace failed");
+    for (const auto text : {"",
+                            " ",
+                            "null x",
+                            "truefalse",
+                            "[1,]",
+                            "{\"a\":1,}",
+                            "{a:1}",
+                            "{\"a\" 1}",
+                            "{\"a\":1,\"a\":2}",
+                            "{\"a\":1,\"\\u0061\":2}",
+                            "[",
+                            "{",
+                            "\"",
+                            "'text'",
+                            "NaN",
+                            "Infinity",
+                            "00",
+                            "01",
+                            "-01",
+                            "+1",
+                            "1.",
+                            ".1",
+                            "1e",
+                            "1e+",
+                            "--1",
+                            "1e9999",
+                            "1e-9999",
+                            "\"\\x20\"",
+                            "\"\\u123\"",
+                            "\"\\uZZZZ\"",
+                            "\"\\ud800\"",
+                            "\"\\udc00\"",
+                            "\"\\ud800x\"",
+                            "\"\\ud800\\u0041\"",
+                            "\"line\nfeed\""})
       rejects([&] { (void)Json::parse(text); });
-    for (const std::string& invalid : {std::string("\xc0\xaf", 2), std::string("\xe0\x80\x80", 3), std::string("\xed\xa0\x80", 3),
-                                     std::string("\xf0\x80\x80\x80", 4), std::string("\xf4\x90\x80\x80", 4), std::string("\xf5\x80\x80\x80", 4),
-                                     std::string("\x80", 1), std::string("\xe2\x82", 2), std::string("\xe2\x28\xa1", 3)}) {
+    for (const std::string& invalid :
+         {std::string("\xc0\xaf", 2), std::string("\xe0\x80\x80", 3),
+          std::string("\xed\xa0\x80", 3), std::string("\xf0\x80\x80\x80", 4),
+          std::string("\xf4\x90\x80\x80", 4), std::string("\xf5\x80\x80\x80", 4),
+          std::string("\x80", 1), std::string("\xe2\x82", 2), std::string("\xe2\x28\xa1", 3)}) {
       rejects([&] { (void)Json::parse('"' + invalid + '"'); });
       rejects([&] { (void)Json(invalid).dump(); });
       rejects([&] { (void)Json(Json::object{{invalid, 1}}).dump(); });
@@ -59,35 +122,59 @@ int main() {
     rejects([] { (void)Json::parse("[[0]]", {20, 1, 20, 20}); });
     rejects([] { (void)Json("long").dump({3, 64, 10, 10}); });
     // Default limits are zero, meaning no limit; any depth a caller chooses is accepted.
-    check(Json::parse("0", {20, 257, 20, 20}) == Json(0), "Caller depth above the former 256 bound was rejected");
-    std::string nested(1000, '['); nested += '0'; nested.append(1000, ']');
-    check(Json::parse(nested).dump() == nested, "Nesting past the former default depth of 64 was rejected");
-    // Without a caller depth limit, nesting is bounded by memory, not the stack: parse, dump, compare, copy and
-    // destruction are iterative, so a remote endpoint's 10^6 brackets cannot overflow an I/O thread's stack.
+    check(Json::parse("0", {20, 257, 20, 20}) == Json(0),
+          "Caller depth above the former 256 bound was rejected");
+    std::string nested(1000, '[');
+    nested += '0';
+    nested.append(1000, ']');
+    check(Json::parse(nested).dump() == nested,
+          "Nesting past the former default depth of 64 was rejected");
+    // Without a caller depth limit, nesting is bounded by memory, not the stack: parse, dump,
+    // compare, copy and destruction are iterative, so a remote endpoint's 10^6 brackets cannot
+    // overflow an I/O thread's stack.
     {
       constexpr std::size_t levels = 1000000;
-      std::string deep(levels, '['); deep += '0'; deep.append(levels, ']');
+      std::string deep(levels, '[');
+      deep += '0';
+      deep.append(levels, ']');
       auto parsed = Json::parse(deep);
       check(parsed.dump() == deep, "Million-level array nesting did not roundtrip");
-      Json copy(parsed); check(copy == parsed, "Million-level copy differed");
-      Json assigned; assigned = copy; check(assigned == parsed, "Million-level copy assignment differed");
-      const Json* leaf = &copy; for (std::size_t i = 0; i < levels; ++i) leaf = &leaf->at(0);
+      Json copy(parsed);
+      check(copy == parsed, "Million-level copy differed");
+      Json assigned;
+      assigned = copy;
+      check(assigned == parsed, "Million-level copy assignment differed");
+      const Json* leaf = &copy;
+      for (std::size_t i = 0; i < levels; ++i) leaf = &leaf->at(0);
       check(leaf->as_int() == 0, "Million-level copy lost its leaf");
-      copy.as_array()[0] = Json(1); check(!(copy == parsed), "Copy shared state with its source");
+      copy.as_array()[0] = Json(1);
+      check(!(copy == parsed), "Copy shared state with its source");
       rejects([&] { (void)Json::parse(deep, {0, levels - 1, 0, 0}); });
       rejects([&] { (void)parsed.dump({0, levels - 1, 0, 0}); });
-      check(Json::parse(deep, {0, levels, 0, 0}).dump({0, levels, 0, 0}) == deep, "Caller depth limit equal to the nesting was rejected");
-      std::string objects; for (std::size_t i = 0; i < levels; ++i) objects += "{\"k\":"; objects += "null"; objects.append(levels, '}');
+      check(Json::parse(deep, {0, levels, 0, 0}).dump({0, levels, 0, 0}) == deep,
+            "Caller depth limit equal to the nesting was rejected");
+      std::string objects;
+      for (std::size_t i = 0; i < levels; ++i) objects += "{\"k\":";
+      objects += "null";
+      objects.append(levels, '}');
       const auto object = Json::parse(objects);
-      check(object.dump() == objects && Json(object) == object, "Million-level object nesting did not roundtrip");
-      Json built = 0; for (std::size_t i = 0; i < levels; ++i) { Json::array wrapper; wrapper.push_back(std::move(built)); built = Json(std::move(wrapper)); }
+      check(object.dump() == objects && Json(object) == object,
+            "Million-level object nesting did not roundtrip");
+      Json built = 0;
+      for (std::size_t i = 0; i < levels; ++i) {
+        Json::array wrapper;
+        wrapper.push_back(std::move(built));
+        built = Json(std::move(wrapper));
+      }
       check(built == parsed, "Built million-level tree differed from the parsed one");
       // parsed, copy, assigned, object and built are destroyed here at a million levels each.
     }
     const std::string large(193 * 1024 * 1024, 'x');
-    check(Json::parse(Json(large).dump()).as_string() == large, "JSON string past the former 192 MiB default was not passed through whole");
+    check(Json::parse(Json(large).dump()).as_string() == large,
+          "JSON string past the former 192 MiB default was not passed through whole");
     Json::array many(2 * 1024 * 1024, Json(1));
-    check(Json::parse(Json(many).dump()).as_array().size() == many.size(), "Node count past the former 1 Mi default was rejected");
+    check(Json::parse(Json(many).dump()).as_array().size() == many.size(),
+          "Node count past the former 1 Mi default was rejected");
     const std::string prefix(4096, 'a'), suffix(4096, 'z');
     const auto mixed = prefix + "\"\\\n東京" + suffix;
     const auto quoted = '"' + prefix + "\\\"\\\\\\u000a東京" + suffix + '"';
@@ -97,9 +184,13 @@ int main() {
     --limits.max_string_bytes;
     rejects([&] { (void)Json::parse(quoted, limits); });
     rejects([&] { (void)Json(mixed).dump(limits); });
-    ++limits.max_string_bytes; --limits.max_bytes;
+    ++limits.max_string_bytes;
+    --limits.max_bytes;
     rejects([&] { (void)Json(mixed).dump(limits); });
     std::cout << "JSON strict UTF8, escapes, exact numbers, limits and roundtrips passed\n";
     return 0;
-  } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
+  } catch (const std::exception& error) {
+    std::cerr << error.what() << '\n';
+    return 1;
+  }
 }

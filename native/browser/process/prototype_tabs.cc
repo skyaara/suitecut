@@ -52,9 +52,9 @@ struct Options {
   bool chrome_pages = true;  // false: Alloy-style pages
   bool hide = false;         // true: keep every tab attached and hide the others
   bool selftest = false;
-  bool toolbar = true;  // false: no toolbar view, to isolate Chrome-style limits
-  bool control = false;     // JSON-line commands on stdin, answers and events on stdout
-  bool autodialog = false;  // accept JS dialogs instead of showing them
+  bool toolbar = true;        // false: no toolbar view, to isolate Chrome-style limits
+  bool control = false;       // JSON-line commands on stdin, answers and events on stdout
+  bool autodialog = false;    // accept JS dialogs instead of showing them
   bool hold_dialogs = false;  // control mode: a dialog waits for a "dialog" command
   int width = 1200, height = 800;
   std::string first_url;
@@ -164,13 +164,14 @@ send({ cmd: 'ready' });
 
 // A page that shows whether it kept running while its tab was in the background.
 std::string ProbePage(const std::string& name) {
-  return DataUrl("<!doctype html><title>" + name + "</title><h1>" + name +
-                 "</h1><input id=f><p>ticks: <b id=o>0</b></p><script>"
-                 "window.token=Math.random().toString(36).slice(2);window.ticks=0;"
-                 "window.start=Date.now();window.hiddenSeen=false;"
-                 "setInterval(()=>{ticks++;if(document.hidden)hiddenSeen=true;o.textContent=ticks},100);"
-                 "document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenSeen=true});"
-                 "</script>");
+  return DataUrl(
+      "<!doctype html><title>" + name + "</title><h1>" + name +
+      "</h1><input id=f><p>ticks: <b id=o>0</b></p><script>"
+      "window.token=Math.random().toString(36).slice(2);window.ticks=0;"
+      "window.start=Date.now();window.hiddenSeen=false;"
+      "setInterval(()=>{ticks++;if(document.hidden)hiddenSeen=true;o.textContent=ticks},100);"
+      "document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenSeen=true});"
+      "</script>");
 }
 const char kProbe[] =
     "JSON.stringify({token,ticks,elapsed:Date.now()-start,visibility:document.visibilityState,"
@@ -188,7 +189,7 @@ struct Recording {
   std::string id, output, ffmpeg;
   double fps = 60, last_ms = -1;
   bool window_area = false;
-  int width = 0, height = 0;               // requested encoder canvas; 0 follows the page
+  int width = 0, height = 0;                // requested encoder canvas; 0 follows the page
   int canvas_width = 0, canvas_height = 0;  // the encoder canvas in use
   int source_width = 0, source_height = 0;  // the first frame's crop
   int64_t max_bytes = 0;
@@ -246,10 +247,11 @@ class AudioTap {
       if (stream == streams_.end() || !stream->second.valid) return;
       monitor = stream->second.monitor;
       if (pipeline_ && browser == front_.load()) {
-        const double epoch =
-            std::chrono::duration<double, std::milli>(std::chrono::system_clock::now().time_since_epoch()).count();
-        timestamp = stream->second.clock.Map(static_cast<double>(pts), suitecut::WindowFramesNow(), epoch,
-                                             stream->second.offset);
+        const double epoch = std::chrono::duration<double, std::milli>(
+                                 std::chrono::system_clock::now().time_since_epoch())
+                                 .count();
+        timestamp = stream->second.clock.Map(static_cast<double>(pts), suitecut::WindowFramesNow(),
+                                             epoch, stream->second.offset);
         pipeline = pipeline_;
       }
     }
@@ -316,9 +318,10 @@ class Shell {
 #if defined(__APPLE__)
   void StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply);
   void StopRecording(const std::string& id, bool cancel, Reply reply);
-  void RecordingFrame(const std::shared_ptr<Recording>& recording, void* surface, int width, int height,
-                      double now);
-  bool StartPipeline(const std::shared_ptr<Recording>& recording, int width, int height, double now);
+  void RecordingFrame(const std::shared_ptr<Recording>& recording, void* surface, int width,
+                      int height, double now);
+  bool StartPipeline(const std::shared_ptr<Recording>& recording, int width, int height,
+                     double now);
   void FailRecording(const std::shared_ptr<Recording>& recording, const std::string& reason);
   CefRect PageRect(int width, int height);
   std::map<std::string, std::shared_ptr<Recording>> recordings;
@@ -386,7 +389,9 @@ class Client : public CefClient,
                            int64_t pts) override {
     audio_tap.Packet(browser->GetIdentifier(), data, frames, pts);
   }
-  void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override { audio_tap.Stopped(browser->GetIdentifier()); }
+  void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override {
+    audio_tap.Stopped(browser->GetIdentifier());
+  }
   void OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) override {
     audio_tap.Stopped(browser->GetIdentifier());
     Report("audio error: " + message.ToString());
@@ -399,7 +404,8 @@ class Client : public CefClient,
   CefRefPtr<CefPermissionHandler> GetPermissionHandler() override { return this; }
   CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
-  void OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool loading, bool back, bool forward) override {
+  void OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool loading, bool back,
+                            bool forward) override {
     if (toolbar_) return;
     auto event = Event("loading", TabOf(browser));
     event->SetBool("loading", loading);
@@ -434,14 +440,15 @@ class Client : public CefClient,
   void OnDownloadUpdated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> item,
                          CefRefPtr<CefDownloadItemCallback>) override {
     if (!item->IsComplete() && !item->IsCanceled()) return;
-    auto event = Event(item->IsComplete() ? "download-complete" : "download-canceled", TabOf(browser));
+    auto event =
+        Event(item->IsComplete() ? "download-complete" : "download-canceled", TabOf(browser));
     event->SetString("path", item->GetFullPath().ToString());
     event->SetDouble("bytes", static_cast<double>(item->GetReceivedBytes()));
     Emit(event);
   }
   bool OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString&, JSDialogType type,
-                  const CefString& message, const CefString&, CefRefPtr<CefJSDialogCallback> callback,
-                  bool&) override {
+                  const CefString& message, const CefString&,
+                  CefRefPtr<CefJSDialogCallback> callback, bool&) override {
     auto event = Event("dialog", TabOf(browser));
     event->SetInt("type", type);
     event->SetString("message", message);
@@ -457,13 +464,15 @@ class Client : public CefClient,
   // Alloy has no permission UI: without an answer a prompt waits forever and
   // queues every later one. Ours is a bar in the toolbar.
   bool OnShowPermissionPrompt(CefRefPtr<CefBrowser> browser, uint64_t, const CefString& origin,
-                              uint32_t requested, CefRefPtr<CefPermissionPromptCallback> callback) override {
+                              uint32_t requested,
+                              CefRefPtr<CefPermissionPromptCallback> callback) override {
     auto event = Event("permission-prompt", TabOf(browser));
     event->SetString("origin", origin);
     event->SetInt("permissions", static_cast<int>(requested));
     Emit(event);
     shell.Ask({origin.ToString(), Wants(requested), [callback](bool allow) {
-                 callback->Continue(allow ? CEF_PERMISSION_RESULT_ACCEPT : CEF_PERMISSION_RESULT_DENY);
+                 callback->Continue(allow ? CEF_PERMISSION_RESULT_ACCEPT
+                                          : CEF_PERMISSION_RESULT_DENY);
                }});
     return true;
   }
@@ -474,17 +483,19 @@ class Client : public CefClient,
     event->SetString("origin", origin);
     event->SetInt("permissions", static_cast<int>(requested));
     Emit(event);
-    shell.Ask({origin.ToString(), "camera or microphone", [callback, requested](bool allow) {
-                 callback->Continue(allow ? requested : 0);
-               }});
+    shell.Ask({origin.ToString(), "camera or microphone",
+               [callback, requested](bool allow) { callback->Continue(allow ? requested : 0); }});
     return true;
   }
   static std::string Wants(uint32_t requested) {
     std::string out;
     const std::pair<uint32_t, const char*> names[] = {
-        {CEF_PERMISSION_TYPE_CLIPBOARD, "clipboard"}, {CEF_PERMISSION_TYPE_NOTIFICATIONS, "notifications"},
-        {CEF_PERMISSION_TYPE_GEOLOCATION, "location"}, {CEF_PERMISSION_TYPE_CAMERA_STREAM, "camera"},
-        {CEF_PERMISSION_TYPE_MIC_STREAM, "microphone"}, {CEF_PERMISSION_TYPE_MULTIPLE_DOWNLOADS, "downloads"}};
+        {CEF_PERMISSION_TYPE_CLIPBOARD, "clipboard"},
+        {CEF_PERMISSION_TYPE_NOTIFICATIONS, "notifications"},
+        {CEF_PERMISSION_TYPE_GEOLOCATION, "location"},
+        {CEF_PERMISSION_TYPE_CAMERA_STREAM, "camera"},
+        {CEF_PERMISSION_TYPE_MIC_STREAM, "microphone"},
+        {CEF_PERMISSION_TYPE_MULTIPLE_DOWNLOADS, "downloads"}};
     for (const auto& [bit, name] : names)
       if (requested & bit) out += (out.empty() ? "" : ", ") + std::string(name);
     return out.empty() ? "a permission" : out;
@@ -535,7 +546,9 @@ class Client : public CefClient,
     return tab ? tab->id : 0;
   }
   void OnBeforeClose(CefRefPtr<CefBrowser> browser) override { shell.Closed(browser); }
-  void OnResetDialogState(CefRefPtr<CefBrowser> browser) override { shell.dialogs.erase(TabOf(browser)); }
+  void OnResetDialogState(CefRefPtr<CefBrowser> browser) override {
+    shell.dialogs.erase(TabOf(browser));
+  }
   void OnDevToolsMethodResult(CefRefPtr<CefBrowser>, int message_id, bool success,
                               const void* result, size_t size) override {
     shell.Result(message_id, success, std::string(static_cast<const char*>(result), size));
@@ -614,7 +627,8 @@ int Shell::NewTab(const std::string& url) {
   tab.url = url;
   tab.view = CefBrowserView::CreateBrowserView(
       pages, url, CefBrowserSettings(), nullptr, nullptr,
-      new ViewDelegate(options.chrome_pages ? CEF_RUNTIME_STYLE_CHROME : CEF_RUNTIME_STYLE_ALLOY, 0));
+      new ViewDelegate(options.chrome_pages ? CEF_RUNTIME_STYLE_CHROME : CEF_RUNTIME_STYLE_ALLOY,
+                       0));
   tabs_.push_back(tab);
   Select(tab.id);
   return tab.id;
@@ -646,12 +660,14 @@ void Shell::Select(int id) {
 
 void Shell::CloseTab(int id) {
   if (tabs_.size() <= 1) return;
-  const auto found = std::find_if(tabs_.begin(), tabs_.end(), [&](const Tab& t) { return t.id == id; });
+  const auto found =
+      std::find_if(tabs_.begin(), tabs_.end(), [&](const Tab& t) { return t.id == id; });
   if (found == tabs_.end()) return;
   const auto index = static_cast<size_t>(found - tabs_.begin());
   // Show the neighbour first, so the closing view is no longer in the window.
   if (active_ == id) Select(tabs_[index + 1 < tabs_.size() ? index + 1 : index - 1].id);
-  const auto closing = std::find_if(tabs_.begin(), tabs_.end(), [&](const Tab& t) { return t.id == id; });
+  const auto closing =
+      std::find_if(tabs_.begin(), tabs_.end(), [&](const Tab& t) { return t.id == id; });
   if (closing->attached) content_->RemoveChildView(closing->view);
   // The view must outlive its browser's close; OnBeforeClose releases it.
   closing_views_.push_back(closing->view);
@@ -670,14 +686,22 @@ void Shell::Command(const std::string& json) {
   const auto id = message->GetInt("id");
   Tab* tab = Find(active_);
   const auto browser = tab ? tab->view->GetBrowser() : nullptr;
-  if (cmd == "ready") Render();
-  else if (cmd == "new") NewTab(ProbePage("Tab " + std::to_string(next_tab_)));
-  else if (cmd == "select") Select(id);
-  else if (cmd == "permission") Answer(message->GetBool("allow"));
-  else if (cmd == "close") CloseTab(id);
-  else if (cmd == "back" && browser) browser->GoBack();
-  else if (cmd == "forward" && browser) browser->GoForward();
-  else if (cmd == "reload" && browser) browser->Reload();
+  if (cmd == "ready")
+    Render();
+  else if (cmd == "new")
+    NewTab(ProbePage("Tab " + std::to_string(next_tab_)));
+  else if (cmd == "select")
+    Select(id);
+  else if (cmd == "permission")
+    Answer(message->GetBool("allow"));
+  else if (cmd == "close")
+    CloseTab(id);
+  else if (cmd == "back" && browser)
+    browser->GoBack();
+  else if (cmd == "forward" && browser)
+    browser->GoForward();
+  else if (cmd == "reload" && browser)
+    browser->Reload();
   else if (cmd == "navigate" && browser) {
     auto url = message->GetString("url").ToString();
     if (url.find("://") == std::string::npos && url.rfind("data:", 0) != 0 &&
@@ -750,7 +774,8 @@ void Shell::Closed(CefRefPtr<CefBrowser> browser) {
   if (--open_browsers_ == 0 && closing_ && window) window->Close();
 }
 
-void Shell::Changed(CefRefPtr<CefBrowser> browser, const std::string* title, const std::string* url) {
+void Shell::Changed(CefRefPtr<CefBrowser> browser, const std::string* title,
+                    const std::string* url) {
   Tab* tab = ByBrowser(browser);
   if (!tab) return;
   if (title) tab->title = *title;
@@ -787,8 +812,10 @@ void Shell::Evaluate(int id, const std::string& expression, std::function<void(s
     const auto value = ok ? CefParseJSON(json, JSON_PARSER_RFC) : nullptr;
     const auto root = value ? value->GetDictionary() : nullptr;
     const auto result = root ? root->GetDictionary("result") : nullptr;
-    if (!result) return done("{\"error\":" + (json.empty() ? std::string("\"failed\"") : json) + "}");
-    if (result->GetType("value") == VTYPE_STRING) return done(result->GetString("value").ToString());
+    if (!result)
+      return done("{\"error\":" + (json.empty() ? std::string("\"failed\"") : json) + "}");
+    if (result->GetType("value") == VTYPE_STRING)
+      return done(result->GetString("value").ToString());
     auto copy = CefValue::Create();
     copy->SetDictionary(result->Copy(false));
     done(CefWriteJSON(copy, JSON_WRITER_DEFAULT).ToString());
@@ -830,10 +857,14 @@ void Shell::Control(const std::string& line) {
     Tab* found = Find(tab);
     const auto browser = found ? found->view->GetBrowser() : nullptr;
     if (!browser) return reply(false, nullptr);
-    if (cmd == "back") browser->GoBack();
-    else if (cmd == "forward") browser->GoForward();
-    else if (cmd == "reload") browser->Reload();
-    else browser->StopLoad();
+    if (cmd == "back")
+      browser->GoBack();
+    else if (cmd == "forward")
+      browser->GoForward();
+    else if (cmd == "reload")
+      browser->Reload();
+    else
+      browser->StopLoad();
     return reply(true, nullptr);
   }
   if (cmd == "permission") {
@@ -882,15 +913,18 @@ void Shell::Control(const std::string& line) {
   }
 #if defined(__APPLE__)
   // {"cmd":"record-start","path":"/abs/out.mp4","fps":60,"area":"page"|"window","width":0,"height":0,
-  //  "audio":true,"ffmpegPath":"ffmpeg","maxFileBytes":0} -> {"recording":"recording-1",...} once frames are encoding.
+  //  "audio":true,"ffmpegPath":"ffmpeg","maxFileBytes":0} -> {"recording":"recording-1",...} once
+  //  frames are encoding.
   if (cmd == "record-start") return StartRecording(message, reply);
   // {"cmd":"record-stop","recording":"recording-1","cancel":false} -> the finished file's details.
-  if (cmd == "record-stop") return StopRecording(message->GetString("recording"), message->GetBool("cancel"), reply);
+  if (cmd == "record-stop")
+    return StopRecording(message->GetString("recording"), message->GetBool("cancel"), reply);
   // Diagnostics: {"cmd":"frame-probe","ms":5000,"path":"/abs/last.png"} -> frame counts and timing.
   if (cmd == "frame-probe") {
     if (!window) return reply(false, nullptr);
-    return ProbeWindowFrames(window->GetWindowHandle(), message->GetInt("ms"), message->GetString("path"),
-                             [reply](std::string json) { reply(true, CefParseJSON(json, JSON_PARSER_RFC)); });
+    return ProbeWindowFrames(
+        window->GetWindowHandle(), message->GetInt("ms"), message->GetString("path"),
+        [reply](std::string json) { reply(true, CefParseJSON(json, JSON_PARSER_RFC)); });
   }
 #endif
   if (cmd == "cdp") {
@@ -920,7 +954,8 @@ bool Shell::CanClose() {
       if (window) window->Close();
     });
     // Detached tabs are not in the window, so close every browser ourselves.
-    if (auto browser = toolbar_ ? toolbar_->GetBrowser() : nullptr) browser->GetHost()->CloseBrowser(true);
+    if (auto browser = toolbar_ ? toolbar_->GetBrowser() : nullptr)
+      browser->GetHost()->CloseBrowser(true);
     for (const auto& tab : tabs_)
       if (auto browser = tab.view->GetBrowser()) browser->GetHost()->CloseBrowser(true);
   }
@@ -936,18 +971,24 @@ CefRefPtr<CefValue> Text(const std::string& text) {
 }
 double Number(CefRefPtr<CefDictionaryValue> message, const char* key, double fallback) {
   const auto type = message->GetType(key);
-  return type == VTYPE_INT ? message->GetInt(key) : type == VTYPE_DOUBLE ? message->GetDouble(key) : fallback;
+  return type == VTYPE_INT      ? message->GetInt(key)
+         : type == VTYPE_DOUBLE ? message->GetDouble(key)
+                                : fallback;
 }
-CefRefPtr<CefValue> RecordingInfo(const Recording& recording, const suitecut::MediaPipelineResult* result) {
+CefRefPtr<CefValue> RecordingInfo(const Recording& recording,
+                                  const suitecut::MediaPipelineResult* result) {
   auto info = CefDictionaryValue::Create();
   info->SetString("recording", recording.id);
   info->SetString("outputPath", recording.output);
   info->SetDouble("framesPerSecond", recording.fps);
-  info->SetString("canvas", std::to_string(recording.canvas_width) + "x" + std::to_string(recording.canvas_height));
-  info->SetString("source", std::to_string(recording.source_width) + "x" + std::to_string(recording.source_height));
+  info->SetString("canvas", std::to_string(recording.canvas_width) + "x" +
+                                std::to_string(recording.canvas_height));
+  info->SetString("source", std::to_string(recording.source_width) + "x" +
+                                std::to_string(recording.source_height));
   info->SetDouble("copiedFrames", static_cast<double>(recording.copied));
   info->SetDouble("skippedFrames", static_cast<double>(recording.skipped));
-  if (recording.failed_copies) info->SetDouble("failedCopies", static_cast<double>(recording.failed_copies));
+  if (recording.failed_copies)
+    info->SetDouble("failedCopies", static_cast<double>(recording.failed_copies));
   if (result) {
     info->SetString("encoder", result->encoder);
     info->SetString("container", result->container);
@@ -976,7 +1017,8 @@ void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
   if (!window) return reply(false, Text("The window is not open"));
   auto recording = std::make_shared<Recording>();
   recording->output = message->GetString("path").ToString();
-  recording->ffmpeg = message->HasKey("ffmpegPath") ? message->GetString("ffmpegPath").ToString() : "ffmpeg";
+  recording->ffmpeg =
+      message->HasKey("ffmpegPath") ? message->GetString("ffmpegPath").ToString() : "ffmpeg";
   recording->fps = Number(message, "fps", 60);
   recording->window_area = message->GetString("area") == "window";
   recording->width = static_cast<int>(Number(message, "width", 0));
@@ -987,11 +1029,14 @@ void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
     return reply(false, Text("The recording path must be absolute"));
   if (!std::isfinite(recording->fps) || recording->fps <= 0)
     return reply(false, Text("fps must be a finite number above 0"));
-  if ((recording->width != 0) != (recording->height != 0) || recording->width < 0 || recording->height < 0)
+  if ((recording->width != 0) != (recording->height != 0) || recording->width < 0 ||
+      recording->height < 0)
     return reply(false, Text("Give both width and height, or neither"));
   for (const auto& [id, other] : recordings) {
-    if (other->output == recording->output) return reply(false, Text("That file is already being recorded"));
-    if (other->audio && recording->audio) return reply(false, Text("Another recording already takes the page audio"));
+    if (other->output == recording->output)
+      return reply(false, Text("That file is already being recorded"));
+    if (other->audio && recording->audio)
+      return reply(false, Text("Another recording already takes the page audio"));
   }
   // The encoder never replaces a file when it finishes; say so now rather than at stop.
   if (std::error_code error; std::filesystem::exists(recording->output, error))
@@ -1003,11 +1048,13 @@ void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
   // Delivers the frame already on screen at once, which starts the pipeline.
   recording->frames = std::make_unique<suitecut::WindowFrames>(
       window->GetWindowHandle(), [this, weak](void* surface, int width, int height, double now) {
-        if (const auto recording = weak.lock()) RecordingFrame(recording, surface, width, height, now);
+        if (const auto recording = weak.lock())
+          RecordingFrame(recording, surface, width, height, now);
       });
   if (recording->frames->Remote())
-    return FailRecording(recording, "Chromium is drawing this window remotely, so its frames never reach "
-                                    "the browser process; do not pass --suitecut-window-frames=off");
+    return FailRecording(recording,
+                         "Chromium is drawing this window remotely, so its frames never reach "
+                         "the browser process; do not pass --suitecut-window-frames=off");
   After(5000, [this, weak] {
     const auto recording = weak.lock();
     if (recording && !recording->pipeline && recording->on_start)
@@ -1016,8 +1063,8 @@ void Shell::StartRecording(CefRefPtr<CefDictionaryValue> message, Reply reply) {
 }
 
 // Runs on the main thread the moment the window's layer receives a frame.
-void Shell::RecordingFrame(const std::shared_ptr<Recording>& recording, void* surface, int width, int height,
-                           double now) {
+void Shell::RecordingFrame(const std::shared_ptr<Recording>& recording, void* surface, int width,
+                           int height, double now) {
   // Copy only frames due at the requested rate. A quarter-interval tolerance
   // keeps a 60 Hz display at 60 fps despite jitter; the pipeline holds the last
   // frame through any slot with nothing new.
@@ -1033,7 +1080,8 @@ void Shell::RecordingFrame(const std::shared_ptr<Recording>& recording, void* su
   if (!recording->pipeline->WantsFrames()) return;
   // A crop that matches the canvas goes to the encoder as NV12 without leaving
   // the GPU; any other size (a resized window) is fitted by the media worker.
-  const bool nv12 = crop.width == recording->canvas_width && crop.height == recording->canvas_height;
+  const bool nv12 =
+      crop.width == recording->canvas_width && crop.height == recording->canvas_height;
   auto copy = recording->pool->Copy(surface, crop.x, crop.y, crop.width, crop.height, nv12);
   if (!copy) {
     ++recording->failed_copies;
@@ -1045,7 +1093,8 @@ void Shell::RecordingFrame(const std::shared_ptr<Recording>& recording, void* su
   }
 }
 
-bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width, int height, double now) {
+bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width, int height,
+                          double now) {
   recording->source_width = width;
   recording->source_height = height;
   int canvas_width = recording->width ? recording->width : width;
@@ -1066,14 +1115,17 @@ bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width
   options.worker_nv12 = true;
   options.start_timestamp_ms = now;
   options.first_frame_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(15);
-  if (recording->max_bytes > 0) options.max_file_bytes = static_cast<uint64_t>(recording->max_bytes);
+  if (recording->max_bytes > 0)
+    options.max_file_bytes = static_cast<uint64_t>(recording->max_bytes);
   options.audio = recording->audio;
   const std::string id = recording->id;
   try {
-    if (options.ffmpeg_path.front() != '/') options.ffmpeg_path = suitecut::ResolveMediaExecutable(options.ffmpeg_path);
+    if (options.ffmpeg_path.front() != '/')
+      options.ffmpeg_path = suitecut::ResolveMediaExecutable(options.ffmpeg_path);
     // Room for every frame the pipeline may hold at once: its queue (fps / 5),
     // the encoder's four in flight, and the held frame, as NV12.
-    const uint64_t frame_bytes = static_cast<uint64_t>(recording->canvas_width) * recording->canvas_height * 3 / 2;
+    const uint64_t frame_bytes =
+        static_cast<uint64_t>(recording->canvas_width) * recording->canvas_height * 3 / 2;
     recording->pool = std::make_unique<suitecut::MacCapturePool>(
         frame_bytes * static_cast<uint64_t>(std::ceil(recording->fps / 5) + 6));
     // Pipeline callbacks run on its worker; everything else happens here.
@@ -1081,36 +1133,40 @@ bool Shell::StartPipeline(const std::shared_ptr<Recording>& recording, int width
         std::move(options),
         [this, id](const suitecut::MediaPipelineResult& result) {
           CefPostTask(TID_UI, new Later([this, id, result] {
-            const auto found = recordings.find(id);
-            if (found == recordings.end()) return;
-            const auto recording = found->second;
-            recordings.erase(found);
-            recording->frames.reset();
-            if (recording->audio) audio_tap.Target(nullptr);
-            if (recording->on_start) recording->on_start(false, Text(result.failure));
-            else if (recording->on_stop)
-              recording->on_stop(result.failure.empty() || result.failure == "Native recording canceled",
-                                 result.failure.empty() ? RecordingInfo(*recording, &result) : Text(result.failure));
-          }));
+                        const auto found = recordings.find(id);
+                        if (found == recordings.end()) return;
+                        const auto recording = found->second;
+                        recordings.erase(found);
+                        recording->frames.reset();
+                        if (recording->audio) audio_tap.Target(nullptr);
+                        if (recording->on_start)
+                          recording->on_start(false, Text(result.failure));
+                        else if (recording->on_stop)
+                          recording->on_stop(result.failure.empty() ||
+                                                 result.failure == "Native recording canceled",
+                                             result.failure.empty()
+                                                 ? RecordingInfo(*recording, &result)
+                                                 : Text(result.failure));
+                      }));
         },
         [this, id](double) {
           CefPostTask(TID_UI, new Later([this, id] {
-            const auto found = recordings.find(id);
-            if (found == recordings.end() || !found->second->on_start) return;
-            auto reply = std::move(found->second->on_start);
-            found->second->on_start = nullptr;
-            reply(true, RecordingInfo(*found->second, nullptr));
-          }));
+                        const auto found = recordings.find(id);
+                        if (found == recordings.end() || !found->second->on_start) return;
+                        auto reply = std::move(found->second->on_start);
+                        found->second->on_start = nullptr;
+                        reply(true, RecordingInfo(*found->second, nullptr));
+                      }));
         },
         [this, id](const suitecut::MediaPipelineResult& result) {
           // The encoder is ready; a static page will not paint again by itself.
           if (result.first_timestamp_ms >= 0 || !result.preparation_packets) return;
           CefPostTask(TID_UI, new Later([this, id] {
-            const auto found = recordings.find(id);
-            if (found == recordings.end() || !found->second->frames) return;
-            found->second->last_ms = -1;
-            found->second->frames->Redeliver();
-          }));
+                        const auto found = recordings.find(id);
+                        if (found == recordings.end() || !found->second->frames) return;
+                        found->second->last_ms = -1;
+                        found->second->frames->Redeliver();
+                      }));
         });
   } catch (const std::exception& error) {
     FailRecording(recording, error.what());
@@ -1136,7 +1192,8 @@ void Shell::StopRecording(const std::string& id, bool cancel, Reply reply) {
   const auto recording = found->second;
   recording->on_stop = std::move(reply);
   recording->frames.reset();  // audio keeps flowing until the pipeline has its tail
-  if (cancel) recording->pipeline->Cancel("Native recording canceled");
+  if (cancel)
+    recording->pipeline->Cancel("Native recording canceled");
   else
     recording->pipeline->Stop(suitecut::WindowFramesNow(),
                               std::chrono::steady_clock::now() + std::chrono::seconds(30));
@@ -1149,9 +1206,14 @@ CefRect Shell::PageRect(int width, int height) {
   const CefRect client = window->GetClientAreaBoundsInScreen();
   const CefRect page = tab->view->GetBoundsInScreen();
   if (client.width <= 0 || client.height <= 0) return CefRect();
-  const double sx = static_cast<double>(width) / client.width, sy = static_cast<double>(height) / client.height;
-  const auto x = [&](int value) { return std::clamp(static_cast<int>(std::lround((value - client.x) * sx)), 0, width); };
-  const auto y = [&](int value) { return std::clamp(static_cast<int>(std::lround((value - client.y) * sy)), 0, height); };
+  const double sx = static_cast<double>(width) / client.width,
+               sy = static_cast<double>(height) / client.height;
+  const auto x = [&](int value) {
+    return std::clamp(static_cast<int>(std::lround((value - client.x) * sx)), 0, width);
+  };
+  const auto y = [&](int value) {
+    return std::clamp(static_cast<int>(std::lround((value - client.y) * sy)), 0, height);
+  };
   const int left = x(page.x), top = y(page.y);
   return CefRect(left, top, x(page.x + page.width) - left, y(page.y + page.height) - top);
 }
@@ -1173,37 +1235,50 @@ Tab* Shell::ByBrowser(CefRefPtr<CefBrowser> browser) {
 void Shell::SelfTest() {
   const int a = tabs_.front().id;
   const int a_browser = tabs_.front().browser_id();
-  Report(std::string("{\"mode\":\"") + (options.chrome_pages ? "chrome" : "alloy") + "\",\"switch\":\"" +
-         (options.hide ? "hide" : "swap") + "\"}");
+  Report(std::string("{\"mode\":\"") + (options.chrome_pages ? "chrome" : "alloy") +
+         "\",\"switch\":\"" + (options.hide ? "hide" : "swap") + "\"}");
   Evaluate(a, "f.value='kept';token", [this, a, a_browser](std::string token) {
     Report("{\"step\":\"A before\",\"token\":\"" + token + "\"}");
     NewTab(ProbePage("Tab B"));
     After(5000, [this, a, a_browser] {
-      Evaluate(a, kProbe, [](std::string probe) { Report("{\"step\":\"A in background\",\"probe\":" + probe + "}"); });
+      Evaluate(a, kProbe, [](std::string probe) {
+        Report("{\"step\":\"A in background\",\"probe\":" + probe + "}");
+      });
       After(300, [this, a, a_browser] {
         Select(a);
         After(1000, [this, a, a_browser] {
           const Tab* tab = Find(a);
           Report("{\"step\":\"A same browser\",\"same\":" +
                  std::string(tab && tab->browser_id() == a_browser ? "true" : "false") + "}");
-          Evaluate(a, kProbe, [](std::string probe) { Report("{\"step\":\"A shown again\",\"probe\":" + probe + "}"); });
-          Evaluate(a,
-                   "JSON.stringify({ua:navigator.userAgent,pdfViewer:navigator.pdfViewerEnabled,"
-                   "chromeObject:typeof chrome,brands:navigator.userAgentData&&navigator.userAgentData.brands.map(b=>b.brand)})",
-                   [](std::string probe) { Report("{\"step\":\"features\",\"probe\":" + probe + "}"); });
-          Evaluate(a, "window.open('" + ProbePage("Popup") + "');'opened'",
-                   [](std::string) {}, true);
+          Evaluate(a, kProbe, [](std::string probe) {
+            Report("{\"step\":\"A shown again\",\"probe\":" + probe + "}");
+          });
+          Evaluate(
+              a,
+              "JSON.stringify({ua:navigator.userAgent,pdfViewer:navigator.pdfViewerEnabled,"
+              "chromeObject:typeof "
+              "chrome,brands:navigator.userAgentData&&navigator.userAgentData.brands.map(b=>b."
+              "brand)})",
+              [](std::string probe) { Report("{\"step\":\"features\",\"probe\":" + probe + "}"); });
+          Evaluate(
+              a, "window.open('" + ProbePage("Popup") + "');'opened'", [](std::string) {}, true);
           After(1500, [this] {
-            Report("{\"step\":\"after window.open\",\"tabs\":" + std::to_string(tabs_.size()) + "}");
+            Report("{\"step\":\"after window.open\",\"tabs\":" + std::to_string(tabs_.size()) +
+                   "}");
             NewTab("chrome://version");
             const int version = tabs_.back().id;
             After(2000, [this, version] {
-              Evaluate(version, "JSON.stringify({title:document.title,href:location.href,text:document.body.innerText.slice(0,80)})",
-                       [this](std::string probe) {
-                         Report("{\"step\":\"chrome://version\",\"probe\":" + probe + "}");
-                         Report("{\"step\":\"done\",\"tabs\":" + std::to_string(tabs_.size()) + "}");
-                         After(500, [this] { if (window) window->Close(); });
-                       });
+              Evaluate(
+                  version,
+                  "JSON.stringify({title:document.title,href:location.href,text:document.body."
+                  "innerText.slice(0,80)})",
+                  [this](std::string probe) {
+                    Report("{\"step\":\"chrome://version\",\"probe\":" + probe + "}");
+                    Report("{\"step\":\"done\",\"tabs\":" + std::to_string(tabs_.size()) + "}");
+                    After(500, [this] {
+                      if (window) window->Close();
+                    });
+                  });
             });
           });
         });
@@ -1229,7 +1304,8 @@ class App : public CefApp, public CefBrowserProcessHandler {
     // Chromium then hands each finished frame to this process as an IOSurface
     // on the window's layer, instead of drawing into the window from the GPU
     // process. That is what recording reads (WindowFrames). Pages cannot tell.
-    if (command_line->GetSwitchValue("suitecut-window-frames") != "off") disabled += ",RemoteCoreAnimationAPI";
+    if (command_line->GetSwitchValue("suitecut-window-frames") != "off")
+      disabled += ",RemoteCoreAnimationAPI";
     // Otherwise a WebAuthn request asks macOS about iCloud Keychain passkeys
     // with a synchronous XPC call on the UI thread, which can freeze the
     // window. Without Apple's passkey entitlement this browser can't use them.
@@ -1250,7 +1326,9 @@ class App : public CefApp, public CefBrowserProcessHandler {
         std::string line;
         while (std::getline(std::cin, line))
           CefPostTask(TID_UI, new Later([line] { shell.Control(line); }));
-        CefPostTask(TID_UI, new Later([] { if (shell.window) shell.window->Close(); }));
+        CefPostTask(TID_UI, new Later([] {
+                      if (shell.window) shell.window->Close();
+                    }));
       }).detach();
   }
 
@@ -1266,7 +1344,8 @@ int Run(const CefMainArgs& args, int argc, char** argv) {
   // Never a real profile: the caller passes an empty temporary directory.
   options.root = Arg(argc, argv, "suitecut-prototype-root");
   if (options.root.empty() || !options.root.is_absolute()) {
-    std::fprintf(stderr, "SuiteCut prototype: --suitecut-prototype-root=<absolute temp dir> is required\n");
+    std::fprintf(stderr,
+                 "SuiteCut prototype: --suitecut-prototype-root=<absolute temp dir> is required\n");
     return 1;
   }
   options.chrome_pages = Arg(argc, argv, "suitecut-prototype-pages") != "alloy";
@@ -1276,13 +1355,16 @@ int Run(const CefMainArgs& args, int argc, char** argv) {
   options.control = Flag(argc, argv, "suitecut-prototype-control");
   options.autodialog = Flag(argc, argv, "suitecut-prototype-autodialog");
   options.first_url = Arg(argc, argv, "suitecut-prototype-url");
-  options.hold_dialogs = options.control && Arg(argc, argv, "suitecut-prototype-dialogs") == "control";
+  options.hold_dialogs =
+      options.control && Arg(argc, argv, "suitecut-prototype-dialogs") == "control";
   if (const auto size = Arg(argc, argv, "suitecut-prototype-size"); !size.empty())
     std::sscanf(size.c_str(), "%dx%d", &options.width, &options.height);
   if (const auto value = Arg(argc, argv, "suitecut-prototype-permissions"); !value.empty())
     options.permissions = value;
   if (options.hide && options.chrome_pages) {
-    std::fprintf(stderr, "SuiteCut prototype: a window holds one Chrome-style page; hide needs alloy pages\n");
+    std::fprintf(
+        stderr,
+        "SuiteCut prototype: a window holds one Chrome-style page; hide needs alloy pages\n");
     return 1;
   }
   std::error_code error;

@@ -23,8 +23,7 @@ auto Source::Command(const std::string& line) -> void {
   const auto failed_action = message->GetString("action").ToString();
   const bool failed_owner_control =
       (command == "debugger" && failed_action == "close") || command == "diagnostics" ||
-      command == "recoverPage" || command == "frameSubscription" ||
-      command == "surfaceOutput" ||
+      command == "recoverPage" || command == "frameSubscription" || command == "surfaceOutput" ||
       command == "continueEventPredicate" ||
       ((command == "waitEventPredicate" || command == "waitEvent") &&
        message->GetString("event") == "crash") ||
@@ -1135,9 +1134,10 @@ auto Source::DispatchCommand(int id, Dict message, const std::string& command, d
     response->SetInt("bodyWaits", static_cast<int>(body_waiters_.size()));
     response->SetInt("activeRequests", static_cast<int>(active_requests_.size()));
     response->SetInt("documentResponses", static_cast<int>(documents_.size()));
-    response->SetInt("pendingDocumentResponses",
-                     static_cast<int>(std::count_if(documents_.begin(), documents_.end(),
-                                                    [](const auto& row) { return !row.second.finished; })));
+    response->SetInt(
+        "pendingDocumentResponses",
+        static_cast<int>(std::count_if(documents_.begin(), documents_.end(),
+                                       [](const auto& row) { return !row.second.finished; })));
     response->SetInt("eventHistoryBytes", static_cast<int>(event_history_bytes_));
     int default_contexts = 0, dom_contexts = 0;
     for (const auto& [frame, state] : frame_states_) {

@@ -40,7 +40,8 @@ Wire::Wire(const std::string& socket_path) {
   sockaddr_un address{};
   address.sun_family = AF_UNIX;
   if (socket_path.size() >= sizeof address.sun_path)
-    throw std::invalid_argument("The session's socket path is too long for AF_UNIX: " + socket_path);
+    throw std::invalid_argument("The session's socket path is too long for AF_UNIX: " +
+                                socket_path);
   std::memcpy(address.sun_path, socket_path.c_str(), socket_path.size() + 1);
   fd_ = ::socket(AF_UNIX, SOCK_STREAM, 0);
   if (fd_ < 0) throw std::runtime_error(std::string("socket: ") + std::strerror(errno));
@@ -66,7 +67,8 @@ Wire::~Wire() {
 
 namespace {
 int remaining_ms(Clock::time_point deadline) {
-  const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now()).count();
+  const auto left =
+      std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now()).count();
   return left <= 0 ? 0 : static_cast<int>(std::min<long long>(left, 1 << 30));
 }
 }  // namespace
@@ -87,7 +89,8 @@ void Wire::Send(const std::string& bytes, Clock::time_point deadline) {
     if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
       pollfd p{fd_, POLLOUT, 0};
       const int wait = remaining_ms(deadline);
-      if (!wait || ::poll(&p, 1, wait) == 0) throw TimedOut("The session did not take the request in time");
+      if (!wait || ::poll(&p, 1, wait) == 0)
+        throw TimedOut("The session did not take the request in time");
       continue;
     }
     throw Closed("The session closed the connection");
@@ -120,14 +123,15 @@ Json Wire::Call(const Json& message, std::chrono::milliseconds timeout) {
   const auto body = message.dump();
   if (body.size() > UINT32_MAX) throw std::invalid_argument("The request does not fit a frame");
   const auto length = static_cast<std::uint32_t>(body.size());
-  std::string frame{static_cast<char>(length), static_cast<char>(length >> 8), static_cast<char>(length >> 16),
-                    static_cast<char>(length >> 24)};
+  std::string frame{static_cast<char>(length), static_cast<char>(length >> 8),
+                    static_cast<char>(length >> 16), static_cast<char>(length >> 24)};
   frame += body;
   try {
     Send(frame, deadline);
     unsigned char head[4];
     Receive(reinterpret_cast<char*>(head), 4, deadline);
-    const std::uint32_t size = head[0] | head[1] << 8 | head[2] << 16 | static_cast<std::uint32_t>(head[3]) << 24;
+    const std::uint32_t size =
+        head[0] | head[1] << 8 | head[2] << 16 | static_cast<std::uint32_t>(head[3]) << 24;
     std::string reply(size, '\0');
     Receive(reply.data(), size, deadline);
     return Json::parse(reply);
@@ -142,7 +146,8 @@ Json Wire::Call(const Json& message, std::chrono::milliseconds timeout) {
 
 Program Run(const std::vector<std::string>& argv, std::chrono::milliseconds timeout) {
   int out[2] = {-1, -1}, err[2] = {-1, -1};
-  if (::pipe(out) || ::pipe(err)) throw std::runtime_error(std::string("pipe: ") + std::strerror(errno));
+  if (::pipe(out) || ::pipe(err))
+    throw std::runtime_error(std::string("pipe: ") + std::strerror(errno));
   posix_spawn_file_actions_t actions;
   posix_spawn_file_actions_init(&actions);
   posix_spawn_file_actions_addopen(&actions, 0, "/dev/null", O_RDONLY, 0);
@@ -162,7 +167,8 @@ Program Run(const std::vector<std::string>& argv, std::chrono::milliseconds time
   for (const auto& argument : argv) args.push_back(const_cast<char*>(argument.c_str()));
   args.push_back(nullptr);
   pid_t pid = -1;
-  const int spawned = ::posix_spawn(&pid, argv.front().c_str(), &actions, &attributes, args.data(), environ);
+  const int spawned =
+      ::posix_spawn(&pid, argv.front().c_str(), &actions, &attributes, args.data(), environ);
   posix_spawn_file_actions_destroy(&actions);
   posix_spawnattr_destroy(&attributes);
   ::close(out[1]);
@@ -211,7 +217,8 @@ Program Run(const std::vector<std::string>& argv, std::chrono::milliseconds time
   }
   ::close(out[0]);
   ::close(err[0]);
-  program.exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : 128 + (WIFSIGNALED(status) ? WTERMSIG(status) : 0);
+  program.exit_code =
+      WIFEXITED(status) ? WEXITSTATUS(status) : 128 + (WIFSIGNALED(status) ? WTERMSIG(status) : 0);
   return program;
 }
 
@@ -223,7 +230,8 @@ namespace {
 // A C caller may pass any int where the ABI takes a C enum. In C++, reading
 // an enum object whose value is outside its enumerators' range is undefined,
 // so the ABI reads the bytes as the underlying integer before checking them.
-template <class E> std::underlying_type_t<E> raw_enum(const E& value) {
+template <class E>
+std::underlying_type_t<E> raw_enum(const E& value) {
   std::underlying_type_t<E> out;
   std::memcpy(&out, &value, sizeof out);
   return out;
@@ -262,22 +270,30 @@ struct SessionCore {
     if (hello_reply.is_null()) hello_reply = reply;
     return wire;
   }
-  Json Exchange(embed::Wire& wire, const std::string& op, Json params, std::chrono::milliseconds wait) {
+  Json Exchange(embed::Wire& wire, const std::string& op, Json params,
+                std::chrono::milliseconds wait) {
     const auto id = next_id++;
-    const auto reply = wire.Call(Json{{"v", 1}, {"id", id}, {"op", op}, {"params", std::move(params)}}, wait);
+    const auto reply =
+        wire.Call(Json{{"v", 1}, {"id", id}, {"op", op}, {"params", std::move(params)}}, wait);
     if (!reply.is_object() || !reply.contains("v"))
       throw embed::Unsupported("The session did not answer in protocol 1");
     if (reply.contains("ok") && reply.at("ok") == Json(true))
       return reply.contains("result") ? reply.at("result") : Json(Json::object{});
     const auto& error = reply.contains("error") ? reply.at("error") : Json(Json::object{});
-    const auto code = error.contains("code") && error.at("code").is_string() ? error.at("code").as_string() : "failed";
-    const auto message = error.contains("message") && error.at("message").is_string() ? error.at("message").as_string() : "";
-    if (code == "unsupported" || code == "protocol_unsupported") throw embed::Unsupported(code + ": " + message);
+    const auto code = error.contains("code") && error.at("code").is_string()
+                          ? error.at("code").as_string()
+                          : "failed";
+    const auto message = error.contains("message") && error.at("message").is_string()
+                             ? error.at("message").as_string()
+                             : "";
+    if (code == "unsupported" || code == "protocol_unsupported")
+      throw embed::Unsupported(code + ": " + message);
     throw embed::Refusal(code, message);
   }
   // One request on a pooled connection; another thread's slow call never
   // holds this one up.
-  Json Request(const std::string& op, Json params, std::optional<std::chrono::milliseconds> wait = {}) {
+  Json Request(const std::string& op, Json params,
+               std::optional<std::chrono::milliseconds> wait = {}) {
     Live();
     std::unique_ptr<embed::Wire> wire;
     {
@@ -325,7 +341,9 @@ struct sc_session {
   std::uint64_t cursor = 0;
   std::deque<Json> pending;
 };
-struct sc_json { std::string text; };
+struct sc_json {
+  std::string text;
+};
 struct sc_event {
   Json event;
   std::string text;
@@ -454,17 +472,21 @@ void input(sc_view* view, const std::string& op, Json params, bool is_move) {
 
 Json ime_params(const sc_ime_composition* composition, bool selection) {
   check_struct(composition, "IME composition");
-  if (!composition->text && composition->size) throw std::invalid_argument("The composition's text is null");
+  if (!composition->text && composition->size)
+    throw std::invalid_argument("The composition's text is null");
   Json params{{"text", std::string(composition->text ? composition->text : "", composition->size)}};
   auto range = [](int32_t start, int32_t end, const char* what) -> std::optional<Json> {
     if (start < 0 && end < 0) return std::nullopt;
-    if (start < 0 || end < start) throw std::invalid_argument(std::string(what) + " is start <= end, or -1 for none");
+    if (start < 0 || end < start)
+      throw std::invalid_argument(std::string(what) + " is start <= end, or -1 for none");
     return Json::array{Json(start), Json(end)};
   };
-  if (auto replace = range(composition->replace_start, composition->replace_end, "The replaced range"))
+  if (auto replace =
+          range(composition->replace_start, composition->replace_end, "The replaced range"))
     params["replacement"] = std::move(*replace);
   if (selection)
-    if (auto selected = range(composition->selection_start, composition->selection_end, "The selection"))
+    if (auto selected =
+            range(composition->selection_start, composition->selection_end, "The selection"))
       params["selection"] = std::move(*selected);
   return params;
 }
@@ -518,30 +540,36 @@ void sc_runtime_info_init(sc_runtime_info* info) {
   info->abi_version = SC_EMBED_ABI_VERSION;
 }
 
-sc_status sc_runtime_inspect(const sc_runtime_options* options, sc_runtime_info* out, sc_error* error) {
+sc_status sc_runtime_inspect(const sc_runtime_options* options, sc_runtime_info* out,
+                             sc_error* error) {
   return boundary(error, [&] {
     check_struct(options, "runtime options");
     check_struct(out, "runtime info");
     if (!options->path || !std::filesystem::path(options->path).is_absolute())
       throw std::invalid_argument("The runtime path is absolute");
-    if (options->protocol_min > options->protocol_max) throw std::invalid_argument("protocol_min is above protocol_max");
+    if (options->protocol_min > options->protocol_max)
+      throw std::invalid_argument("protocol_min is above protocol_max");
     const std::filesystem::path root(options->path);
     const auto programs = program_dir(root);
     // An embed kit (a folder, not a bundle) keeps the engine in
     // suitecut-browser.app beside the session (scripts/package-embed-kit-macos.py).
-    const auto kit_engine = root / "suitecut-browser.app" / "Contents" / "MacOS" / "suitecut-browser";
-    const auto engine = programs == root && ::access(kit_engine.c_str(), X_OK) == 0 ? kit_engine
-                                                                                   : programs / "suitecut-browser";
+    const auto kit_engine =
+        root / "suitecut-browser.app" / "Contents" / "MacOS" / "suitecut-browser";
+    const auto engine = programs == root && ::access(kit_engine.c_str(), X_OK) == 0
+                            ? kit_engine
+                            : programs / "suitecut-browser";
     const auto service = programs / "suitecut-session";
     for (const auto& program : {engine, service})
       if (::access(program.c_str(), X_OK) != 0)
-        throw std::runtime_error("The runtime has no " + program.filename().string() + " at " + program.string());
+        throw std::runtime_error("The runtime has no " + program.filename().string() + " at " +
+                                 program.string());
     sc_runtime_info info;
     sc_runtime_info_init(&info);
     copy_text(info.engine_path, sizeof info.engine_path, engine.string());
     copy_text(info.service_path, sizeof info.service_path, service.string());
     if (options->signing_requirement) {
-      embed::CheckSignature(root.string(), {engine.string(), service.string()}, options->signing_requirement);
+      embed::CheckSignature(root.string(), {engine.string(), service.string()},
+                            options->signing_requirement);
       info.signature_verified = 1;
     }
     // Only now, with the signature checked, does anything in the runtime run.
@@ -557,7 +585,9 @@ sc_status sc_runtime_inspect(const sc_runtime_options* options, sc_runtime_info*
           high = any ? std::max(high, value) : value;
           any = true;
         }
-        if (described.contains("version")) copy_text(info.service_version, sizeof info.service_version, described.at("version").as_string());
+        if (described.contains("version"))
+          copy_text(info.service_version, sizeof info.service_version,
+                    described.at("version").as_string());
       }
     } catch (...) {
       // A service from before protocol 1 does not know --version: protocol 0.
@@ -565,12 +595,14 @@ sc_status sc_runtime_inspect(const sc_runtime_options* options, sc_runtime_info*
     }
     info.protocol_min = low;
     info.protocol_max = high;
-    const auto top = std::min(high, options->protocol_max), bottom = std::max(low, options->protocol_min);
+    const auto top = std::min(high, options->protocol_max),
+               bottom = std::max(low, options->protocol_min);
     info.protocol = top >= bottom ? top : 0;
     *out = info;
     if (top < bottom)
-      throw embed::Unsupported("The runtime speaks protocols " + std::to_string(low) + " to " + std::to_string(high) +
-                               "; this app speaks " + std::to_string(options->protocol_min) + " to " +
+      throw embed::Unsupported("The runtime speaks protocols " + std::to_string(low) + " to " +
+                               std::to_string(high) + "; this app speaks " +
+                               std::to_string(options->protocol_min) + " to " +
                                std::to_string(options->protocol_max));
   });
 }
@@ -590,42 +622,56 @@ sc_status sc_session_open(const sc_session_options* options, sc_session** out, s
   return boundary(error, [&] {
     check_struct(options, "session options");
     if (!out) throw std::invalid_argument("Nowhere to put the session");
-    if (!safe(options->name, "._-")) throw std::invalid_argument("The session name is letters, digits, '.', '_' and '-'");
-    if (!safe(options->owner, "._:-")) throw std::invalid_argument("The owner is letters, digits, '.', '_', ':' and '-'");
+    if (!safe(options->name, "._-"))
+      throw std::invalid_argument("The session name is letters, digits, '.', '_' and '-'");
+    if (!safe(options->owner, "._:-"))
+      throw std::invalid_argument("The owner is letters, digits, '.', '_', ':' and '-'");
     if (!options->directory || !std::filesystem::path(options->directory).is_absolute())
       throw std::invalid_argument("The session directory is absolute");
     const auto role = raw_enum(options->role);
     if (role != SC_ROLE_HOST && role != SC_ROLE_AGENT) throw std::invalid_argument("Unknown role");
-    if (options->flags & ~(SC_SESSION_START | SC_SESSION_PROMPTS)) throw std::invalid_argument("Unknown session flags");
+    if (options->flags & ~(SC_SESSION_START | SC_SESSION_PROMPTS))
+      throw std::invalid_argument("Unknown session flags");
     auto core = std::make_shared<SessionCore>();
     core->socket_path = std::string(options->directory) + "/" + options->name + ".sock";
     // AF_UNIX paths are short (sun_path is 104 bytes on macOS, 108 on Linux,
     // with the terminating NUL). Refuse here rather than when the service starts.
     constexpr auto kSocketPathMax = sizeof(sockaddr_un{}.sun_path) - 1;
     if (core->socket_path.size() > kSocketPathMax)
-      throw std::invalid_argument("The session's socket path (directory + \"/\" + name + \".sock\") is " +
-                                  std::to_string(core->socket_path.size()) + " bytes; AF_UNIX allows at most " +
-                                  std::to_string(kSocketPathMax) + " here. Choose a shorter directory or name");
+      throw std::invalid_argument(
+          "The session's socket path (directory + \"/\" + name + \".sock\") is " +
+          std::to_string(core->socket_path.size()) + " bytes; AF_UNIX allows at most " +
+          std::to_string(kSocketPathMax) + " here. Choose a shorter directory or name");
     if (options->timeout_ms) core->timeout = std::chrono::milliseconds(options->timeout_ms);
     if (options->flags & SC_SESSION_START) {
       check_struct(options->runtime, "runtime info");
       if (!options->profile || !std::filesystem::path(options->profile).is_absolute())
         throw std::invalid_argument("Starting a session needs an absolute profile");
-      if (options->runtime->protocol < 1) throw embed::Unsupported("This runtime does not speak protocol 1");
-      std::vector<std::string> argv{options->runtime->service_path, "--session", options->name, "--session-dir",
-                                    options->directory, "--browser", options->runtime->engine_path, "--profile",
+      if (options->runtime->protocol < 1)
+        throw embed::Unsupported("This runtime does not speak protocol 1");
+      std::vector<std::string> argv{options->runtime->service_path,
+                                    "--session",
+                                    options->name,
+                                    "--session-dir",
+                                    options->directory,
+                                    "--browser",
+                                    options->runtime->engine_path,
+                                    "--profile",
                                     options->profile};
       if (options->scale) argv.insert(argv.end(), {"--scale", std::to_string(options->scale)});
-      if (options->idle_ms) argv.insert(argv.end(), {"--idle-ms", std::to_string(options->idle_ms)});
+      if (options->idle_ms)
+        argv.insert(argv.end(), {"--idle-ms", std::to_string(options->idle_ms)});
       argv.push_back("start");
-      const auto started = embed::Run(argv, std::max<std::chrono::milliseconds>(core->timeout, 60s));
+      const auto started =
+          embed::Run(argv, std::max<std::chrono::milliseconds>(core->timeout, 60s));
       if (started.exit_code != 0) {
         auto why = started.err.empty() ? started.out : started.err;
         while (!why.empty() && (why.back() == '\n' || why.back() == '\r')) why.pop_back();
         throw std::runtime_error("The session did not start: " + why);
       }
     }
-    Json hello{{"protocols", Json::array{Json(1)}}, {"owner", options->owner},
+    Json hello{{"protocols", Json::array{Json(1)}},
+               {"owner", options->owner},
                {"role", raw_enum(options->role) == SC_ROLE_AGENT ? "agent" : "host"}};
     if (options->grant) hello["grant"] = options->grant;
     // Each of this handle's connections says so: the session holds dialogs
@@ -666,7 +712,8 @@ sc_status sc_session_grant(sc_session* session, const char* tools_csv, uint32_t 
       std::string list(tools_csv);
       for (std::size_t begin = 0; begin <= list.size();) {
         const auto end = list.find(',', begin);
-        groups.emplace_back(list.substr(begin, end == std::string::npos ? std::string::npos : end - begin));
+        groups.emplace_back(
+            list.substr(begin, end == std::string::npos ? std::string::npos : end - begin));
         if (end == std::string::npos) break;
         begin = end + 1;
       }
@@ -674,7 +721,9 @@ sc_status sc_session_grant(sc_session* session, const char* tools_csv, uint32_t 
     }
     if (ttl_ms) params["ttlMs"] = static_cast<std::int64_t>(ttl_ms);
     const auto granted = core.Request("session.grant", std::move(params)).at("grant").as_string();
-    if (granted.size() >= token_size) throw std::invalid_argument("The grant token needs " + std::to_string(granted.size() + 1) + " bytes");
+    if (granted.size() >= token_size)
+      throw std::invalid_argument("The grant token needs " + std::to_string(granted.size() + 1) +
+                                  " bytes");
     copy_text(token, token_size, granted);
   });
 }
@@ -730,7 +779,8 @@ sc_status sc_tab_list(sc_session* session, sc_json** out, sc_error* error) {
   });
 }
 
-sc_status sc_tab_open(sc_session* session, const char* url, int for_agent, sc_tab* out, sc_error* error) {
+sc_status sc_tab_open(sc_session* session, const char* url, int for_agent, sc_tab* out,
+                      sc_error* error) {
   return boundary(error, [&] {
     if (out) check_struct(out, "tab");
     Json params = Json::object{};
@@ -744,7 +794,8 @@ sc_status sc_tab_close(sc_session* session, int32_t page, sc_error* error) {
   return boundary(error, [&] { core_of(session).Request("tabs.close", Json{{"page", page}}); });
 }
 
-sc_status sc_tab_navigate(sc_session* session, int32_t page, const char* url, sc_tab* out, sc_error* error) {
+sc_status sc_tab_navigate(sc_session* session, int32_t page, const char* url, sc_tab* out,
+                          sc_error* error) {
   return boundary(error, [&] {
     if (!url) throw std::invalid_argument("Navigate to a URL");
     if (out) check_struct(out, "tab");
@@ -752,14 +803,18 @@ sc_status sc_tab_navigate(sc_session* session, int32_t page, const char* url, sc
   });
 }
 
-sc_status sc_tab_history(sc_session* session, int32_t page, sc_history step, sc_tab* out, sc_error* error) {
+sc_status sc_tab_history(sc_session* session, int32_t page, sc_history step, sc_tab* out,
+                         sc_error* error) {
   return boundary(error, [&] {
     const auto kind = raw_enum(step);
-    const char* name = kind == SC_HISTORY_BACK ? "back" : kind == SC_HISTORY_FORWARD ? "forward"
-                       : kind == SC_HISTORY_RELOAD ? "reload" : nullptr;
+    const char* name = kind == SC_HISTORY_BACK      ? "back"
+                       : kind == SC_HISTORY_FORWARD ? "forward"
+                       : kind == SC_HISTORY_RELOAD  ? "reload"
+                                                    : nullptr;
     if (!name) throw std::invalid_argument("Unknown history step");
     if (out) check_struct(out, "tab");
-    fill_tab(core_of(session).Request("tabs.navigate", Json{{"page", page}, {"history", name}}), out);
+    fill_tab(core_of(session).Request("tabs.navigate", Json{{"page", page}, {"history", name}}),
+             out);
   });
 }
 
@@ -786,7 +841,8 @@ sc_status sc_tab_stop(sc_session* session, int32_t page, sc_tab* out, sc_error* 
 
 sc_status sc_tab_screenshot(sc_session* session, int32_t page, const char* path, sc_error* error) {
   return boundary(error, [&] {
-    if (!path || !std::filesystem::path(path).is_absolute()) throw std::invalid_argument("The screenshot path is absolute");
+    if (!path || !std::filesystem::path(path).is_absolute())
+      throw std::invalid_argument("The screenshot path is absolute");
     core_of(session).Request("view.screenshot", Json{{"page", page}, {"to", Json{{"file", path}}}});
   });
 }
@@ -813,14 +869,16 @@ void sc_frame_init(sc_frame* frame) {
   frame->abi_version = SC_EMBED_ABI_VERSION;
 }
 
-sc_status sc_view_attach(sc_session* session, const sc_view_options* options, sc_view** out, sc_error* error) {
+sc_status sc_view_attach(sc_session* session, const sc_view_options* options, sc_view** out,
+                         sc_error* error) {
   if (out) *out = nullptr;
   return boundary(error, [&] {
     auto& core = core_of(session);
     check_struct(options, "view options");
     if (options->sink) check_struct(options->sink, "surface sink");
     if (!out) throw std::invalid_argument("Nowhere to put the view");
-    if ((options->css_width == 0) != (options->css_height == 0) || options->css_width < 0 || options->css_height < 0)
+    if ((options->css_width == 0) != (options->css_height == 0) || options->css_width < 0 ||
+        options->css_height < 0)
       throw std::invalid_argument("Give both CSS sides, or neither");
     auto view = std::make_unique<sc_view>();
     view->core = session->core;
@@ -830,7 +888,9 @@ sc_status sc_view_attach(sc_session* session, const sc_view_options* options, sc
       // Input and resize only: nothing is attached, so no frames come.
       core.TabOf(options->page);
       if (options->css_width)
-        core.Request("view.resize", Json{{"view", options->page}, {"width", options->css_width}, {"height", options->css_height}});
+        core.Request("view.resize", Json{{"view", options->page},
+                                         {"width", options->css_width},
+                                         {"height", options->css_height}});
       view->detached_sink = true;
       *out = view.release();
       return;
@@ -838,18 +898,24 @@ sc_status sc_view_attach(sc_session* session, const sc_view_options* options, sc
     const auto sink = raw_enum(options->sink->kind);
     if (sink == SC_SINK_LIBRARY) {
       view->receiver = embed::FrameReceiver::Create();
-      const auto& engine = core.hello_reply.contains("engine") ? core.hello_reply.at("engine") : Json{};
-      if (engine.contains("pid")) view->receiver->ExpectSender(static_cast<int>(engine.at("pid").as_int()));
+      const auto& engine =
+          core.hello_reply.contains("engine") ? core.hello_reply.at("engine") : Json{};
+      if (engine.contains("pid"))
+        view->receiver->ExpectSender(static_cast<int>(engine.at("pid").as_int()));
       name = view->receiver->Name();
     } else if (sink == SC_SINK_MACH_BOOTSTRAP) {
-      if (!options->sink->name || !*options->sink->name) throw std::invalid_argument("Name the bootstrap service");
+      if (!options->sink->name || !*options->sink->name)
+        throw std::invalid_argument("Name the bootstrap service");
       name = options->sink->name;
     } else {
       throw embed::Unsupported("Unknown sink kind");
     }
     if (options->css_width)
-      core.Request("view.resize", Json{{"view", options->page}, {"width", options->css_width}, {"height", options->css_height}});
-    Json params{{"page", options->page}, {"sink", Json{{"kind", "mach-bootstrap"}, {"name", name}}}};
+      core.Request("view.resize", Json{{"view", options->page},
+                                       {"width", options->css_width},
+                                       {"height", options->css_height}});
+    Json params{{"page", options->page},
+                {"sink", Json{{"kind", "mach-bootstrap"}, {"name", name}}}};
     if (options->replace) params["replace"] = true;
     const auto attached = core.Request("view.attach", std::move(params));
     if (view->receiver && attached.contains("engine") && attached.at("engine").contains("pid"))
@@ -862,16 +928,19 @@ sc_status sc_view_resize(sc_view* view, int css_width, int css_height, sc_error*
   return boundary(error, [&] {
     if (!view || !view->core) throw std::invalid_argument("View is null");
     if (css_width < 1 || css_height < 1) throw std::invalid_argument("CSS sides are positive");
-    view->core->Request("view.resize", Json{{"view", view->page}, {"width", css_width}, {"height", css_height}});
+    view->core->Request("view.resize",
+                        Json{{"view", view->page}, {"width", css_width}, {"height", css_height}});
   });
 }
 
-sc_status sc_view_next_frame(sc_view* view, uint32_t wait_timeout_ms, sc_frame* out, sc_error* error) {
+sc_status sc_view_next_frame(sc_view* view, uint32_t wait_timeout_ms, sc_frame* out,
+                             sc_error* error) {
   return boundary(error, [&] {
     if (!view) throw std::invalid_argument("View is null");
     check_struct(out, "frame");
     if (!view->receiver) throw std::invalid_argument("Only a library sink's frames are read here");
-    if (out->surface) throw std::invalid_argument("Release the frame before reading another into it");
+    if (out->surface)
+      throw std::invalid_argument("Release the frame before reading another into it");
     if (!view->receiver->Next(std::chrono::milliseconds(wait_timeout_ms), *out))
       throw embed::TimedOut("No frame arrived");
   });
@@ -937,9 +1006,12 @@ sc_status sc_view_pointer(sc_view* view, const sc_pointer_event* event, sc_error
       input(view, "input.pointer", std::move(params), true);
       return;
     }
-    if (action != SC_POINTER_DOWN && action != SC_POINTER_UP) throw std::invalid_argument("Unknown pointer action");
-    const char* button = pressed == SC_BUTTON_RIGHT ? "right" : pressed == SC_BUTTON_MIDDLE ? "middle"
-                         : pressed == SC_BUTTON_LEFT ? "left" : nullptr;
+    if (action != SC_POINTER_DOWN && action != SC_POINTER_UP)
+      throw std::invalid_argument("Unknown pointer action");
+    const char* button = pressed == SC_BUTTON_RIGHT    ? "right"
+                         : pressed == SC_BUTTON_MIDDLE ? "middle"
+                         : pressed == SC_BUTTON_LEFT   ? "left"
+                                                       : nullptr;
     if (!button) throw std::invalid_argument("Unknown button");
     params["action"] = action == SC_POINTER_DOWN ? "down" : "up";
     params["button"] = button;
@@ -952,7 +1024,9 @@ sc_status sc_view_wheel(sc_view* view, const sc_wheel_event* event, sc_error* er
   return boundary(error, [&] {
     check_struct(event, "wheel event");
     input(view, "input.wheel",
-          Json{{"x", std::max(0.0, event->x)}, {"y", std::max(0.0, event->y)}, {"deltaX", event->delta_x},
+          Json{{"x", std::max(0.0, event->x)},
+               {"y", std::max(0.0, event->y)},
+               {"deltaX", event->delta_x},
                {"deltaY", event->delta_y}},
           false);
   });
@@ -962,7 +1036,8 @@ sc_status sc_view_key(sc_view* view, const sc_key_event* event, sc_error* error)
   return boundary(error, [&] {
     check_struct(event, "key event");
     if (!event->key || !*event->key) throw std::invalid_argument("A key names its key");
-    input(view, "input.key", Json{{"action", event->down ? "down" : "up"}, {"key", event->key}}, false);
+    input(view, "input.key", Json{{"action", event->down ? "down" : "up"}, {"key", event->key}},
+          false);
   });
 }
 
@@ -984,13 +1059,15 @@ void sc_ime_composition_init(sc_ime_composition* composition) {
   composition->replace_start = composition->replace_end = -1;
 }
 
-
 sc_status sc_view_ime_set(sc_view* view, const sc_ime_composition* composition, sc_error* error) {
-  return boundary(error, [&] { input(view, "input.ime.set", ime_params(composition, true), false); });
+  return boundary(error,
+                  [&] { input(view, "input.ime.set", ime_params(composition, true), false); });
 }
 
-sc_status sc_view_ime_commit(sc_view* view, const sc_ime_composition* composition, sc_error* error) {
-  return boundary(error, [&] { input(view, "input.ime.commit", ime_params(composition, false), false); });
+sc_status sc_view_ime_commit(sc_view* view, const sc_ime_composition* composition,
+                             sc_error* error) {
+  return boundary(error,
+                  [&] { input(view, "input.ime.commit", ime_params(composition, false), false); });
 }
 
 sc_status sc_view_ime_cancel(sc_view* view, sc_error* error) {
@@ -999,17 +1076,19 @@ sc_status sc_view_ime_cancel(sc_view* view, sc_error* error) {
 
 sc_status sc_view_edit(sc_view* view, sc_edit_command command, sc_error* error) {
   return boundary(error, [&] {
-    static const char* const names[] = {nullptr, "copy", "cut", "paste", "undo", "redo", "selectAll", "delete"};
+    static const char* const names[] = {nullptr, "copy", "cut",       "paste",
+                                        "undo",  "redo", "selectAll", "delete"};
     const auto kind = raw_enum(command);
-    if (kind < SC_EDIT_COPY || kind > SC_EDIT_DELETE) throw std::invalid_argument("Unknown edit command");
+    if (kind < SC_EDIT_COPY || kind > SC_EDIT_DELETE)
+      throw std::invalid_argument("Unknown edit command");
     input(view, "input.edit", Json{{"command", names[kind]}}, false);
   });
 }
 
 // ---- Prompts ----
 
-sc_status sc_prompt_answer_dialog(sc_session* session, const char* prompt, int accept, const char* text,
-                                  sc_error* error) {
+sc_status sc_prompt_answer_dialog(sc_session* session, const char* prompt, int accept,
+                                  const char* text, sc_error* error) {
   return boundary(error, [&] {
     if (!prompt || !*prompt) throw std::invalid_argument("Name the prompt");
     Json params{{"prompt", prompt}, {"accept", accept != 0}};
@@ -1018,36 +1097,43 @@ sc_status sc_prompt_answer_dialog(sc_session* session, const char* prompt, int a
   });
 }
 
-sc_status sc_prompt_answer_files(sc_session* session, const char* prompt, const char* const* paths, size_t count,
-                                 sc_error* error) {
+sc_status sc_prompt_answer_files(sc_session* session, const char* prompt, const char* const* paths,
+                                 size_t count, sc_error* error) {
   Json::array list;
   for (size_t i = 0; paths && i < count; ++i) {
     if (!paths[i]) return boundary(error, [] { throw std::invalid_argument("A path is NULL"); });
     list.push_back(paths[i]);
   }
   if (list.empty()) {
-    return boundary(error, [] { throw std::invalid_argument("Give at least one path, or cancel the prompt"); });
+    return boundary(
+        error, [] { throw std::invalid_argument("Give at least one path, or cancel the prompt"); });
   }
   return answer_prompt(session, prompt, Json{{"paths", std::move(list)}}, error);
 }
 
-sc_status sc_prompt_answer_permission(sc_session* session, const char* prompt, int allow, sc_error* error) {
+sc_status sc_prompt_answer_permission(sc_session* session, const char* prompt, int allow,
+                                      sc_error* error) {
   return answer_prompt(session, prompt, Json{{"accept", allow != 0}}, error);
 }
 
-sc_status sc_prompt_answer_login(sc_session* session, const char* prompt, const char* username, const char* password,
-                                 sc_error* error) {
+sc_status sc_prompt_answer_login(sc_session* session, const char* prompt, const char* username,
+                                 const char* password, sc_error* error) {
   if (!username || !password)
-    return boundary(error, [] { throw std::invalid_argument("A login has a username and a password"); });
-  return answer_prompt(session, prompt, Json{{"username", username}, {"password", password}}, error);
+    return boundary(error,
+                    [] { throw std::invalid_argument("A login has a username and a password"); });
+  return answer_prompt(session, prompt, Json{{"username", username}, {"password", password}},
+                       error);
 }
 
-sc_status sc_prompt_answer_certificate(sc_session* session, const char* prompt, int32_t index, sc_error* error) {
+sc_status sc_prompt_answer_certificate(sc_session* session, const char* prompt, int32_t index,
+                                       sc_error* error) {
   return answer_prompt(session, prompt, Json{{"index", index}}, error);
 }
 
-sc_status sc_prompt_answer_download(sc_session* session, const char* prompt, const char* path, sc_error* error) {
-  if (!path || !*path) return boundary(error, [] { throw std::invalid_argument("Give the path to save to"); });
+sc_status sc_prompt_answer_download(sc_session* session, const char* prompt, const char* path,
+                                    sc_error* error) {
+  if (!path || !*path)
+    return boundary(error, [] { throw std::invalid_argument("Give the path to save to"); });
   return answer_prompt(session, prompt, Json{{"path", path}}, error);
 }
 
@@ -1068,16 +1154,19 @@ sc_status sc_agent_catalog(sc_session* session, sc_json** out, sc_error* error) 
   });
 }
 
-sc_status sc_agent_call(sc_session* session, int32_t page, const char* tool, const char* arguments_json,
-                        size_t arguments_size, uint64_t expect_generation, uint32_t timeout_ms, sc_json** out,
+sc_status sc_agent_call(sc_session* session, int32_t page, const char* tool,
+                        const char* arguments_json, size_t arguments_size,
+                        uint64_t expect_generation, uint32_t timeout_ms, sc_json** out,
                         sc_error* error) {
   if (out) *out = nullptr;
   return boundary(error, [&] {
     auto& core = core_of(session);
     if (!tool || !*tool) throw std::invalid_argument("Name the tool");
     Json params{{"page", page}, {"tool", tool}};
-    if (arguments_json && arguments_size) params["arguments"] = Json::parse(std::string_view(arguments_json, arguments_size));
-    if (expect_generation) params["expectGeneration"] = static_cast<std::int64_t>(expect_generation);
+    if (arguments_json && arguments_size)
+      params["arguments"] = Json::parse(std::string_view(arguments_json, arguments_size));
+    if (expect_generation)
+      params["expectGeneration"] = static_cast<std::int64_t>(expect_generation);
     const auto wait = timeout_ms ? std::chrono::milliseconds(timeout_ms) : core.timeout;
     auto reply = core.Request("agent.call", std::move(params), wait);
     if (out) *out = owned_json(reply);
@@ -1086,7 +1175,8 @@ sc_status sc_agent_call(sc_session* session, int32_t page, const char* tool, con
 
 // ---- Events ----
 
-sc_status sc_session_next_event(sc_session* session, uint32_t wait_timeout_ms, sc_event** out, sc_error* error) {
+sc_status sc_session_next_event(sc_session* session, uint32_t wait_timeout_ms, sc_event** out,
+                                sc_error* error) {
   if (out) *out = nullptr;
   return boundary(error, [&] {
     auto& core = core_of(session);
@@ -1096,14 +1186,16 @@ sc_status sc_session_next_event(sc_session* session, uint32_t wait_timeout_ms, s
     while (session->pending.empty()) {
       core.Live();
       if (!session->events_wire) session->events_wire = core.Connect();
-      const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now());
+      const auto left =
+          std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now());
       // The service answers a long poll within 25 s; ask again for longer waits.
       const auto ask = std::clamp<std::int64_t>(left.count(), 0, 25000);
       Json reply;
       try {
-        reply = core.Exchange(*session->events_wire, "events.next",
-                              Json{{"cursor", static_cast<std::int64_t>(session->cursor)}, {"timeoutMs", ask}},
-                              std::chrono::milliseconds(ask) + core.timeout);
+        reply = core.Exchange(
+            *session->events_wire, "events.next",
+            Json{{"cursor", static_cast<std::int64_t>(session->cursor)}, {"timeoutMs", ask}},
+            std::chrono::milliseconds(ask) + core.timeout);
       } catch (const embed::Refusal&) {
         throw;
       } catch (...) {
@@ -1123,7 +1215,8 @@ sc_status sc_session_next_event(sc_session* session, uint32_t wait_timeout_ms, s
 }
 
 sc_event_kind sc_event_kind_of(const sc_event* event) {
-  if (!event || !event->event.contains("type") || !event->event.at("type").is_string()) return SC_EVENT_OTHER;
+  if (!event || !event->event.contains("type") || !event->event.at("type").is_string())
+    return SC_EVENT_OTHER;
   const auto& type = event->event.at("type").as_string();
   if (type == "tab.changed") return SC_EVENT_TAB_CHANGED;
   if (type == "tab.closed") return SC_EVENT_TAB_CLOSED;
@@ -1141,9 +1234,12 @@ sc_event_kind sc_event_kind_of(const sc_event* event) {
 int32_t sc_event_page(const sc_event* event) {
   if (!event) return 0;
   try {
-    if (event->event.contains("page")) return static_cast<int32_t>(event->event.at("page").as_int());
-    if (event->event.contains("view")) return static_cast<int32_t>(event->event.at("view").as_int());
-    if (event->event.contains("tab")) return static_cast<int32_t>(event->event.at("tab").at("page").as_int());
+    if (event->event.contains("page"))
+      return static_cast<int32_t>(event->event.at("page").as_int());
+    if (event->event.contains("view"))
+      return static_cast<int32_t>(event->event.at("view").as_int());
+    if (event->event.contains("tab"))
+      return static_cast<int32_t>(event->event.at("tab").at("page").as_int());
     if (event->event.contains("prompt") && event->event.at("prompt").is_object())
       return static_cast<int32_t>(event->event.at("prompt").at("page").as_int());
   } catch (...) {

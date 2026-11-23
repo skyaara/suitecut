@@ -4,29 +4,28 @@ namespace suitecut::browser {
 auto Source::ToolEvent(const std::string& method, const void* params, size_t size,
                        const std::string& session) -> void {
   if (method == "Emulation.virtualTimeBudgetExpired") {
-    if (session.empty() && native_virtual_time_)
-      native_virtual_time_->BudgetExpired(Now());
+    if (session.empty() && native_virtual_time_) native_virtual_time_->BudgetExpired(Now());
     return;
   }
   // Chrome hands DevTools whole console messages, exceptions and paused
   // requests; every one is passed on whole, whatever its size.
   if (method != "Page.frameAttached" && method != "Page.frameNavigated" &&
-       method != "Page.frameDetached" && method != "Page.navigatedWithinDocument" &&
-       method != "Page.frameRequestedNavigation" && method != "Page.frameStartedNavigating" &&
-       method != "Page.frameStoppedLoading" && method != "Runtime.executionContextCreated" &&
-       method != "Runtime.executionContextDestroyed" &&
-       method != "Runtime.executionContextsCleared" && method != "Target.attachedToTarget" &&
-       method != "Target.detachedFromTarget" && method != "Target.targetDestroyed" &&
-       method != "Target.targetInfoChanged" && method != "Inspector.workerScriptLoaded" &&
-       method != "Runtime.consoleAPICalled" && method != "Runtime.bindingCalled" &&
-       method != "Runtime.exceptionThrown" && method != "Log.entryAdded" &&
-       method != "Page.lifecycleEvent" && method != "Input.dragIntercepted" &&
-       method != "Page.fileChooserOpened" && method != "WebAuthn.credentialAdded" &&
-       method != "WebAuthn.credentialAsserted" && method != "Network.requestWillBeSent" &&
-       method != "Network.responseReceived" && method != "Network.dataReceived" &&
-       method != "Network.loadingFinished" && method != "Network.loadingFailed" &&
-       method != "Network.requestWillBeSentExtraInfo" &&
-       method != "Network.responseReceivedExtraInfo" && method != "Fetch.requestPaused")
+      method != "Page.frameDetached" && method != "Page.navigatedWithinDocument" &&
+      method != "Page.frameRequestedNavigation" && method != "Page.frameStartedNavigating" &&
+      method != "Page.frameStoppedLoading" && method != "Runtime.executionContextCreated" &&
+      method != "Runtime.executionContextDestroyed" &&
+      method != "Runtime.executionContextsCleared" && method != "Target.attachedToTarget" &&
+      method != "Target.detachedFromTarget" && method != "Target.targetDestroyed" &&
+      method != "Target.targetInfoChanged" && method != "Inspector.workerScriptLoaded" &&
+      method != "Runtime.consoleAPICalled" && method != "Runtime.bindingCalled" &&
+      method != "Runtime.exceptionThrown" && method != "Log.entryAdded" &&
+      method != "Page.lifecycleEvent" && method != "Input.dragIntercepted" &&
+      method != "Page.fileChooserOpened" && method != "WebAuthn.credentialAdded" &&
+      method != "WebAuthn.credentialAsserted" && method != "Network.requestWillBeSent" &&
+      method != "Network.responseReceived" && method != "Network.dataReceived" &&
+      method != "Network.loadingFinished" && method != "Network.loadingFailed" &&
+      method != "Network.requestWillBeSentExtraInfo" &&
+      method != "Network.responseReceivedExtraInfo" && method != "Fetch.requestPaused")
     return;
   if (std::getenv("SUITECUT_NATIVE_PROTOCOL_DIAGNOSTICS") && diagnostic_messages_++ < 2000)
     std::fprintf(stderr, "native event %s session=%s: %.*s\n", method.c_str(), session.c_str(),

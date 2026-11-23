@@ -27,7 +27,9 @@ class NativeContextWorkerCursors {
   std::optional<Lease> Acquire(int context) {
     if (context < 1 || next_token_ == std::numeric_limits<uint64_t>::max()) return {};
     const auto found = entries_.find(context);
-    if (found != entries_.end() && (found->second.active || found->second.invalid || found->second.sequence >= kAdmissionSequence)) return {};
+    if (found != entries_.end() && (found->second.active || found->second.invalid ||
+                                    found->second.sequence >= kAdmissionSequence))
+      return {};
     const uint64_t initial = found == entries_.end() ? 0 : found->second.sequence;
     const uint64_t token = ++next_token_;
     entries_[context] = Entry{initial, token, true, false};
@@ -71,6 +73,7 @@ class NativeContextWorkerCursors {
     return true;
   }
   size_t size() const { return entries_.size(); }
+
  private:
   struct Entry {
     uint64_t sequence;
@@ -80,7 +83,9 @@ class NativeContextWorkerCursors {
   };
   Entry* Current(Lease lease) {
     auto found = entries_.find(lease.context);
-    if (found == entries_.end() || !found->second.active || found->second.token != lease.token || found->second.sequence != lease.initial) return nullptr;
+    if (found == entries_.end() || !found->second.active || found->second.token != lease.token ||
+        found->second.sequence != lease.initial)
+      return nullptr;
     return &found->second;
   }
   std::map<int, Entry> entries_;

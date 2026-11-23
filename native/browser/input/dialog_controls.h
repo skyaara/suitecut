@@ -22,58 +22,97 @@ class SuiteCutDialogControls {
     subscribed_ = enabled;
     if (!enabled) Clear(true);
   }
-  bool Show(const std::string& type, const std::string& url,
-            const std::string& message, const std::string& default_value,
-            CefRefPtr<CefJSDialogCallback> callback, double now, Decision decision = {}) {
+  bool Show(const std::string& type, const std::string& url, const std::string& message,
+            const std::string& default_value, CefRefPtr<CefJSDialogCallback> callback, double now,
+            Decision decision = {}) {
     if (!subscribed_) return false;
     const auto id = std::to_string(++sequence_);
-    auto event = CefDictionaryValue::Create(); event->SetString("id", id);
-    event->SetString("type", type); event->SetString("url", url);
-    event->SetString("message", message); event->SetString("defaultValue", default_value);
+    auto event = CefDictionaryValue::Create();
+    event->SetString("id", id);
+    event->SetString("type", type);
+    event->SetString("url", url);
+    event->SetString("message", message);
+    event->SetString("defaultValue", default_value);
     event->SetString("state", "opened");
-    pending_.emplace(id, Pending{callback, now + 30000, event,std::move(decision)});
-    emit_(event); return true;
+    pending_.emplace(id, Pending{callback, now + 30000, event, std::move(decision)});
+    emit_(event);
+    return true;
   }
   bool Answer(const std::string& id, bool accept, const std::string& prompt, std::string& error) {
     const auto found = pending_.find(id);
-    if (found == pending_.end()) { error = "Dialog is already handled or was canceled"; return false; }
+    if (found == pending_.end()) {
+      error = "Dialog is already handled or was canceled";
+      return false;
+    }
     auto callback = found->second.callback;
-    auto decision=std::move(found->second.decision);
-    closing_.push_back(found->second.info); pending_.erase(found);
-    if(decision)decision(accept);
-    callback->Continue(accept, prompt); return true;
+    auto decision = std::move(found->second.decision);
+    closing_.push_back(found->second.info);
+    pending_.erase(found);
+    if (decision) decision(accept);
+    callback->Continue(accept, prompt);
+    return true;
   }
   void Closed() {
     if (closing_.empty()) return;
-    auto info = closing_.front(); closing_.pop_front();
-    info->SetString("state", "closed"); emit_(info);
+    auto info = closing_.front();
+    closing_.pop_front();
+    info->SetString("state", "closed");
+    emit_(info);
   }
   void Tick(double now) {
     std::vector<Pending> expired;
     for (auto it = pending_.begin(); it != pending_.end();) {
-      if (now >= it->second.deadline) { closing_.push_back(it->second.info); expired.push_back(std::move(it->second)); it = pending_.erase(it); }
-      else ++it;
+      if (now >= it->second.deadline) {
+        closing_.push_back(it->second.info);
+        expired.push_back(std::move(it->second));
+        it = pending_.erase(it);
+      } else
+        ++it;
     }
-    for (const auto& state : expired){if(state.decision)state.decision(false);state.callback->Continue(false, CefString());}
+    for (const auto& state : expired) {
+      if (state.decision) state.decision(false);
+      state.callback->Continue(false, CefString());
+    }
   }
   void Clear(bool answer = false) {
-    auto pending = std::move(pending_); pending_.clear();
+    auto pending = std::move(pending_);
+    pending_.clear();
     closing_.clear();
-    for (const auto& [id, state] : pending){if(state.decision)state.decision(false);if(answer)state.callback->Continue(false, CefString());}
+    for (const auto& [id, state] : pending) {
+      if (state.decision) state.decision(false);
+      if (answer) state.callback->Continue(false, CefString());
+    }
   }
   // A genuine CEF reset (navigation) as Clear(), but each dropped dialog is
   // reported closed, so a window showing it as a prompt can take it down.
   void Reset() {
-    auto pending = std::move(pending_); pending_.clear();
-    auto closing = std::move(closing_); closing_.clear();
-    for (auto& [id, state] : pending){if(state.decision)state.decision(false);closing.push_back(state.info);}
-    for (auto& info : closing){info->SetString("state", "closed");info->SetString("reason", "reset");emit_(info);}
+    auto pending = std::move(pending_);
+    pending_.clear();
+    auto closing = std::move(closing_);
+    closing_.clear();
+    for (auto& [id, state] : pending) {
+      if (state.decision) state.decision(false);
+      closing.push_back(state.info);
+    }
+    for (auto& info : closing) {
+      info->SetString("state", "closed");
+      info->SetString("reason", "reset");
+      emit_(info);
+    }
   }
   size_t Size() const { return pending_.size(); }
-  bool AcceptedWorkReady()const noexcept{return pending_.empty()&&closing_.empty();}
+  bool AcceptedWorkReady() const noexcept { return pending_.empty() && closing_.empty(); }
+
  private:
-  struct Pending { CefRefPtr<CefJSDialogCallback> callback; double deadline; Dict info; Decision decision; };
-  Emit emit_; bool subscribed_ = false; uint64_t sequence_ = 0;
+  struct Pending {
+    CefRefPtr<CefJSDialogCallback> callback;
+    double deadline;
+    Dict info;
+    Decision decision;
+  };
+  Emit emit_;
+  bool subscribed_ = false;
+  uint64_t sequence_ = 0;
   std::map<std::string, Pending> pending_;
   std::deque<Dict> closing_;
 };

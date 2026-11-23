@@ -11,6 +11,7 @@ class MediaActivity {
   ~MediaActivity();
   MediaActivity(const MediaActivity&) = delete;
   MediaActivity& operator=(const MediaActivity&) = delete;
+
  private:
   void* token_ = nullptr;
   void* ui_override_ = nullptr;

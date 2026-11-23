@@ -17,22 +17,29 @@ void bytes(const void* data, std::size_t size, bool fragmented = false) {
   while (size) {
     const auto count = ::write(STDOUT_FILENO, p, fragmented ? 1 : size);
     if (count <= 0) std::_Exit(0);
-    p += count; size -= static_cast<std::size_t>(count);
+    p += count;
+    size -= static_cast<std::size_t>(count);
   }
 }
 void packet(Json header, std::string body = {}, bool fragmented = false) {
-  header["version"] = 1; header["bytes"] = body.size();
+  header["version"] = 1;
+  header["bytes"] = body.size();
   const auto encoded = header.dump();
   const auto size = static_cast<std::uint32_t>(encoded.size());
-  const std::array<unsigned char, 4> prefix{static_cast<unsigned char>(size),
-    static_cast<unsigned char>(size >> 8), static_cast<unsigned char>(size >> 16), static_cast<unsigned char>(size >> 24)};
-  bytes(prefix.data(), prefix.size(), fragmented); bytes(encoded.data(), encoded.size(), fragmented);
+  const std::array<unsigned char, 4> prefix{
+      static_cast<unsigned char>(size), static_cast<unsigned char>(size >> 8),
+      static_cast<unsigned char>(size >> 16), static_cast<unsigned char>(size >> 24)};
+  bytes(prefix.data(), prefix.size(), fragmented);
+  bytes(encoded.data(), encoded.size(), fragmented);
   bytes(body.data(), body.size(), fragmented);
 }
 void response(int id, std::string body = {}, bool fragmented = false, bool ok = true) {
-  packet(Json::object{{"type", "response"}, {"id", id}, {"ok", ok}, {"error", ok ? "" : "fixture rejection"}}, std::move(body), fragmented);
+  packet(
+      Json::object{
+          {"type", "response"}, {"id", id}, {"ok", ok}, {"error", ok ? "" : "fixture rejection"}},
+      std::move(body), fragmented);
 }
-} // namespace
+}  // namespace
 int main(int argc, char** argv) {
   std::string mode, profile;
   bool on_demand = false;
@@ -45,19 +52,32 @@ int main(int argc, char** argv) {
   if (mode == "stderr-silent") {
     std::string diagnostic(256 * 1024, 'x');
     for (std::size_t offset = 0; offset < diagnostic.size();) {
-      const auto written = ::write(STDERR_FILENO, diagnostic.data() + offset, diagnostic.size() - offset);
+      const auto written =
+          ::write(STDERR_FILENO, diagnostic.data() + offset, diagnostic.size() - offset);
       if (written <= 0) break;
       offset += static_cast<std::size_t>(written);
     }
     for (;;) pause();
   }
   if (mode == "truncated") {
-    const std::array<unsigned char, 6> broken{50,0,0,0,'{','"'};
-    bytes(broken.data(), broken.size()); close(STDOUT_FILENO); for (;;) pause();
+    const std::array<unsigned char, 6> broken{50, 0, 0, 0, '{', '"'};
+    bytes(broken.data(), broken.size());
+    close(STDOUT_FILENO);
+    for (;;) pause();
   }
-  packet(Json::object{{"type", "ready"}, {"pageId", 1}, {"profile", profile}, {"onDemand", on_demand}, {"pid", getpid()}});
-  if (mode == "closed-input") { close(STDIN_FILENO); for (;;) pause(); }
-  if (mode == "blocked") { signal(SIGTERM, SIG_IGN); for (;;) pause(); }
+  packet(Json::object{{"type", "ready"},
+                      {"pageId", 1},
+                      {"profile", profile},
+                      {"onDemand", on_demand},
+                      {"pid", getpid()}});
+  if (mode == "closed-input") {
+    close(STDIN_FILENO);
+    for (;;) pause();
+  }
+  if (mode == "blocked") {
+    signal(SIGTERM, SIG_IGN);
+    for (;;) pause();
+  }
   pid_t descendant = -1;
   int held_body_command = 0, body_received = 0, body_taken = 0;
   std::string line;
@@ -65,67 +85,127 @@ int main(int argc, char** argv) {
     const auto message = Json::parse(line);
     const auto id = static_cast<int>(message.at("id").as_int());
     const auto command = message.at("command").as_string();
-    if(command=="body-retire") {
-      for(int n=1;n<=160;++n) {
-        packet(Json{{"type","networkbody"},{"pageId",n},{"bodyId","1"},{"offset",0},{"totalBytes",2097152}},"x");
-        packet(Json{{"type","context"}},Json{{"event","page-closed"},{"pageId",n}}.dump());
-        packet(Json{{"type","contextnetworkbody"},{"contextId",n},{"owner","broker:7"},{"bodyId","1"},{"offset",0},{"totalBytes",2097152}},"x");
-        packet(Json{{"type","context"}},Json{{"event","context-closed"},{"contextId",n}}.dump());
-        packet(Json{{"type","contextnetworkbody"},{"contextId",1},{"owner","broker:"+std::to_string(n)},{"bodyId","1"},{"offset",0},{"totalBytes",2097152}},"x");
-        packet(Json{{"type","contextworker"}},Json{{"contextId",1},{"workerEvent",Json{{"event","close"},{"worker",Json{{"id","broker:"+std::to_string(n)}}}}}}.dump());
+    if (command == "body-retire") {
+      for (int n = 1; n <= 160; ++n) {
+        packet(Json{{"type", "networkbody"},
+                    {"pageId", n},
+                    {"bodyId", "1"},
+                    {"offset", 0},
+                    {"totalBytes", 2097152}},
+               "x");
+        packet(Json{{"type", "context"}}, Json{{"event", "page-closed"}, {"pageId", n}}.dump());
+        packet(Json{{"type", "contextnetworkbody"},
+                    {"contextId", n},
+                    {"owner", "broker:7"},
+                    {"bodyId", "1"},
+                    {"offset", 0},
+                    {"totalBytes", 2097152}},
+               "x");
+        packet(Json{{"type", "context"}},
+               Json{{"event", "context-closed"}, {"contextId", n}}.dump());
+        packet(Json{{"type", "contextnetworkbody"},
+                    {"contextId", 1},
+                    {"owner", "broker:" + std::to_string(n)},
+                    {"bodyId", "1"},
+                    {"offset", 0},
+                    {"totalBytes", 2097152}},
+               "x");
+        packet(Json{{"type", "contextworker"}},
+               Json{{"contextId", 1},
+                    {"workerEvent", Json{{"event", "close"},
+                                         {"worker", Json{{"id", "broker:" + std::to_string(n)}}}}}}
+                   .dump());
       }
-      response(id);continue;
+      response(id);
+      continue;
     }
     if (command == "network-body") {
       held_body_command = id;
       // body-large: one body past the old 2 MiB body / 24 KiB chunk caps.
-      const bool large = mode=="body-large";
+      const bool large = mode == "body-large";
       const std::size_t head = large ? 2097150 : 2;
       for (int scope = 0; scope < 3; ++scope) {
-        Json h{{"type",scope==2?"contextnetworkbody":"networkbody"},{"bodyId","1"},{"offset",0},{"totalBytes",head+3}};
-        if (scope==2) { h["contextId"]=3;h["owner"]="broker:7"; }
-        else h["pageId"]=scope+1;
-        if (mode=="body-gap") h["offset"]=1;
-        if (mode=="body-identity") h["bodyId"]="0";
-        packet(h,large?std::string(head,'b'):std::string("\0\xff",2),true);
-        h["offset"]=mode=="body-duplicate"?0:head;
-        if(mode=="body-size-change")h["totalBytes"]=6;
-        packet(h,"x\r\n",true);
+        Json h{{"type", scope == 2 ? "contextnetworkbody" : "networkbody"},
+               {"bodyId", "1"},
+               {"offset", 0},
+               {"totalBytes", head + 3}};
+        if (scope == 2) {
+          h["contextId"] = 3;
+          h["owner"] = "broker:7";
+        } else
+          h["pageId"] = scope + 1;
+        if (mode == "body-gap") h["offset"] = 1;
+        if (mode == "body-identity") h["bodyId"] = "0";
+        packet(h, large ? std::string(head, 'b') : std::string("\0\xff", 2), true);
+        h["offset"] = mode == "body-duplicate" ? 0 : head;
+        if (mode == "body-size-change") h["totalBytes"] = 6;
+        packet(h, "x\r\n", true);
       }
       continue;
     }
-    if (command=="networkBody" || (command=="context"&&message.at("action")==Json("workerNetworkBody"))) {
-      const auto& fields=command=="context"?message.at("params"):message;
-      if(fields.at("stage")==Json("received"))++body_received;
-      else if(fields.at("stage")==Json("taken"))++body_taken;
+    if (command == "networkBody" ||
+        (command == "context" && message.at("action") == Json("workerNetworkBody"))) {
+      const auto& fields = command == "context" ? message.at("params") : message;
+      if (fields.at("stage") == Json("received"))
+        ++body_received;
+      else if (fields.at("stage") == Json("taken"))
+        ++body_taken;
       response(id);
-      if(body_received==3&&body_taken==3&&held_body_command) {
-        response(held_body_command,"{\"publicationReleased\":true}");held_body_command=0;
+      if (body_received == 3 && body_taken == 3 && held_body_command) {
+        response(held_body_command, "{\"publicationReleased\":true}");
+        held_body_command = 0;
       }
       continue;
     }
     if (command == "hang") continue;
-    if (command == "cancel") { response(id); continue; }
-    if (command == "late") std::this_thread::sleep_for(std::chrono::milliseconds(message.at("delay").as_int()));
-    if (command == "error") { response(id, "{\"detail\":9}", false, false); continue; }
-    if (command == "large-frame") packet(Json::object{{"type", "frame"}, {"pageId", 1}, {"width", 3840}, {"height", 2160}}, std::string(3840 * 2160 * 4, 'f'));
-    if (command == "flood-critical" || command == "flood-media") {
-      const int count = message.contains("count") ? static_cast<int>(message.at("count").as_int()) : 100;
-      for (int index = 0; index < count; ++index) {
-        if (command == "flood-media") packet(Json::object{{"type", "frame"}, {"pageId", 1}, {"width", 2}, {"height", 2}, {"seq", index}}, std::string(16, 'f'));
-        else packet(Json::object{{"type", "dialog"}, {"pageId", 1}, {"seq", index}});
-      }
-      if (command == "flood-media") packet(Json::object{{"type", "dialog"}, {"pageId", 1}, {"marker", "must-survive"}});
+    if (command == "cancel") {
+      response(id);
+      continue;
     }
-    if (command == "ready-page") packet(Json::object{{"type", "ready"}, {"pageId", message.at("page")}});
-    if (command == "close-page") packet(Json::object{{"type", "context"}}, Json(Json::object{{"event", "page-closed"}, {"pageId", message.at("page")}}).dump());
+    if (command == "late")
+      std::this_thread::sleep_for(std::chrono::milliseconds(message.at("delay").as_int()));
+    if (command == "error") {
+      response(id, "{\"detail\":9}", false, false);
+      continue;
+    }
+    if (command == "large-frame")
+      packet(Json::object{{"type", "frame"}, {"pageId", 1}, {"width", 3840}, {"height", 2160}},
+             std::string(3840 * 2160 * 4, 'f'));
+    if (command == "flood-critical" || command == "flood-media") {
+      const int count =
+          message.contains("count") ? static_cast<int>(message.at("count").as_int()) : 100;
+      for (int index = 0; index < count; ++index) {
+        if (command == "flood-media")
+          packet(
+              Json::object{
+                  {"type", "frame"}, {"pageId", 1}, {"width", 2}, {"height", 2}, {"seq", index}},
+              std::string(16, 'f'));
+        else
+          packet(Json::object{{"type", "dialog"}, {"pageId", 1}, {"seq", index}});
+      }
+      if (command == "flood-media")
+        packet(Json::object{{"type", "dialog"}, {"pageId", 1}, {"marker", "must-survive"}});
+    }
+    if (command == "ready-page")
+      packet(Json::object{{"type", "ready"}, {"pageId", message.at("page")}});
+    if (command == "close-page")
+      packet(Json::object{{"type", "context"}},
+             Json(Json::object{{"event", "page-closed"}, {"pageId", message.at("page")}}).dump());
     if (command == "descendant") {
       descendant = fork();
-      if (descendant == 0) { close(STDIN_FILENO); close(STDOUT_FILENO); close(STDERR_FILENO); for (;;) pause(); }
+      if (descendant == 0) {
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+        for (;;) pause();
+      }
       signal(SIGTERM, SIG_IGN);
-      response(id, Json(Json::object{{"pid", descendant}}).dump()); continue;
+      response(id, Json(Json::object{{"pid", descendant}}).dump());
+      continue;
     }
     response(id, message.dump(), command == "fragment");
   }
-  if (descendant > 0) while (waitpid(descendant, nullptr, 0) < 0 && errno == EINTR) {}
+  if (descendant > 0)
+    while (waitpid(descendant, nullptr, 0) < 0 && errno == EINTR) {
+    }
 }

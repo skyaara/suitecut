@@ -10,7 +10,8 @@
 //
 //   --suitecut-prototype=tabs --suitecut-prototype-root=<empty temp dir>
 //   [--suitecut-prototype-pages=chrome|alloy] [--suitecut-prototype-switch=swap|hide]
-//   [--suitecut-prototype-selftest] [--suitecut-prototype-control] [--suitecut-prototype-autodialog]
+//   [--suitecut-prototype-selftest] [--suitecut-prototype-control]
+//   [--suitecut-prototype-autodialog]
 //   [--suitecut-prototype-url=<first page>] [--suitecut-prototype-permissions=ask|allow|deny]
 //   [--suitecut-prototype-dialogs=control] [--suitecut-prototype-size=<width>x<height>]
 //

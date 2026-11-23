@@ -74,8 +74,9 @@ id<MTLComputePipelineState> Converter(id<MTLDevice> device) {
     NSError* error = nil;
     id<MTLLibrary> library = [device newLibraryWithSource:@(kKernel) options:nil error:&error];
     if (library)
-      shared = [device newComputePipelineStateWithFunction:[library newFunctionWithName:@"nv12_full_601"]
-                                                     error:&error];
+      shared =
+          [device newComputePipelineStateWithFunction:[library newFunctionWithName:@"nv12_full_601"]
+                                                error:&error];
   });
   return shared;
 }
@@ -169,10 +170,11 @@ struct SurfaceOutput::Impl {
   }
   id<MTLTexture> Empty() {
     if (!none) {
-      auto descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                           width:1
-                                                                          height:1
-                                                                       mipmapped:NO];
+      auto descriptor =
+          [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             width:1
+                                                            height:1
+                                                         mipmapped:NO];
       descriptor.usage = MTLTextureUsageShaderRead;
       descriptor.storageMode = MTLStorageModePrivate;
       none = [device newTextureWithDescriptor:descriptor];
@@ -220,12 +222,14 @@ void SurfaceOutput::SetPopup(void* handle, Rect visible, Rect at) {
     }
     // The borrowed surface expires after the paint callback, so the visible
     // part is copied into a texture this output owns.
-    auto source = impl_->Plane(surface, 0, MTLPixelFormatBGRA8Unorm, int(IOSurfaceGetWidth(surface)),
-                               int(IOSurfaceGetHeight(surface)), MTLTextureUsageShaderRead);
-    auto descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                         width:visible.width
-                                                                        height:visible.height
-                                                                     mipmapped:NO];
+    auto source =
+        impl_->Plane(surface, 0, MTLPixelFormatBGRA8Unorm, int(IOSurfaceGetWidth(surface)),
+                     int(IOSurfaceGetHeight(surface)), MTLTextureUsageShaderRead);
+    auto descriptor =
+        [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                           width:visible.width
+                                                          height:visible.height
+                                                       mipmapped:NO];
     descriptor.usage = MTLTextureUsageShaderRead;
     descriptor.storageMode = MTLStorageModePrivate;
     id<MTLTexture> copy = [impl_->device newTextureWithDescriptor:descriptor];
@@ -262,9 +266,10 @@ SurfaceOutput::Sent SurfaceOutput::Send(void* handle, Rect visible) {
     if (!target) return Sent::dropped;
     auto view = impl_->Plane(surface, 0, MTLPixelFormatBGRA8Unorm, int(IOSurfaceGetWidth(surface)),
                              int(IOSurfaceGetHeight(surface)), MTLTextureUsageShaderRead);
-    auto luma = impl_->Plane(target, 0, MTLPixelFormatR8Unorm, width, height, MTLTextureUsageShaderWrite);
-    auto chroma =
-        impl_->Plane(target, 1, MTLPixelFormatRG8Unorm, width / 2, height / 2, MTLTextureUsageShaderWrite);
+    auto luma =
+        impl_->Plane(target, 0, MTLPixelFormatR8Unorm, width, height, MTLTextureUsageShaderWrite);
+    auto chroma = impl_->Plane(target, 1, MTLPixelFormatRG8Unorm, width / 2, height / 2,
+                               MTLTextureUsageShaderWrite);
     id<MTLCommandBuffer> command = [impl_->queue commandBuffer];
     id<MTLComputeCommandEncoder> compute = [command computeCommandEncoder];
     if (!view || !luma || !chroma || !compute) return Sent::dropped;
@@ -284,7 +289,8 @@ SurfaceOutput::Sent SurfaceOutput::Send(void* handle, Rect visible) {
     [compute setTexture:chroma atIndex:2];
     [compute setTexture:impl_->popup ? impl_->popup : impl_->Empty() atIndex:3];
     [compute setBytes:&parameters length:sizeof parameters atIndex:0];
-    [compute dispatchThreads:MTLSizeMake(width, height, 1) threadsPerThreadgroup:MTLSizeMake(16, 8, 1)];
+    [compute dispatchThreads:MTLSizeMake(width, height, 1)
+        threadsPerThreadgroup:MTLSizeMake(16, 8, 1)];
     [compute endEncoding];
     [command commit];
     // CEF's surface is borrowed for this callback only, so the copy finishes
@@ -309,8 +315,8 @@ SurfaceOutput::Sent SurfaceOutput::Send(void* handle, Rect visible) {
     message.width = uint32_t(width);
     message.height = uint32_t(height);
     message.timestamp = NowMicroseconds();
-    const auto result = mach_msg(&message.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof message, 0,
-                                 MACH_PORT_NULL, 0, MACH_PORT_NULL);
+    const auto result = mach_msg(&message.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof message,
+                                 0, MACH_PORT_NULL, 0, MACH_PORT_NULL);
     switch (result) {
       case MACH_MSG_SUCCESS:
         return Sent::delivered;

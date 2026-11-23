@@ -97,7 +97,8 @@ class Connection {
     address.sun_family = AF_UNIX;
     require(path.size() < sizeof address.sun_path, "socket path fits");
     std::memcpy(address.sun_path, path.c_str(), path.size() + 1);
-    require(::connect(fd_, reinterpret_cast<sockaddr*>(&address), sizeof address) == 0, "connect " + path);
+    require(::connect(fd_, reinterpret_cast<sockaddr*>(&address), sizeof address) == 0,
+            "connect " + path);
   }
   ~Connection() {
     if (fd_ >= 0) ::close(fd_);
@@ -116,8 +117,8 @@ class Connection {
   }
   static std::string frame(const std::string& body) {
     const auto size = static_cast<std::uint32_t>(body.size());
-    std::string out{static_cast<char>(size), static_cast<char>(size >> 8), static_cast<char>(size >> 16),
-                    static_cast<char>(size >> 24)};
+    std::string out{static_cast<char>(size), static_cast<char>(size >> 8),
+                    static_cast<char>(size >> 16), static_cast<char>(size >> 24)};
     return out + body;
   }
   void send(const Json& value) { send_bytes(frame(value.dump())); }
@@ -127,7 +128,8 @@ class Connection {
     const auto deadline = Clock::now() + timeout;
     std::size_t offset = 0;
     while (offset < count) {
-      const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now()).count();
+      const auto left =
+          std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now()).count();
       if (left <= 0) throw std::runtime_error("no reply in time");
       pollfd p{fd_, POLLIN, 0};
       const auto rc = ::poll(&p, 1, static_cast<int>(left));
@@ -144,8 +146,8 @@ class Connection {
   Json receive(Clock::duration timeout = 30s) {
     unsigned char prefix[4];
     if (!read_exact(reinterpret_cast<char*>(prefix), 4, timeout)) return Json{};
-    const std::size_t size = prefix[0] | (std::size_t(prefix[1]) << 8) | (std::size_t(prefix[2]) << 16) |
-                             (std::size_t(prefix[3]) << 24);
+    const std::size_t size = prefix[0] | (std::size_t(prefix[1]) << 8) |
+                             (std::size_t(prefix[2]) << 16) | (std::size_t(prefix[3]) << 24);
     std::string body(size, '\0');
     if (!read_exact(body.data(), size, timeout)) return Json{};
     return Json::parse(body);
@@ -170,8 +172,12 @@ class Connection {
 
 class Service {
  public:
-  Service(std::string binary, std::string engine, std::string name, std::vector<std::string> extra = {})
-      : binary_(std::move(binary)), engine_(std::move(engine)), name_(std::move(name)), extra_(std::move(extra)) {
+  Service(std::string binary, std::string engine, std::string name,
+          std::vector<std::string> extra = {})
+      : binary_(std::move(binary)),
+        engine_(std::move(engine)),
+        name_(std::move(name)),
+        extra_(std::move(extra)) {
     // Socket paths are short (sun_path is 104 bytes on macOS).
     char root[] = "/tmp/sc-session-XXXXXX";
     require(::mkdtemp(root) != nullptr, "temporary directory");
@@ -214,7 +220,8 @@ class Service {
     started_ = false;
     control("close");
     // The worker withdraws its socket before it answers; wait for its exit.
-    for (int i = 0; i < 100 && std::filesystem::exists(socket()); ++i) std::this_thread::sleep_for(50ms);
+    for (int i = 0; i < 100 && std::filesystem::exists(socket()); ++i)
+      std::this_thread::sleep_for(50ms);
   }
   std::string socket() const { return dir_ + "/" + name_ + ".sock"; }
   const std::string& profile() const { return profile_; }
@@ -229,13 +236,17 @@ class Service {
   void mark_stopped() { started_ = false; }
 
  private:
-  std::vector<std::string> command() const { return {binary_, "--session", name_, "--session-dir", dir_}; }
+  std::vector<std::string> command() const {
+    return {binary_, "--session", name_, "--session-dir", dir_};
+  }
   std::string binary_, engine_, name_, root_, dir_, profile_;
   std::vector<std::string> extra_;
   bool started_ = false;
 };
 
-inline bool ok(const Json& reply) { return reply.is_object() && reply.contains("ok") && reply.at("ok") == Json(true); }
+inline bool ok(const Json& reply) {
+  return reply.is_object() && reply.contains("ok") && reply.at("ok") == Json(true);
+}
 inline std::string code(const Json& reply) {
   if (!reply.is_object() || !reply.contains("error") || !reply.at("error").is_object() ||
       !reply.at("error").contains("code"))

@@ -27,15 +27,16 @@ class AgentDriver {
   // its refs and context. Unknown IDs are ignored; the main page cannot be
   // forgotten.
   void forget_page(int id);
+
  private:
   std::shared_ptr<CredentialVault> vault_;
   Browser& browser_;
   std::shared_ptr<Transport> transport_;
-  std::map<int, Context> contexts_; // Only SDK-owned contexts for attached browsers.
+  std::map<int, Context> contexts_;  // Only SDK-owned contexts for attached browsers.
   std::map<int, Page> pages_;
   std::map<int, Request> pending_;
   std::map<int, Json> snapshots_;
   int active_ = 1;
   bool attached_ = false;
 };
-} // namespace suitecut
+}  // namespace suitecut

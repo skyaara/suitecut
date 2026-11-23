@@ -9,4 +9,4 @@ namespace suitecut {
 // core, network, state, debug, media, all. Advanced groups include core.
 Json agent_tool_catalog(const std::string& profiles = "core");
 Json agent_tool_profiles();
-} // namespace suitecut
+}  // namespace suitecut

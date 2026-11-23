@@ -10,7 +10,11 @@ int main() {
   if (suitecut::agent_tool_catalog().is_null()) return 2;
   if (suitecut::compact_observation(suitecut::Json::array{}).is_null()) return 3;
   // Exercise image error handling across the installed library boundary.
-  try { suitecut::decode_png({}); return 4; } catch (const std::exception&) {}
+  try {
+    suitecut::decode_png({});
+    return 4;
+  } catch (const std::exception&) {
+  }
   suitecut::Packet packet;
   packet.header = "{}";
   packet.payload = {'{', '}'};

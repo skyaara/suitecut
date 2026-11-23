@@ -2,7 +2,7 @@
 #pragma once
 // Evaluated once in the actual pristine main context; the result is retained
 // only by native Inspector object group, never on a public global.
-inline constexpr char kSuiteCutPristineDispatchFactory[]=R"SCFACTORY((()=>{
+inline constexpr char kSuiteCutPristineDispatchFactory[] = R"SCFACTORY((()=>{
   'use strict';
   const apply=globalThis.Reflect.apply,nativeDispatch=globalThis.EventTarget.prototype.dispatchEvent;
   const descriptors=globalThis.Object.getOwnPropertyDescriptor,prototype=globalThis.Object.getPrototypeOf;

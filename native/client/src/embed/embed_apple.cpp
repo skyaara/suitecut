@@ -54,12 +54,13 @@ class MachReceiver final : public FrameReceiver {
  public:
   MachReceiver() {
     char name[128];
-    std::snprintf(name, sizeof name, "com.suitecut.embed.%d.%08x%08x", static_cast<int>(::getpid()), arc4random(),
-                  arc4random());
+    std::snprintf(name, sizeof name, "com.suitecut.embed.%d.%08x%08x", static_cast<int>(::getpid()),
+                  arc4random(), arc4random());
     name_ = name;
     const auto checked = bootstrap_check_in(bootstrap_port, name_.c_str(), &port_);
     if (checked != KERN_SUCCESS)
-      throw std::runtime_error("Cannot check in the frame receiver: " + std::string(bootstrap_strerror(checked)));
+      throw std::runtime_error("Cannot check in the frame receiver: " +
+                               std::string(bootstrap_strerror(checked)));
     thread_ = std::thread([this] { Loop(); });
   }
   ~MachReceiver() override {
@@ -90,7 +91,8 @@ class MachReceiver final : public FrameReceiver {
     while (!stop_) {
       ReceiveBuffer buffer{};
       const auto received = mach_msg(&buffer.message.header,
-                                     MACH_RCV_MSG | MACH_RCV_TIMEOUT | MACH_RCV_TRAILER_TYPE(MACH_MSG_TRAILER_FORMAT_0) |
+                                     MACH_RCV_MSG | MACH_RCV_TIMEOUT |
+                                         MACH_RCV_TRAILER_TYPE(MACH_MSG_TRAILER_FORMAT_0) |
                                          MACH_RCV_TRAILER_ELEMENTS(MACH_RCV_TRAILER_AUDIT),
                                      0, sizeof buffer, port_, 100, MACH_PORT_NULL);
       if (received == MACH_RCV_TIMED_OUT || received == MACH_RCV_INTERRUPTED) continue;
@@ -98,7 +100,8 @@ class MachReceiver final : public FrameReceiver {
       const auto& message = buffer.message;
       const bool shaped = message.header.msgh_size == sizeof(FrameMessage) &&
                           message.header.msgh_id == static_cast<mach_msg_id_t>(kFrameMagic) &&
-                          (message.header.msgh_bits & MACH_MSGH_BITS_COMPLEX) && message.body.msgh_descriptor_count == 1 &&
+                          (message.header.msgh_bits & MACH_MSGH_BITS_COMPLEX) &&
+                          message.body.msgh_descriptor_count == 1 &&
                           message.surface.type == MACH_MSG_PORT_DESCRIPTOR &&
                           message.surface.disposition == MACH_MSG_TYPE_PORT_SEND &&
                           message.surface.name != MACH_PORT_NULL && message.magic == kFrameMagic &&
@@ -106,8 +109,8 @@ class MachReceiver final : public FrameReceiver {
       // Only the engine may send frames. Until its pid is known, none is taken.
       const int sender = sender_;
       const bool audited = buffer.trailer.msgh_trailer_type == MACH_MSG_TRAILER_FORMAT_0 &&
-                           buffer.trailer.msgh_trailer_size >= sizeof(mach_msg_audit_trailer_t) && sender > 0 &&
-                           audit_token_to_pid(buffer.trailer.msgh_audit) == sender;
+                           buffer.trailer.msgh_trailer_size >= sizeof(mach_msg_audit_trailer_t) &&
+                           sender > 0 && audit_token_to_pid(buffer.trailer.msgh_audit) == sender;
       if (!shaped || !audited) {
         mach_msg_destroy(&buffer.message.header);
         continue;
@@ -156,19 +159,26 @@ struct CF {
 std::string describe(OSStatus status) {
   CF text{SecCopyErrorMessageString(status, nullptr)};
   char buffer[512] = {};
-  if (text.value) CFStringGetCString(static_cast<CFStringRef>(text.value), buffer, sizeof buffer, kCFStringEncodingUTF8);
+  if (text.value)
+    CFStringGetCString(static_cast<CFStringRef>(text.value), buffer, sizeof buffer,
+                       kCFStringEncodingUTF8);
   return std::string(buffer) + " (" + std::to_string(status) + ")";
 }
 void check_code(const std::string& path, SecRequirementRef requirement) {
-  CF url{CFURLCreateFromFileSystemRepresentation(nullptr, reinterpret_cast<const UInt8*>(path.c_str()),
-                                                 static_cast<CFIndex>(path.size()), std::filesystem::is_directory(path))};
+  CF url{CFURLCreateFromFileSystemRepresentation(
+      nullptr, reinterpret_cast<const UInt8*>(path.c_str()), static_cast<CFIndex>(path.size()),
+      std::filesystem::is_directory(path))};
   SecStaticCodeRef code = nullptr;
-  auto status = SecStaticCodeCreateWithPath(static_cast<CFURLRef>(url.value), kSecCSDefaultFlags, &code);
+  auto status =
+      SecStaticCodeCreateWithPath(static_cast<CFURLRef>(url.value), kSecCSDefaultFlags, &code);
   CF owned{code};
-  if (status != errSecSuccess) throw std::runtime_error("Cannot read the signature of " + path + ": " + describe(status));
-  status = SecStaticCodeCheckValidity(code, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSStrictValidate,
-                                      requirement);
-  if (status != errSecSuccess) throw std::runtime_error("The signature of " + path + " fails: " + describe(status));
+  if (status != errSecSuccess)
+    throw std::runtime_error("Cannot read the signature of " + path + ": " + describe(status));
+  status = SecStaticCodeCheckValidity(
+      code, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSStrictValidate,
+      requirement);
+  if (status != errSecSuccess)
+    throw std::runtime_error("The signature of " + path + " fails: " + describe(status));
 }
 }  // namespace
 
@@ -179,13 +189,16 @@ void ReleaseFrame(sc_frame& frame) {
   frame.surface = nullptr;
 }
 
-void CheckSignature(const std::string& bundle, const std::vector<std::string>& programs, const std::string& requirement) {
+void CheckSignature(const std::string& bundle, const std::vector<std::string>& programs,
+                    const std::string& requirement) {
   CF text{CFStringCreateWithCString(nullptr, requirement.c_str(), kCFStringEncodingUTF8)};
   if (!text.value) throw std::invalid_argument("The signing requirement is not UTF-8");
   SecRequirementRef parsed = nullptr;
-  const auto status = SecRequirementCreateWithString(static_cast<CFStringRef>(text.value), kSecCSDefaultFlags, &parsed);
+  const auto status = SecRequirementCreateWithString(static_cast<CFStringRef>(text.value),
+                                                     kSecCSDefaultFlags, &parsed);
   CF owned{parsed};
-  if (status != errSecSuccess) throw std::invalid_argument("The signing requirement does not parse: " + describe(status));
+  if (status != errSecSuccess)
+    throw std::invalid_argument("The signing requirement does not parse: " + describe(status));
   const std::filesystem::path root(bundle);
   if (root.extension() == ".app" || std::filesystem::is_directory(root / "Contents" / "MacOS")) {
     check_code(bundle, parsed);  // the bundle, with every nested program

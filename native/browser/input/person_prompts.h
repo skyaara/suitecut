@@ -154,7 +154,8 @@ class SuiteCutAgentAuthTries {
  public:
   static std::string Key(bool proxy, const std::string& host, int port, const std::string& realm,
                          const std::string& scheme) {
-    return std::string(proxy ? "proxy|" : "server|") + host + "|" + std::to_string(port) + "|" + scheme + "|" + realm;
+    return std::string(proxy ? "proxy|" : "server|") + host + "|" + std::to_string(port) + "|" +
+           scheme + "|" + realm;
   }
   // Whether the agent's credentials have not yet been tried on this challenge.
   bool Untried(const std::string& key) const { return !tried_.contains(key); }

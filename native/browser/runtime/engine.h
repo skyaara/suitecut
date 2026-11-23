@@ -17,9 +17,7 @@ class Engine {
   void StartupFailed(const std::string& error);
   // Counts a journal or archive record the engine drops instead of failing
   // the browser; reported as engineDegraded in page diagnostics.
-  void Degraded(const std::string& message) {
-    ++degraded_[message];
-  }
+  void Degraded(const std::string& message) { ++degraded_[message]; }
   Dict VideoMetadata(int page) const;
   bool CreatePage(int page, int context, CefRefPtr<CefRequestContext> request_context);
   CefRefPtr<Source> PopupClient(int opener, int popup_id, const std::string& initial_url);

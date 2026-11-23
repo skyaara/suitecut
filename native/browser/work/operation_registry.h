@@ -11,12 +11,16 @@
 // from completing a new operation after its client ID has been reused.
 class SuiteCutOperationRegistry {
  public:
-  struct Entry { std::uint64_t generation; double deadline_ms; bool control = false; };
+  struct Entry {
+    std::uint64_t generation;
+    double deadline_ms;
+    bool control = false;
+  };
   std::optional<Entry> Begin(int id, double now_ms, double timeout_ms) {
-    return BeginOwned(id,now_ms,timeout_ms,false);
+    return BeginOwned(id, now_ms, timeout_ms, false);
   }
   std::optional<Entry> BeginControl(int id, double now_ms, double timeout_ms) {
-    return BeginOwned(id,now_ms,timeout_ms,true);
+    return BeginOwned(id, now_ms, timeout_ms, true);
   }
   bool Contains(int id) const { return operations_.contains(id); }
   std::optional<Entry> Get(int id) const {
@@ -34,16 +38,25 @@ class SuiteCutOperationRegistry {
   }
   // A native prepared lease transfers its absolute clock to a newly admitted
   // commit operation. An existing finite clock may only become stricter.
-  bool BindOriginalDeadline(int id,std::uint64_t generation,double deadline_ms) {
-    const auto found=operations_.find(id);
-    if(found==operations_.end()||found->second.generation!=generation||!std::isfinite(deadline_ms)||deadline_ms<0||
-       (found->second.deadline_ms!=0&&(deadline_ms==0||deadline_ms>found->second.deadline_ms)))return false;
-    found->second.deadline_ms=deadline_ms;return true;
+  bool BindOriginalDeadline(int id, std::uint64_t generation, double deadline_ms) {
+    const auto found = operations_.find(id);
+    if (found == operations_.end() || found->second.generation != generation ||
+        !std::isfinite(deadline_ms) || deadline_ms < 0 ||
+        (found->second.deadline_ms != 0 &&
+         (deadline_ms == 0 || deadline_ms > found->second.deadline_ms)))
+      return false;
+    found->second.deadline_ms = deadline_ms;
+    return true;
   }
   bool Finish(int id) {
-    const auto found = operations_.find(id); if(found == operations_.end()) return false;
-    if(found->second.control) --controls_; else --ordinary_;
-    operations_.erase(found); return true;
+    const auto found = operations_.find(id);
+    if (found == operations_.end()) return false;
+    if (found->second.control)
+      --controls_;
+    else
+      --ordinary_;
+    operations_.erase(found);
+    return true;
   }
   std::vector<int> Expired(double now_ms) const {
     std::vector<int> ids;
@@ -52,20 +65,31 @@ class SuiteCutOperationRegistry {
     return ids;
   }
   std::vector<int> Ids() const {
-    std::vector<int> ids; ids.reserve(operations_.size());
+    std::vector<int> ids;
+    ids.reserve(operations_.size());
     for (const auto& [id, entry] : operations_) ids.push_back(id);
     return ids;
   }
-  void Clear() { operations_.clear(); ordinary_ = controls_ = 0; }
+  void Clear() {
+    operations_.clear();
+    ordinary_ = controls_ = 0;
+  }
   std::size_t Controls() const { return controls_; }
   std::size_t Size() const { return operations_.size(); }
+
  private:
   std::optional<Entry> BeginOwned(int id, double now_ms, double timeout_ms, bool control) {
-    if(!std::isfinite(now_ms) || now_ms < 0 || !std::isfinite(timeout_ms) || timeout_ms < 0 ||
-       (timeout_ms != 0 && !std::isfinite(now_ms + timeout_ms)) ||
-       id < 1 || operations_.contains(id)) return std::nullopt;
-    const Entry entry{++generation_,timeout_ms == 0 ? 0 : now_ms + timeout_ms,control};
-    operations_.emplace(id,entry); if(control) ++controls_; else ++ordinary_; return entry;
+    if (!std::isfinite(now_ms) || now_ms < 0 || !std::isfinite(timeout_ms) || timeout_ms < 0 ||
+        (timeout_ms != 0 && !std::isfinite(now_ms + timeout_ms)) || id < 1 ||
+        operations_.contains(id))
+      return std::nullopt;
+    const Entry entry{++generation_, timeout_ms == 0 ? 0 : now_ms + timeout_ms, control};
+    operations_.emplace(id, entry);
+    if (control)
+      ++controls_;
+    else
+      ++ordinary_;
+    return entry;
   }
   std::size_t ordinary_ = 0, controls_ = 0;
   std::uint64_t generation_ = 0;

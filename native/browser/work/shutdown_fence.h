@@ -22,7 +22,8 @@ class NativeShutdownFence {
           if (committed_ || !ready()) return;
           committed_ = true;
           quit();
-        })) queued_ = false;
+        }))
+      queued_ = false;
   }
 
  private:

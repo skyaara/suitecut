@@ -19,7 +19,8 @@ namespace {
 // A person's answer to a Fetch.authRequired challenge, as CEF's auth callback.
 class FetchAuthCallback : public CefAuthCallback {
  public:
-  explicit FetchAuthCallback(std::function<void(CefRefPtr<CefDictionaryValue>)> answer) : answer_(std::move(answer)) {}
+  explicit FetchAuthCallback(std::function<void(CefRefPtr<CefDictionaryValue>)> answer)
+      : answer_(std::move(answer)) {}
   void Continue(const CefString& username, const CefString& password) override {
     auto decision = CefDictionaryValue::Create();
     decision->SetString("response", "ProvideCredentials");
@@ -78,10 +79,14 @@ std::set<cef_content_setting_types_t> PermissionSettings(uint32_t requested) {
 
 CefRefPtr<CefListValue> MediaNames(uint32_t requested) {
   auto names = CefListValue::Create();
-  if (requested & CEF_MEDIA_PERMISSION_DEVICE_AUDIO_CAPTURE) names->SetString(names->GetSize(), "microphone");
-  if (requested & CEF_MEDIA_PERMISSION_DEVICE_VIDEO_CAPTURE) names->SetString(names->GetSize(), "camera");
-  if (requested & CEF_MEDIA_PERMISSION_DESKTOP_AUDIO_CAPTURE) names->SetString(names->GetSize(), "display-audio");
-  if (requested & CEF_MEDIA_PERMISSION_DESKTOP_VIDEO_CAPTURE) names->SetString(names->GetSize(), "display");
+  if (requested & CEF_MEDIA_PERMISSION_DEVICE_AUDIO_CAPTURE)
+    names->SetString(names->GetSize(), "microphone");
+  if (requested & CEF_MEDIA_PERMISSION_DEVICE_VIDEO_CAPTURE)
+    names->SetString(names->GetSize(), "camera");
+  if (requested & CEF_MEDIA_PERMISSION_DESKTOP_AUDIO_CAPTURE)
+    names->SetString(names->GetSize(), "display-audio");
+  if (requested & CEF_MEDIA_PERMISSION_DESKTOP_VIDEO_CAPTURE)
+    names->SetString(names->GetSize(), "display");
   return names;
 }
 
@@ -110,24 +115,31 @@ double UnixMs(const CefBaseTime& time) {
 
 const char* FileMode(cef_file_dialog_mode_t mode) {
   switch (mode) {
-    case FILE_DIALOG_OPEN: return "open";
-    case FILE_DIALOG_OPEN_MULTIPLE: return "openMultiple";
-    case FILE_DIALOG_OPEN_FOLDER: return "openFolder";
-    case FILE_DIALOG_SAVE: return "save";
-    default: return "open";
+    case FILE_DIALOG_OPEN:
+      return "open";
+    case FILE_DIALOG_OPEN_MULTIPLE:
+      return "openMultiple";
+    case FILE_DIALOG_OPEN_FOLDER:
+      return "openFolder";
+    case FILE_DIALOG_SAVE:
+      return "save";
+    default:
+      return "open";
   }
 }
 }  // namespace
 
 auto Source::PersonPromptsCreate() -> void {
   if (!HostEventsEnabled()) return;
-  person_prompts_ = std::make_unique<SuiteCutPersonPrompts>([this](Dict info) { HostEvent("prompt", info); });
+  person_prompts_ =
+      std::make_unique<SuiteCutPersonPrompts>([this](Dict info) { HostEvent("prompt", info); });
 }
 
 auto Source::PersonPromptsOn() const -> bool { return person_prompts_ && person_prompts_->On(); }
 
-auto Source::FilePrompt(cef_file_dialog_mode_t mode, const CefString& title, const CefString& default_path,
-                        const std::vector<CefString>& filters, CefRefPtr<CefFileDialogCallback> callback) -> bool {
+auto Source::FilePrompt(cef_file_dialog_mode_t mode, const CefString& title,
+                        const CefString& default_path, const std::vector<CefString>& filters,
+                        CefRefPtr<CefFileDialogCallback> callback) -> bool {
   if (!PersonPromptsOn()) return false;
   auto info = CefDictionaryValue::Create();
   info->SetString("mode", FileMode(mode));
@@ -143,15 +155,18 @@ auto Source::FilePrompt(cef_file_dialog_mode_t mode, const CefString& title, con
       callback->Cancel();
       return "";
     }
-    if (!answer || answer->GetType("paths") != VTYPE_LIST) return "A file chooser's answer has paths or cancel";
+    if (!answer || answer->GetType("paths") != VTYPE_LIST)
+      return "A file chooser's answer has paths or cancel";
     const auto list = answer->GetList("paths");
     std::vector<CefString> paths;
     for (size_t i = 0; i < list->GetSize(); ++i) {
-      if (list->GetType(i) != VTYPE_STRING || list->GetString(i).empty()) return "Each path is a string";
+      if (list->GetType(i) != VTYPE_STRING || list->GetString(i).empty())
+        return "Each path is a string";
       paths.push_back(list->GetString(i));
     }
     if (paths.empty()) return "Pick at least one path, or cancel";
-    if (mode != FILE_DIALOG_OPEN_MULTIPLE && paths.size() > 1) return "This file chooser takes one path";
+    if (mode != FILE_DIALOG_OPEN_MULTIPLE && paths.size() > 1)
+      return "This file chooser takes one path";
     callback->Continue(paths);
     return "";
   };
@@ -175,30 +190,36 @@ auto Source::PermissionPrompt(uint64_t prompt_id, const CefString& origin, uint3
   // default. Chromium asks only while they are at the default, so this is
   // the state from before the prompt; a grant or override would have decided
   // without asking.
-  CefRefPtr<CefRequestContext> context = browser_ ? browser_->GetHost()->GetRequestContext() : nullptr;
-  hold.answer = [callback, context, origin = origin.ToString(), requested](Dict answer) -> std::string {
+  CefRefPtr<CefRequestContext> context =
+      browser_ ? browser_->GetHost()->GetRequestContext() : nullptr;
+  hold.answer = [callback, context, origin = origin.ToString(),
+                 requested](Dict answer) -> std::string {
     bool accept = false;
     if (!Accepted(answer, accept)) return "A permission's answer has accept: true or false";
     callback->Continue(accept ? CEF_PERMISSION_RESULT_ACCEPT : CEF_PERMISSION_RESULT_DENY);
     if (context)
       CefPostTask(TID_UI, new Task([context, origin, types = PermissionSettings(requested)] {
-        for (const auto type : types)
-          context->SetContentSetting(origin, type == CEF_CONTENT_SETTING_TYPE_STORAGE_ACCESS ? CefString(origin) : CefString(),
-                                     type, CEF_CONTENT_SETTING_VALUE_DEFAULT);
-      }));
+                    for (const auto type : types)
+                      context->SetContentSetting(origin,
+                                                 type == CEF_CONTENT_SETTING_TYPE_STORAGE_ACCESS
+                                                     ? CefString(origin)
+                                                     : CefString(),
+                                                 type, CEF_CONTENT_SETTING_VALUE_DEFAULT);
+                  }));
     return "";
   };
   hold.policy = [this, callback, origin = origin.ToString(), requested] {
     const auto granted = engine_.contexts()->AllowedPermissions(page_id_, origin);
-    callback->Continue(suitecut::NativePermissionRequestGranted(requested, granted) ? CEF_PERMISSION_RESULT_ACCEPT
-                                                                                      : CEF_PERMISSION_RESULT_DENY);
+    callback->Continue(suitecut::NativePermissionRequestGranted(requested, granted)
+                           ? CEF_PERMISSION_RESULT_ACCEPT
+                           : CEF_PERMISSION_RESULT_DENY);
   };
   hold.cancel = [callback] { callback->Continue(CEF_PERMISSION_RESULT_IGNORE); };
   return person_prompts_->Show("permission", info, std::move(hold));
 }
 
-auto Source::MediaPrompt(const CefString& origin, uint32_t requested, CefRefPtr<CefMediaAccessCallback> callback)
-    -> bool {
+auto Source::MediaPrompt(const CefString& origin, uint32_t requested,
+                         CefRefPtr<CefMediaAccessCallback> callback) -> bool {
   if (!PersonPromptsOn()) return false;
   auto info = CefDictionaryValue::Create();
   info->SetString("origin", origin);
@@ -220,13 +241,16 @@ auto Source::MediaPrompt(const CefString& origin, uint32_t requested, CefRefPtr<
 
 auto Source::OnDismissPermissionPrompt(CefRefPtr<CefBrowser> browser, uint64_t prompt_id,
                                        cef_permission_request_result_t result) -> void {
-  if (auto tab = AdoptedTab(browser)) return tab->OnDismissPermissionPrompt(browser, prompt_id, result);
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnDismissPermissionPrompt(browser, prompt_id, result);
   if (person_prompts_) person_prompts_->Dismissed("permission:" + std::to_string(prompt_id));
 }
 
-auto Source::OnSelectClientCertificate(CefRefPtr<CefBrowser> browser, bool proxy, const CefString& host, int port,
+auto Source::OnSelectClientCertificate(CefRefPtr<CefBrowser> browser, bool proxy,
+                                       const CefString& host, int port,
                                        const X509CertificateList& certificates,
-                                       CefRefPtr<CefSelectClientCertificateCallback> callback) -> bool {
+                                       CefRefPtr<CefSelectClientCertificateCallback> callback)
+    -> bool {
   if (auto tab = AdoptedTab(browser))
     return tab->OnSelectClientCertificate(browser, proxy, host, port, certificates, callback);
   // With none to choose from, or nobody to ask, CEF's default stays.
@@ -255,9 +279,11 @@ auto Source::OnSelectClientCertificate(CefRefPtr<CefBrowser> browser, bool proxy
       callback->Select(nullptr);
       return "";
     }
-    if (!answer || answer->GetType("index") != VTYPE_INT) return "A certificate's answer has index or cancel";
+    if (!answer || answer->GetType("index") != VTYPE_INT)
+      return "A certificate's answer has index or cancel";
     const int index = answer->GetInt("index");
-    if (index < 0 || static_cast<size_t>(index) >= certificates.size()) return "No certificate has that index";
+    if (index < 0 || static_cast<size_t>(index) >= certificates.size())
+      return "No certificate has that index";
     callback->Select(certificates[static_cast<size_t>(index)]);
     return "";
   };
@@ -279,8 +305,9 @@ auto Source::AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_cre
   }
   // The agent's credentials answer a challenge once; if it comes again they
   // were rejected, and the person is asked.
-  const auto key = SuiteCutAgentAuthTries::Key(info->GetBool("proxy"), info->GetString("host"), info->GetInt("port"),
-                                               info->GetString("realm"), info->GetString("scheme"));
+  const auto key = SuiteCutAgentAuthTries::Key(info->GetBool("proxy"), info->GetString("host"),
+                                               info->GetInt("port"), info->GetString("realm"),
+                                               info->GetString("scheme"));
   const bool agent = agent_credentials && agent_auth_tries_.Untried(key);
   info->SetBool("agentCredentials", agent);
   SuiteCutPersonPrompts::Hold hold;
@@ -289,7 +316,8 @@ auto Source::AuthPrompt(CefRefPtr<CefBrowser> browser, Dict info, bool agent_cre
       callback->Cancel();
       return "";
     }
-    if (!answer || answer->GetType("username") != VTYPE_STRING || answer->GetType("password") != VTYPE_STRING)
+    if (!answer || answer->GetType("username") != VTYPE_STRING ||
+        answer->GetType("password") != VTYPE_STRING)
       return "An authentication answer has username and password, or cancel";
     callback->Continue(answer->GetString("username"), answer->GetString("password"));
     return "";
@@ -355,12 +383,14 @@ auto Source::PersonPromptCommand(int id, const std::string& action, Dict message
     Complete(id, true);
     return;
   }
-  if (message->GetType("prompt") != VTYPE_STRING || message->GetType("answer") != VTYPE_DICTIONARY) {
+  if (message->GetType("prompt") != VTYPE_STRING ||
+      message->GetType("answer") != VTYPE_DICTIONARY) {
     Complete(id, false, "An answer names its prompt and has an answer");
     return;
   }
   std::string error;
-  const bool ok = person_prompts_->Answer(message->GetString("prompt"), message->GetDictionary("answer"), error);
+  const bool ok = person_prompts_->Answer(message->GetString("prompt"),
+                                          message->GetDictionary("answer"), error);
   Complete(id, ok, error);
 }
 

@@ -19,8 +19,7 @@ struct PendingRead {
 std::size_t window_size(std::string_view text) {
   std::size_t value = 0;
   const auto parsed = std::from_chars(text.data(), text.data() + text.size(), value);
-  if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
-      value < 1)
+  if (parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() || value < 1)
     throw std::invalid_argument("max-in-flight must be a positive integer");
   return value;
 }
@@ -35,14 +34,17 @@ void read_window(const std::shared_ptr<suitecut::Transport>& transport, int page
     while (next < expressions.size() || !pending.empty()) {
       while (next < expressions.size() && pending.size() < maximum) {
         auto request = transport->submit_json(
-            suitecut::Json{{"command", "evaluate"}, {"pageId", page_id},
-                           {"expression", expressions[next]}},
+            suitecut::Json{
+                {"command", "evaluate"}, {"pageId", page_id}, {"expression", expressions[next]}},
             suitecut::Timeout{30000});
         const int request_id = request.id;
         try {
           pending.push_back(PendingRead{next, std::move(request)});
         } catch (...) {
-          try { transport->cancel(request_id); } catch (...) {}
+          try {
+            transport->cancel(request_id);
+          } catch (...) {
+          }
           throw;
         }
         ++next;
@@ -51,7 +53,9 @@ void read_window(const std::shared_ptr<suitecut::Transport>& transport, int page
       auto result = suitecut::response_json(packet);
       // Keep the native evaluation envelope, including JS exception metadata.
       std::cout << suitecut::Json{{"index", static_cast<std::int64_t>(pending.front().index)},
-                                  {"pageId", page_id}, {"nativeResult", std::move(result)}}.dump()
+                                  {"pageId", page_id},
+                                  {"nativeResult", std::move(result)}}
+                       .dump()
                 << '\n';
       if (!std::cout) throw std::runtime_error("Cannot write native read result");
       pending.pop_front();
@@ -60,7 +64,10 @@ void read_window(const std::shared_ptr<suitecut::Transport>& transport, int page
     // Dropping a future does not cancel its browser work. Preserve the original
     // error even when a transport failure also prevents remote cancellation.
     for (const auto& read : pending) {
-      try { transport->cancel(read.request.id); } catch (...) {}
+      try {
+        transport->cancel(read.request.id);
+      } catch (...) {
+      }
     }
     throw;
   }
@@ -78,9 +85,9 @@ int main(int argc, char** argv) {
     std::vector<std::string> expressions;
     for (int i = 3; i < argc; ++i) expressions.emplace_back(argv[i]);
     if (expressions.empty()) {
-      expressions = {"document.title", "location.href", "document.readyState",
-                     "document.documentElement.lang", "navigator.userAgent",
-                     "document.querySelectorAll('a').length"};
+      expressions = {"document.title",      "location.href",
+                     "document.readyState", "document.documentElement.lang",
+                     "navigator.userAgent", "document.querySelectorAll('a').length"};
     }
     suitecut::LaunchOptions options;
     options.executable = argv[1];
@@ -91,8 +98,7 @@ int main(int argc, char** argv) {
 #else
     const auto self = std::filesystem::absolute(argv[0], identity_error);
 #endif
-    if (!identity_error &&
-        std::filesystem::equivalent(self, options.executable, identity_error))
+    if (!identity_error && std::filesystem::equivalent(self, options.executable, identity_error))
       throw std::invalid_argument("Browser executable must not be this example program");
     auto browser = suitecut::Browser::launch(options);
     auto page = browser.main_page();

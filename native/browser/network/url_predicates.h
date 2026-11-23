@@ -14,17 +14,18 @@ class SuiteCutURLPredicateRegistry {
  public:
   static constexpr std::uint64_t kMaxWireInteger = 9007199254740991ULL;
   using Continuation = std::function<void(bool)>;
-  std::optional<std::uint64_t> Pause(int owner, std::uint64_t generation,
-      std::string client_token, Continuation continuation) {
-    if (owner < 1 || generation == 0 || generation > kMaxWireInteger ||
-        client_token.empty() || !continuation || entries_.contains(owner) ||
-        next_token_ >= kMaxWireInteger) return std::nullopt;
+  std::optional<std::uint64_t> Pause(int owner, std::uint64_t generation, std::string client_token,
+                                     Continuation continuation) {
+    if (owner < 1 || generation == 0 || generation > kMaxWireInteger || client_token.empty() ||
+        !continuation || entries_.contains(owner) || next_token_ >= kMaxWireInteger)
+      return std::nullopt;
     const auto token = ++next_token_;
-    entries_.emplace(owner, Entry{generation, token, std::move(client_token), std::move(continuation)});
+    entries_.emplace(owner,
+                     Entry{generation, token, std::move(client_token), std::move(continuation)});
     return token;
   }
-  std::optional<Continuation> Take(int owner, std::uint64_t generation,
-      std::uint64_t token, const std::string& client_token) {
+  std::optional<Continuation> Take(int owner, std::uint64_t generation, std::uint64_t token,
+                                   const std::string& client_token) {
     auto found = entries_.find(owner);
     if (found == entries_.end() || found->second.generation != generation ||
         found->second.token != token || found->second.client_token != client_token)
@@ -36,6 +37,7 @@ class SuiteCutURLPredicateRegistry {
   void Cancel(int owner) { entries_.erase(owner); }
   void Clear() { entries_.clear(); }
   std::size_t Size() const { return entries_.size(); }
+
  private:
   struct Entry {
     std::uint64_t generation, token;

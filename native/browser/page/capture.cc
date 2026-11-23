@@ -145,8 +145,8 @@ auto Source::SurfaceOutputPaint(PaintElementType type, const CefAcceleratedPaint
     // The popup's rectangle is in the view's CSS pixels; the view paints at
     // the page's scale.
     const suitecut::SurfaceOutput::Rect at{static_cast<int>(std::lround(popup_rect_.x * scale_)),
-                                           static_cast<int>(std::lround(popup_rect_.y * scale_)),
-                                           0, 0};
+                                           static_cast<int>(std::lround(popup_rect_.y * scale_)), 0,
+                                           0};
     surface_output_->SetPopup(info.shared_texture_io_surface, rect, at);
     if (browser_) browser_->GetHost()->Invalidate(PET_VIEW);
     return;
@@ -209,8 +209,7 @@ auto Source::OnAudioStreamStarted(CefRefPtr<CefBrowser> browser, const CefAudioP
 }
 
 auto Source::OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** data, int frames,
-                                 int64_t pts)
-    -> void {
+                                 int64_t pts) -> void {
   if (auto tab = AdoptedTab(browser)) return tab->OnAudioStreamPacket(browser, data, frames, pts);
   if (!audio_valid_ || frames < 1) return;
   const double received = Now();
@@ -319,8 +318,7 @@ auto Source::ChromeScreencastUpdate() -> void {
     ChromeScreencastStart();
   }
   // Consumers start and stop without notifying the page; poll for them.
-  CefPostDelayedTask(TID_UI,
-                     new Task([self = CefRefPtr<Source>(this), alive = engine_.Alive()] {
+  CefPostDelayedTask(TID_UI, new Task([self = CefRefPtr<Source>(this), alive = engine_.Alive()] {
                        if (*alive) self->ChromeScreencastUpdate();
                      }),
                      250);
@@ -333,8 +331,7 @@ auto Source::ChromeScreencastFrame(Dict params) -> void {
   // CEF's Chrome-style windows deliver one screencast frame per start rather
   // than one per visual change, so request the next frame at about 30 fps.
   const double wait = std::max(0.0, 33 - (Now() - chrome_screencast_requested_ms_));
-  CefPostDelayedTask(TID_UI,
-                     new Task([self = CefRefPtr<Source>(this), alive = engine_.Alive()] {
+  CefPostDelayedTask(TID_UI, new Task([self = CefRefPtr<Source>(this), alive = engine_.Alive()] {
                        if (*alive && self->chrome_screencast_ && !self->closing_page_)
                          self->ChromeScreencastStart();
                      }),
@@ -404,9 +401,11 @@ auto Source::ChromeScreencastFrame(Dict params) -> void {
       const int start = std::max(0, -left);
       const int end = std::min(popup_width_, frame_width_ - left);
       if (end <= start) continue;
-      std::memcpy(output.data() + (static_cast<size_t>(top + y) * frame_width_ + static_cast<size_t>(left + start)) * 4,
-                  popup_.data() + (static_cast<size_t>(y) * popup_width_ + start) * 4,
-                  static_cast<size_t>(end - start) * 4);
+      std::memcpy(
+          output.data() +
+              (static_cast<size_t>(top + y) * frame_width_ + static_cast<size_t>(left + start)) * 4,
+          popup_.data() + (static_cast<size_t>(y) * popup_width_ + start) * 4,
+          static_cast<size_t>(end - start) * 4);
     }
   }
   // Automatic video consumes the genuine composed paint before the legacy

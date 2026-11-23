@@ -14,7 +14,8 @@ namespace suitecut {
 namespace {
 IOSurfaceRef SurfaceOf(CALayer* layer) {
   id contents = layer.contents;
-  if (!contents || CFGetTypeID((__bridge CFTypeRef)contents) != IOSurfaceGetTypeID()) return nullptr;
+  if (!contents || CFGetTypeID((__bridge CFTypeRef)contents) != IOSurfaceGetTypeID())
+    return nullptr;
   return (__bridge IOSurfaceRef)contents;
 }
 
@@ -39,8 +40,8 @@ struct WindowFrames::Impl {
     if (layer != primary) return;
     IOSurfaceRef surface = SurfaceOf(layer);
     if (!surface) return;
-    frame(surface, static_cast<int>(IOSurfaceGetWidth(surface)), static_cast<int>(IOSurfaceGetHeight(surface)),
-          WindowFramesNow());
+    frame(surface, static_cast<int>(IOSurfaceGetWidth(surface)),
+          static_cast<int>(IOSurfaceGetHeight(surface)), WindowFramesNow());
   }
   void Discover(const std::shared_ptr<Impl>& self, bool deliver);
   void Unhook();
@@ -61,7 +62,9 @@ void Updated(CALayer* layer) {
 
 void Forward(Class hooked, Class base, SEL selector, id block) {
   Method method = class_getInstanceMethod(base, selector);
-  if (method) class_addMethod(hooked, selector, imp_implementationWithBlock(block), method_getTypeEncoding(method));
+  if (method)
+    class_addMethod(hooked, selector, imp_implementationWithBlock(block),
+                    method_getTypeEncoding(method));
 }
 
 // A per-instance subclass, the way KVO observes one object: only the layers we
@@ -133,12 +136,14 @@ void WindowFrames::Impl::Unhook() {
 
 WindowFrames::WindowFrames(void* handle, Frame frame) : impl_(std::make_shared<Impl>()) {
   id object = (__bridge id)handle;
-  impl_->view = [object isKindOfClass:[NSWindow class]] ? [(NSWindow*)object contentView] : (NSView*)object;
+  impl_->view =
+      [object isKindOfClass:[NSWindow class]] ? [(NSWindow*)object contentView] : (NSView*)object;
   impl_->frame = std::move(frame);
   impl_->Discover(impl_, true);
   // Frames come from the hook; this only finds layers Chromium creates later.
   std::weak_ptr<Impl> weak = impl_;
-  impl_->rescan = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
+  impl_->rescan =
+      dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
   dispatch_source_set_timer(impl_->rescan, dispatch_time(DISPATCH_TIME_NOW, 250 * NSEC_PER_MSEC),
                             250 * NSEC_PER_MSEC, 50 * NSEC_PER_MSEC);
   dispatch_source_set_event_handler(impl_->rescan, ^{
@@ -202,9 +207,11 @@ bool WritePng(const Probe& probe) {
 
 std::string Report(const Probe& probe) {
   std::vector<double> gaps;
-  for (size_t i = 1; i < probe.arrivals.size(); ++i) gaps.push_back(probe.arrivals[i] - probe.arrivals[i - 1]);
+  for (size_t i = 1; i < probe.arrivals.size(); ++i)
+    gaps.push_back(probe.arrivals[i] - probe.arrivals[i - 1]);
   std::sort(gaps.begin(), gaps.end());
-  const double span = probe.arrivals.size() > 1 ? probe.arrivals.back() - probe.arrivals.front() : 0;
+  const double span =
+      probe.arrivals.size() > 1 ? probe.arrivals.back() - probe.arrivals.front() : 0;
   double copy = 0;
   for (double ms : probe.copy_ms) copy += ms;
   NSDictionary* report = @{
@@ -229,26 +236,28 @@ void ProbeWindowFrames(void* handle, int duration_ms, const std::string& png_pat
   auto probe = std::make_shared<Probe>();
   probe->png_path = png_path;
   Probe* raw = probe.get();
-  probe->frames = std::make_unique<WindowFrames>(handle, [raw](void* io_surface, int width, int height, double now) {
-    auto surface = static_cast<IOSurfaceRef>(io_surface);
-    raw->arrivals.push_back(now);
-    raw->surfaces[surface]++;
-    raw->width = width;
-    raw->height = height;
-    raw->format = IOSurfaceGetPixelFormat(surface);
-    const double start = WindowFramesNow();
-    IOSurfaceLock(surface, kIOSurfaceLockReadOnly, nullptr);
-    raw->row = IOSurfaceGetBytesPerRow(surface);
-    const auto* base = static_cast<const uint8_t*>(IOSurfaceGetBaseAddress(surface));
-    raw->pixels.assign(base, base + raw->row * height);
-    IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, nullptr);
-    raw->copy_ms.push_back(WindowFramesNow() - start);
-  });
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(duration_ms) * NSEC_PER_MSEC),
-                 dispatch_get_main_queue(), ^{
-                   const auto report = Report(*probe);
-                   probe->frames.reset();
-                   done(report);
-                 });
+  probe->frames = std::make_unique<WindowFrames>(
+      handle, [raw](void* io_surface, int width, int height, double now) {
+        auto surface = static_cast<IOSurfaceRef>(io_surface);
+        raw->arrivals.push_back(now);
+        raw->surfaces[surface]++;
+        raw->width = width;
+        raw->height = height;
+        raw->format = IOSurfaceGetPixelFormat(surface);
+        const double start = WindowFramesNow();
+        IOSurfaceLock(surface, kIOSurfaceLockReadOnly, nullptr);
+        raw->row = IOSurfaceGetBytesPerRow(surface);
+        const auto* base = static_cast<const uint8_t*>(IOSurfaceGetBaseAddress(surface));
+        raw->pixels.assign(base, base + raw->row * height);
+        IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, nullptr);
+        raw->copy_ms.push_back(WindowFramesNow() - start);
+      });
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(duration_ms) * NSEC_PER_MSEC),
+      dispatch_get_main_queue(), ^{
+        const auto report = Report(*probe);
+        probe->frames.reset();
+        done(report);
+      });
 }
 }  // namespace suitecut

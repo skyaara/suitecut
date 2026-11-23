@@ -14,9 +14,10 @@ class CdpBackend {
   Packet wait_ready(int, std::chrono::milliseconds);
   ClientStats stats() const;
   void close();
+
  private:
   struct Impl;
   explicit CdpBackend(std::unique_ptr<Impl>);
   std::unique_ptr<Impl> impl_;
 };
-}
+}  // namespace suitecut::detail

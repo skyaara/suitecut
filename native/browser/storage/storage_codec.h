@@ -58,4 +58,4 @@ return read(input.root);}
 return{encode,decode};})JS";
   return source;
 }
-}
+}  // namespace suitecut

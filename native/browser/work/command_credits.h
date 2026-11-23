@@ -18,18 +18,28 @@ class SuiteCutCommandCredits {
     return true;
   }
   void Release() {
-    { std::lock_guard lock(mutex_); if (!used_) std::abort(); --used_; }
+    {
+      std::lock_guard lock(mutex_);
+      if (!used_) std::abort();
+      --used_;
+    }
     available_.notify_one();
   }
   void Wake() {
     // Synchronize with predicate evaluation to avoid a lost cancel wake-up.
-    { std::lock_guard lock(mutex_); }
+    {
+      std::lock_guard lock(mutex_);
+    }
     available_.notify_all();
   }
   void Stop() {
-    { std::lock_guard lock(mutex_); stopped_ = true; }
+    {
+      std::lock_guard lock(mutex_);
+      stopped_ = true;
+    }
     available_.notify_all();
   }
+
  private:
   unsigned capacity_, used_ = 0;
   bool stopped_ = false;

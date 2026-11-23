@@ -3,7 +3,8 @@
 // Generated from the authored formatNativeAriaJSON in src/native-aria.ts.
 // Keep the fixed native and SDK serialization contract identical; regenerate with the
 // repository formatter generator after changing that function.
-inline constexpr char kSuiteCutNativeAriaJSON[] = R"JS(function formatNativeAriaJSON(nodes, options = {}) {
+inline constexpr char kSuiteCutNativeAriaJSON[] =
+    R"JS(function formatNativeAriaJSON(nodes, options = {}) {
     const result = [];
     const pending = [{ values: nodes, output: result, depth: 0 }];
     while (pending.length) {

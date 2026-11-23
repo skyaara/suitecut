@@ -8,8 +8,15 @@
 int main() {
   using Fence = suitecut::NativeShutdownFence;
   std::deque<Fence::Work> queue;
-  auto post = [&](Fence::Work work) { queue.push_back(std::move(work)); return true; };
-  auto run = [&] { auto work = std::move(queue.front()); queue.pop_front(); work(); };
+  auto post = [&](Fence::Work work) {
+    queue.push_back(std::move(work));
+    return true;
+  };
+  auto run = [&] {
+    auto work = std::move(queue.front());
+    queue.pop_front();
+    work();
+  };
   {
     Fence fence;
     bool closing = false, source_owned = true;
@@ -51,5 +58,6 @@ int main() {
     run();
     assert(quits == 1 && queue.empty());
   }
-  std::cout << "Shutdown waits for Source retirement and callback unwind; late physical work, reentry and rejected posts remain bounded\n";
+  std::cout << "Shutdown waits for Source retirement and callback unwind; late physical work, "
+               "reentry and rejected posts remain bounded\n";
 }

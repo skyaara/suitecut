@@ -29,5 +29,6 @@ int main() {
     stream.Join();
     assert(stream.Snapshot().failure == "Malformed native publisher capture frame");
   }
-  std::cout << "Valid pre-start capture is discarded; malformed bytes still fail; no encoder spawned\n";
+  std::cout
+      << "Valid pre-start capture is discarded; malformed bytes still fail; no encoder spawned\n";
 }

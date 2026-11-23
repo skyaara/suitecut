@@ -14,7 +14,10 @@ int main(int argc, char** argv) {
     auto page = browser.main_page();
     page.navigate(argc == 3 ? argv[2] : "about:blank");
     std::cout << suitecut::Json{{"version", browser.version()},
-        {"title", page.evaluate("document.title")}, {"observation", page.observe()}}.dump() << '\n';
+                                {"title", page.evaluate("document.title")},
+                                {"observation", page.observe()}}
+                     .dump()
+              << '\n';
     browser.close();
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n';

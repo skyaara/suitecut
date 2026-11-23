@@ -3,16 +3,25 @@
 #include <string>
 namespace suitecut {
 inline std::string StorageQuoteString(const std::string& input) {
-  std::string output = "\""; const char* hex = "0123456789abcdef";
+  std::string output = "\"";
+  const char* hex = "0123456789abcdef";
   for (const unsigned char c : input) {
-    if (c == '\\' || c == '\"') { output += '\\'; output += static_cast<char>(c); }
-    else if (c < 32) { output += "\\u00"; output += hex[c >> 4]; output += hex[c & 15]; }
-    else output += static_cast<char>(c);
+    if (c == '\\' || c == '\"') {
+      output += '\\';
+      output += static_cast<char>(c);
+    } else if (c < 32) {
+      output += "\\u00";
+      output += hex[c >> 4];
+      output += hex[c & 15];
+    } else
+      output += static_cast<char>(c);
   }
   return output + "\"";
 }
 inline std::string StorageCaptureScript(const std::string& codec, bool indexed_db, bool opfs) {
-  return "(async()=>{const codec=(" + codec + ")();const includeDB=" + (indexed_db ? "true" : "false") + ";const includeOPFS=" + (opfs ? "true" : "false") + R"JS(;
+  return "(async()=>{const codec=(" + codec +
+         ")();const includeDB=" + (indexed_db ? "true" : "false") +
+         ";const includeOPFS=" + (opfs ? "true" : "false") + R"JS(;
 const output={origin:location.origin,localStorage:[]};
 for(let i=0;i<localStorage.length;i++){const name=localStorage.key(i);const entry={name,value:localStorage.getItem(name)};output.localStorage.push(entry);}
 if(includeOPFS){
@@ -38,8 +47,14 @@ output.indexedDB.push(database);
 }finally{db.close();}}
 return publish();})())JS";
 }
-inline std::string StorageRestoreScript(const std::string& codec, const std::string& input, bool clear_idb) {
-  return "(async()=>{const codec=(" + codec + ")();const wrapped=JSON.parse(" + StorageQuoteString(input) + ");const input=Object.hasOwn(wrapped,'stateJSON')?JSON.parse(wrapped.stateJSON):wrapped;const clearDB=" + (clear_idb ? "true" : "false") + R"JS(;
+inline std::string StorageRestoreScript(const std::string& codec, const std::string& input,
+                                        bool clear_idb) {
+  return "(async()=>{const codec=(" + codec + ")();const wrapped=JSON.parse(" +
+         StorageQuoteString(input) +
+         ");const "
+         "input=Object.hasOwn(wrapped,'stateJSON')?JSON.parse(wrapped.stateJSON):wrapped;const "
+         "clearDB=" +
+         (clear_idb ? "true" : "false") + R"JS(;
 if(Object.hasOwn(wrapped,'stateJSON'))input.origin=wrapped.origin;
 if(input.origin!==location.origin)throw Error('Native storage restore origin mismatch');
 const unique=(values,label)=>{const seen=new Set();for(const value of values){if(typeof value!=='string'||seen.has(value))throw Error('Invalid native '+label+' names');seen.add(value);}};
@@ -65,4 +80,4 @@ if(entry.type==='directory')await parent.getDirectoryHandle(name,{create:true});
 }
 return true;})())JS";
 }
-}
+}  // namespace suitecut

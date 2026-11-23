@@ -15,7 +15,8 @@
 
 namespace suitecut::detail {
 
-inline bool error_mentions(const std::exception& error, std::initializer_list<const char*> reasons) {
+inline bool error_mentions(const std::exception& error,
+                           std::initializer_list<const char*> reasons) {
   const std::string what = error.what();
   return std::any_of(reasons.begin(), reasons.end(),
                      [&](const char* reason) { return what.find(reason) != std::string::npos; });
@@ -23,20 +24,23 @@ inline bool error_mentions(const std::exception& error, std::initializer_list<co
 
 // The script was refused before it started: there was no context to run in.
 inline bool script_never_ran(const std::exception& error) {
-  return error_mentions(error, {"Cannot find default execution context", "Cannot find context with specified id"});
+  return error_mentions(
+      error, {"Cannot find default execution context", "Cannot find context with specified id"});
 }
 
 // The document went away, before or during the script: the CEF engine's
 // annotation and Chromium's own texts.
 inline bool document_replaced(const std::exception& error) {
-  return error_mentions(error, {"execution context unavailable after navigation", "Cannot find context",
-                                "Execution context was destroyed", "Inspected target navigated"});
+  return error_mentions(error,
+                        {"execution context unavailable after navigation", "Cannot find context",
+                         "Execution context was destroyed", "Inspected target navigated"});
 }
 
 // Evaluates `expression` in the page's current document, running it again in
 // the new document while `retry(error)` says that is safe, all within the
 // page's one timeout.
-template <class Retry> Json evaluate_in_current_document(const Page& page, const std::string& expression, Retry retry) {
+template <class Retry>
+Json evaluate_in_current_document(const Page& page, const std::string& expression, Retry retry) {
   using Clock = std::chrono::steady_clock;
   constexpr auto pause = std::chrono::milliseconds{50};
   const auto deadline = Clock::now() + page.timeout();
@@ -64,7 +68,8 @@ inline Json evaluate_script(const Page& page, const std::string& expression) {
   } catch (const std::exception& error) {
     if (script_never_ran(error) || !document_replaced(error)) throw;
     throw std::runtime_error(std::string(error.what()) +
-                             "; the page navigated while the script ran, so it may have partly run and was not run again");
+                             "; the page navigated while the script ran, so it may have partly run "
+                             "and was not run again");
   }
 }
 

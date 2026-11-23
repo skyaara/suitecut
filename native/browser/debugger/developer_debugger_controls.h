@@ -42,11 +42,12 @@ class DeveloperDebuggerControls {
     // no lease or scope token is invented for that interval. A successful pin
     // must identify the same actual root document/channel as current().
     std::shared_ptr<FrameDebuggerScopes> scopes;
-    std::function<bool(const Document&,FrameDebuggerScopes::Pin&)> scope_pin;
+    std::function<bool(const Document&, FrameDebuggerScopes::Pin&)> scope_pin;
     // Called only by the captured channel arbiter, with the exact immutable
     // native scope token. Foreign pauses are resumed by the arbiter; no IDs or
     // continuations from another context may be borrowed by this controller.
-    std::function<DebuggerDomains::DeveloperPauseDisposition(FrameDebuggerScopes::Token,Dict)> pause_eligibility;
+    std::function<DebuggerDomains::DeveloperPauseDisposition(FrameDebuggerScopes::Token, Dict)>
+        pause_eligibility;
     // Validate actual observed script/context ownership; no ID spelling/URL
     // inference. Return false for child/worker or an obsolete document.
     std::function<bool(Dict, const Document&)> owns_pause;
@@ -55,8 +56,9 @@ class DeveloperDebuggerControls {
     // sourceURL/embedder/hash tuples never attest native ownership.
     std::function<bool(const std::string&, const Document&)> owns_breakpoint_script;
     // Selected actual metadata only; no Inspector command or source snapshot.
-    std::function<bool(const Document&,const std::string&,const uint64_t*,double,
-                       DeveloperDebuggerScripts::Page&,std::string&)> script_page;
+    std::function<bool(const Document&, const std::string&, const uint64_t*, double,
+                       DeveloperDebuggerScripts::Page&, std::string&)>
+        script_page;
     // Reply only at actual command ACK/real transport closure. A false return
     // proves that dispatch was not admitted and cannot subsequently reply.
     std::function<bool(const std::string&, Dict, double, DebuggerDomains::Reply)> send;
@@ -67,7 +69,8 @@ class DeveloperDebuggerControls {
   explicit DeveloperDebuggerControls(Hooks hooks);
   ~DeveloperDebuggerControls();
   // Actions: open, pause, waitForPause, resume, stepOver, stepInto, stepOut,
-  // scriptSource, scripts, setBreakpoint, removeBreakpoint, evaluateOnCallFrame, close. Session and pause strings are native opaque tokens.
+  // scriptSource, scripts, setBreakpoint, removeBreakpoint, evaluateOnCallFrame, close. Session and
+  // pause strings are native opaque tokens.
   void Handle(int owner, Dict params, double original_deadline, Reply reply);
   void Cancel(int owner);
   // Logical document/renderer invalidation only. Does not clear physical work.
@@ -83,6 +86,7 @@ class DeveloperDebuggerControls {
   bool Retained() const;
   bool OwnsSession(const std::string& native_token) const;
   void Diagnostics(Dict output) const;
+
  private:
   class Impl;
   std::shared_ptr<Impl> impl_;

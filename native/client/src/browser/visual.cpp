@@ -39,8 +39,8 @@ class Deadline {
  public:
   explicit Deadline(Timeout timeout) {
     const auto now = Clock::now();
-    require(timeout.count() > 0 && timeout <
-                std::chrono::duration_cast<Timeout>(Clock::time_point::max() - now),
+    require(timeout.count() > 0 &&
+                timeout < std::chrono::duration_cast<Timeout>(Clock::time_point::max() - now),
             "Visual operation timeout is out of range");
     end_ = now + timeout;
   }
@@ -49,6 +49,7 @@ class Deadline {
     require(remaining.count() > 0, "Visual operation timed out");
     return page.with_timeout(remaining);
   }
+
  private:
   Clock::time_point end_;
 };
@@ -84,7 +85,7 @@ State state(const Page& page, const Deadline& deadline) {
             "Visual viewport returned invalid geometry");
     return item.as_double();
   };
-  Geometry geometry{number("width"), number("height"), number("scrollX"),
+  Geometry geometry{number("width"),   number("height"),      number("scrollX"),
                     number("scrollY"), number("deviceScale"), number("visualScale")};
   require(positive(geometry.width) && positive(geometry.height) && positive(geometry.device_scale),
           "Visual viewport dimensions and device scale must be positive");
@@ -92,14 +93,13 @@ State state(const Page& page, const Deadline& deadline) {
   require(before == document(page, deadline), "Visual document changed while reading geometry");
   return {std::move(before), geometry};
 }
-} // namespace
+}  // namespace
 
-std::pair<std::uint32_t, std::uint32_t> visual_png_dimensions(
-    std::span<const std::uint8_t> png) {
+std::pair<std::uint32_t, std::uint32_t> visual_png_dimensions(std::span<const std::uint8_t> png) {
   constexpr std::array<std::uint8_t, 8> signature{137, 80, 78, 71, 13, 10, 26, 10};
   require(png.size() >= 24 && std::equal(signature.begin(), signature.end(), png.begin()) &&
-              png[8] == 0 && png[9] == 0 && png[10] == 0 && png[11] == 13 &&
-              png[12] == 'I' && png[13] == 'H' && png[14] == 'D' && png[15] == 'R',
+              png[8] == 0 && png[9] == 0 && png[10] == 0 && png[11] == 13 && png[12] == 'I' &&
+              png[13] == 'H' && png[14] == 'D' && png[15] == 'R',
           "Visual capture has an invalid PNG header");
   const auto read = [&](std::size_t offset) {
     return (std::uint32_t{png[offset]} << 24) | (std::uint32_t{png[offset + 1]} << 16) |
@@ -111,7 +111,7 @@ std::pair<std::uint32_t, std::uint32_t> visual_png_dimensions(
 }
 
 VisualRect visual_clip_to_viewport(double width, double height,
-                                 std::optional<VisualRect> requested) {
+                                   std::optional<VisualRect> requested) {
   require(positive(width) && positive(height), "Visual viewport dimensions must be positive");
   if (!requested) return {0, 0, width, height};
   rectangle(*requested);
@@ -127,8 +127,8 @@ VisualPoint visual_pixel_to_css(const VisualCaptureMetadata& capture, double x, 
   rectangle(capture.css_clip);
   require(positive(capture.pixel_to_css_scale_x) && positive(capture.pixel_to_css_scale_y),
           "Visual capture has invalid pixel scales");
-  require(std::isfinite(x) && std::isfinite(y) && x >= 0 && y >= 0 &&
-              x < capture.pixel_width && y < capture.pixel_height,
+  require(std::isfinite(x) && std::isfinite(y) && x >= 0 && y >= 0 && x < capture.pixel_width &&
+              y < capture.pixel_height,
           "Visual point must be finite and inside the captured image");
   VisualPoint result{capture.css_clip.x + x * capture.pixel_to_css_scale_x,
                      capture.css_clip.y + y * capture.pixel_to_css_scale_y};
@@ -157,11 +157,13 @@ VisualCapture VisualController::capture(VisualCaptureOptions options) {
           "Visual capture scale must be css or device");
   Deadline deadline(impl_->page.timeout());
   const auto before = state(impl_->page, deadline);
-  const auto clip = visual_clip_to_viewport(before.geometry.width, before.geometry.height,
-                                           options.clip);
-  Json native{{"format", "png"}, {"scale", options.scale}, {"fullPage", false},
-              {"clip", Json{{"x", clip.x}, {"y", clip.y},
-                             {"width", clip.width}, {"height", clip.height}}}};
+  const auto clip =
+      visual_clip_to_viewport(before.geometry.width, before.geometry.height, options.clip);
+  Json native{
+      {"format", "png"},
+      {"scale", options.scale},
+      {"fullPage", false},
+      {"clip", Json{{"x", clip.x}, {"y", clip.y}, {"width", clip.width}, {"height", clip.height}}}};
   const auto started = Clock::now();
   auto png = deadline.view(impl_->page).screenshot(std::move(native));
   const auto [width, height] = visual_png_dimensions(png);
@@ -171,8 +173,8 @@ VisualCapture VisualController::capture(VisualCaptureOptions options) {
   require(impl_->sequence != std::numeric_limits<std::uint64_t>::max(),
           "Visual capture identity space exhausted");
   VisualCapture result;
-  result.id = "visual:" + std::to_string(impl_->controller) + ":" +
-              std::to_string(++impl_->sequence);
+  result.id =
+      "visual:" + std::to_string(impl_->controller) + ":" + std::to_string(++impl_->sequence);
   result.pixel_width = width;
   result.pixel_height = height;
   result.css_clip = clip;
@@ -180,7 +182,7 @@ VisualCapture VisualController::capture(VisualCaptureOptions options) {
   result.pixel_to_css_scale_y = clip.height / height;
   result.png = std::move(png);
   impl_->active = Impl::Active{static_cast<const VisualCaptureMetadata&>(result), before,
-                                started + std::chrono::seconds(30)};
+                               started + std::chrono::seconds(30)};
   return result;
 }
 
@@ -197,4 +199,4 @@ void VisualController::click(const std::string& capture_id, double x, double y) 
   require(Clock::now() < active.expires, "Visual capture expired");
   deadline.view(impl_->page).mouse_click(point.x, point.y);
 }
-} // namespace suitecut
+}  // namespace suitecut

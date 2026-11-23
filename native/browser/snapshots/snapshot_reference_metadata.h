@@ -13,21 +13,25 @@ inline bool SnapshotReferenceNodes(CefRefPtr<CefDictionaryValue> result,
                                    std::vector<SnapshotReferences::Node>& output,
                                    std::string& error) {
   output.clear();
-  const auto fail = [&](const char* message) { error = message; return false; };
+  const auto fail = [&](const char* message) {
+    error = message;
+    return false;
+  };
   if (!result || result->HasKey("exceptionDetails"))
     return fail("Native snapshot reference node metadata unavailable");
   const auto remote = result->GetDictionary("result");
   const auto deep = remote && remote->GetString("subtype") == "array"
-    ? remote->GetDictionary("deepSerializedValue") : nullptr;
+                        ? remote->GetDictionary("deepSerializedValue")
+                        : nullptr;
   const auto nodes = deep && deep->GetString("type") == "array" ? deep->GetList("value") : nullptr;
-  if (!nodes)
-    return fail("Native snapshot reference node metadata has invalid shape");
+  if (!nodes) return fail("Native snapshot reference node metadata has invalid shape");
   std::set<int> identities;
   std::vector<SnapshotReferences::Node> validated;
   validated.reserve(nodes->GetSize());
   for (size_t index = 0; index < nodes->GetSize(); ++index) {
     const auto value = nodes->GetDictionary(index);
-    const auto node = value && value->GetString("type") == "node" ? value->GetDictionary("value") : nullptr;
+    const auto node =
+        value && value->GetString("type") == "node" ? value->GetDictionary("value") : nullptr;
     if (!node || node->GetType("nodeType") != VTYPE_INT || node->GetInt("nodeType") != 1 ||
         node->GetType("backendNodeId") != VTYPE_INT || node->GetInt("backendNodeId") <= 0)
       return fail("Native snapshot reference did not identify a genuine Element backend node");
@@ -40,4 +44,4 @@ inline bool SnapshotReferenceNodes(CefRefPtr<CefDictionaryValue> result,
   error.clear();
   return true;
 }
-}
+}  // namespace suitecut

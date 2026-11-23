@@ -9,32 +9,42 @@ namespace suitecut {
 // ownership; this projection never authorizes a script mutation.
 class DebuggerScriptMetadata {
  public:
-  using Dict=CefRefPtr<CefDictionaryValue>;
-  static bool Build(Dict metadata,bool attested,std::string&output){
+  using Dict = CefRefPtr<CefDictionaryValue>;
+  static bool Build(Dict metadata, bool attested, std::string& output) {
     DebuggerScriptMetadata writer;
-    if(!metadata||metadata->GetType("scriptId")!=VTYPE_STRING||metadata->GetString("scriptId").empty())return false;
-    writer.out_="{\"scriptId\":";
-    if(!writer.Text(metadata->GetValue("scriptId")))return false;
-    writer.out_+=",\"url\":";
-    if(!writer.Text(metadata->GetValue("url")))return false;
-    for(const auto*key:{"hash","scriptLanguage"})if(metadata->HasKey(key)){
-      writer.out_+=std::string(",\"")+key+"\":";
-      if(!writer.Text(metadata->GetValue(key)))return false;
+    if (!metadata || metadata->GetType("scriptId") != VTYPE_STRING ||
+        metadata->GetString("scriptId").empty())
+      return false;
+    writer.out_ = "{\"scriptId\":";
+    if (!writer.Text(metadata->GetValue("scriptId"))) return false;
+    writer.out_ += ",\"url\":";
+    if (!writer.Text(metadata->GetValue("url"))) return false;
+    for (const auto* key : {"hash", "scriptLanguage"})
+      if (metadata->HasKey(key)) {
+        writer.out_ += std::string(",\"") + key + "\":";
+        if (!writer.Text(metadata->GetValue(key))) return false;
+      }
+    if (metadata->HasKey("hasSourceURL")) {
+      if (metadata->GetType("hasSourceURL") != VTYPE_BOOL) return false;
+      writer.out_ +=
+          metadata->GetBool("hasSourceURL") ? ",\"hasSourceURL\":true" : ",\"hasSourceURL\":false";
     }
-    if(metadata->HasKey("hasSourceURL")){
-      if(metadata->GetType("hasSourceURL")!=VTYPE_BOOL)return false;
-      writer.out_+=metadata->GetBool("hasSourceURL")?",\"hasSourceURL\":true":",\"hasSourceURL\":false";
-    }
-    writer.out_+=attested?",\"attestedNative\":true}":",\"attestedNative\":false}";
-    output=std::move(writer.out_);return true;
+    writer.out_ += attested ? ",\"attestedNative\":true}" : ",\"attestedNative\":false}";
+    output = std::move(writer.out_);
+    return true;
   }
+
  private:
   std::string out_;
-  bool Text(CefRefPtr<CefValue>value){
-    if(!value)return false;
+  bool Text(CefRefPtr<CefValue> value) {
+    if (!value) return false;
     std::u16string units;
-    if(value->GetType()==VTYPE_STRING)units=value->GetString().ToString16();else if(!DevToolsReadTag(value,units))return false;
-    out_+=DevToolsQuoteUnits(units);return true;
+    if (value->GetType() == VTYPE_STRING)
+      units = value->GetString().ToString16();
+    else if (!DevToolsReadTag(value, units))
+      return false;
+    out_ += DevToolsQuoteUnits(units);
+    return true;
   }
 };
-}
+}  // namespace suitecut

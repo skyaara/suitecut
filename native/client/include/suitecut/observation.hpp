@@ -33,6 +33,5 @@ Json compact_observation(const Json& forest, ObservationOptions options = {});
 // result's own "ancestors" table holds the chains its reported nodes refer to.
 // This is a UI difference, not proof that two same-looking nodes are identical.
 // max_changes 0 (the default) reports every change.
-Json observation_diff(const Json& previous, const Json& current,
-                      std::size_t max_changes = 0);
-} // namespace suitecut
+Json observation_diff(const Json& previous, const Json& current, std::size_t max_changes = 0);
+}  // namespace suitecut

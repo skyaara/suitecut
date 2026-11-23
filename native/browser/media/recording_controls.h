@@ -19,14 +19,16 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
     // Must enqueue on the owning UI thread, never execute the closure inline.
     std::function<void(std::function<void()>)> dispatch;
     std::function<void(int page, const std::string& id, const std::string& phase,
-                       const MediaPipelineResult&)> event;
+                       const MediaPipelineResult&)>
+        event;
     std::function<void(int page, int context)> physical_settled;
     std::function<double()> now;
     std::function<void(int page, const std::string& id)> request_paint;
   };
   explicit RecordingControls(Hooks hooks);
   ~RecordingControls();
-  std::string Start(int owner_command, int page, int context, MediaPipelineOptions options, Reply ready);
+  std::string Start(int owner_command, int page, int context, MediaPipelineOptions options,
+                    Reply ready);
   // Native context-video admission has no public command or first-frame ACK.
   // Paths/executable must already have been prepared by the engine IO owner.
   std::string StartAutomatic(int page, int context, MediaPipelineOptions options);
@@ -49,11 +51,12 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
   void Audio(int page, const std::vector<uint8_t>& data, double timestamp);
   void ClosePage(int page);
   void BeforePageClose(int page, std::function<void()> continuation,
-      std::chrono::steady_clock::time_point deadline = {});
+                       std::chrono::steady_clock::time_point deadline = {});
   bool Owns(const std::string& id, int page) const;
   void CloseContext(int context);
   void CloseAll();
-  void FinalizeContext(int context, double timestamp, std::chrono::steady_clock::time_point deadline);
+  void FinalizeContext(int context, double timestamp,
+                       std::chrono::steady_clock::time_point deadline);
   void FinalizeAll(double timestamp, std::chrono::steady_clock::time_point deadline);
   bool ContextReady(int context) const;
   size_t PhysicalCount() const;
@@ -71,7 +74,7 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
     bool automatic = false, viewport_frames = false, close_when_started = false;
     std::chrono::steady_clock::time_point close_deadline{};
     // A canceled start/stop keeps its actual encoder owner until Joined.
-    std::map<int,std::shared_ptr<NativeLocatorHandlerAsyncWork>> handler_ready,handler_stopped;
+    std::map<int, std::shared_ptr<NativeLocatorHandlerAsyncWork>> handler_ready, handler_stopped;
     std::map<int, Reply> ready;
     std::map<int, Reply> stopped;
   };
@@ -83,7 +86,8 @@ class RecordingControls : public std::enable_shared_from_this<RecordingControls>
   std::map<int, std::vector<std::function<void()>>> page_closes_;
   uint64_t sequence_ = 0;
   bool closing_ = false;
-  std::string StartImpl(int owner, int page, int context, MediaPipelineOptions options, Reply ready, bool automatic);
+  std::string StartImpl(int owner, int page, int context, MediaPipelineOptions options, Reply ready,
+                        bool automatic);
   void Prepared(const std::string& id);
   void Started(const std::string& id, double timestamp);
   void Finished(const std::string& id, const MediaPipelineResult& result);

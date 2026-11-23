@@ -161,93 +161,90 @@ auto Source::QueryNodesInWorld(int id, Dict message, bool to_utility,
                                ? message->GetString("nativeSelectorWaitState").ToString() +
                                      (message->GetBool("strict") ? "1" : "0")
                                : std::string());
-          auto planned =
-              [this, id, generation, current, main, utility, destination, group, session, root,
-               grouped = message->HasKey("nativeSelectorWaitState"),
-               done = std::move(done)](bool ok, const std::string& json) mutable {
-                if (!current()) {
+          auto planned = [this, id, generation, current, main, utility, destination, group, session,
+                          root, grouped = message->HasKey("nativeSelectorWaitState"),
+                          done = std::move(done)](bool ok, const std::string& json) mutable {
+            if (!current()) {
+              if (operations_.IsCurrent(id, generation)) {
+                if (grouped && frame_states_.contains(operation_frames_[id]))
+                  RetryContext(id);
+                else
+                  Complete(id, false, "Native query document changed during plan normalization");
+              }
+              return;
+            }
+            auto parsed = CefParseJSON(json, JSON_PARSER_RFC);
+            auto result = parsed ? parsed->GetDictionary() : nullptr;
+            auto remote = result ? result->GetDictionary("result") : nullptr;
+            if (!ok || !result || result->HasKey("exceptionDetails") || !remote ||
+                remote->GetType("value") != VTYPE_LIST) {
+              auto details = result ? result->GetDictionary("exceptionDetails") : nullptr;
+              auto exception = details ? details->GetDictionary("exception") : nullptr;
+              Complete(id, false,
+                       exception ? exception->GetString("description").ToString()
+                                 : "Native selector plan normalization failed");
+              return;
+            }
+            SuiteCutQueryWorldPlan::Run(
+                [this, id, session](const std::string& method, Dict params,
+                                    SuiteCutQueryNodeTransfer::Result result) {
+                  const bool metadata = params && params->HasKey("serializationOptions");
+                  DevTools(id, method, params, std::move(result), session, false,
+                           metadata || method == "Runtime.getProperties");
+                },
+                current,
+                [this, id, generation, current, grouped](const std::string& error) {
                   if (operations_.IsCurrent(id, generation)) {
-                    if (grouped && frame_states_.contains(operation_frames_[id]))
+                    if (grouped && !current() && frame_states_.contains(operation_frames_[id]))
                       RetryContext(id);
                     else
-                      Complete(id, false,
-                               "Native query document changed during plan normalization");
+                      Complete(id, false, error);
                   }
-                  return;
-                }
-                auto parsed = CefParseJSON(json, JSON_PARSER_RFC);
-                auto result = parsed ? parsed->GetDictionary() : nullptr;
-                auto remote = result ? result->GetDictionary("result") : nullptr;
-                if (!ok || !result || result->HasKey("exceptionDetails") || !remote ||
-                    remote->GetType("value") != VTYPE_LIST) {
-                  auto details = result ? result->GetDictionary("exceptionDetails") : nullptr;
-                  auto exception = details ? details->GetDictionary("exception") : nullptr;
-                  Complete(id, false,
-                           exception ? exception->GetString("description").ToString()
-                                     : "Native selector plan normalization failed");
-                  return;
-                }
-                SuiteCutQueryWorldPlan::Run(
-                    [this, id, session](const std::string& method, Dict params,
-                                        SuiteCutQueryNodeTransfer::Result result) {
-                      const bool metadata = params && params->HasKey("serializationOptions");
-                      DevTools(id, method, params, std::move(result), session, false,
-                               metadata || method == "Runtime.getProperties");
-                    },
-                    current,
-                    [this, id, generation, current, grouped](const std::string& error) {
-                      if (operations_.IsCurrent(id, generation)) {
-                        if (grouped && !current() && frame_states_.contains(operation_frames_[id]))
-                          RetryContext(id);
-                        else
-                          Complete(id, false, error);
-                      }
-                    },
-                    main, utility, group, kSuiteCutDomQuery, QueryOptionsExpression(),
-                    remote->GetList("value"),
-                    [this](const std::string& name) {
-                      const auto found = engine_.selectors().entries().find(name);
-                      return found != engine_.selectors().entries().end() &&
-                             found->second.content_script;
-                    },
-                    [this, id, generation, current, grouped, destination, group, session,
-                     done = std::move(done)](SuiteCutQueryWorldPlan::Nodes nodes) mutable {
-                      if (!current()) {
-                        if (operations_.IsCurrent(id, generation))
-                          Complete(
-                              id, false,
-                              "Native query document changed before selected-node publication");
-                        return;
-                      }
-                      if (nodes.context == destination) {
-                        done(nodes.object);
-                        return;
-                      }
-                      SuiteCutQueryNodeTransfer::Transfer(
-                          [this, id, session](const std::string& method, Dict params,
-                                              SuiteCutQueryNodeTransfer::Result result) {
-                            const bool metadata = params && params->HasKey("serializationOptions");
-                            DevTools(id, method, params, std::move(result), session, false,
-                                     metadata || method == "Runtime.getProperties");
-                          },
-                          current,
-                          [this, id, generation, current, grouped](const std::string& error) {
-                            if (operations_.IsCurrent(id, generation)) {
-                              if (grouped && !current() &&
-                                  frame_states_.contains(operation_frames_[id]))
-                                RetryContext(id);
-                              else
-                                Complete(id, false, error);
-                            }
-                          },
-                          nodes.object, destination, group, std::move(done));
-                    },
-                    grouped, root,
-                    [this, id](const std::string& token, SuiteCutQueryWorldPlan::Nodes scope,
-                               std::function<void(std::string)> done) {
-                      ResolveSnapshotReference(id, token, scope, std::move(done));
-                    });
-              };
+                },
+                main, utility, group, kSuiteCutDomQuery, QueryOptionsExpression(),
+                remote->GetList("value"),
+                [this](const std::string& name) {
+                  const auto found = engine_.selectors().entries().find(name);
+                  return found != engine_.selectors().entries().end() &&
+                         found->second.content_script;
+                },
+                [this, id, generation, current, grouped, destination, group, session,
+                 done = std::move(done)](SuiteCutQueryWorldPlan::Nodes nodes) mutable {
+                  if (!current()) {
+                    if (operations_.IsCurrent(id, generation))
+                      Complete(id, false,
+                               "Native query document changed before selected-node publication");
+                    return;
+                  }
+                  if (nodes.context == destination) {
+                    done(nodes.object);
+                    return;
+                  }
+                  SuiteCutQueryNodeTransfer::Transfer(
+                      [this, id, session](const std::string& method, Dict params,
+                                          SuiteCutQueryNodeTransfer::Result result) {
+                        const bool metadata = params && params->HasKey("serializationOptions");
+                        DevTools(id, method, params, std::move(result), session, false,
+                                 metadata || method == "Runtime.getProperties");
+                      },
+                      current,
+                      [this, id, generation, current, grouped](const std::string& error) {
+                        if (operations_.IsCurrent(id, generation)) {
+                          if (grouped && !current() &&
+                              frame_states_.contains(operation_frames_[id]))
+                            RetryContext(id);
+                          else
+                            Complete(id, false, error);
+                        }
+                      },
+                      nodes.object, destination, group, std::move(done));
+                },
+                grouped, root,
+                [this, id](const std::string& token, SuiteCutQueryWorldPlan::Nodes scope,
+                           std::function<void(std::string)> done) {
+                  ResolveSnapshotReference(id, token, scope, std::move(done));
+                });
+          };
           if (const auto cached = query_plans_.find(plan_key); cached != query_plans_.end()) {
             planned(true, cached->second);
             return;
@@ -305,7 +302,8 @@ auto Source::QueryInspect(int id, Dict message, const std::string& body, bool ut
         params->SetBool("awaitPromise", true);
         params->SetBool("returnByValue", by_value);
         params->SetString("objectGroup", "suitecut-automation-" + std::to_string(id));
-        DevTools(id, "Runtime.callFunctionOn", params, std::move(callback), std::nullopt, false, !by_value);
+        DevTools(id, "Runtime.callFunctionOn", params, std::move(callback), std::nullopt, false,
+                 !by_value);
       });
 }
 
@@ -554,7 +552,8 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       (config->HasKey("diagnosticExpressionJSON")
            ? "return {strictError:" + QueryDiagnosticExpression(config, "list") + "};"
            : std::string("throw new Error('Strict locator matched multiple elements');")) +
-      "if(!list.length)return {ready:false,reason:" + detached + "};const "
+      "if(!list.length)return {ready:false,reason:" + detached +
+      "};const "
       "selected=list[0],textNode=selected.nodeType===3&&['click','tap','hover'].includes(" +
       Literal(action) +
       ");let e=textNode?selected.parentElement:selected;"
@@ -676,7 +675,8 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
       "target=document.elementFromPoint(x,y);while(target&&target.shadowRoot){const "
       "child=target.shadowRoot.elementsFromPoint(x,y)[0];if(!child||child===target)break;target="
       "child;}let receives=false;for(let "
-      "n=target;n;n=n.assignedSlot||n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode.host)){if(n===e){receives=true;"
+      "n=target;n;n=n.assignedSlot||n.parentElement||(n.parentNode?.nodeType===11&&n.parentNode."
+      "host)){if(n===e){receives=true;"
       "break;}}if(!receives){let tag='nothing';if(target){tag='<'+target.localName;for(const "
       "name of ['id','class','role','aria-label']){const "
       "value=target.getAttribute(name);if(value)tag+=' '+name+'='+JSON.stringify(value.slice(0,"
@@ -764,8 +764,7 @@ auto Source::LocatorAction(int id, std::uint64_t generation, const std::string& 
                  auto parsed = CefParseJSON(json, JSON_PARSER_RFC);
                  const auto result = parsed ? parsed->GetDictionary() : nullptr;
                  if (!success || !result || result->HasKey("error")) {
-                   Complete(id, false,
-                            "Native text-node pointer scrolling failed: " + json);
+                   Complete(id, false, "Native text-node pointer scrolling failed: " + json);
                    return;
                  }
                  auto release = CefDictionaryValue::Create();

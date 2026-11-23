@@ -9,9 +9,10 @@ namespace suitecut {
 // script inventory. No identity is inferred from equal URL or source text.
 class CoverageRetention {
  public:
-  using Dict=CefRefPtr<CefDictionaryValue>;
-  using SelectScript=std::function<bool(int,const std::string&)>;
-  static bool JavaScript(Dict payload,const SelectScript& select,Dict& output,std::string& error);
-  static bool CSS(Dict payload,Dict& output,std::string& error);
+  using Dict = CefRefPtr<CefDictionaryValue>;
+  using SelectScript = std::function<bool(int, const std::string&)>;
+  static bool JavaScript(Dict payload, const SelectScript& select, Dict& output,
+                         std::string& error);
+  static bool CSS(Dict payload, Dict& output, std::string& error);
 };
-} // namespace suitecut
+}  // namespace suitecut

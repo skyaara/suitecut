@@ -15,9 +15,7 @@
 namespace suitecut::detail {
 namespace {
 using Clock = std::chrono::steady_clock;
-void check_deadline(Deadline deadline) {
-  cdp_check_active(deadline);
-}
+void check_deadline(Deadline deadline) { cdp_check_active(deadline); }
 std::string text(const Json& fields, const char* key, std::string fallback = {}) {
   return fields.contains(key) ? fields.at(key).as_string() : std::move(fallback);
 }
@@ -30,7 +28,8 @@ double number(const Json& fields, const char* key) {
   return value;
 }
 void main_page(const CdpPage& page) {
-  if (!page.frame_id.empty()) throw std::invalid_argument("This Chromium command requires a page, not a frame");
+  if (!page.frame_id.empty())
+    throw std::invalid_argument("This Chromium command requires a page, not a frame");
 }
 Json find_frame(const Json& tree, const std::string& wanted) {
   if (tree.at("frame").at("id").as_string() == wanted) return tree.at("frame");
@@ -43,7 +42,8 @@ Json find_frame(const Json& tree, const std::string& wanted) {
   return Json{};
 }
 Json frame(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
-  const auto tree = runtime.call(page, "Page.getFrameTree", Json::object{}, deadline).at("frameTree");
+  const auto tree =
+      runtime.call(page, "Page.getFrameTree", Json::object{}, deadline).at("frameTree");
   if (page.frame_id.empty()) return tree.at("frame");
   auto found = find_frame(tree, page.frame_id);
   if (found.is_null()) throw std::runtime_error("Chromium frame is detached or unavailable");
@@ -75,10 +75,13 @@ bool load_ready(CdpRuntime& runtime, CdpPage& page, const std::string& wait, Dea
   }
   // interactive precedes deferred scripts and DOMContentLoaded, while complete
   // can precede load handlers. Navigation timing closes both gaps.
-  const auto state = runtime.value(page,
-      "(()=>{const n=performance.getEntriesByType('navigation')[0];"
-      "return n? n." + std::string(wait == "load" ? "loadEventEnd" : "domContentLoadedEventEnd") +
-      ">0 : document.readyState==='complete';})()", deadline, true);
+  const auto state =
+      runtime.value(page,
+                    "(()=>{const n=performance.getEntriesByType('navigation')[0];"
+                    "return n? n." +
+                        std::string(wait == "load" ? "loadEventEnd" : "domContentLoadedEventEnd") +
+                        ">0 : document.readyState==='complete';})()",
+                    deadline, true);
   return state.is_bool() && state.as_bool();
 }
 Json wait_load(CdpRuntime& runtime, CdpPage& page, const std::string& wait, Deadline deadline) {
@@ -166,15 +169,18 @@ Json history_navigation(CdpRuntime& runtime, CdpPage& page, const Json& fields, 
     if (wanted < 0 || static_cast<std::size_t>(wanted) >= history.at("entries").as_array().size())
       return Json{};
     target_index = static_cast<int>(wanted);
-    runtime.call(page, "Page.navigateToHistoryEntry",
-        Json{{"entryId", history.at("entries").at(static_cast<std::size_t>(wanted)).at("id")}}, deadline);
+    runtime.call(
+        page, "Page.navigateToHistoryEntry",
+        Json{{"entryId", history.at("entries").at(static_cast<std::size_t>(wanted)).at("id")}},
+        deadline);
   }
   for (;;) {
     check_deadline(deadline);
     const auto current = frame(runtime, page, deadline);
     bool committed = text(current, "loaderId") != old_loader;
     if (target_index >= 0) {
-      const auto history = runtime.call(page, "Page.getNavigationHistory", Json::object{}, deadline);
+      const auto history =
+          runtime.call(page, "Page.getNavigationHistory", Json::object{}, deadline);
       committed = history.at("currentIndex").as_int() == target_index;
     }
     if (committed) {
@@ -184,7 +190,8 @@ Json history_navigation(CdpRuntime& runtime, CdpPage& page, const Json& fields, 
         page.isolated_frame.clear();
       }
       wait_load(runtime, page, wait, deadline);
-      return Json{{"url", current.at("url")}, {"frameId", current.at("id")},
+      return Json{{"url", current.at("url")},
+                  {"frameId", current.at("id")},
                   {"loaderId", text(current, "loaderId")}};
     }
     pause(deadline);
@@ -193,38 +200,55 @@ Json history_navigation(CdpRuntime& runtime, CdpPage& page, const Json& fields, 
 
 Json wait_condition(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadline) {
   const auto command = fields.at("command").as_string();
-  if (command == "waitLoadState") return wait_load(runtime, page, navigation_wait(fields), deadline);
+  if (command == "waitLoadState")
+    return wait_load(runtime, page, navigation_wait(fields), deadline);
   std::string expression;
   if (command == "waitForFunction") {
     expression = "(async()=>{const f=(" + fields.at("expression").as_string() +
-        ");const v=await(typeof f==='function'?f():f);return v?{ready:true,value:v}:{ready:false};})()";
+                 ");const v=await(typeof f==='function'?f():f);return "
+                 "v?{ready:true,value:v}:{ready:false};})()";
   } else if (command == "waitForURL") {
     const auto match = text(fields, "match", "exact");
     const auto wanted = Json(fields.at("url").as_string()).dump();
-    if (match == "exact") expression = "location.href===" + wanted;
+    if (match == "exact")
+      expression = "location.href===" + wanted;
     else if (match == "regex")
-      expression = "new RegExp(" + wanted + "," + Json(text(fields, "flags")).dump() + ").test(location.href)";
+      expression = "new RegExp(" + wanted + "," + Json(text(fields, "flags")).dump() +
+                   ").test(location.href)";
     else if (match == "glob")
-      expression = "(()=>{const g=" + wanted + ";let p='^';for(let i=0;i<g.length;i++){"
-          "const c=g[i];if(c==='*'){if(g[i+1]==='*'){p+='.*';i++;}else p+='[^/]*';}"
-          "else if(c==='?')p+='.';else p+=" + Json("\\^$.*+?()[]{}|").dump() +
-          ".includes(c)?" + Json("\\").dump() + "+c:c;}"
-          "return new RegExp(p+'$').test(location.href);})()";
-    else throw std::invalid_argument("URL match must be exact, glob or regex");
+      expression = "(()=>{const g=" + wanted +
+                   ";let p='^';for(let i=0;i<g.length;i++){"
+                   "const c=g[i];if(c==='*'){if(g[i+1]==='*'){p+='.*';i++;}else p+='[^/]*';}"
+                   "else if(c==='?')p+='.';else p+=" +
+                   Json("\\^$.*+?()[]{}|").dump() + ".includes(c)?" + Json("\\").dump() +
+                   "+c:c;}"
+                   "return new RegExp(p+'$').test(location.href);})()";
+    else
+      throw std::invalid_argument("URL match must be exact, glob or regex");
     navigation_wait(fields);
   } else if (command == "waitForSelector") {
     const auto state = text(fields, "state", "visible");
     if (state != "visible" && state != "hidden" && state != "attached" && state != "detached")
       throw std::invalid_argument("Selector state must be visible, hidden, attached or detached");
-    expression = "(()=>{const e=document.querySelector(" + Json(fields.at("selector").as_string()).dump() +
-        ");const visible=!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden'"
+    expression =
+        "(()=>{const e=document.querySelector(" + Json(fields.at("selector").as_string()).dump() +
+        ");const "
+        "visible=!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden'"
         "&&getComputedStyle(e).visibility!=='collapse';return " +
-        std::string(state == "attached" ? "!!e" : state == "detached" ? "!e" : state == "visible" ? "visible" : "!visible") + ";})()";
+        std::string(state == "attached"   ? "!!e"
+                    : state == "detached" ? "!e"
+                    : state == "visible"  ? "visible"
+                                          : "!visible") +
+        ";})()";
   } else if (command == "waitForText") {
-    expression = "(()=>{const actual=(document.body?.innerText||'').replace(/\\s+/g,' ').trim();"
-        "const wanted=" + Json(fields.at("text").as_string()).dump() + ".replace(/\\s+/g,' ').trim();return " +
-        std::string(flag(fields, "exact") ? "actual===wanted" : "actual.includes(wanted)") + ";})()";
-  } else throw std::invalid_argument("Unsupported Chromium wait command: " + command);
+    expression =
+        "(()=>{const actual=(document.body?.innerText||'').replace(/\\s+/g,' ').trim();"
+        "const wanted=" +
+        Json(fields.at("text").as_string()).dump() + ".replace(/\\s+/g,' ').trim();return " +
+        std::string(flag(fields, "exact") ? "actual===wanted" : "actual.includes(wanted)") +
+        ";})()";
+  } else
+    throw std::invalid_argument("Unsupported Chromium wait command: " + command);
   for (;;) {
     check_deadline(deadline);
     try {
@@ -240,7 +264,10 @@ Json wait_condition(CdpRuntime& runtime, CdpPage& page, const Json& fields, Dead
           // A redirect or script navigation while load was pending can replace
           // the URL; require the matcher to still hold at completion.
           const auto matched = runtime.value(page, expression, deadline, true);
-          if (!matched.is_bool() || !matched.as_bool()) { pause(deadline); continue; }
+          if (!matched.is_bool() || !matched.as_bool()) {
+            pause(deadline);
+            continue;
+          }
         }
         return Json{};
       }
@@ -253,13 +280,11 @@ Json wait_condition(CdpRuntime& runtime, CdpPage& page, const Json& fields, Dead
 
 // Restore temporary capture state even when the original command has expired.
 // Cleanup gets a single bounded allowance; it never retries indefinitely.
-Deadline cleanup_deadline() {
-  return Clock::now() + std::chrono::milliseconds(500);
-}
+Deadline cleanup_deadline() { return Clock::now() + std::chrono::milliseconds(500); }
 Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadline) {
   for (const auto& [key, value] : fields.as_object()) {
-    if (key == "command" || key == "pageId" || key == "timeoutMs" || key == "api" ||
-        key == "id" || key == "version" || key == "framePath" || key == "action" || key == "format" ||
+    if (key == "command" || key == "pageId" || key == "timeoutMs" || key == "api" || key == "id" ||
+        key == "version" || key == "framePath" || key == "action" || key == "format" ||
         key == "quality" || key == "scale" || key == "fullPage" || key == "clip" ||
         key == "omitBackground" || key == "caret" || key == "animations" || key == "maskColor" ||
         key == "style" || key == "mask" || key == "masks")
@@ -279,10 +304,11 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   const auto animations = text(fields, "animations", "allow");
   if (animations != "allow" && animations != "disabled")
     throw std::invalid_argument("Screenshot animations must be allow or disabled");
-  const auto css = text(fields, "style") + (caret == "hide" ? "\n*{caret-color:transparent!important}" : "");
+  const auto css =
+      text(fields, "style") + (caret == "hide" ? "\n*{caret-color:transparent!important}" : "");
   const auto mask_color = text(fields, "maskColor", "#FF00FF");
-  if (!runtime.value(page,
-      "CSS.supports('color'," + Json(mask_color).dump() + ")", deadline, true).as_bool())
+  if (!runtime.value(page, "CSS.supports('color'," + Json(mask_color).dump() + ")", deadline, true)
+           .as_bool())
     throw std::invalid_argument("Screenshot maskColor must be a valid CSS color");
   if (fields.contains("mask") && fields.contains("masks"))
     throw std::invalid_argument("Specify only one of screenshot mask or masks");
@@ -292,26 +318,34 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
     if (!raw.is_array())
       throw std::invalid_argument("Screenshot masks must be an array of queries");
     for (const auto& mask : raw.as_array()) {
-      if (mask.is_string()) masks.emplace_back(Json{{"selector", mask}});
-      else if (mask.is_array()) masks.emplace_back(Json{{"query", mask}});
+      if (mask.is_string())
+        masks.emplace_back(Json{{"selector", mask}});
+      else if (mask.is_array())
+        masks.emplace_back(Json{{"query", mask}});
       else if (mask.is_object()) {
         Json query;
         for (const auto& [key, value] : mask.as_object()) {
           if (key == "framePath" && value.is_array() && value.as_array().empty()) continue;
           if (key != "query" && key != "selector")
-            throw std::invalid_argument("Unsupported screenshot mask field (framed masks are unsupported): " + key);
+            throw std::invalid_argument(
+                "Unsupported screenshot mask field (framed masks are unsupported): " + key);
           query[key] = value;
         }
         if (!query.contains("query") && !query.contains("selector"))
           throw std::invalid_argument("Screenshot mask requires a selector or query");
         masks.push_back(std::move(query));
-      } else throw std::invalid_argument("Screenshot masks require selector strings, query arrays or query objects");
+      } else
+        throw std::invalid_argument(
+            "Screenshot masks require selector strings, query arrays or query objects");
     }
   }
   if (!masks.empty()) {
     // Bootstrap the same authored semantic/shadow/ref query engine used by locators.
-    cdp_dom_command(runtime, page, Json{{"command", "queryEvaluate"}, {"count", true},
-        {"query", Json::array{Json{{"engine", "css"}, {"selector", ":root"}}}}}, deadline);
+    cdp_dom_command(runtime, page,
+                    Json{{"command", "queryEvaluate"},
+                         {"count", true},
+                         {"query", Json::array{Json{{"engine", "css"}, {"selector", ":root"}}}}},
+                    deadline);
   }
   const bool full = flag(fields, "fullPage"), transparent = flag(fields, "omitBackground");
   if (transparent && format == "jpeg")
@@ -326,8 +360,8 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   const auto metrics = runtime.call(page, "Page.getLayoutMetrics", Json::object{}, deadline);
   // Visual viewport client dimensions exclude classic scrollbars. Captures use
   // the complete window backing, including those scrollbar pixels.
-  const auto window = runtime.value(page,
-      "({width:window.innerWidth,height:window.innerHeight,dpr:window.devicePixelRatio})",
+  const auto window = runtime.value(
+      page, "({width:window.innerWidth,height:window.innerHeight,dpr:window.devicePixelRatio})",
       deadline, true);
   const auto& viewport = metrics.at("cssVisualViewport");
   const auto& bounds = full ? metrics.at("cssContentSize") : viewport;
@@ -348,12 +382,16 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
       throw std::invalid_argument("Screenshot clip requires only x, y, width and height");
     const auto cx = number(clip, "x"), cy = number(clip, "y");
     const auto cw = number(clip, "width"), ch = number(clip, "height");
-    if (cw <= 0 || ch <= 0) throw std::invalid_argument("Screenshot clip dimensions must be positive");
+    if (cw <= 0 || ch <= 0)
+      throw std::invalid_argument("Screenshot clip dimensions must be positive");
     const auto left = std::max(0.0, cx), top = std::max(0.0, cy);
     const auto right = std::min(width, cx + cw), bottom = std::min(height, cy + ch);
     if (right <= left || bottom <= top)
       throw std::invalid_argument("Screenshot clip is empty or outside the resulting image");
-    x += left; y += top; width = right - left; height = bottom - top;
+    x += left;
+    y += top;
+    width = right - left;
+    height = bottom - top;
   }
   // Device metrics are explicitly set to scale 1 by this backend. Read the actual
   // value so raw CDP overrides cannot silently break css-scale screenshots.
@@ -361,8 +399,11 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   if (!std::isfinite(dpr) || dpr <= 0) throw std::runtime_error("Invalid screenshot device scale");
   if (width <= 0 || height <= 0)
     throw std::invalid_argument("Screenshot dimensions must be positive");
-  params["clip"] = Json{{"x", x}, {"y", y}, {"width", width}, {"height", height},
-                         {"scale", scale == "css" ? 1 / dpr : 1}};
+  params["clip"] = Json{{"x", x},
+                        {"y", y},
+                        {"width", width},
+                        {"height", height},
+                        {"scale", scale == "css" ? 1 / dpr : 1}};
 
   static std::atomic<unsigned long long> next_style{0};
   const auto style_id = "suitecut-cdp-caret-" + std::to_string(++next_style);
@@ -374,30 +415,46 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
       try {
         // Cleanup must survive a canceled Work; normal runtime.call observes its
         // cancellation guard before sending any further protocol messages.
-        runtime.wire->call("Emulation.setDefaultBackgroundColorOverride", Json::object{}, page.session, until);
+        runtime.wire->call("Emulation.setDefaultBackgroundColorOverride", Json::object{},
+                           page.session, until);
         background_changed = false;
+      } catch (...) {
+        failure = std::current_exception();
       }
-      catch (...) { failure = std::current_exception(); }
     }
     if (prepared) {
       try {
-        Json params{{"expression",
-          "(()=>{const m=globalThis.__suitecutCdpCapture1,r=m?.get(" + Json(style_id).dump() + ");if(!r)return;"
-          "const errors=[];const attempt=f=>{try{f();}catch(e){errors.push(String(e));}};"
-          "for(const e of [...r.styles,...r.overlays])attempt(()=>e.remove());"
-          "for(const c of r.carets)attempt(()=>{if(c.value)c.element.style.setProperty('caret-color',c.value,c.priority);"
-          "else c.element.style.removeProperty('caret-color');if(!c.hadStyle&&!c.element.getAttribute('style'))c.element.removeAttribute('style');});"
-          "for(const a of r.animations)attempt(()=>{a.animation.currentTime=a.currentTime;"
-          "if(a.state==='running')a.animation.play();else if(a.state==='paused')a.animation.pause();"
-          "else if(a.state==='finished')a.animation.finish();});m.delete(" + Json(style_id).dump() + ");"
-          "if(errors.length)throw new Error(errors.join('; '));})()"},
-          {"returnByValue", true}, {"awaitPromise", false}};
+        Json params{
+            {"expression",
+             "(()=>{const m=globalThis.__suitecutCdpCapture1,r=m?.get(" + Json(style_id).dump() +
+                 ");if(!r)return;"
+                 "const errors=[];const attempt=f=>{try{f();}catch(e){errors.push(String(e));}};"
+                 "for(const e of [...r.styles,...r.overlays])attempt(()=>e.remove());"
+                 "for(const c of "
+                 "r.carets)attempt(()=>{if(c.value)c.element.style.setProperty('caret-color',c."
+                 "value,c.priority);"
+                 "else "
+                 "c.element.style.removeProperty('caret-color');if(!c.hadStyle&&!c.element."
+                 "getAttribute('style'))c.element.removeAttribute('style');});"
+                 "for(const a of r.animations)attempt(()=>{a.animation.currentTime=a.currentTime;"
+                 "if(a.state==='running')a.animation.play();else "
+                 "if(a.state==='paused')a.animation.pause();"
+                 "else if(a.state==='finished')a.animation.finish();});m.delete(" +
+                 Json(style_id).dump() +
+                 ");"
+                 "if(errors.length)throw new Error(errors.join('; '));})()"},
+            {"returnByValue", true},
+            {"awaitPromise", false}};
         if (page.isolated_context) params["contextId"] = page.isolated_context;
-        const auto cleaned = runtime.wire->call("Runtime.evaluate", std::move(params), page.session, until);
+        const auto cleaned =
+            runtime.wire->call("Runtime.evaluate", std::move(params), page.session, until);
         if (cleaned.contains("exceptionDetails"))
-          throw std::runtime_error("Chromium screenshot cleanup failed: " + cleaned.at("exceptionDetails").dump());
+          throw std::runtime_error("Chromium screenshot cleanup failed: " +
+                                   cleaned.at("exceptionDetails").dump());
         prepared = false;
-      } catch (...) { if (!failure) failure = std::current_exception(); }
+      } catch (...) {
+        if (!failure) failure = std::current_exception();
+      }
     }
     if (failure) std::rethrow_exception(failure);
   };
@@ -405,35 +462,69 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
   try {
     if (!css.empty() || animations == "disabled" || !masks.empty()) {
       prepared = true;
-      runtime.value(page,
-        "(()=>{const m=globalThis.__suitecutCdpCapture1||(globalThis.__suitecutCdpCapture1=new Map());"
-        "const resources={styles:[],overlays:[],carets:[],animations:[]};m.set(" + Json(style_id).dump() + ",resources);"
-        "const roots=[document];for(let i=0;i<roots.length;i++){"
-        "for(const e of roots[i].querySelectorAll('*')){"
-        "if(e.shadowRoot)roots.push(e.shadowRoot);}}"
-        "const disable=" + std::string(animations == "disabled" ? "true" : "false") + ";"
-        "if(disable&&roots.some(r=>r.querySelector('iframe,frame')))throw new Error('Disabling screenshot animations across frame documents is unsupported');"
-        "const css=" + Json(css).dump() + ";for(const root of roots){if(css){const s=document.createElement('style');"
-        "s.setAttribute('data-suitecut-capture'," + Json(style_id).dump() + ");"
-        "s.textContent=css;resources.styles.push(s);(root===document?document.documentElement:root).appendChild(s);}"
-        "if(" + std::string(caret == "hide" ? "true" : "false") + "){const e=root.activeElement;if(e?.style){"
-        "resources.carets.push({element:e,hadStyle:e.hasAttribute('style'),value:e.style.getPropertyValue('caret-color'),priority:e.style.getPropertyPriority('caret-color')});"
-        "e.style.setProperty('caret-color','transparent','important');}}}"
-        "if(disable){const active=[...new Set(roots.flatMap(r=>r.getAnimations?.()??[]))];"
-        "for(const a of active){if(a.playState==='idle'||a.playState==='finished')continue;const t=a.effect?.getComputedTiming();"
-        "if(!t)continue;resources.animations.push({animation:a,currentTime:a.currentTime,state:a.playState});"
-        "a.pause();a.currentTime=Number.isFinite(t.endTime)&&a.playbackRate>=0?t.endTime:0;}}"
-        "const rects=[];for(const mask of " + Json(masks).dump() + "){const elements=globalThis.__suitecutNativeChromeDOM1.all(mask);"
-        "for(const e of elements){"
-        "const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)rects.push({x:r.left+scrollX,y:r.top+scrollY,width:r.width,height:r.height});}}"
-        "for(const r of rects){const e=document.createElement('div');e.setAttribute('aria-hidden','true');"
-        "e.setAttribute('data-suitecut-capture'," + Json(style_id).dump() + ");"
-        "e.style.cssText='position:absolute!important;pointer-events:none!important;z-index:2147483647!important;"
-        "margin:0!important;border:0!important;padding:0!important;box-sizing:border-box!important;"
-        "animation:none!important;transition:none!important;transform:none!important;opacity:1!important;"
-        "visibility:visible!important;display:block!important;';"
-        "for(const [k,v] of Object.entries({left:r.x+'px',top:r.y+'px',width:r.width+'px',height:r.height+'px',background:" + Json(mask_color).dump() +
-        "}))e.style.setProperty(k,v,'important');resources.overlays.push(e);document.documentElement.appendChild(e);}})()", deadline, true);
+      runtime.value(
+          page,
+          "(()=>{const m=globalThis.__suitecutCdpCapture1||(globalThis.__suitecutCdpCapture1=new "
+          "Map());"
+          "const resources={styles:[],overlays:[],carets:[],animations:[]};m.set(" +
+              Json(style_id).dump() +
+              ",resources);"
+              "const roots=[document];for(let i=0;i<roots.length;i++){"
+              "for(const e of roots[i].querySelectorAll('*')){"
+              "if(e.shadowRoot)roots.push(e.shadowRoot);}}"
+              "const disable=" +
+              std::string(animations == "disabled" ? "true" : "false") +
+              ";"
+              "if(disable&&roots.some(r=>r.querySelector('iframe,frame')))throw new "
+              "Error('Disabling screenshot animations across frame documents is unsupported');"
+              "const css=" +
+              Json(css).dump() +
+              ";for(const root of roots){if(css){const s=document.createElement('style');"
+              "s.setAttribute('data-suitecut-capture'," +
+              Json(style_id).dump() +
+              ");"
+              "s.textContent=css;resources.styles.push(s);(root===document?document."
+              "documentElement:root).appendChild(s);}"
+              "if(" +
+              std::string(caret == "hide" ? "true" : "false") +
+              "){const e=root.activeElement;if(e?.style){"
+              "resources.carets.push({element:e,hadStyle:e.hasAttribute('style'),value:e.style."
+              "getPropertyValue('caret-color'),priority:e.style.getPropertyPriority('caret-color')}"
+              ");"
+              "e.style.setProperty('caret-color','transparent','important');}}}"
+              "if(disable){const active=[...new Set(roots.flatMap(r=>r.getAnimations?.()??[]))];"
+              "for(const a of "
+              "active){if(a.playState==='idle'||a.playState==='finished')continue;const "
+              "t=a.effect?.getComputedTiming();"
+              "if(!t)continue;resources.animations.push({animation:a,currentTime:a.currentTime,"
+              "state:a.playState});"
+              "a.pause();a.currentTime=Number.isFinite(t.endTime)&&a.playbackRate>=0?t.endTime:0;}}"
+              "const rects=[];for(const mask of " +
+              Json(masks).dump() +
+              "){const elements=globalThis.__suitecutNativeChromeDOM1.all(mask);"
+              "for(const e of elements){"
+              "const "
+              "r=e.getBoundingClientRect();if(r.width>0&&r.height>0)rects.push({x:r.left+scrollX,y:"
+              "r.top+scrollY,width:r.width,height:r.height});}}"
+              "for(const r of rects){const "
+              "e=document.createElement('div');e.setAttribute('aria-hidden','true');"
+              "e.setAttribute('data-suitecut-capture'," +
+              Json(style_id).dump() +
+              ");"
+              "e.style.cssText='position:absolute!important;pointer-events:none!important;z-index:"
+              "2147483647!important;"
+              "margin:0!important;border:0!important;padding:0!important;box-sizing:border-box!"
+              "important;"
+              "animation:none!important;transition:none!important;transform:none!important;opacity:"
+              "1!important;"
+              "visibility:visible!important;display:block!important;';"
+              "for(const [k,v] of "
+              "Object.entries({left:r.x+'px',top:r.y+'px',width:r.width+'px',height:r.height+'px',"
+              "background:" +
+              Json(mask_color).dump() +
+              "}))e.style.setProperty(k,v,'important');resources.overlays.push(e);document."
+              "documentElement.appendChild(e);}})()",
+          deadline, true);
     }
     if (transparent) {
       background_changed = true;
@@ -441,11 +532,15 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
                    Json{{"color", Json{{"r", 0}, {"g", 0}, {"b", 0}, {"a", 0}}}}, deadline);
     }
     result = runtime.call(page, "Page.captureScreenshot", std::move(params), deadline);
-    if (!result.contains("data") || !result.at("data").is_string() || result.at("data").as_string().empty())
+    if (!result.contains("data") || !result.at("data").is_string() ||
+        result.at("data").as_string().empty())
       throw std::runtime_error("Chromium returned an empty screenshot");
   } catch (...) {
     const auto failure = std::current_exception();
-    try { restore(); } catch (...) {}
+    try {
+      restore();
+    } catch (...) {
+    }
     std::rethrow_exception(failure);
   }
   restore();
@@ -454,33 +549,45 @@ Json screenshot(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline
 Json pdf(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadline) {
   Json params{{"transferMode", "ReturnAsBase64"}};
   const std::set<std::string> numbers{"paperWidth", "paperHeight", "marginTop", "marginBottom",
-      "marginLeft", "marginRight", "scale"};
-  const std::set<std::string> booleans{"displayHeaderFooter", "printBackground", "landscape",
-      "preferCSSPageSize", "tagged", "outline", "generateTaggedPDF", "generateDocumentOutline"};
+                                      "marginLeft", "marginRight", "scale"};
+  const std::set<std::string> booleans{"displayHeaderFooter",
+                                       "printBackground",
+                                       "landscape",
+                                       "preferCSSPageSize",
+                                       "tagged",
+                                       "outline",
+                                       "generateTaggedPDF",
+                                       "generateDocumentOutline"};
   const std::set<std::string> strings{"headerTemplate", "footerTemplate", "pageRanges"};
   for (const auto& [key, value] : fields.as_object()) {
     if (key == "command" || key == "action" || key == "pageId" || key == "timeoutMs" ||
-        key == "api" || key == "id" || key == "version" || key == "framePath") continue;
+        key == "api" || key == "id" || key == "version" || key == "framePath")
+      continue;
     if (numbers.contains(key)) {
       const auto n = number(fields, key.c_str());
       if (n < 0 || ((key == "paperWidth" || key == "paperHeight" || key == "scale") && n == 0))
         throw std::invalid_argument("Invalid PDF dimension: " + key);
       params[key] = n;
     } else if (booleans.contains(key)) {
-      const auto name = key == "tagged" ? "generateTaggedPDF" : key == "outline" ? "generateDocumentOutline" : key;
+      const auto name = key == "tagged"    ? "generateTaggedPDF"
+                        : key == "outline" ? "generateDocumentOutline"
+                                           : key;
       if (params.contains(name)) throw std::invalid_argument("Duplicate PDF option: " + name);
       params[name] = value.as_bool();
     } else if (strings.contains(key)) {
       params[key] = value.as_string();
-    } else throw std::invalid_argument("Unsupported Chromium PDF option: " + key);
+    } else
+      throw std::invalid_argument("Unsupported Chromium PDF option: " + key);
   }
   auto result = runtime.call(page, "Page.printToPDF", std::move(params), deadline);
-  if (!result.contains("data") || !result.at("data").is_string() || result.at("data").as_string().empty())
+  if (!result.contains("data") || !result.at("data").is_string() ||
+      result.at("data").as_string().empty())
     throw std::runtime_error("Chromium returned an empty PDF");
   return Json{{"data", result.at("data")}};
 }
 void download_scope(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
-  if (page.download_frame.empty()) page.download_frame = frame(runtime, page, deadline).at("id").as_string();
+  if (page.download_frame.empty())
+    page.download_frame = frame(runtime, page, deadline).at("id").as_string();
   if (page.download_directory.empty()) {
     for (const auto& [id, candidate] : runtime.pages) {
       (void)id;
@@ -493,28 +600,33 @@ void download_scope(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
 }
 bool safe_download_id(const std::string& id) {
   return !id.empty() && std::all_of(id.begin(), id.end(), [](unsigned char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-           (c >= '0' && c <= '9') || c == '-' || c == '_';
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' ||
+           c == '_';
   });
 }
-// Applies only the Browser.download* events after this page's cursor, in order, then releases the events of
-// this page's downloads that reached a final state: their record here is all that is needed from then on.
+// Applies only the Browser.download* events after this page's cursor, in order, then releases the
+// events of this page's downloads that reached a final state: their record here is all that is
+// needed from then on.
 void sync_downloads(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
   download_scope(runtime, page, deadline);
   const auto events = runtime.browser_events("Browser.download", page.download_cursor);
   std::vector<std::string> finished;
   for (const auto& event : events.as_array()) {
-    page.download_cursor = std::max(page.download_cursor, static_cast<std::uint64_t>(event.at("_suitecutEventSequence").as_int()));
+    page.download_cursor =
+        std::max(page.download_cursor,
+                 static_cast<std::uint64_t>(event.at("_suitecutEventSequence").as_int()));
     const auto& params = event.at("params");
     if (text(event, "method") == "Browser.downloadWillBegin") {
       const auto& begin = params;
       if (text(begin, "frameId") != page.download_frame) continue;
       const auto guid = begin.at("guid").as_string();
-      if (!safe_download_id(guid)) throw std::runtime_error("Chromium returned an invalid download GUID");
+      if (!safe_download_id(guid))
+        throw std::runtime_error("Chromium returned an invalid download GUID");
       if (page.downloads.contains(guid)) continue;
-      Json info{{"downloadId", guid}, {"guid", guid}, {"url", begin.at("url")},
-        {"suggestedFilename", begin.at("suggestedFilename")}, {"state", "inProgress"},
-        {"receivedBytes", 0}, {"totalBytes", 0}, {"path", Json{}}};
+      Json info{{"downloadId", guid},     {"guid", guid},
+                {"url", begin.at("url")}, {"suggestedFilename", begin.at("suggestedFilename")},
+                {"state", "inProgress"},  {"receivedBytes", 0},
+                {"totalBytes", 0},        {"path", Json{}}};
       if (!page.download_directory.empty())
         info["_localPath"] = (std::filesystem::path(page.download_directory) / guid).string();
       page.downloads.emplace(guid, std::move(info));
@@ -528,13 +640,16 @@ void sync_downloads(CdpRuntime& runtime, CdpPage& page, Deadline deadline) {
     info["state"] = progress.at("state");
     for (const auto* key : {"receivedBytes", "totalBytes"})
       if (progress.contains(key)) info[key] = progress.at(key);
-    if (text(info, "state") == "completed" || text(info, "state") == "canceled") finished.push_back(found->first);
+    if (text(info, "state") == "completed" || text(info, "state") == "canceled")
+      finished.push_back(found->first);
   }
   if (!finished.empty()) runtime.release_downloads(finished);
   // A completed file can become visible after its final event was applied; look again until it is.
   for (auto& [guid, info] : page.downloads) {
     (void)guid;
-    if (text(info, "state") != "completed" || !info.contains("_localPath") || info.at("path").is_string()) continue;
+    if (text(info, "state") != "completed" || !info.contains("_localPath") ||
+        info.at("path").is_string())
+      continue;
     std::error_code error;
     if (std::filesystem::is_regular_file(info.at("_localPath").as_string(), error) && !error)
       info["path"] = info.at("_localPath");
@@ -575,12 +690,16 @@ Json download_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, De
   sync_downloads(runtime, page, deadline);
   if (action == "list" || (action == "status" && !fields.contains("downloadId"))) {
     Json::array result;
-    for (const auto& [id, info] : page.downloads) { (void)id; result.push_back(public_download(info)); }
+    for (const auto& [id, info] : page.downloads) {
+      (void)id;
+      result.push_back(public_download(info));
+    }
     return Json(std::move(result));
   }
   const auto id = fields.at("downloadId").as_string();
   auto found = page.downloads.find(id);
-  if (found == page.downloads.end()) throw std::invalid_argument("Unknown download for this page: " + id);
+  if (found == page.downloads.end())
+    throw std::invalid_argument("Unknown download for this page: " + id);
   if (action == "status") return public_download(found->second);
   if (action == "cancel") {
     Json params{{"guid", id}};
@@ -594,15 +713,18 @@ Json download_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, De
     check_deadline(deadline);
     sync_downloads(runtime, page, deadline);
     auto& info = page.downloads.at(id);
-    if (text(info, "state") == "canceled") throw std::runtime_error("Chromium download was canceled");
+    if (text(info, "state") == "canceled")
+      throw std::runtime_error("Chromium download was canceled");
     if (text(info, "state") == "completed") {
       if (!info.at("path").is_string())
-        throw std::runtime_error("Completed download file is unavailable in the configured download directory");
+        throw std::runtime_error(
+            "Completed download file is unavailable in the configured download directory");
       const auto source = info.at("path").as_string();
       if (action == "path") return Json{{"path", source}};
       const auto destination = absolute_path(fields.at("path").as_string(), "Download destination");
       const auto canonical_source = std::filesystem::canonical(source);
-      if (std::filesystem::exists(destination) && std::filesystem::equivalent(canonical_source, destination))
+      if (std::filesystem::exists(destination) &&
+          std::filesystem::equivalent(canonical_source, destination))
         return Json{{"path", destination.string()}};
       // Copy in bounded chunks so cancellation/deadline stops file work promptly.
       std::ifstream input(canonical_source, std::ios::binary);
@@ -625,7 +747,8 @@ Json download_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, De
 }
 Json emulate(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadline) {
   const auto action = text(fields, "action", "media");
-  std::set<std::string> allowed{"command", "action", "pageId", "id", "version", "timeoutMs", "api", "framePath"};
+  std::set<std::string> allowed{"command", "action",    "pageId", "id",
+                                "version", "timeoutMs", "api",    "framePath"};
   std::string method;
   Json params = Json::object{};
   auto proposed_media = page.emulated_media;
@@ -635,8 +758,10 @@ Json emulate(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline de
     // option, matching the existing native CEF media contract.
     for (const auto* key : {"media", "colorScheme", "reducedMotion", "forcedColors", "contrast"}) {
       if (!fields.contains(key)) continue;
-      if (fields.at(key).is_null()) proposed_media.as_object().erase(key);
-      else proposed_media[key] = fields.at(key).as_string();
+      if (fields.at(key).is_null())
+        proposed_media.as_object().erase(key);
+      else
+        proposed_media[key] = fields.at(key).as_string();
     }
     const auto media = text(proposed_media, "media");
     if (media != "" && media != "screen" && media != "print")
@@ -647,14 +772,17 @@ Json emulate(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline de
       if (!proposed_media.contains(key)) continue;
       const auto value = proposed_media.at(key).as_string();
       const std::string name = key;
-      bool valid = name == "colorScheme" ? value == "light" || value == "dark" || value == "no-preference" :
-          name == "reducedMotion" ? value == "reduce" || value == "no-preference" :
-          name == "forcedColors" ? value == "active" || value == "none" :
-          value == "more" || value == "no-preference";
+      bool valid = name == "colorScheme"
+                       ? value == "light" || value == "dark" || value == "no-preference"
+                   : name == "reducedMotion" ? value == "reduce" || value == "no-preference"
+                   : name == "forcedColors"  ? value == "active" || value == "none"
+                                             : value == "more" || value == "no-preference";
       if (!valid) throw std::invalid_argument("Invalid emulated media feature: " + name);
-      features.emplace_back(Json{{"name", name == "colorScheme" ? "prefers-color-scheme" :
-          name == "reducedMotion" ? "prefers-reduced-motion" : name == "forcedColors" ? "forced-colors" : "prefers-contrast"},
-          {"value", value}});
+      features.emplace_back(Json{{"name", name == "colorScheme"     ? "prefers-color-scheme"
+                                          : name == "reducedMotion" ? "prefers-reduced-motion"
+                                          : name == "forcedColors"  ? "forced-colors"
+                                                                    : "prefers-contrast"},
+                                 {"value", value}});
     }
     params["features"] = Json(std::move(features));
     method = "Emulation.setEmulatedMedia";
@@ -680,24 +808,28 @@ Json emulate(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline de
     }
     if (!params.contains("userAgent")) throw std::invalid_argument("Emulation requires userAgent");
     method = "Emulation.setUserAgentOverride";
-  } else throw std::invalid_argument("Unsupported Chromium emulation action: " + action);
+  } else
+    throw std::invalid_argument("Unsupported Chromium emulation action: " + action);
   for (const auto& [key, value] : fields.as_object()) {
     (void)value;
-    if (!allowed.contains(key)) throw std::invalid_argument("Unsupported Chromium emulation field: " + key);
+    if (!allowed.contains(key))
+      throw std::invalid_argument("Unsupported Chromium emulation field: " + key);
   }
   auto result = runtime.call(page, method, std::move(params), deadline);
   if (action == "media") page.emulated_media = std::move(proposed_media);
   return result;
 }
-} // namespace
+}  // namespace
 
 Json cdp_page_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, Deadline deadline) {
   check_deadline(deadline);
   auto frame_scope = cdp_resolve_frame(runtime, page, fields, deadline);
   const auto command = fields.at("command").as_string();
   if (command == "evaluate")
-    return runtime.evaluate(page, fields.at("expression").as_string(), deadline, flag(fields, "isolated"));
-  if (command == "navigateFrame" || command == "navigate") return navigate(runtime, page, fields, deadline);
+    return runtime.evaluate(page, fields.at("expression").as_string(), deadline,
+                            flag(fields, "isolated"));
+  if (command == "navigateFrame" || command == "navigate")
+    return navigate(runtime, page, fields, deadline);
   if (command == "waitLoadState" || command == "waitForURL" || command == "waitForFunction" ||
       command == "waitForSelector" || command == "waitForText")
     return wait_condition(runtime, page, fields, deadline);
@@ -712,8 +844,10 @@ Json cdp_page_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, De
     const auto width = fields.at("width").as_int(), height = fields.at("height").as_int();
     if (width < 1 || height < 1)
       throw std::invalid_argument("Viewport dimensions must be positive integers");
-    return runtime.call(page, "Emulation.setDeviceMetricsOverride",
-        Json{{"width", width}, {"height", height}, {"deviceScaleFactor", 1}, {"mobile", false}}, deadline);
+    return runtime.call(
+        page, "Emulation.setDeviceMetricsOverride",
+        Json{{"width", width}, {"height", height}, {"deviceScaleFactor", 1}, {"mobile", false}},
+        deadline);
   }
   if (command == "bringToFront")
     return runtime.call(page, "Page.bringToFront", Json::object{}, deadline);
@@ -727,4 +861,4 @@ Json cdp_page_command(CdpRuntime& runtime, CdpPage& page, const Json& fields, De
   }
   throw std::invalid_argument("Unsupported Chromium page command: " + command);
 }
-} // namespace suitecut::detail
+}  // namespace suitecut::detail

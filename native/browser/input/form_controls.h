@@ -66,8 +66,8 @@ inline constexpr const char* kSuiteCutSelectOptions = R"JS((nodes,choices,force)
 })JS";
 
 inline std::string SuiteCutSelectScript() {
-  std::string result=kSuiteCutSelectOptions;
-  result.replace(result.find("INSPECT"),7,kSuiteCutFormInspect);
+  std::string result = kSuiteCutSelectOptions;
+  result.replace(result.find("INSPECT"), 7, kSuiteCutFormInspect);
   return result;
 }
 
@@ -75,81 +75,121 @@ inline std::string SuiteCutSelectScript() {
 // DOM.setFileInputFiles. Every path is removed on success, error or cancellation.
 class SuiteCutUploadFiles {
  public:
-  SuiteCutUploadFiles()=default;
-  SuiteCutUploadFiles(const SuiteCutUploadFiles&)=delete;
-  SuiteCutUploadFiles& operator=(const SuiteCutUploadFiles&)=delete;
-  ~SuiteCutUploadFiles() { if(!directory_.empty()){std::error_code error;std::filesystem::remove_all(directory_,error);} }
-  std::string Stage(const std::string& name,std::string_view bytes) {
-    if(name.empty()||name=="."||name==".."||name.find('/')!=std::string::npos||name.find('\\')!=std::string::npos||name.find('\0')!=std::string::npos)
+  SuiteCutUploadFiles() = default;
+  SuiteCutUploadFiles(const SuiteCutUploadFiles&) = delete;
+  SuiteCutUploadFiles& operator=(const SuiteCutUploadFiles&) = delete;
+  ~SuiteCutUploadFiles() {
+    if (!directory_.empty()) {
+      std::error_code error;
+      std::filesystem::remove_all(directory_, error);
+    }
+  }
+  std::string Stage(const std::string& name, std::string_view bytes) {
+    if (name.empty() || name == "." || name == ".." || name.find('/') != std::string::npos ||
+        name.find('\\') != std::string::npos || name.find('\0') != std::string::npos)
       throw std::invalid_argument("Upload file name must be a basename");
-    if(directory_.empty()){
-      std::string pattern=(std::filesystem::temp_directory_path()/"suitecut-upload-XXXXXX").string();
-      std::vector<char> buffer(pattern.begin(),pattern.end());buffer.push_back('\0');
-      char* path=mkdtemp(buffer.data());if(!path)throw std::runtime_error("Cannot create upload directory");directory_=path;
+    if (directory_.empty()) {
+      std::string pattern =
+          (std::filesystem::temp_directory_path() / "suitecut-upload-XXXXXX").string();
+      std::vector<char> buffer(pattern.begin(), pattern.end());
+      buffer.push_back('\0');
+      char* path = mkdtemp(buffer.data());
+      if (!path) throw std::runtime_error("Cannot create upload directory");
+      directory_ = path;
     }
     // A separate child directory preserves duplicate upload basenames safely.
-    auto folder=std::filesystem::path(directory_)/std::to_string(count_++);
+    auto folder = std::filesystem::path(directory_) / std::to_string(count_++);
     std::filesystem::create_directory(folder);
-    const auto path=(folder/name).string();
-    const int fd=open(path.c_str(),O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
-    if(fd<0)throw std::runtime_error("Cannot create upload file");
-    size_t offset=0;
-    while(offset<bytes.size()){
-      const auto written=write(fd,bytes.data()+offset,bytes.size()-offset);
-      if(written<0&&errno==EINTR)continue;
-      if(written<=0){close(fd);throw std::runtime_error("Cannot write upload file");}
-      offset+=static_cast<size_t>(written);
+    const auto path = (folder / name).string();
+    const int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC | O_NOFOLLOW, 0600);
+    if (fd < 0) throw std::runtime_error("Cannot create upload file");
+    size_t offset = 0;
+    while (offset < bytes.size()) {
+      const auto written = write(fd, bytes.data() + offset, bytes.size() - offset);
+      if (written < 0 && errno == EINTR) continue;
+      if (written <= 0) {
+        close(fd);
+        throw std::runtime_error("Cannot write upload file");
+      }
+      offset += static_cast<size_t>(written);
     }
-    if(close(fd)!=0)throw std::runtime_error("Cannot close upload file");
+    if (close(fd) != 0) throw std::runtime_error("Cannot close upload file");
     return path;
   }
-  void Append(const std::string& path,std::string_view bytes) {
+  void Append(const std::string& path, std::string_view bytes) {
     // Only a path produced by this scope may be appended. Canonicalize its
     // parent, including our private numeric subdirectory, before opening.
-    const auto parent=std::filesystem::path(path).parent_path();
-    if(directory_.empty()||parent.parent_path()!=std::filesystem::path(directory_))throw std::invalid_argument("Upload append path belongs to another scope");
-    const int fd=open(path.c_str(),O_WRONLY|O_APPEND|O_CLOEXEC|O_NOFOLLOW);
-    if(fd<0)throw std::runtime_error("Cannot append upload file");
-    size_t offset=0;while(offset<bytes.size()){
-      const auto written=write(fd,bytes.data()+offset,bytes.size()-offset);
-      if(written<0&&errno==EINTR)continue;
-      if(written<=0){close(fd);throw std::runtime_error("Cannot append upload file");}
-      offset+=static_cast<size_t>(written);
+    const auto parent = std::filesystem::path(path).parent_path();
+    if (directory_.empty() || parent.parent_path() != std::filesystem::path(directory_))
+      throw std::invalid_argument("Upload append path belongs to another scope");
+    const int fd = open(path.c_str(), O_WRONLY | O_APPEND | O_CLOEXEC | O_NOFOLLOW);
+    if (fd < 0) throw std::runtime_error("Cannot append upload file");
+    size_t offset = 0;
+    while (offset < bytes.size()) {
+      const auto written = write(fd, bytes.data() + offset, bytes.size() - offset);
+      if (written < 0 && errno == EINTR) continue;
+      if (written <= 0) {
+        close(fd);
+        throw std::runtime_error("Cannot append upload file");
+      }
+      offset += static_cast<size_t>(written);
     }
-    if(close(fd)!=0)throw std::runtime_error("Cannot close upload file");
+    if (close(fd) != 0) throw std::runtime_error("Cannot close upload file");
   }
+
  private:
   std::string directory_;
-  size_t count_=0;
+  size_t count_ = 0;
 };
 
 // Chromium reads a File's path lazily, so successful staging must outlive the
 // command. Retain it until input replacement, frame destruction or source exit.
 class SuiteCutUploadStore {
  public:
-  void Replace(const std::string& key,const std::string& frame,size_t bytes,std::shared_ptr<SuiteCutUploadFiles> files) {
-    const auto found=files_.find(key);if(found!=files_.end()){bytes_-=found->second.bytes;files_.erase(found);}
-    if(files){files_.emplace(key,Entry{frame,bytes,std::move(files)});bytes_+=bytes;}
+  void Replace(const std::string& key, const std::string& frame, size_t bytes,
+               std::shared_ptr<SuiteCutUploadFiles> files) {
+    const auto found = files_.find(key);
+    if (found != files_.end()) {
+      bytes_ -= found->second.bytes;
+      files_.erase(found);
+    }
+    if (files) {
+      files_.emplace(key, Entry{frame, bytes, std::move(files)});
+      bytes_ += bytes;
+    }
   }
   void DropFrame(const std::string& frame) {
-    for(auto it=files_.begin();it!=files_.end();)if(it->second.frame==frame){bytes_-=it->second.bytes;it=files_.erase(it);}else ++it;
+    for (auto it = files_.begin(); it != files_.end();)
+      if (it->second.frame == frame) {
+        bytes_ -= it->second.bytes;
+        it = files_.erase(it);
+      } else
+        ++it;
   }
-  void Clear(){files_.clear();bytes_=0;}
-  size_t Bytes() const{return bytes_;}
-  size_t Inputs() const{return files_.size();}
+  void Clear() {
+    files_.clear();
+    bytes_ = 0;
+  }
+  size_t Bytes() const { return bytes_; }
+  size_t Inputs() const { return files_.size(); }
+
  private:
-  struct Entry { std::string frame;size_t bytes;std::shared_ptr<SuiteCutUploadFiles> files; };
-  std::map<std::string,Entry> files_;
-  size_t bytes_=0;
+  struct Entry {
+    std::string frame;
+    size_t bytes;
+    std::shared_ptr<SuiteCutUploadFiles> files;
+  };
+  std::map<std::string, Entry> files_;
+  size_t bytes_ = 0;
 };
 
 struct SuiteCutPendingUpload {
   std::shared_ptr<SuiteCutUploadFiles> files;
   std::vector<std::string> paths;
-  std::vector<std::string> names,mime_types;
-  std::vector<size_t> expected,received;
-  size_t bytes=0;
-  double expires=0, deadline=0;
-  int active_owner=0;
-  uint64_t active_generation=0;
+  std::vector<std::string> names, mime_types;
+  std::vector<size_t> expected, received;
+  size_t bytes = 0;
+  double expires = 0, deadline = 0;
+  int active_owner = 0;
+  uint64_t active_generation = 0;
 };

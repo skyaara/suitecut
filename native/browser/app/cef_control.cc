@@ -11,7 +11,10 @@ int main(int argc, char** argv) {
   auto command = CefCommandLine::CreateCommandLine();
   command->InitFromArgv(argc, argv);
   const auto profile = command->GetSwitchValue("control-profile");
-  if (profile.empty()) { std::fprintf(stderr, "Pass --control-profile=/absolute/path\n"); return 2; }
+  if (profile.empty()) {
+    std::fprintf(stderr, "Pass --control-profile=/absolute/path\n");
+    return 2;
+  }
   CefSettings settings;
   CefString(&settings.root_cache_path) = profile;
   settings.windowless_rendering_enabled = true;

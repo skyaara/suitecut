@@ -10,7 +10,9 @@ struct VirtualCredential {
 };
 std::string CredentialBase64URL(const unsigned char* data, size_t length);
 bool CredentialDecodeBase64URL(const std::string& text, std::vector<unsigned char>& output);
-bool GenerateVirtualCredential(const std::string& rp_id, uint32_t sign_count, VirtualCredential& output, std::string& error);
+bool GenerateVirtualCredential(const std::string& rp_id, uint32_t sign_count,
+                               VirtualCredential& output, std::string& error);
 bool ValidateVirtualCredential(const VirtualCredential& input, std::string& error);
-bool VirtualCredentialPublicKey(const std::string& private_key, std::string& public_key, std::string& error);
-}
+bool VirtualCredentialPublicKey(const std::string& private_key, std::string& public_key,
+                                std::string& error);
+}  // namespace suitecut

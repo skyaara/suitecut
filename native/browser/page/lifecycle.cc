@@ -121,7 +121,8 @@ auto Source::OnFileDialog(CefRefPtr<CefBrowser> browser, FileDialogMode mode,
     return tab->OnFileDialog(browser, mode, routed_arg2, routed_arg3, routed_arg4, routed_arg5,
                              routed_arg6, callback);
   // The agent's own folder pick goes first; a page's own chooser can go to a person.
-  if (!folder_operation_ && FilePrompt(mode, routed_arg2, routed_arg3, routed_arg4, callback)) return true;
+  if (!folder_operation_ && FilePrompt(mode, routed_arg2, routed_arg3, routed_arg4, callback))
+    return true;
   return FormFileDialog(mode, callback);
 }
 
@@ -144,7 +145,8 @@ auto Source::OnRequestMediaAccessPermission(CefRefPtr<CefBrowser> browser,
                                             CefRefPtr<CefMediaAccessCallback> callback) -> bool {
   if (auto tab = AdoptedTab(browser))
     return tab->OnRequestMediaAccessPermission(browser, routed_arg1, origin, requested, callback);
-  const auto allowed = requested & engine_.contexts()->AllowedMediaPermissions(page_id_, origin.ToString());
+  const auto allowed =
+      requested & engine_.contexts()->AllowedMediaPermissions(page_id_, origin.ToString());
   if (allowed != requested && MediaPrompt(origin, requested, callback)) return true;
   callback->Continue(allowed);
   return true;
@@ -205,8 +207,7 @@ auto Source::OnDownloadUpdated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownl
 auto Source::GetResourceRequestHandler(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                        CefRefPtr<CefRequest> request, bool navigation,
                                        bool download, const CefString& routed_arg5,
-                                       bool& routed_arg6)
-    -> CefRefPtr<CefResourceRequestHandler> {
+                                       bool& routed_arg6) -> CefRefPtr<CefResourceRequestHandler> {
   if (auto tab = AdoptedTab(browser))
     return tab->GetResourceRequestHandler(browser, frame, request, navigation, download,
                                           routed_arg5, routed_arg6);
@@ -285,13 +286,14 @@ auto Source::OnDialogClosed(CefRefPtr<CefBrowser> browser) -> void {
 
 auto Source::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> routed_arg1,
                                  CefRefPtr<CefContextMenuParams> routed_arg2,
-                                 CefRefPtr<CefMenuModel> model)
-    -> void {
+                                 CefRefPtr<CefMenuModel> model) -> void {
   if (auto tab = AdoptedTab(browser))
     return tab->OnBeforeContextMenu(browser, routed_arg1, routed_arg2, model);
   // Automation pages never show a menu; a person's Chrome window keeps one.
-  if (ChromeWindowMode()) RemoveInspectionItems(model);
-  else model->Clear();
+  if (ChromeWindowMode())
+    RemoveInspectionItems(model);
+  else
+    model->Clear();
   if (model->GetCount()) ContextMenus::Get().Opened(browser->GetIdentifier());
 }
 

@@ -11,26 +11,57 @@ namespace suitecut {
 // actual owner/session/document; mirrored sessions must never enter this sum.
 class NativeHARResponseBytes {
  public:
-  void Begin(bool covered){if(attempted_){invalid_=true;return;}attempted_=true;begun_=covered;invalid_=!covered;}
-  void Invalidate(){invalid_=true;}
-  void CoverageLost(){if(!terminal_)invalid_=true;}
-  void Response(bool uncached){if(!begun_||response_||terminal_||!uncached)invalid_=true;response_=true;}
-  void Data(double decoded,double encoded){
-    if(!begun_||invalid_)return;
-    if(!response_||terminal_||!Count(decoded)||!Count(encoded)){invalid_=true;return;}
-    const auto plain=static_cast<uint64_t>(decoded),wire=static_cast<uint64_t>(encoded);
-    if(plain>UINT64_MAX-decoded_||wire>UINT64_MAX-encoded_){invalid_=true;return;}
-    ++chunks_;decoded_+=plain;encoded_+=wire;
+  void Begin(bool covered) {
+    if (attempted_) {
+      invalid_ = true;
+      return;
+    }
+    attempted_ = true;
+    begun_ = covered;
+    invalid_ = !covered;
   }
-  void Terminal(bool success){if(!begun_||!response_||terminal_||!success)invalid_=true;terminal_=true;}
-  std::optional<uint64_t> Encoded(size_t actual_body_bytes)const{
-    if(!begun_||invalid_||!response_||!terminal_||!chunks_||!encoded_||decoded_!=actual_body_bytes)return std::nullopt;
+  void Invalidate() { invalid_ = true; }
+  void CoverageLost() {
+    if (!terminal_) invalid_ = true;
+  }
+  void Response(bool uncached) {
+    if (!begun_ || response_ || terminal_ || !uncached) invalid_ = true;
+    response_ = true;
+  }
+  void Data(double decoded, double encoded) {
+    if (!begun_ || invalid_) return;
+    if (!response_ || terminal_ || !Count(decoded) || !Count(encoded)) {
+      invalid_ = true;
+      return;
+    }
+    const auto plain = static_cast<uint64_t>(decoded), wire = static_cast<uint64_t>(encoded);
+    if (plain > UINT64_MAX - decoded_ || wire > UINT64_MAX - encoded_) {
+      invalid_ = true;
+      return;
+    }
+    ++chunks_;
+    decoded_ += plain;
+    encoded_ += wire;
+  }
+  void Terminal(bool success) {
+    if (!begun_ || !response_ || terminal_ || !success) invalid_ = true;
+    terminal_ = true;
+  }
+  std::optional<uint64_t> Encoded(size_t actual_body_bytes) const {
+    if (!begun_ || invalid_ || !response_ || !terminal_ || !chunks_ || !encoded_ ||
+        decoded_ != actual_body_bytes)
+      return std::nullopt;
     return encoded_;
   }
+
  private:
   // Finite, whole, and representable as uint64_t (conversion guard only).
-  static bool Count(double value){return std::isfinite(value)&&value>=0&&value<std::ldexp(1.0,64)&&std::floor(value)==value;}
-  bool attempted_=false,begun_=false,invalid_=true,response_=false,terminal_=false;
-  size_t chunks_=0;uint64_t decoded_=0,encoded_=0;
+  static bool Count(double value) {
+    return std::isfinite(value) && value >= 0 && value < std::ldexp(1.0, 64) &&
+           std::floor(value) == value;
+  }
+  bool attempted_ = false, begun_ = false, invalid_ = true, response_ = false, terminal_ = false;
+  size_t chunks_ = 0;
+  uint64_t decoded_ = 0, encoded_ = 0;
 };
-}
+}  // namespace suitecut

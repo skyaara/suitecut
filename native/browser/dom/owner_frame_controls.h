@@ -17,29 +17,70 @@ namespace suitecut {
 // back and is reported; a late answer then settles nothing.
 class OwnerFrameControls {
  public:
-  using Clock=std::function<double()>;using Fail=std::function<void(const std::string&)>;
-  struct Physical {bool settled=false;std::function<void()>release;void Settle(){if(!settled){settled=true;release();}}~Physical(){Settle();}};
-  OwnerFrameControls(Clock now,Fail fail):now_(std::move(now)),fail_(std::move(fail)){}
-  ~OwnerFrameControls(){Close();}
-  std::shared_ptr<Physical> Begin(){
-    if(life_->closed||life_->failed||life_->sequence==std::numeric_limits<uint64_t>::max())return nullptr;
-    const auto token=++life_->sequence;life_->entries.emplace(token,now_()+30000);++process_physical_;
-    const auto life=life_;auto result=std::make_shared<Physical>();result->release=[life,token]{if(life->entries.erase(token))--process_physical_;};return result;
+  using Clock = std::function<double()>;
+  using Fail = std::function<void(const std::string&)>;
+  struct Physical {
+    bool settled = false;
+    std::function<void()> release;
+    void Settle() {
+      if (!settled) {
+        settled = true;
+        release();
+      }
+    }
+    ~Physical() { Settle(); }
+  };
+  OwnerFrameControls(Clock now, Fail fail) : now_(std::move(now)), fail_(std::move(fail)) {}
+  ~OwnerFrameControls() { Close(); }
+  std::shared_ptr<Physical> Begin() {
+    if (life_->closed || life_->failed || life_->sequence == std::numeric_limits<uint64_t>::max())
+      return nullptr;
+    const auto token = ++life_->sequence;
+    life_->entries.emplace(token, now_() + 30000);
+    ++process_physical_;
+    const auto life = life_;
+    auto result = std::make_shared<Physical>();
+    result->release = [life, token] {
+      if (life->entries.erase(token)) --process_physical_;
+    };
+    return result;
   }
-  void Failed(const std::string&error){if(life_->failed||life_->closed)return;fail_(error);}
-  void Tick(){
-    if(life_->failed||life_->closed)return;
-    size_t expired=0;for(auto it=life_->entries.begin();it!=life_->entries.end();)if(now_()>=it->second){it=life_->entries.erase(it);--process_physical_;++expired;}else ++it;
-    if(expired)fail_("Native frame owner peer physical settlement deadline exceeded");
+  void Failed(const std::string& error) {
+    if (life_->failed || life_->closed) return;
+    fail_(error);
   }
-  bool Healthy()const{return !life_->closed&&!life_->failed;}
-  bool NeedsTick()const{return !life_->closed&&!life_->failed&&!life_->entries.empty();}
-  void Close(){if(life_->closed)return;life_->closed=true;process_physical_-=life_->entries.size();life_->entries.clear();}
-  size_t PhysicalSize()const{return life_->entries.size();}
-  static size_t ProcessPhysicalSize(){return process_physical_;}
+  void Tick() {
+    if (life_->failed || life_->closed) return;
+    size_t expired = 0;
+    for (auto it = life_->entries.begin(); it != life_->entries.end();)
+      if (now_() >= it->second) {
+        it = life_->entries.erase(it);
+        --process_physical_;
+        ++expired;
+      } else
+        ++it;
+    if (expired) fail_("Native frame owner peer physical settlement deadline exceeded");
+  }
+  bool Healthy() const { return !life_->closed && !life_->failed; }
+  bool NeedsTick() const { return !life_->closed && !life_->failed && !life_->entries.empty(); }
+  void Close() {
+    if (life_->closed) return;
+    life_->closed = true;
+    process_physical_ -= life_->entries.size();
+    life_->entries.clear();
+  }
+  size_t PhysicalSize() const { return life_->entries.size(); }
+  static size_t ProcessPhysicalSize() { return process_physical_; }
+
  private:
-  struct Life{bool closed=false,failed=false;uint64_t sequence=0;std::map<uint64_t,double>entries;};
-  inline static size_t process_physical_=0;
-  Clock now_;Fail fail_;std::shared_ptr<Life>life_=std::make_shared<Life>();
+  struct Life {
+    bool closed = false, failed = false;
+    uint64_t sequence = 0;
+    std::map<uint64_t, double> entries;
+  };
+  inline static size_t process_physical_ = 0;
+  Clock now_;
+  Fail fail_;
+  std::shared_ptr<Life> life_ = std::make_shared<Life>();
 };
-} // namespace suitecut
+}  // namespace suitecut

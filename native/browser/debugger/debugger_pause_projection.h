@@ -11,19 +11,21 @@ namespace suitecut {
 class DebuggerPauseProjection {
  public:
   using Dict = CefRefPtr<CefDictionaryValue>;
-  static bool Build(Dict packet, const std::string& session,
-                    const std::string& pause, std::string& output) {
+  static bool Build(Dict packet, const std::string& session, const std::string& pause,
+                    std::string& output) {
     DebuggerPauseProjection writer;
     if (!packet || packet->GetType("callFrames") != VTYPE_LIST) return false;
     writer.out_ = "{\"session\":" + DevToolsQuoteUnits(CefString(session).ToString16()) +
-                  ",\"pause\":" + DevToolsQuoteUnits(CefString(pause).ToString16()) + ",\"reason\":";
+                  ",\"pause\":" + DevToolsQuoteUnits(CefString(pause).ToString16()) +
+                  ",\"reason\":";
     if (!writer.Text(packet->GetValue("reason"))) return false;
     writer.out_ += ",\"callFrames\":[";
     const auto frames = packet->GetList("callFrames");
     if (frames->GetSize() == 0) return false;
     for (size_t i = 0; i < frames->GetSize(); ++i) {
       if (i) writer.out_ += ',';
-      if (frames->GetType(i) != VTYPE_DICTIONARY || !writer.Frame(frames->GetDictionary(i))) return false;
+      if (frames->GetType(i) != VTYPE_DICTIONARY || !writer.Frame(frames->GetDictionary(i)))
+        return false;
     }
     writer.out_ += "],\"hitBreakpoints\":[";
     if (packet->HasKey("hitBreakpoints")) {
@@ -38,13 +40,16 @@ class DebuggerPauseProjection {
     output = std::move(writer.out_);
     return true;
   }
+
  private:
   std::string out_;
   bool Text(CefRefPtr<CefValue> value) {
     if (!value) return false;
     std::u16string units;
-    if (value->GetType() == VTYPE_STRING) units = value->GetString().ToString16();
-    else if (!DevToolsReadTag(value, units)) return false;
+    if (value->GetType() == VTYPE_STRING)
+      units = value->GetString().ToString16();
+    else if (!DevToolsReadTag(value, units))
+      return false;
     out_ += DevToolsQuoteUnits(units);
     return true;
   }
@@ -55,13 +60,15 @@ class DebuggerPauseProjection {
   }
   bool Location(Dict location) {
     if (!location || location->GetType("scriptId") != VTYPE_STRING ||
-        location->GetString("scriptId").empty() ||
-        location->GetType("lineNumber") != VTYPE_INT || location->GetInt("lineNumber") < 0) return false;
+        location->GetString("scriptId").empty() || location->GetType("lineNumber") != VTYPE_INT ||
+        location->GetInt("lineNumber") < 0)
+      return false;
     out_ += "{\"scriptId\":";
     if (!Text(location->GetValue("scriptId"))) return false;
     out_ += ",\"lineNumber\":" + std::to_string(location->GetInt("lineNumber"));
     if (location->HasKey("columnNumber")) {
-      if (location->GetType("columnNumber") != VTYPE_INT || location->GetInt("columnNumber") < 0) return false;
+      if (location->GetType("columnNumber") != VTYPE_INT || location->GetInt("columnNumber") < 0)
+        return false;
       out_ += ",\"columnNumber\":" + std::to_string(location->GetInt("columnNumber"));
     }
     out_ += '}';
@@ -71,18 +78,20 @@ class DebuggerPauseProjection {
     if (!object) return false;
     out_ += "{\"type\":";
     if (!Text(object->GetValue("type")) || !Field(object, "subtype") ||
-        !Field(object, "className") || !Field(object, "description") ||
-        !Field(object, "objectId")) return false;
+        !Field(object, "className") || !Field(object, "description") || !Field(object, "objectId"))
+      return false;
     out_ += '}';
     return true;
   }
   bool Frame(Dict frame) {
     if (!frame || frame->GetType("location") != VTYPE_DICTIONARY ||
-        frame->GetType("scopeChain") != VTYPE_LIST || frame->GetType("callFrameId") != VTYPE_STRING ||
-        frame->GetString("callFrameId").empty()) return false;
+        frame->GetType("scopeChain") != VTYPE_LIST ||
+        frame->GetType("callFrameId") != VTYPE_STRING || frame->GetString("callFrameId").empty())
+      return false;
     out_ += "{\"callFrameId\":";
     if (!Text(frame->GetValue("callFrameId")) || !Field(frame, "functionName", true) ||
-        !Field(frame, "url")) return false;
+        !Field(frame, "url"))
+      return false;
     out_ += ",\"location\":";
     if (!Location(frame->GetDictionary("location"))) return false;
     if (frame->HasKey("functionLocation")) {
@@ -98,7 +107,8 @@ class DebuggerPauseProjection {
       if (i) out_ += ',';
       out_ += "{\"type\":";
       if (!Text(scope->GetValue("type")) || !Field(scope, "name") ||
-          scope->GetType("object") != VTYPE_DICTIONARY) return false;
+          scope->GetType("object") != VTYPE_DICTIONARY)
+        return false;
       out_ += ",\"object\":";
       if (!Remote(scope->GetDictionary("object"))) return false;
       for (const auto* key : {"startLocation", "endLocation"}) {

@@ -30,7 +30,8 @@ namespace suitecut::session {
 // A refusal with the protocol's error code.
 struct Refused : std::runtime_error {
   std::string code;
-  Refused(std::string code, const std::string& message) : std::runtime_error(message), code(std::move(code)) {}
+  Refused(std::string code, const std::string& message)
+      : std::runtime_error(message), code(std::move(code)) {}
 };
 
 enum class Control { unclaimed, agent, human };
@@ -65,7 +66,7 @@ bool safe_token(const std::string& value, std::size_t maximum);
 
 struct HostOptions {
   LaunchOptions launch;
-  std::string tools = "core,debug,media";      // tool groups agents may use
+  std::string tools = "core,debug,media";          // tool groups agents may use
   std::set<std::string> schemes{"http", "https"};  // what tabs.open and tabs.navigate accept
 };
 
@@ -116,7 +117,8 @@ class Host {
   std::string CheckedUrl(const Json& value) const;
 
   // Views. A view is identified by its page.
-  int Attach(const std::string& owner, int page, const std::string& port, bool replace, bool exclusive);
+  int Attach(const std::string& owner, int page, const std::string& port, bool replace,
+             bool exclusive);
   void Detach(const std::string& owner, int page);
   Json Screenshot(const std::string& owner, int page);
   void Resize(const std::string& owner, int page, int width, int height);
@@ -130,8 +132,8 @@ class Host {
     std::uint64_t generation = 0;
     bool control_lost = false;
   };
-  CallResult Agent(const std::string& owner, int page, const std::string& tool, const Json& arguments, Claim claim,
-                   std::optional<std::uint64_t> expected);
+  CallResult Agent(const std::string& owner, int page, const std::string& tool,
+                   const Json& arguments, Claim claim, std::optional<std::uint64_t> expected);
 
   // Protocol 0's long-poll: the session-wide change counter.
   Json Watch(const std::string& owner, std::uint64_t cursor, std::chrono::milliseconds timeout);
@@ -158,7 +160,8 @@ class Host {
   // client certificates, and where to save a download on a tab the agent does
   // not hold. When the last such host leaves, today's policy answers them.
   void PromptHost(std::uint64_t connection, const std::string& owner, bool person);
-  Json AnswerPrompt(const std::string& owner, bool host, const std::string& prompt, const Json& answer);
+  Json AnswerPrompt(const std::string& owner, bool host, const std::string& prompt,
+                    const Json& answer);
 
   // Grants: one owner, chosen tool groups, an optional lifetime.
   struct Grant {
@@ -189,7 +192,8 @@ class Host {
   std::string Title(int page);
   void NavigateEngine(int page, Json fields);
   void TakeLocked(int page, Tab& tab);
-  Json Engine(int page, Json fields, std::chrono::milliseconds timeout = std::chrono::milliseconds(10000));
+  Json Engine(int page, Json fields,
+              std::chrono::milliseconds timeout = std::chrono::milliseconds(10000));
   Tab& Owned(const std::string& owner, int page);
   Json TabJson(int page, const Tab& tab, const std::string& title) const;
   // Outside state_: turns holding on or off for |pages|. -1 leaves it.
@@ -236,8 +240,10 @@ class Host {
   std::map<std::string, std::vector<int>> gone_;
   bool host_events_ = false;
   std::map<std::string, Prompt> prompts_;
-  std::map<std::string, std::set<std::uint64_t>> prompt_hosts_;  // owner -> connections that show prompts
-  std::map<std::string, std::set<std::uint64_t>> person_hosts_;  // owner -> such connections that are hosts
+  std::map<std::string, std::set<std::uint64_t>>
+      prompt_hosts_;  // owner -> connections that show prompts
+  std::map<std::string, std::set<std::uint64_t>>
+      person_hosts_;  // owner -> such connections that are hosts
   std::uint64_t download_prompts_ = 0;
   std::mutex savers_mutex_;
   std::vector<std::thread> savers_;  // downloads being saved where a person chose

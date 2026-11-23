@@ -6,7 +6,8 @@
 // Built with -DSUITECUT_ACCELERATED_PAINT_PROBE=ON (Linux) as
 // suitecut-accelerated-paint-probe, beside suitecut-browser.
 //
-// usage: suitecut-accelerated-paint-probe --probe-profile=/abs/dir [--probe-shared=1] [--probe-seconds=N]
+// usage: suitecut-accelerated-paint-probe --probe-profile=/abs/dir [--probe-shared=1]
+// [--probe-seconds=N]
 //        [--probe-url=URL] [Chromium switches...]
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -33,30 +34,39 @@ std::string fd_target(int fd) {
   return n > 0 ? std::string(target, n) : std::string("(unreadable)");
 }
 
-class Handler : public CefClient, public CefRenderHandler, public CefLifeSpanHandler, public CefLoadHandler {
+class Handler : public CefClient,
+                public CefRenderHandler,
+                public CefLifeSpanHandler,
+                public CefLoadHandler {
  public:
   CefRefPtr<CefRenderHandler> GetRenderHandler() override { return this; }
   CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
   CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
-  void GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) override { rect = CefRect(0, 0, 800, 600); }
+  void GetViewRect(CefRefPtr<CefBrowser>, CefRect& rect) override {
+    rect = CefRect(0, 0, 800, 600);
+  }
   void OnPaint(CefRefPtr<CefBrowser>, PaintElementType, const RectList&, const void*, int width,
                int height) override {
-    if (paints++ == 0) std::fprintf(stderr, "PROBE first OnPaint %dx%d (CPU buffer)\n", width, height);
+    if (paints++ == 0)
+      std::fprintf(stderr, "PROBE first OnPaint %dx%d (CPU buffer)\n", width, height);
   }
   void OnAcceleratedPaint(CefRefPtr<CefBrowser>, PaintElementType type, const RectList&,
                           const CefAcceleratedPaintInfo& info) override {
     ++accelerated;
     if (described++ >= 3) return;
-    std::fprintf(stderr, "PROBE OnAcceleratedPaint type=%d planes=%d modifier=0x%llx format=%d coded=%dx%d visible=%dx%d\n",
-                 type, info.plane_count, static_cast<unsigned long long>(info.modifier), info.format,
-                 info.extra.coded_size.width, info.extra.coded_size.height, info.extra.visible_rect.width,
-                 info.extra.visible_rect.height);
+    std::fprintf(stderr,
+                 "PROBE OnAcceleratedPaint type=%d planes=%d modifier=0x%llx format=%d coded=%dx%d "
+                 "visible=%dx%d\n",
+                 type, info.plane_count, static_cast<unsigned long long>(info.modifier),
+                 info.format, info.extra.coded_size.width, info.extra.coded_size.height,
+                 info.extra.visible_rect.width, info.extra.visible_rect.height);
     for (int i = 0; i < info.plane_count; ++i) {
       const auto& plane = info.planes[i];
-      struct stat st {};
+      struct stat st{};
       const bool valid = ::fstat(plane.fd, &st) == 0;
-      std::fprintf(stderr, "PROBE   plane %d fd=%d stride=%u offset=%llu size=%llu valid=%d target=%s\n", i, plane.fd,
-                   plane.stride, static_cast<unsigned long long>(plane.offset),
+      std::fprintf(stderr,
+                   "PROBE   plane %d fd=%d stride=%u offset=%llu size=%llu valid=%d target=%s\n", i,
+                   plane.fd, plane.stride, static_cast<unsigned long long>(plane.offset),
                    static_cast<unsigned long long>(plane.size), valid, fd_target(plane.fd).c_str());
     }
   }
@@ -66,8 +76,10 @@ class Handler : public CefClient, public CefRenderHandler, public CefLifeSpanHan
     if (frame->IsMain()) std::fprintf(stderr, "PROBE load end status=%d\n", status);
   }
   void Close() {
-    if (browser_) browser_->GetHost()->CloseBrowser(true);
-    else CefQuitMessageLoop();
+    if (browser_)
+      browser_->GetHost()->CloseBrowser(true);
+    else
+      CefQuitMessageLoop();
   }
 
  private:
@@ -92,8 +104,10 @@ int main(int argc, char** argv) {
   const int seconds = seconds_value.empty() ? 6 : std::stoi(seconds_value);
   auto url = command->GetSwitchValue("probe-url").ToString();
   if (url.empty())
-    url = "data:text/html,<style>@keyframes s{to{transform:rotate(360deg)}}div{width:200px;height:200px;"
-          "background:linear-gradient(red,blue);animation:s 1s linear infinite}</style><div></div>";
+    url =
+        "data:text/html,<style>@keyframes "
+        "s{to{transform:rotate(360deg)}}div{width:200px;height:200px;"
+        "background:linear-gradient(red,blue);animation:s 1s linear infinite}</style><div></div>";
 
   CefSettings settings;
   CefString(&settings.root_cache_path) = profile;
@@ -108,10 +122,11 @@ int main(int argc, char** argv) {
   browser_settings.windowless_frame_rate = 30;
   std::fprintf(stderr, "PROBE shared_texture_enabled=%d\n", shared);
   CefBrowserHost::CreateBrowser(window, handler, url, browser_settings, nullptr, nullptr);
-  CefPostDelayedTask(TID_UI, base::BindOnce([](CefRefPtr<Handler> h) { h->Close(); }, handler), seconds * 1000);
+  CefPostDelayedTask(TID_UI, base::BindOnce([](CefRefPtr<Handler> h) { h->Close(); }, handler),
+                     seconds * 1000);
   CefRunMessageLoop();
-  std::fprintf(stderr, "PROBE result shared=%d OnPaint=%d OnAcceleratedPaint=%d in %ds\n", shared, paints.load(),
-               accelerated.load(), seconds);
+  std::fprintf(stderr, "PROBE result shared=%d OnPaint=%d OnAcceleratedPaint=%d in %ds\n", shared,
+               paints.load(), accelerated.load(), seconds);
   handler = nullptr;
   CefShutdown();
   return 0;

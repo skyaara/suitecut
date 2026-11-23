@@ -10,11 +10,15 @@ class MacCaptureFrame;
 // callbacks write Annex B into the caller's already-private file descriptor.
 class MacNativeEncoder {
  public:
-  MacNativeEncoder(int output,int width,int height,double fps,uint64_t max_bytes,std::function<void()> check);
+  MacNativeEncoder(int output, int width, int height, double fps, uint64_t max_bytes,
+                   std::function<void()> check);
   ~MacNativeEncoder();
-  void Write(const std::shared_ptr<MacCaptureFrame>& surface,const std::vector<uint8_t>& nv12,bool preparation=false);
+  void Write(const std::shared_ptr<MacCaptureFrame>& surface, const std::vector<uint8_t>& nv12,
+             bool preparation = false);
   void Drain();
+
  private:
-  struct Impl;std::unique_ptr<Impl> impl_;
+  struct Impl;
+  std::unique_ptr<Impl> impl_;
 };
-}
+}  // namespace suitecut

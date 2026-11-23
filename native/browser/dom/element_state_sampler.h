@@ -2,7 +2,8 @@
 #pragma once
 // Runs only in the exact node's isolated renderer context. A native token owns
 // one bounded RAF callback and one expiry timer; samples never await a Promise.
-inline constexpr const char* kSuiteCutElementStateSampler=R"JS(function(element,observe,key,token,ttl,dispose=false){
+inline constexpr const char* kSuiteCutElementStateSampler =
+    R"JS(function(element,observe,key,token,ttl,dispose=false){
   let sampleState=globalThis[key];
   if(!sampleState){
     if(dispose)return true;

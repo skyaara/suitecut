@@ -8,11 +8,12 @@ namespace suitecut {
 // no access to the physical callback entry or its completion transition.
 class NativeRouteCallbackReceipt {
  public:
-  bool settled()const{return settled_;}
-  bool unavailable()const{return unavailable_;}
+  bool settled() const { return settled_; }
+  bool unavailable() const { return unavailable_; }
+
  private:
   friend class NativeRouteCallbackLeases;
-  bool settled_=false,unavailable_=false;
+  bool settled_ = false, unavailable_ = false;
 };
-using NativeRouteCallbackSnapshot=std::vector<std::shared_ptr<const NativeRouteCallbackReceipt>>;
-}
+using NativeRouteCallbackSnapshot = std::vector<std::shared_ptr<const NativeRouteCallbackReceipt>>;
+}  // namespace suitecut

@@ -380,8 +380,7 @@ void Engine::Route(const std::string& line) {
                               if (*alive && operations_.IsCurrent(id, generation))
                                 CompleteContext(id, ok, nullptr, error);
                             }))
-        CompleteContext(id, false, nullptr,
-                        "Native geolocation update is invalid or pending");
+        CompleteContext(id, false, nullptr, "Native geolocation update is invalid or pending");
       return;
     }
     if (action == "setOffline") {
@@ -451,8 +450,7 @@ void Engine::Route(const std::string& line) {
                                     if (*alive && operations_.IsCurrent(id, generation))
                                       CompleteContext(id, ok, result, error);
                                   }))
-        CompleteContext(id, false, nullptr,
-                        "Invalid or duplicate native context network wait");
+        CompleteContext(id, false, nullptr, "Invalid or duplicate native context network wait");
       return;
     }
     if (action == "trace") {
@@ -488,8 +486,7 @@ void Engine::Route(const std::string& line) {
                                     if (*alive && operations_.IsCurrent(id, generation))
                                       CompleteContext(id, ok, result, error, true);
                                   }))
-        CompleteContext(id, false, nullptr,
-                        "Invalid or duplicate native context console wait");
+        CompleteContext(id, false, nullptr, "Invalid or duplicate native context console wait");
       return;
     }
     if (action == "close" && handler_native_origin.locator_handler_invocation &&

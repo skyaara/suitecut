@@ -3,7 +3,8 @@
 // Generated from the authored formatNativeAriaTree in src/native-aria.ts.
 // Keep the fixed native and SDK serialization contract identical; regenerate with the
 // repository formatter generator after changing that function.
-inline constexpr char kSuiteCutNativeAriaFormatter[] = R"JS(function formatNativeAriaTree(nodes, options = {}) {
+inline constexpr char kSuiteCutNativeAriaFormatter[] =
+    R"JS(function formatNativeAriaTree(nodes, options = {}) {
     const output = [];
     const squeeze = (value) => value.replace(/\s+/gu, '');
     // Whether a name only repeats the text its rendered children already show.

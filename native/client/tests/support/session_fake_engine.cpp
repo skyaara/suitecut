@@ -70,7 +70,8 @@ struct FrameMessage {
 };
 bool send_frame(mach_port_t to, mach_port_t right, std::uint32_t width, std::uint32_t height) {
   FrameMessage message{};
-  message.header.msgh_bits = MACH_MSGH_BITS_SET(MACH_MSG_TYPE_COPY_SEND, 0, 0, MACH_MSGH_BITS_COMPLEX);
+  message.header.msgh_bits =
+      MACH_MSGH_BITS_SET(MACH_MSG_TYPE_COPY_SEND, 0, 0, MACH_MSGH_BITS_COMPLEX);
   message.header.msgh_size = sizeof message;
   message.header.msgh_remote_port = to;
   message.header.msgh_id = 0x47425331;
@@ -82,20 +83,22 @@ bool send_frame(mach_port_t to, mach_port_t right, std::uint32_t width, std::uin
   message.width = width;
   message.height = height;
   message.timestamp = mach_absolute_time() / 1000;
-  return mach_msg(&message.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof message, 0, MACH_PORT_NULL, 1000,
-                  MACH_PORT_NULL) == MACH_MSG_SUCCESS;
+  return mach_msg(&message.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof message, 0,
+                  MACH_PORT_NULL, 1000, MACH_PORT_NULL) == MACH_MSG_SUCCESS;
 }
 // One real frame from this process, then a forged one from a child.
 void send_frames(const std::string& name, int width, int height) {
   mach_port_t to = MACH_PORT_NULL;
   if (bootstrap_look_up(bootstrap_port, name.c_str(), &to) != KERN_SUCCESS) return;
-  const auto w = static_cast<std::uint32_t>(width) & ~1u, h = static_cast<std::uint32_t>(height) & ~1u;
-  const int format = 0x34323066, bytes_per_element[2] = {1, 2}, widths[2] = {static_cast<int>(w), static_cast<int>(w / 2)},
+  const auto w = static_cast<std::uint32_t>(width) & ~1u,
+             h = static_cast<std::uint32_t>(height) & ~1u;
+  const int format = 0x34323066, bytes_per_element[2] = {1, 2},
+            widths[2] = {static_cast<int>(w), static_cast<int>(w / 2)},
             heights[2] = {static_cast<int>(h), static_cast<int>(h / 2)};
   CFMutableArrayRef planes = CFArrayCreateMutable(nullptr, 2, &kCFTypeArrayCallBacks);
   for (int i = 0; i < 2; ++i) {
-    CFMutableDictionaryRef plane =
-        CFDictionaryCreateMutable(nullptr, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFMutableDictionaryRef plane = CFDictionaryCreateMutable(
+        nullptr, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     const int row = widths[i] * bytes_per_element[i];
     const auto put = [&](CFStringRef key, int value) {
       CFNumberRef number = CFNumberCreate(nullptr, kCFNumberIntType, &value);
@@ -109,8 +112,8 @@ void send_frames(const std::string& name, int width, int height) {
     CFArrayAppendValue(planes, plane);
     CFRelease(plane);
   }
-  CFMutableDictionaryRef properties =
-      CFDictionaryCreateMutable(nullptr, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+  CFMutableDictionaryRef properties = CFDictionaryCreateMutable(
+      nullptr, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
   const auto put = [&](CFStringRef key, int value) {
     CFNumberRef number = CFNumberCreate(nullptr, kCFNumberIntType, &value);
     CFDictionarySetValue(properties, key, number);
@@ -124,7 +127,8 @@ void send_frames(const std::string& name, int width, int height) {
   CFRelease(planes);
   CFRelease(properties);
   if (surface) {
-    if (!send_frame(to, IOSurfaceCreateMachPort(surface), w, h)) {}
+    if (!send_frame(to, IOSurfaceCreateMachPort(surface), w, h)) {
+    }
     CFRelease(surface);
   }
   // A forged frame: any send right, from another process.
@@ -133,7 +137,8 @@ void send_frames(const std::string& name, int width, int height) {
     mach_port_t target = MACH_PORT_NULL, fake = MACH_PORT_NULL;
     if (bootstrap_look_up(bootstrap_port, name.c_str(), &target) == KERN_SUCCESS &&
         mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &fake) == KERN_SUCCESS &&
-        mach_port_insert_right(mach_task_self(), fake, fake, MACH_MSG_TYPE_MAKE_SEND) == KERN_SUCCESS)
+        mach_port_insert_right(mach_task_self(), fake, fake, MACH_MSG_TYPE_MAKE_SEND) ==
+            KERN_SUCCESS)
       send_frame(target, fake, 2, 2);
     ::_exit(0);
   }
@@ -168,8 +173,12 @@ void respond(std::int64_t id, bool ok, const std::string& error, const Json& res
   packet(Json{{"type", "response"}, {"id", id}, {"ok", ok}, {"error", error}}, result.dump());
 }
 void context_event(const Json& event) { packet(Json{{"type", "context"}}, event.dump()); }
-void host_event(int page, const Json& event) { packet(Json{{"type", "host"}, {"pageId", page}}, event.dump()); }
-void dialog_event(int page, const Json& dialog) { packet(Json{{"type", "dialog"}, {"pageId", page}}, dialog.dump()); }
+void host_event(int page, const Json& event) {
+  packet(Json{{"type", "host"}, {"pageId", page}}, event.dump());
+}
+void dialog_event(int page, const Json& dialog) {
+  packet(Json{{"type", "dialog"}, {"pageId", page}}, dialog.dump());
+}
 void download_event(int page, const Json& download) {
   packet(Json{{"type", "download"}, {"pageId", page}}, download.dump());
 }
@@ -194,14 +203,14 @@ int main(int argc, char** argv) {
   };
   std::map<std::string, Held> held;  // a person's prompts: engine id -> page, opened event
   int prompt_sequence = 0, download_sequence = 0;
-  std::map<int, std::string> outputs;            // bootstrap name per page with a view
+  std::map<int, std::string> outputs;  // bootstrap name per page with a view
   std::ofstream log;
   if (!profile.empty()) log.open(profile + "/commands.log", std::ios::app);
   try {
     ready(1);
     int next_page = 1;
     std::map<int, std::string> titles{{1, ""}};
-    std::map<int, bool> subscribed;                // dialogs held for an answer, per page
+    std::map<int, bool> subscribed;                       // dialogs held for an answer, per page
     std::map<std::string, std::pair<int, Json>> dialogs;  // held: id -> page, opened event
     int dialog_sequence = 0;
     // As the engine's reset on navigation: each held dialog is dropped, and
@@ -226,7 +235,8 @@ int main(int argc, char** argv) {
     while (std::getline(std::cin, line)) {
       const auto request = Json::parse(line);
       if (log) {
-        if (request.contains("answer") && request.at("answer").is_object() && request.at("answer").contains("password")) {
+        if (request.contains("answer") && request.at("answer").is_object() &&
+            request.at("answer").contains("password")) {
           auto redacted = request;
           redacted["answer"]["password"] = "<redacted>";
           log << redacted.dump() << '\n' << std::flush;
@@ -236,7 +246,8 @@ int main(int argc, char** argv) {
       }
       const auto id = request.at("id").as_int();
       const auto command = request.at("command").as_string();
-      const int page = request.contains("pageId") ? static_cast<int>(request.at("pageId").as_int()) : 0;
+      const int page =
+          request.contains("pageId") ? static_cast<int>(request.at("pageId").as_int()) : 0;
       Json result = Json::object{};
       bool ok = true;
       std::string error;
@@ -256,7 +267,8 @@ int main(int argc, char** argv) {
         } else if (action == "closePage") {
           // As the engine does, a closed page is reported as page-closed.
           const int closing = static_cast<int>(params.at("pageId").as_int());
-          if (titles.erase(closing)) after.push_back(Json{{"event", "page-closed"}, {"pageId", closing}});
+          if (titles.erase(closing))
+            after.push_back(Json{{"event", "page-closed"}, {"pageId", closing}});
         } else if (action == "pages") {
           Json::array listed;
           for (const auto& [known, unused] : titles) {
@@ -279,22 +291,37 @@ int main(int argc, char** argv) {
               ++it;
               continue;
             }
-            host_event(page, Json{{"event", "prompt"}, {"id", it->first}, {"kind", "file"}, {"state", "closed"}, {"reason", "reset"}});
+            host_event(page, Json{{"event", "prompt"},
+                                  {"id", it->first},
+                                  {"kind", "file"},
+                                  {"state", "closed"},
+                                  {"reason", "reset"}});
             it = held.erase(it);
           }
           for (auto& [on, closed] : after_dialogs) dialog_event(on, closed);
           after_dialogs.clear();
           if (host_events) {
-            host_event(page, Json{{"event", "loading"}, {"loading", true}, {"canGoBack", false}, {"canGoForward", false}});
+            host_event(page, Json{{"event", "loading"},
+                                  {"loading", true},
+                                  {"canGoBack", false},
+                                  {"canGoForward", false}});
             host_event(page, Json{{"event", "progress"}, {"progress", 0.5}});
           }
           packet(Json{{"type", "navigation"}, {"pageId", page}, {"url", url}});
           if (url.ends_with("/auth") || url.ends_with("/auth-agent")) {
             if (host_events && person[page]) {
               const auto engine_id = std::to_string(++prompt_sequence);
-              Json opened{{"event", "prompt"}, {"id", engine_id}, {"state", "opened"}, {"kind", "auth"},
-                          {"url", url}, {"proxy", false}, {"host", "fake.test"}, {"port", 443},
-                          {"realm", "Fake"}, {"scheme", "basic"}, {"agentCredentials", url.ends_with("/auth-agent")}};
+              Json opened{{"event", "prompt"},
+                          {"id", engine_id},
+                          {"state", "opened"},
+                          {"kind", "auth"},
+                          {"url", url},
+                          {"proxy", false},
+                          {"host", "fake.test"},
+                          {"port", 443},
+                          {"realm", "Fake"},
+                          {"scheme", "basic"},
+                          {"agentCredentials", url.ends_with("/auth-agent")}};
               held[engine_id] = Held{page, opened};
               after_host.emplace_back(page, std::move(opened));
             }
@@ -311,7 +338,10 @@ int main(int argc, char** argv) {
           if (host_events) {
             host_event(page, Json{{"event", "title"}, {"title", titles[page]}});
             host_event(page, Json{{"event", "progress"}, {"progress", 1.0}});
-            host_event(page, Json{{"event", "loading"}, {"loading", false}, {"canGoBack", true}, {"canGoForward", false}});
+            host_event(page, Json{{"event", "loading"},
+                                  {"loading", false},
+                                  {"canGoBack", true},
+                                  {"canGoForward", false}});
           }
         }
       } else if (command == "historyBack" || command == "historyForward" || command == "reload") {
@@ -346,15 +376,21 @@ int main(int argc, char** argv) {
           const auto message = colon == std::string::npos ? std::string() : rest.substr(colon + 1);
           if (subscribed[page]) {
             const auto dialog_id = std::to_string(++dialog_sequence);
-            Json opened{{"id", dialog_id}, {"type", type}, {"url", "https://fake.test/"}, {"message", message},
-                        {"defaultValue", type == "prompt" ? "default" : ""}, {"state", "opened"}};
+            Json opened{{"id", dialog_id},
+                        {"type", type},
+                        {"url", "https://fake.test/"},
+                        {"message", message},
+                        {"defaultValue", type == "prompt" ? "default" : ""},
+                        {"state", "opened"}};
             dialogs[dialog_id] = {page, opened};
             after_dialogs.emplace_back(page, std::move(opened));
           }
         } else if (expression.starts_with("cursor:") && host_events) {
-          after_host.emplace_back(page, Json{{"event", "cursor"}, {"cursor", expression.substr(7)}});
-        } else if (host_events && (expression.starts_with("file:") || expression.starts_with("permission:") ||
-                                   expression.starts_with("auth") || expression == "certificate")) {
+          after_host.emplace_back(page,
+                                  Json{{"event", "cursor"}, {"cursor", expression.substr(7)}});
+        } else if (host_events &&
+                   (expression.starts_with("file:") || expression.starts_with("permission:") ||
+                    expression.starts_with("auth") || expression == "certificate")) {
           if (person[page]) {
             const auto engine_id = std::to_string(++prompt_sequence);
             Json opened{{"event", "prompt"}, {"id", engine_id}, {"state", "opened"}};
@@ -382,8 +418,11 @@ int main(int argc, char** argv) {
               opened["host"] = "fake.test";
               opened["port"] = 443;
               opened["proxy"] = false;
-              opened["certificates"] = Json::array{
-                  Json{{"index", 0}, {"subject", "Person"}, {"issuer", "Fake CA"}, {"validFrom", 0}, {"expires", 4102444800000.0}}};
+              opened["certificates"] = Json::array{Json{{"index", 0},
+                                                        {"subject", "Person"},
+                                                        {"issuer", "Fake CA"},
+                                                        {"validFrom", 0},
+                                                        {"expires", 4102444800000.0}}};
             }
             held[engine_id] = Held{page, opened};
             after_host.emplace_back(page, std::move(opened));
@@ -398,14 +437,16 @@ int main(int argc, char** argv) {
                                     {"totalBytes", 3},
                                     {"failure", Json{}}});
         } else if (expression == "ime" && host_events) {
-          after_host.emplace_back(page, Json{{"event", "ime"}, {"range", Json::array{0, 3}},
+          after_host.emplace_back(page, Json{{"event", "ime"},
+                                             {"range", Json::array{0, 3}},
                                              {"bounds", Json::array{Json::array{10, 20, 30, 40}}}});
         }
         result = Json{{"result", Json{{"type", "number"}, {"value", 42}}}};
       } else if (command == "artifact") {
         result = Json{{"data", "iVBORw0KGgo="}};
       } else if (command == "viewport") {
-        viewports[page] = {static_cast<int>(request.at("width").as_int()), static_cast<int>(request.at("height").as_int())};
+        viewports[page] = {static_cast<int>(request.at("width").as_int()),
+                           static_cast<int>(request.at("height").as_int())};
         frames_for = page;
       } else if (command == "surfaceOutput") {
         if (request.contains("port") && request.at("port").is_string())
@@ -450,8 +491,11 @@ int main(int argc, char** argv) {
                 ++it;
                 continue;
               }
-              after_host.emplace_back(page, Json{{"event", "prompt"}, {"id", it->first}, {"kind", it->second.opened.at("kind")},
-                                                 {"state", "closed"}, {"reason", "policy"}});
+              after_host.emplace_back(page, Json{{"event", "prompt"},
+                                                 {"id", it->first},
+                                                 {"kind", it->second.opened.at("kind")},
+                                                 {"state", "closed"},
+                                                 {"reason", "policy"}});
               it = held.erase(it);
             }
         } else if (action == "answer") {
@@ -460,22 +504,28 @@ int main(int argc, char** argv) {
           if (found == held.end() || found->second.page != page) {
             ok = false;
             error = "The prompt was answered or has closed";
-          } else if (found->second.opened.at("kind") == Json("auth") && !answer.contains("policy") &&
-                     !answer.contains("cancel") &&
+          } else if (found->second.opened.at("kind") == Json("auth") &&
+                     !answer.contains("policy") && !answer.contains("cancel") &&
                      (!answer.contains("password") || !answer.at("password").is_string())) {
             ok = false;
             error = "An authentication answer has username and password, or cancel";
           } else {
             const bool policy = answer.contains("policy");
-            after_host.emplace_back(page, Json{{"event", "prompt"}, {"id", found->first}, {"kind", found->second.opened.at("kind")},
-                                               {"state", "closed"}, {"reason", policy ? "policy" : "answered"}});
+            after_host.emplace_back(page, Json{{"event", "prompt"},
+                                               {"id", found->first},
+                                               {"kind", found->second.opened.at("kind")},
+                                               {"state", "closed"},
+                                               {"reason", policy ? "policy" : "answered"}});
             held.erase(found);
           }
         } else if (action != "stop" && action != "ime" && action != "edit") {
           ok = false;
           error = "A host command is stop, ime, edit, prompts or answer";
         } else if (action == "stop") {
-          after_host.emplace_back(page, Json{{"event", "loading"}, {"loading", false}, {"canGoBack", true}, {"canGoForward", false}});
+          after_host.emplace_back(page, Json{{"event", "loading"},
+                                             {"loading", false},
+                                             {"canGoBack", true},
+                                             {"canGoForward", false}});
         }
       } else if (command == "download") {
         // path says where it settled; saveAs writes the file where asked;
@@ -495,14 +545,16 @@ int main(int argc, char** argv) {
           error = "Unsupported native download action";
         }
       } else if (command != "viewport" && command != "input" && command != "surfaceOutput" &&
-                 command != "frameSubscription" && command != "bringToFront" && command != "cancel") {
+                 command != "frameSubscription" && command != "bringToFront" &&
+                 command != "cancel") {
         ok = false;
         error = "Unexpected session-fake command: " + command;
       }
       respond(id, ok, error, result);
 #ifdef __APPLE__
       if (frames_for && outputs.contains(frames_for)) {
-        const auto size = viewports.contains(frames_for) ? viewports[frames_for] : std::pair{width, height};
+        const auto size =
+            viewports.contains(frames_for) ? viewports[frames_for] : std::pair{width, height};
         send_frames(outputs[frames_for], size.first * scale, size.second * scale);
       }
 #endif

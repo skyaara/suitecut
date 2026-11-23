@@ -149,11 +149,13 @@ class Source : public CefClient,
   // Prompts that go to the person (page/person_prompts.cc), host events only.
   void PersonPromptsCreate();
   bool PersonPromptsOn() const;
-  bool FilePrompt(cef_file_dialog_mode_t mode, const CefString& title, const CefString& default_path,
-                  const std::vector<CefString>& filters, CefRefPtr<CefFileDialogCallback> callback);
+  bool FilePrompt(cef_file_dialog_mode_t mode, const CefString& title,
+                  const CefString& default_path, const std::vector<CefString>& filters,
+                  CefRefPtr<CefFileDialogCallback> callback);
   bool PermissionPrompt(uint64_t prompt_id, const CefString& origin, uint32_t requested,
                         CefRefPtr<CefPermissionPromptCallback> callback);
-  bool MediaPrompt(const CefString& origin, uint32_t requested, CefRefPtr<CefMediaAccessCallback> callback);
+  bool MediaPrompt(const CefString& origin, uint32_t requested,
+                   CefRefPtr<CefMediaAccessCallback> callback);
   void OnDismissPermissionPrompt(CefRefPtr<CefBrowser>, uint64_t prompt_id,
                                  cef_permission_request_result_t result) override;
   bool OnSelectClientCertificate(CefRefPtr<CefBrowser>, bool proxy, const CefString& host, int port,

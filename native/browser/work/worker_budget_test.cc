@@ -9,9 +9,9 @@ int main() {
   assert(ParseCpuMax("400000 100000\n") == 4.0);
   assert(ParseCpuMax("150000 100000") == 1.5);
   assert(ParseCpuMax("1 100000") == 0.00001);
-  for (const auto* malformed : {"", "max 100000", "-1 100000", "0 100000", "4 0",
-                                "4 -1", "four 100000", "4 100000 trailing",
-                                "18446744073709551616 100000", "4"})
+  for (const auto* malformed :
+       {"", "max 100000", "-1 100000", "0 100000", "4 0", "4 -1", "four 100000",
+        "4 100000 trailing", "18446744073709551616 100000", "4"})
     assert(!ParseCpuMax(malformed));
 
   assert(WorkerCount(CpuCapacity(192, 168, 4)) == 2);
@@ -39,16 +39,16 @@ int main() {
   assert(ComputeWorkerPolicy(128, std::nullopt, 8 * mib).workers == 64);
   assert(ComputeWorkerPolicy(128, 1024 * mib, 0).workers == 64);
   assert(ComputeWorkerPolicy(0.25, 64 * 1024 * mib, 8 * mib).workers == 1);
-  const auto maximum = ComputeWorkerPolicy(std::numeric_limits<double>::max(),
-                                           std::nullopt, 8 * mib);
+  const auto maximum =
+      ComputeWorkerPolicy(std::numeric_limits<double>::max(), std::nullopt, 8 * mib);
   assert(maximum.workers == std::numeric_limits<size_t>::max() / 4);
   assert(maximum.capacity >= maximum.workers && maximum.capacity >= 2);
   assert(WorkerCount(std::numeric_limits<double>::quiet_NaN()) == 1);
 
   assert(ParseMemoryLimit("0\n") == 0);
   assert(ParseMemoryLimit("536870912\n") == 512 * mib);
-  for (const auto* malformed : {"", "max", "-1", "1 trailing", "+2",
-                                "18446744073709551616", "broken"})
+  for (const auto* malformed :
+       {"", "max", "-1", "1 trailing", "+2", "18446744073709551616", "broken"})
     assert(!ParseMemoryLimit(malformed));
 
   const std::string v2_mount = "35 24 0:29 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n";
@@ -76,8 +76,8 @@ int main() {
   assert(!ResolveCgroupPath("/team/../browser", "/team", "/mounted"));
   files["/mounted/browser/cpu.max"] = "600000 100000";
   files["/mounted/cpu.max"] = "300000 100000";
-  assert(CgroupCpuLimit("0::/team/browser\n",
-      "35 24 0:29 /team /mounted rw - cgroup2 cgroup rw\n", read) == 3);
+  assert(CgroupCpuLimit("0::/team/browser\n", "35 24 0:29 /team /mounted rw - cgroup2 cgroup rw\n",
+                        read) == 3);
 
   files["/cpu/group/cpu.cfs_quota_us"] = "500000\n";
   files["/cpu/group/cpu.cfs_period_us"] = "100000\n";
@@ -103,10 +103,10 @@ int main() {
   files["/mounted/browser/memory.max"] = "1073741824";
   files["/mounted/memory.max"] = "536870912";
   assert(CgroupMemoryLimit("0::/team/browser\n",
-      "35 24 0:29 /team /mounted rw - cgroup2 cgroup rw\n", read) == 512 * mib);
+                           "35 24 0:29 /team /mounted rw - cgroup2 cgroup rw\n",
+                           read) == 512 * mib);
 
-  const std::string memory_mount =
-      "35 24 0:29 / /memory rw - cgroup cgroup rw,memory\n";
+  const std::string memory_mount = "35 24 0:29 / /memory rw - cgroup cgroup rw,memory\n";
   files["/memory/group/memory.limit_in_bytes"] = "2147483648";
   files["/memory/memory.limit_in_bytes"] = "1073741824";
   assert(CgroupMemoryLimit("7:memory:/group\n", memory_mount, read) == 1024 * mib);

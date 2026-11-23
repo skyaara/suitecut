@@ -3,66 +3,128 @@
 // the actual CDP acknowledgment, regardless of logical context cancellation.
 std::shared_ptr<suitecut::CredentialPage> credentials_;
 void CredentialPrepare() {
-  const auto store=engine_.contexts()->CredentialReadyStore();
-  if(!store->Register(browser_->GetIdentifier(),browser_->GetHost()->GetRequestContext())){
-    Error("Native credential readiness registration failed");suitecut::browser::CloseBrowser(browser_, true);return;
+  const auto store = engine_.contexts()->CredentialReadyStore();
+  if (!store->Register(browser_->GetIdentifier(), browser_->GetHost()->GetRequestContext())) {
+    Error("Native credential readiness registration failed");
+    suitecut::browser::CloseBrowser(browser_, true);
+    return;
   }
-  credentials_=std::make_shared<suitecut::CredentialPage>(
-    [this](const std::string&session,const std::string&method,Dict params,suitecut::CredentialPage::Result done){
-      const int id=AllocateDevToolsId();
-      if(!id){done(false,"Native credential physical command id unavailable");return;}
-      network_calls_.emplace(id,NetworkCall{session,[this,done=std::move(done)](bool ok,const std::string&json){
-        if(!ok&&json=="Native network command deadline expired"){
-          if(browser_){engine_.contexts()->CredentialReadyStore()->Ready(browser_->GetIdentifier(),false);suitecut::browser::CloseBrowser(browser_, true);}
+  credentials_ = std::make_shared<suitecut::CredentialPage>(
+      [this](const std::string& session, const std::string& method, Dict params,
+             suitecut::CredentialPage::Result done) {
+        const int id = AllocateDevToolsId();
+        if (!id) {
+          done(false, "Native credential physical command id unavailable");
+          return;
         }
-        done(ok,json);
-      },Now()+30000});WakeDeadlines();
-      if(!SubmitDevTools(id,method,params,session)){
-        const auto call=network_calls_.find(id);if(call!=network_calls_.end()){auto callback=std::exchange(call->second.callback, nullptr);network_calls_.erase(call);callback(false,"Native credential physical dispatch failed");}
-      }
-    },[this,store](bool ready){
-      if(!browser_)return;
-      if(ready)store->Ready(browser_->GetIdentifier(),true);
-      else if(!store->Register(browser_->GetIdentifier(),browser_->GetHost()->GetRequestContext()))suitecut::browser::CloseBrowser(browser_, true);
-    });
+        network_calls_.emplace(
+            id, NetworkCall{session,
+                            [this, done = std::move(done)](bool ok, const std::string& json) {
+                              if (!ok && json == "Native network command deadline expired") {
+                                if (browser_) {
+                                  engine_.contexts()->CredentialReadyStore()->Ready(
+                                      browser_->GetIdentifier(), false);
+                                  suitecut::browser::CloseBrowser(browser_, true);
+                                }
+                              }
+                              done(ok, json);
+                            },
+                            Now() + 30000});
+        WakeDeadlines();
+        if (!SubmitDevTools(id, method, params, session)) {
+          const auto call = network_calls_.find(id);
+          if (call != network_calls_.end()) {
+            auto callback = std::exchange(call->second.callback, nullptr);
+            network_calls_.erase(call);
+            callback(false, "Native credential physical dispatch failed");
+          }
+        }
+      },
+      [this, store](bool ready) {
+        if (!browser_) return;
+        if (ready)
+          store->Ready(browser_->GetIdentifier(), true);
+        else if (!store->Register(browser_->GetIdentifier(),
+                                  browser_->GetHost()->GetRequestContext()))
+          suitecut::browser::CloseBrowser(browser_, true);
+      });
 }
-void CredentialStart(){
-  if(!credentials_||!browser_)return;
-  credentials_->SessionAttached("",engine_.contexts()->CredentialConfig(page_id_),[this](bool ok,const std::string&error){
-    if(!ok&&browser_){engine_.contexts()->CredentialReadyStore()->Ready(browser_->GetIdentifier(),false);Error(error.c_str());suitecut::browser::CloseBrowser(browser_, true);}
-  });
+void CredentialStart() {
+  if (!credentials_ || !browser_) return;
+  credentials_->SessionAttached("", engine_.contexts()->CredentialConfig(page_id_),
+                                [this](bool ok, const std::string& error) {
+                                  if (!ok && browser_) {
+                                    engine_.contexts()->CredentialReadyStore()->Ready(
+                                        browser_->GetIdentifier(), false);
+                                    Error(error.c_str());
+                                    suitecut::browser::CloseBrowser(browser_, true);
+                                  }
+                                });
 }
-void CredentialClose(){
-  if(browser_)engine_.contexts()->CredentialReadyStore()->Drop(browser_->GetIdentifier());
-  if(credentials_)credentials_->Clear();
+void CredentialClose() {
+  if (browser_) engine_.contexts()->CredentialReadyStore()->Drop(browser_->GetIdentifier());
+  if (credentials_) credentials_->Clear();
   credentials_.reset();
 }
-bool CredentialEvent(const std::string&method,Dict data,const std::string&session){
-  if(!method.starts_with("WebAuthn."))return false;
-  if(!credentials_||!session.empty()||!data||data->GetString("authenticatorId")!=credentials_->Authenticator(""))return true;
-  if(method!="WebAuthn.credentialAdded"&&method!="WebAuthn.credentialAsserted")return true;
-  const auto value=data->GetDictionary("credential");if(!value){Error("Native WebAuthn credential event missing credential");return true;}
-  suitecut::VirtualCredential credential;std::string error;
-  auto decode=[&](const char*name,std::string&output){
-    if(value->GetType(name)!=VTYPE_STRING)return false;
-    auto encoded=value->GetString(name).ToString();for(auto&ch:encoded){if(ch=='+')ch='-';else if(ch=='/')ch='_';}while(!encoded.empty()&&encoded.back()=='=')encoded.pop_back();
-    std::vector<unsigned char>bytes;if(!suitecut::CredentialDecodeBase64URL(encoded,bytes))return false;
-    output=suitecut::CredentialBase64URL(bytes.data(),bytes.size());return true;
-  };
-  const auto type=value->GetType("signCount");const double count=type==VTYPE_INT?value->GetInt("signCount"):type==VTYPE_DOUBLE?value->GetDouble("signCount"):-1;
-  if(value->GetType("rpId")!=VTYPE_STRING||!decode("credentialId",credential.id)||!decode("userHandle",credential.user_handle)||!decode("privateKey",credential.private_key)||!std::isfinite(count)||count<0||count>4294967295.0||std::floor(count)!=count){Error("Invalid native WebAuthn credential event");if(browser_)suitecut::browser::CloseBrowser(browser_, true);return true;}
-  credential.rp_id=value->GetString("rpId");credential.sign_count=static_cast<uint32_t>(count);
-  if(!suitecut::VirtualCredentialPublicKey(credential.private_key,credential.public_key,error)){
-    Error(error.c_str());if(browser_)suitecut::browser::CloseBrowser(browser_, true);return true;
-  }
-  if(method=="WebAuthn.credentialAdded"&&credentials_->OwnsImportEvent(session,credential))return true;
-  if(credentials_->Busy()){
-    Error("Native WebAuthn ceremony overlapped credential synchronization; concurrent ceremonies require backend support");
-    if(browser_)suitecut::browser::CloseBrowser(browser_, true);
+bool CredentialEvent(const std::string& method, Dict data, const std::string& session) {
+  if (!method.starts_with("WebAuthn.")) return false;
+  if (!credentials_ || !session.empty() || !data ||
+      data->GetString("authenticatorId") != credentials_->Authenticator(""))
+    return true;
+  if (method != "WebAuthn.credentialAdded" && method != "WebAuthn.credentialAsserted") return true;
+  const auto value = data->GetDictionary("credential");
+  if (!value) {
+    Error("Native WebAuthn credential event missing credential");
     return true;
   }
-  if(!engine_.contexts()->CredentialObserved(page_id_,credential,error)){
-    Error(error.c_str());if(browser_)suitecut::browser::CloseBrowser(browser_, true);
+  suitecut::VirtualCredential credential;
+  std::string error;
+  auto decode = [&](const char* name, std::string& output) {
+    if (value->GetType(name) != VTYPE_STRING) return false;
+    auto encoded = value->GetString(name).ToString();
+    for (auto& ch : encoded) {
+      if (ch == '+')
+        ch = '-';
+      else if (ch == '/')
+        ch = '_';
+    }
+    while (!encoded.empty() && encoded.back() == '=') encoded.pop_back();
+    std::vector<unsigned char> bytes;
+    if (!suitecut::CredentialDecodeBase64URL(encoded, bytes)) return false;
+    output = suitecut::CredentialBase64URL(bytes.data(), bytes.size());
+    return true;
+  };
+  const auto type = value->GetType("signCount");
+  const double count = type == VTYPE_INT      ? value->GetInt("signCount")
+                       : type == VTYPE_DOUBLE ? value->GetDouble("signCount")
+                                              : -1;
+  if (value->GetType("rpId") != VTYPE_STRING || !decode("credentialId", credential.id) ||
+      !decode("userHandle", credential.user_handle) ||
+      !decode("privateKey", credential.private_key) || !std::isfinite(count) || count < 0 ||
+      count > 4294967295.0 || std::floor(count) != count) {
+    Error("Invalid native WebAuthn credential event");
+    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
+    return true;
+  }
+  credential.rp_id = value->GetString("rpId");
+  credential.sign_count = static_cast<uint32_t>(count);
+  if (!suitecut::VirtualCredentialPublicKey(credential.private_key, credential.public_key, error)) {
+    Error(error.c_str());
+    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
+    return true;
+  }
+  if (method == "WebAuthn.credentialAdded" && credentials_->OwnsImportEvent(session, credential))
+    return true;
+  if (credentials_->Busy()) {
+    Error(
+        "Native WebAuthn ceremony overlapped credential synchronization; concurrent ceremonies "
+        "require backend support");
+    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
+    return true;
+  }
+  if (!engine_.contexts()->CredentialObserved(page_id_, credential, error)) {
+    Error(error.c_str());
+    if (browser_) suitecut::browser::CloseBrowser(browser_, true);
   }
   return true;
 }

@@ -21,8 +21,9 @@ class CdpMedia {
   void shutdown(CdpRuntime&, Deadline);
   void forget(const std::string& session);
   void close();
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-} // namespace suitecut::detail
+}  // namespace suitecut::detail

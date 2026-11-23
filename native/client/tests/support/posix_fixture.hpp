@@ -15,7 +15,9 @@ inline int protect_socket(int fd, bool nonblocking = false) {
   if (::fcntl(fd, F_SETFD, FD_CLOEXEC) < 0 || flags < 0 ||
       ::fcntl(fd, F_SETFL, nonblocking ? flags | O_NONBLOCK : flags & ~O_NONBLOCK) < 0) {
     const int error = errno;
-    ::close(fd); errno = error; return -1;
+    ::close(fd);
+    errno = error;
+    return -1;
   }
   return fd;
 }
@@ -23,7 +25,10 @@ inline int socket() { return protect_socket(::socket(AF_INET, SOCK_STREAM, 0), t
 inline int accept(int listener, bool nonblocking = false) {
   pollfd ready{listener, POLLIN, 0};
   const int available = ::poll(&ready, 1, 100);
-  if (available <= 0) { if (!available) errno = EAGAIN; return -1; }
+  if (available <= 0) {
+    if (!available) errno = EAGAIN;
+    return -1;
+  }
   return protect_socket(::accept(listener, nullptr, nullptr), nonblocking);
 }
-}
+}  // namespace suitecut_test

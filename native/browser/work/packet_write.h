@@ -18,13 +18,11 @@ namespace suitecut {
 // wire format without concatenating payloads or polling before writable output.
 // Only actual kernel writes advance the publication receipt; partial writes and
 // cancellation retain the same physical byte accounting as individual writes.
-inline bool WriteNativePacket(int output, std::string_view header,
-                              std::span<const uint8_t> payload,
-                              const std::atomic<bool>& stopping,
-                              AcceptedPacketReceipt& receipt) {
+inline bool WriteNativePacket(int output, std::string_view header, std::span<const uint8_t> payload,
+                              const std::atomic<bool>& stopping, AcceptedPacketReceipt& receipt) {
   const auto size = static_cast<uint32_t>(header.size());
-  std::array<uint8_t, 4> prefix{uint8_t(size), uint8_t(size >> 8),
-                              uint8_t(size >> 16), uint8_t(size >> 24)};
+  std::array<uint8_t, 4> prefix{uint8_t(size), uint8_t(size >> 8), uint8_t(size >> 16),
+                                uint8_t(size >> 24)};
   std::array<iovec, 3> segments{{
       {prefix.data(), prefix.size()},
       {const_cast<char*>(header.data()), header.size()},
@@ -32,10 +30,13 @@ inline bool WriteNativePacket(int output, std::string_view header,
   }};
   size_t first = 0;
   while (first < segments.size()) {
-    if (segments[first].iov_len == 0) { ++first; continue; }
+    if (segments[first].iov_len == 0) {
+      ++first;
+      continue;
+    }
     if (stopping.load(std::memory_order_relaxed)) break;
-    const auto written = writev(output, segments.data() + first,
-                                static_cast<int>(segments.size() - first));
+    const auto written =
+        writev(output, segments.data() + first, static_cast<int>(segments.size() - first));
     if (written < 0) {
       if (errno == EINTR) continue;
       if (errno != EAGAIN && errno != EWOULDBLOCK) break;

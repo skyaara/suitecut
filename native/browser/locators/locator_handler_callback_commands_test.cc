@@ -25,11 +25,15 @@ int main() {
   assert(NativeLocatorHandlerCallbackCommandAllowed("recoverPage", ""));
   assert(!NativeLocatorHandlerCallbackCommandAllowed("recoverPage", "futureAction"));
   assert(!NativeLocatorHandlerCallbackCommandAllowed("dialog", "subscribe"));
-  for (const std::string_view action : {"fetch", "registerRoute", "removeRoute", "continue", "abort", "fulfill", "fallback", "bodyChunk", "resetBody", "setOffline"})
+  for (const std::string_view action :
+       {"fetch", "registerRoute", "removeRoute", "continue", "abort", "fulfill", "fallback",
+        "bodyChunk", "resetBody", "setOffline"})
     assert(NativeLocatorHandlerCallbackCommandAllowed("network", action));
-  for (const std::string_view action : {"setInputFiles", "uploadBegin", "uploadAppend", "uploadAbort"})
+  for (const std::string_view action :
+       {"setInputFiles", "uploadBegin", "uploadAppend", "uploadAbort"})
     assert(NativeLocatorHandlerCallbackCommandAllowed("form", action));
-  for (const std::string_view command : {"http", "artifact", "har", "recording", "streaming", "coverage", "debugger", "drag"})
+  for (const std::string_view command :
+       {"http", "artifact", "har", "recording", "streaming", "coverage", "debugger", "drag"})
     assert(!NativeLocatorHandlerCallbackCommandAllowed(command, ""));
   // Fail closed for missing/unknown actions, prefixes and embedded wire bytes.
   assert(!NativeLocatorHandlerCallbackCommandAllowed("input", ""));

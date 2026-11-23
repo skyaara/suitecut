@@ -79,7 +79,8 @@ struct StreamPipelineResult {
 class StreamPipeline {
  public:
   using Completion = std::function<void(const StreamPipelineResult&)>;
-  explicit StreamPipeline(StreamPipelineOptions options, Completion completed = {}, Completion ready = {});
+  explicit StreamPipeline(StreamPipelineOptions options, Completion completed = {},
+                          Completion ready = {});
   ~StreamPipeline();
   StreamPipeline(const StreamPipeline&) = delete;
   StreamPipeline& operator=(const StreamPipeline&) = delete;
@@ -97,6 +98,7 @@ class StreamPipeline {
   bool Settled() const;
   StreamPipelineResult Snapshot() const;
   void Join();
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;

@@ -1,0 +1,8 @@
+# One style for all native code: the engine, the client SDK and shared headers.
+# Format with: git ls-files 'native/*.c' 'native/*.cc' 'native/*.cpp' 'native/*.h' \
+#   'native/*.hpp' 'native/*.mm' 'native/*.inc' | xargs clang-format -i
+BasedOnStyle: Google
+Standard: c++20
+ColumnLimit: 100
+# Include order is meaningful in places (CEF and platform headers); keep it.
+SortIncludes: Never

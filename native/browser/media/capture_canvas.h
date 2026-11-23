@@ -13,33 +13,35 @@ struct SuiteCutCaptureRect {
 };
 
 // The published rectangle and actual fitted pixels share exactly this rounding.
-inline bool SuiteCutCaptureContentRect(int source_width, int source_height,
-                                      int canvas_width, int canvas_height,
-                                      SuiteCutCaptureRect& rect) {
+inline bool SuiteCutCaptureContentRect(int source_width, int source_height, int canvas_width,
+                                       int canvas_height, SuiteCutCaptureRect& rect) {
   // No suitecut size cap. libyuv takes an int stride, so a row of BGRA must fit
   // an int and the whole image must fit size_t.
   const auto valid = [](int width, int height) {
     return width >= 1 && height >= 1 && width <= INT_MAX / 4 &&
-        static_cast<size_t>(width) * 4 <= SIZE_MAX / static_cast<size_t>(height);
+           static_cast<size_t>(width) * 4 <= SIZE_MAX / static_cast<size_t>(height);
   };
   if (!valid(source_width, source_height) || !valid(canvas_width, canvas_height)) return false;
   const double fit = std::min(static_cast<double>(canvas_width) / source_width,
                               static_cast<double>(canvas_height) / source_height);
   const int width = std::clamp(static_cast<int>(std::round(source_width * fit)), 1, canvas_width);
-  const int height = std::clamp(static_cast<int>(std::round(source_height * fit)), 1, canvas_height);
+  const int height =
+      std::clamp(static_cast<int>(std::round(source_height * fit)), 1, canvas_height);
   rect = {(canvas_width - width) / 2, (canvas_height - height) / 2, width, height};
   return true;
 }
 
 // Keep recording dimensions stable when the CSS viewport changes. Bounds are
 // checked before any multiplication; source viewports may be odd or one pixel.
-inline bool SuiteCutFitCapture(const std::vector<uint8_t>& pixels, int source_width, int source_height,
-                              int canvas_width, int canvas_height, std::vector<uint8_t>& canvas,
-                              SuiteCutCaptureRect* content_rect = nullptr) {
+inline bool SuiteCutFitCapture(const std::vector<uint8_t>& pixels, int source_width,
+                               int source_height, int canvas_width, int canvas_height,
+                               std::vector<uint8_t>& canvas,
+                               SuiteCutCaptureRect* content_rect = nullptr) {
   SuiteCutCaptureRect rect;
   if (&pixels == &canvas ||
       !SuiteCutCaptureContentRect(source_width, source_height, canvas_width, canvas_height, rect) ||
-      pixels.size() != static_cast<size_t>(source_width) * source_height * 4) return false;
+      pixels.size() != static_cast<size_t>(source_width) * source_height * 4)
+    return false;
   if (source_width == canvas_width && source_height == canvas_height) {
     canvas = pixels;
     if (content_rect) *content_rect = rect;
@@ -54,27 +56,34 @@ inline bool SuiteCutFitCapture(const std::vector<uint8_t>& pixels, int source_wi
     const int right_start = content_row ? rect.x + rect.width : canvas_width;
     const size_t row = static_cast<size_t>(y) * canvas_width * 4;
     for (int x = 0; x < left_end; ++x) canvas[row + static_cast<size_t>(x) * 4 + 3] = 255;
-    for (int x = right_start; x < canvas_width; ++x) canvas[row + static_cast<size_t>(x) * 4 + 3] = 255;
+    for (int x = right_start; x < canvas_width; ++x)
+      canvas[row + static_cast<size_t>(x) * 4 + 3] = 255;
   }
   if (libyuv::ARGBScale(pixels.data(), source_width * 4, source_width, source_height,
-      canvas.data() + (static_cast<size_t>(rect.y) * canvas_width + rect.x) * 4, canvas_width * 4,
-      rect.width, rect.height, libyuv::kFilterBilinear) != 0) return false;
+                        canvas.data() + (static_cast<size_t>(rect.y) * canvas_width + rect.x) * 4,
+                        canvas_width * 4, rect.width, rect.height, libyuv::kFilterBilinear) != 0)
+    return false;
   if (content_rect) *content_rect = rect;
   return true;
 }
 
 inline bool SuiteCutFitCapture(std::vector<uint8_t>& pixels, int source_width, int source_height,
-                              int canvas_width, int canvas_height, SuiteCutCaptureRect* content_rect = nullptr) {
+                               int canvas_width, int canvas_height,
+                               SuiteCutCaptureRect* content_rect = nullptr) {
   // Preserve the zero-allocation identity path used by existing callers.
   if (source_width == canvas_width && source_height == canvas_height) {
     SuiteCutCaptureRect rect;
-    if (!SuiteCutCaptureContentRect(source_width, source_height, canvas_width, canvas_height, rect) ||
-        pixels.size() != static_cast<size_t>(source_width) * source_height * 4) return false;
+    if (!SuiteCutCaptureContentRect(source_width, source_height, canvas_width, canvas_height,
+                                    rect) ||
+        pixels.size() != static_cast<size_t>(source_width) * source_height * 4)
+      return false;
     if (content_rect) *content_rect = rect;
     return true;
   }
   std::vector<uint8_t> canvas;
-  if (!SuiteCutFitCapture(pixels, source_width, source_height, canvas_width, canvas_height, canvas, content_rect)) return false;
+  if (!SuiteCutFitCapture(pixels, source_width, source_height, canvas_width, canvas_height, canvas,
+                          content_rect))
+    return false;
   pixels.swap(canvas);
   return true;
 }

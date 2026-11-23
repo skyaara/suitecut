@@ -17,8 +17,8 @@ auto ScanReply(std::string_view text, int& id, std::string& session, std::string
       return false;
   size_t at = 0;
   const auto space = [&] {
-    while (at < text.size() && (text[at] == ' ' || text[at] == '\n' || text[at] == '\r' ||
-                                text[at] == '\t'))
+    while (at < text.size() &&
+           (text[at] == ' ' || text[at] == '\n' || text[at] == '\r' || text[at] == '\t'))
       ++at;
   };
   // Skips one JSON value; strings and nesting are tracked, literals run to a delimiter.
@@ -107,8 +107,7 @@ auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* messag
     int id = 0;
     std::string session;
     std::string_view result;
-    if (ScanReply(std::string_view(static_cast<const char*>(message), size), id, session,
-                  result) &&
+    if (ScanReply(std::string_view(static_cast<const char*>(message), size), id, session, result) &&
         raw_replies_.erase(id)) {
       ToolResult(id, true, result.data(), result.size(), session);
       return true;
@@ -221,12 +220,19 @@ auto Source::OnDevToolsMessage(CefRefPtr<CefBrowser> browser, const void* messag
     if (!success && session.empty() && result && result->GetType("code") == VTYPE_INT &&
         result->GetInt("code") == -32001) {
       std::string expected;
-      if (const auto call = devtools_.find(id); call != devtools_.end()) expected = call->second.session;
-      else if (const auto call = network_calls_.find(id); call != network_calls_.end()) expected = call->second.session;
-      else if (const auto call = binding_calls_.find(id); call != binding_calls_.end()) expected = call->second.session;
-      else if (const auto call = worker_calls_.find(id); call != worker_calls_.end()) expected = call->second.session;
-      else if (const auto call = native_trace_protocol_.find(id); call != native_trace_protocol_.end()) expected = call->second.session;
-      if (!expected.empty() && !SelectorWaitRejectedSession(id, success, json.data(), json.size(), session)) {
+      if (const auto call = devtools_.find(id); call != devtools_.end())
+        expected = call->second.session;
+      else if (const auto call = network_calls_.find(id); call != network_calls_.end())
+        expected = call->second.session;
+      else if (const auto call = binding_calls_.find(id); call != binding_calls_.end())
+        expected = call->second.session;
+      else if (const auto call = worker_calls_.find(id); call != worker_calls_.end())
+        expected = call->second.session;
+      else if (const auto call = native_trace_protocol_.find(id);
+               call != native_trace_protocol_.end())
+        expected = call->second.session;
+      if (!expected.empty() &&
+          !SelectorWaitRejectedSession(id, success, json.data(), json.size(), session)) {
         Degraded("Chromium rejected a command for a detached session");
         NativeTargetSessionDetached(expected);
         routed = expected;
@@ -324,13 +330,11 @@ auto Source::ToolResult(int id, bool success, const void* result, size_t size,
   }
   if (element_states_ &&
       element_states_->Complete(
-          id, success, size ? std::string(static_cast<const char*>(result), size) : "{}",
-          session))
+          id, success, size ? std::string(static_cast<const char*>(result), size) : "{}", session))
     return;
   if (page_errors_ &&
       page_errors_->Complete(
-          id, success, size ? std::string(static_cast<const char*>(result), size) : "{}",
-          session))
+          id, success, size ? std::string(static_cast<const char*>(result), size) : "{}", session))
     return;
   if (NativeTraceProtocolResult(id, success, result, size, session)) return;
   if (WorkerToolResult(id, success, result, size, session)) return;
@@ -634,10 +638,10 @@ auto Source::ShareScripts(const std::string& method, Dict params, const std::str
       // command that names it.
       auto install = CefDictionaryValue::Create();
       install->SetInt("contextId", context);
-      install->SetString("expression",
-                         "Object.prototype.hasOwnProperty.call(globalThis,'" +
-                             std::string(script.name) + "')||Object.defineProperty(globalThis,'" +
-                             script.name + "',{value:(" + std::string(script.source) + ")});0");
+      install->SetString("expression", "Object.prototype.hasOwnProperty.call(globalThis,'" +
+                                           std::string(script.name) +
+                                           "')||Object.defineProperty(globalThis,'" + script.name +
+                                           "',{value:(" + std::string(script.source) + ")});0");
       sharing_scripts_ = true;
       const bool sent = SendDevTools("Runtime.evaluate", install, session) != 0;
       sharing_scripts_ = false;
@@ -825,7 +829,8 @@ auto Source::DevTools(int owner, const std::string& method, Dict params, DevTool
         (params && params->GetType("objectGroup") == VTYPE_STRING &&
          !selector_waits_->Group(owner, params->GetString("objectGroup").ToString(),
                                  wait_session))) {
-      Complete(owner, false, "Native selector wait object group is invalid or the wait is no longer active");
+      Complete(owner, false,
+               "Native selector wait object group is invalid or the wait is no longer active");
       return;
     }
     // This family transfers the duplicate generic eval tracker before the

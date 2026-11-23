@@ -17,13 +17,13 @@ class BidiHar {
   Json command(BidiRuntime&, BidiPage&, const Json&, Deadline);
   void forget(const std::string& owner_context);
   void cleanup(BidiRuntime&, Deadline);
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
 // Protocol conversion is separate so synthetic timing/redirect/binary cases
 // can be tested without launching a browser.
-Json bidi_har_entry(const Json& request_event, const Json& response_event,
-                    const Json& request_body, const Json& response_body,
-                    const std::string& body_error = {});
-}
+Json bidi_har_entry(const Json& request_event, const Json& response_event, const Json& request_body,
+                    const Json& response_body, const std::string& body_error = {});
+}  // namespace suitecut::detail

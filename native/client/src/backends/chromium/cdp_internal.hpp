@@ -24,7 +24,8 @@ struct CdpPage {
   std::string target, session, frame_id, isolated_loader, isolated_frame;
   std::string download_directory, download_frame;
   std::map<std::string, Json> downloads;
-  std::uint64_t download_cursor = 0; // Browser.download* events up to here are applied to downloads.
+  std::uint64_t download_cursor =
+      0;  // Browser.download* events up to here are applied to downloads.
   std::map<std::string, std::string> frame_sessions;
   Json emulated_media = Json::object{};
   int isolated_context = 0;
@@ -39,8 +40,8 @@ struct CdpRuntime {
   std::unique_ptr<CdpConnection> wire;
   std::shared_ptr<CdpNetwork> network;
   std::shared_ptr<CdpMedia> media;
-  std::map<int,CdpPage> pages;
-  std::map<int,std::string> contexts;
+  std::map<int, CdpPage> pages;
+  std::map<int, std::string> contexts;
   int next_page = 1, next_context = 0;
   Json call(CdpPage&, const std::string&, Json, Deadline);
   // Returns the complete Runtime.evaluate result (including exceptionDetails).
@@ -48,12 +49,13 @@ struct CdpRuntime {
   Json value(CdpPage&, const std::string&, Deadline, bool isolated = false);
   bool network_idle(CdpPage&, Deadline) const;
   // Browser-level events (see CdpNetwork::events): method prefix, after a consumer's own cursor.
-  Json browser_events(const std::string& method_prefix, std::uint64_t after_sequence=0) const;
+  Json browser_events(const std::string& method_prefix, std::uint64_t after_sequence = 0) const;
   std::uint64_t browser_sequence() const;
   void release_drags(const std::string& session, std::uint64_t through) const;
-  void release_downloads(const std::vector<std::string>& guids, const std::string& frame = {}) const;
+  void release_downloads(const std::vector<std::string>& guids,
+                         const std::string& frame = {}) const;
 };
 Json cdp_dom_command(CdpRuntime&, CdpPage&, const Json&, Deadline);
 Json cdp_input_command(CdpRuntime&, CdpPage&, const Json&, Deadline);
 Json cdp_page_command(CdpRuntime&, CdpPage&, const Json&, Deadline);
-} // namespace suitecut::detail
+}  // namespace suitecut::detail

@@ -9,7 +9,9 @@
 inline constexpr char kSuiteCutDOMDriverStateKey[] = "__suitecutNativeChromeDOM1";
 // Protocol-independent authored DOM helpers; install only in a private realm.
 inline std::string SuiteCutDOMDriverSource() {
-  return std::string("(()=>{const query=(")+kSuiteCutDomQuery+");const snapshot=("+kSuiteCutDOMSemanticSnapshot+");const jsonFormat=("+kSuiteCutNativeAriaJSON+");const yamlFormat=("+kSuiteCutNativeAriaFormatter+R"JS();
+  return std::string("(()=>{const query=(") + kSuiteCutDomQuery + ");const snapshot=(" +
+         kSuiteCutDOMSemanticSnapshot + ");const jsonFormat=(" + kSuiteCutNativeAriaJSON +
+         ");const yamlFormat=(" + kSuiteCutNativeAriaFormatter + R"JS();
   let owner=document, generation=0, refs=new Map(), identities=new WeakMap(), nextIdentity=0, dragSource=null;
   const nonce=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
   let prefix=nonce();

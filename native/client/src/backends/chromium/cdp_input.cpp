@@ -11,9 +11,7 @@
 namespace suitecut::detail {
 namespace {
 using namespace std::chrono_literals;
-void check_time(Deadline deadline) {
-  cdp_check_active(deadline);
-}
+void check_time(Deadline deadline) { cdp_check_active(deadline); }
 int integer(const Json& input, const char* name, int fallback, int low, int high) {
   if (!input.contains(name)) return fallback;
   const auto& value = input.at(name);
@@ -27,14 +25,14 @@ double coordinate(const Json& input, const char* name, double fallback, bool req
     return fallback;
   }
   const double value = input.at(name).as_double();
-  if (!std::isfinite(value))
-    throw std::invalid_argument(std::string("Invalid input ") + name);
+  if (!std::isfinite(value)) throw std::invalid_argument(std::string("Invalid input ") + name);
   return value;
 }
 void budget(Deadline deadline, int delay, std::size_t count = 1) {
   check_time(deadline);
-  const auto remaining = std::chrono::duration<long double, std::milli>(
-      deadline - std::chrono::steady_clock::now()).count();
+  const auto remaining =
+      std::chrono::duration<long double, std::milli>(deadline - std::chrono::steady_clock::now())
+          .count();
   if (static_cast<long double>(delay) * count >= remaining)
     throw std::runtime_error("Input delay exceeds command deadline");
 }
@@ -53,10 +51,17 @@ std::vector<std::string> scalars(const std::string& text) {
   std::vector<std::string> result;
   for (std::size_t i = 0; i < text.size();) {
     const auto first = static_cast<unsigned char>(text[i]);
-    const std::size_t length = first < 0x80 ? 1 : first >= 0xc2 && first <= 0xdf ? 2 :
-        first >= 0xe0 && first <= 0xef ? 3 : first >= 0xf0 && first <= 0xf4 ? 4 : 0;
-    if (!length || length > text.size() - i) throw std::invalid_argument("Input text is not valid UTF-8");
-    std::uint32_t codepoint = first & (length == 1 ? 0x7f : length == 2 ? 0x1f : length == 3 ? 0x0f : 7);
+    const std::size_t length = first < 0x80                     ? 1
+                               : first >= 0xc2 && first <= 0xdf ? 2
+                               : first >= 0xe0 && first <= 0xef ? 3
+                               : first >= 0xf0 && first <= 0xf4 ? 4
+                                                                : 0;
+    if (!length || length > text.size() - i)
+      throw std::invalid_argument("Input text is not valid UTF-8");
+    std::uint32_t codepoint = first & (length == 1   ? 0x7f
+                                       : length == 2 ? 0x1f
+                                       : length == 3 ? 0x0f
+                                                     : 7);
     for (std::size_t j = 1; j < length; ++j) {
       const auto next = static_cast<unsigned char>(text[i + j]);
       if ((next & 0xc0) != 0x80) throw std::invalid_argument("Input text is not valid UTF-8");
@@ -91,25 +96,39 @@ std::string normalize(std::string key) {
 Key key_for(std::string name, int modifiers) {
   name = normalize(std::move(name));
   if (name == "Alt" || name == "AltLeft") return {"Alt", "AltLeft", "", "", 18, 1, 1};
-  if (name == "Control" || name == "ControlLeft") return {"Control", "ControlLeft", "", "", 17, 2, 1};
+  if (name == "Control" || name == "ControlLeft")
+    return {"Control", "ControlLeft", "", "", 17, 2, 1};
   if (name == "Meta" || name == "MetaLeft") return {"Meta", "MetaLeft", "", "", 91, 4, 1};
   if (name == "Shift" || name == "ShiftLeft") return {"Shift", "ShiftLeft", "", "", 16, 8, 1};
   if (name == "AltRight") return {"Alt", name, "", "", 18, 1, 2};
   if (name == "ControlRight") return {"Control", name, "", "", 17, 2, 2};
   if (name == "MetaRight") return {"Meta", name, "", "", 92, 4, 2};
   if (name == "ShiftRight") return {"Shift", name, "", "", 16, 8, 2};
-  struct Special { const char* name; const char* code; int vk; const char* text; };
-  static const Special special[] = {
-      {"Enter", "Enter", 13, "\r"}, {"Tab", "Tab", 9, ""},
-      {"Backspace", "Backspace", 8, ""}, {"Delete", "Delete", 46, ""},
-      {"Escape", "Escape", 27, ""}, {"ArrowLeft", "ArrowLeft", 37, ""},
-      {"ArrowUp", "ArrowUp", 38, ""}, {"ArrowRight", "ArrowRight", 39, ""},
-      {"ArrowDown", "ArrowDown", 40, ""}, {"Home", "Home", 36, ""},
-      {"End", "End", 35, ""}, {"PageUp", "PageUp", 33, ""},
-      {"PageDown", "PageDown", 34, ""}, {"Insert", "Insert", 45, ""},
-      {"CapsLock", "CapsLock", 20, ""}, {"NumLock", "NumLock", 144, ""},
-      {"ScrollLock", "ScrollLock", 145, ""}, {"Pause", "Pause", 19, ""},
-      {"PrintScreen", "PrintScreen", 44, ""}};
+  struct Special {
+    const char* name;
+    const char* code;
+    int vk;
+    const char* text;
+  };
+  static const Special special[] = {{"Enter", "Enter", 13, "\r"},
+                                    {"Tab", "Tab", 9, ""},
+                                    {"Backspace", "Backspace", 8, ""},
+                                    {"Delete", "Delete", 46, ""},
+                                    {"Escape", "Escape", 27, ""},
+                                    {"ArrowLeft", "ArrowLeft", 37, ""},
+                                    {"ArrowUp", "ArrowUp", 38, ""},
+                                    {"ArrowRight", "ArrowRight", 39, ""},
+                                    {"ArrowDown", "ArrowDown", 40, ""},
+                                    {"Home", "Home", 36, ""},
+                                    {"End", "End", 35, ""},
+                                    {"PageUp", "PageUp", 33, ""},
+                                    {"PageDown", "PageDown", 34, ""},
+                                    {"Insert", "Insert", 45, ""},
+                                    {"CapsLock", "CapsLock", 20, ""},
+                                    {"NumLock", "NumLock", 144, ""},
+                                    {"ScrollLock", "ScrollLock", 145, ""},
+                                    {"Pause", "Pause", 19, ""},
+                                    {"PrintScreen", "PrintScreen", 44, ""}};
   if (name == "Return" || name == "\n" || name == "\r") name = "Enter";
   if (name == "\t") name = "Tab";
   for (const auto& value : special)
@@ -133,12 +152,18 @@ Key key_for(std::string name, int modifiers) {
     value.vk = character;
     if (modifiers & 8) value.key = value.text = std::string(1, ")!@#$%^&*("[character - '0']);
   } else {
-    struct Punctuation { char plain, shifted; const char* code; int vk; };
+    struct Punctuation {
+      char plain, shifted;
+      const char* code;
+      int vk;
+    };
     static const Punctuation punctuation[] = {
-        {' ', ' ', "Space", 32}, {';', ':', "Semicolon", 186}, {'=', '+', "Equal", 187},
-        {',', '<', "Comma", 188}, {'-', '_', "Minus", 189}, {'.', '>', "Period", 190},
-        {'/', '?', "Slash", 191}, {'`', '~', "Backquote", 192}, {'[', '{', "BracketLeft", 219},
-        {'\\', '|', "Backslash", 220}, {']', '}', "BracketRight", 221}, {'\'', '"', "Quote", 222}};
+        {' ', ' ', "Space", 32},         {';', ':', "Semicolon", 186},
+        {'=', '+', "Equal", 187},        {',', '<', "Comma", 188},
+        {'-', '_', "Minus", 189},        {'.', '>', "Period", 190},
+        {'/', '?', "Slash", 191},        {'`', '~', "Backquote", 192},
+        {'[', '{', "BracketLeft", 219},  {'\\', '|', "Backslash", 220},
+        {']', '}', "BracketRight", 221}, {'\'', '"', "Quote", 222}};
     for (const auto& entry : punctuation) {
       if (character != entry.plain && character != entry.shifted) continue;
       value.code = entry.code;
@@ -148,7 +173,10 @@ Key key_for(std::string name, int modifiers) {
     }
     const std::string shifted = ")!@#$%^&*(";
     const auto digit = shifted.find(character);
-    if (digit != std::string::npos) { value.code = "Digit" + std::to_string(digit); value.vk = '0' + digit; }
+    if (digit != std::string::npos) {
+      value.code = "Digit" + std::to_string(digit);
+      value.vk = '0' + digit;
+    }
   }
   return value;
 }
@@ -158,7 +186,10 @@ std::vector<std::string> combination(const std::string& key) {
   std::vector<std::string> result;
   std::size_t offset = 0;
   while (true) {
-    if (key.substr(offset) == "+") { result.push_back("+"); break; }
+    if (key.substr(offset) == "+") {
+      result.push_back("+");
+      break;
+    }
     const auto end = key.find('+', offset);
     result.push_back(key.substr(offset, end == std::string::npos ? end : end - offset));
     if (result.back().empty()) throw std::invalid_argument("Invalid keyboard combination");
@@ -167,13 +198,21 @@ std::vector<std::string> combination(const std::string& key) {
   }
   return result;
 }
-void dispatch_key(CdpRuntime& runtime, CdpPage& page, const Key& key, bool down, Deadline deadline) {
+void dispatch_key(CdpRuntime& runtime, CdpPage& page, const Key& key, bool down,
+                  Deadline deadline) {
   check_time(deadline);
   const bool text = down && !key.text.empty() && !(page.modifiers & (1 | 2 | 4));
   Json params{{"type", down ? (text ? "keyDown" : "rawKeyDown") : "keyUp"},
-      {"key", key.key}, {"code", key.code}, {"windowsVirtualKeyCode", key.vk},
-      {"nativeVirtualKeyCode", key.vk}, {"modifiers", page.modifiers}, {"location", key.location}};
-  if (text) { params["text"] = key.text; params["unmodifiedText"] = key.unmodified; }
+              {"key", key.key},
+              {"code", key.code},
+              {"windowsVirtualKeyCode", key.vk},
+              {"nativeVirtualKeyCode", key.vk},
+              {"modifiers", page.modifiers},
+              {"location", key.location}};
+  if (text) {
+    params["text"] = key.text;
+    params["unmodifiedText"] = key.unmodified;
+  }
 #if defined(__APPLE__)
   // CDP does not run Cocoa's menu/key-binding dispatch for Command+A. Send
   // Chromium's native editing command with the genuine key-down event.
@@ -208,10 +247,16 @@ void keyboard_key(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadlin
       CdpCleanupScope cleanup_scope;
       const auto cleanup = std::chrono::steady_clock::now() + 150ms;
       page.modifiers &= ~key.bit;
-      try { dispatch_key(runtime, page, key, false, cleanup); } catch (...) {}
+      try {
+        dispatch_key(runtime, page, key, false, cleanup);
+      } catch (...) {
+      }
       for (auto it = prefixes.rbegin(); it != prefixes.rend(); ++it) {
         page.modifiers &= ~it->bit;
-        try { dispatch_key(runtime, page, *it, false, cleanup); } catch (...) {}
+        try {
+          dispatch_key(runtime, page, *it, false, cleanup);
+        } catch (...) {
+        }
       }
       throw;
     }
@@ -223,10 +268,18 @@ void keyboard_key(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadlin
   auto release = [&](Deadline end, bool best_effort) {
     auto release_one = [&](const Key& entry) {
       page.modifiers &= ~entry.bit;
-      if (best_effort) { try { dispatch_key(runtime, page, entry, false, end); } catch (...) {} }
-      else dispatch_key(runtime, page, entry, false, end);
+      if (best_effort) {
+        try {
+          dispatch_key(runtime, page, entry, false, end);
+        } catch (...) {
+        }
+      } else
+        dispatch_key(runtime, page, entry, false, end);
     };
-    if (key_held) { release_one(key); key_held = false; }
+    if (key_held) {
+      release_one(key);
+      key_held = false;
+    }
     for (auto it = held.rbegin(); it != held.rend(); ++it) release_one(*it);
     held.clear();
     page.modifiers = original;
@@ -259,20 +312,27 @@ int button_mask(const std::string& button) {
   if (button == "middle") return 4;
   throw std::invalid_argument("Unsupported mouse button: " + button);
 }
-void dispatch_mouse(CdpRuntime& runtime, CdpPage& page, const char* type,
-                    const std::string& button, int count, Deadline deadline,
-                    double dx = 0, double dy = 0) {
+void dispatch_mouse(CdpRuntime& runtime, CdpPage& page, const char* type, const std::string& button,
+                    int count, Deadline deadline, double dx = 0, double dy = 0) {
   check_time(deadline);
-  Json params{{"type", type}, {"x", page.mouse_x}, {"y", page.mouse_y},
-      {"button", button}, {"buttons", page.mouse_buttons}, {"modifiers", page.modifiers}};
+  Json params{{"type", type},
+              {"x", page.mouse_x},
+              {"y", page.mouse_y},
+              {"button", button},
+              {"buttons", page.mouse_buttons},
+              {"modifiers", page.modifiers}};
   if (count) params["clickCount"] = count;
-  if (std::string(type) == "mouseWheel") { params["deltaX"] = dx; params["deltaY"] = dy; }
+  if (std::string(type) == "mouseWheel") {
+    params["deltaX"] = dx;
+    params["deltaY"] = dy;
+  }
   runtime.call(page, "Input.dispatchMouseEvent", std::move(params), deadline);
 }
 void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadline) {
   const auto& action = input.at("action").as_string();
   if (action != "move" && action != "down" && action != "up" && action != "click" &&
-      action != "dblclick" && action != "wheel") throw std::invalid_argument("Unsupported mouse action: " + action);
+      action != "dblclick" && action != "wheel")
+    throw std::invalid_argument("Unsupported mouse action: " + action);
   if (input.contains("backend") && input.at("backend").as_string() != "devtools")
     throw std::invalid_argument("External Chrome input requires the devtools backend");
   const auto button = input.contains("button") ? input.at("button").as_string() : "left";
@@ -280,8 +340,10 @@ void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadl
   const int count = integer(input, "clickCount", action == "dblclick" ? 2 : 1, 1, INT_MAX);
   const int delay = integer(input, "delay", 0, 0, 120000);
   const int steps = integer(input, "steps", 1, 1, INT_MAX);
-  const double x = coordinate(input, "x", page.mouse_x, action == "move" || action == "click" || action == "dblclick");
-  const double y = coordinate(input, "y", page.mouse_y, action == "move" || action == "click" || action == "dblclick");
+  const double x = coordinate(input, "x", page.mouse_x,
+                              action == "move" || action == "click" || action == "dblclick");
+  const double y = coordinate(input, "y", page.mouse_y,
+                              action == "move" || action == "click" || action == "dblclick");
   const double dx = coordinate(input, "deltaX", 0, action == "wheel");
   const double dy = coordinate(input, "deltaY", 0, action == "wheel");
   budget(deadline, action == "click" || action == "dblclick" ? delay : 0, count);
@@ -292,31 +354,45 @@ void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadl
       page.mouse_y = start_y + (y - start_y) * step / steps;
       // CDP needs the held button identity as well as the buttons bitmask
       // during a move, so Chromium can admit its native drag gesture.
-      const auto held_button = page.mouse_buttons & 1 ? "left" : page.mouse_buttons & 2 ? "right" : page.mouse_buttons & 4 ? "middle" : "none";
+      const auto held_button = page.mouse_buttons & 1   ? "left"
+                               : page.mouse_buttons & 2 ? "right"
+                               : page.mouse_buttons & 4 ? "middle"
+                                                        : "none";
       dispatch_mouse(runtime, page, "mouseMoved", held_button, 0, deadline);
     }
     return;
   }
-  page.mouse_x = x; page.mouse_y = y;
-  if (action == "wheel") { dispatch_mouse(runtime, page, "mouseWheel", "none", 0, deadline, dx, dy); return; }
+  page.mouse_x = x;
+  page.mouse_y = y;
+  if (action == "wheel") {
+    dispatch_mouse(runtime, page, "mouseWheel", "none", 0, deadline, dx, dy);
+    return;
+  }
   if (action == "down" || action == "up") {
     const int previous_buttons = page.mouse_buttons;
-    if (action == "down") page.mouse_buttons |= bit;
-    else page.mouse_buttons &= ~bit;
+    if (action == "down")
+      page.mouse_buttons |= bit;
+    else
+      page.mouse_buttons &= ~bit;
     try {
-      dispatch_mouse(runtime, page, action == "down" ? "mousePressed" : "mouseReleased", button, count, deadline);
+      dispatch_mouse(runtime, page, action == "down" ? "mousePressed" : "mouseReleased", button,
+                     count, deadline);
     } catch (...) {
       CdpCleanupScope cleanup_scope;
       if (action == "up" || !(previous_buttons & bit)) {
         page.mouse_buttons &= ~bit;
-        try { dispatch_mouse(runtime, page, "mouseReleased", button, count,
-                             std::chrono::steady_clock::now() + 150ms); } catch (...) {}
+        try {
+          dispatch_mouse(runtime, page, "mouseReleased", button, count,
+                         std::chrono::steady_clock::now() + 150ms);
+        } catch (...) {
+        }
       }
       throw;
     }
     return;
   }
-  if (page.mouse_buttons & bit) throw std::invalid_argument("Cannot click an already held mouse button");
+  if (page.mouse_buttons & bit)
+    throw std::invalid_argument("Cannot click an already held mouse button");
   dispatch_mouse(runtime, page, "mouseMoved", "none", 0, deadline);
   bool held = false;
   int current_click = 1;
@@ -335,34 +411,43 @@ void mouse(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadl
     CdpCleanupScope cleanup_scope;
     page.mouse_buttons &= ~bit;
     if (held) {
-      try { dispatch_mouse(runtime, page, "mouseReleased", button, current_click,
-                           std::chrono::steady_clock::now() + 150ms); } catch (...) {}
+      try {
+        dispatch_mouse(runtime, page, "mouseReleased", button, current_click,
+                       std::chrono::steady_clock::now() + 150ms);
+      } catch (...) {
+      }
     }
     throw;
   }
 }
-} // namespace
+}  // namespace
 
 Json cdp_input_command(CdpRuntime& runtime, CdpPage& page, const Json& input, Deadline deadline) {
   check_time(deadline);
   const auto& kind = input.at("kind").as_string();
   const auto& action = input.at("action").as_string();
-  if (kind == "mouse") mouse(runtime, page, input, deadline);
+  if (kind == "mouse")
+    mouse(runtime, page, input, deadline);
   else if (kind == "keyboard") {
-    if (action == "press" || action == "down" || action == "up") keyboard_key(runtime, page, input, deadline);
+    if (action == "press" || action == "down" || action == "up")
+      keyboard_key(runtime, page, input, deadline);
     else if (action == "insertText" || action == "type") {
       const auto& text = input.at("text").as_string();
       const auto characters = scalars(text);
       const int delay = integer(input, "delay", 0, 0, 120000);
       budget(deadline, action == "type" ? delay : 0, characters.size());
-      if (action == "insertText") runtime.call(page, "Input.insertText", Json{{"text", text}}, deadline);
+      if (action == "insertText")
+        runtime.call(page, "Input.insertText", Json{{"text", text}}, deadline);
       else {
         for (const auto& character : characters) {
-          keyboard_key(runtime, page, Json{{"action", "press"}, {"key", character}, {"delay", delay}}, deadline);
+          keyboard_key(runtime, page,
+                       Json{{"action", "press"}, {"key", character}, {"delay", delay}}, deadline);
         }
       }
-    } else throw std::invalid_argument("Unsupported keyboard action: " + action);
-  } else throw std::invalid_argument("Unsupported input kind: " + kind);
+    } else
+      throw std::invalid_argument("Unsupported keyboard action: " + action);
+  } else
+    throw std::invalid_argument("Unsupported input kind: " + kind);
   return Json::object{};
 }
-} // namespace suitecut::detail
+}  // namespace suitecut::detail

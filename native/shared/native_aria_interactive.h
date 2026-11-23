@@ -3,7 +3,8 @@
 // Generated from the authored formatNativeAriaInteractive in src/native-aria.ts.
 // Keep the fixed native and SDK serialization contract identical; regenerate with the
 // repository formatter generator after changing that function.
-inline constexpr char kSuiteCutNativeAriaInteractive[] = R"JS(function formatNativeAriaInteractive(nodes, options = {}) {
+inline constexpr char kSuiteCutNativeAriaInteractive[] =
+    R"JS(function formatNativeAriaInteractive(nodes, options = {}) {
     const interactiveRoles = new Set([
         'button',
         'checkbox',

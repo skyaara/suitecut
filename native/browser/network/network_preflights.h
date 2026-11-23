@@ -18,136 +18,289 @@ namespace suitecut {
 // This owner never invents a Route or consumes a registration for preflight.
 class NativeNetworkPreflights {
  public:
-  using Dict=CefRefPtr<CefDictionaryValue>;
-  using Result=std::function<void(bool,const std::string&)>;
-  using Send=std::function<void(const std::string&,const std::string&,Dict,Result,double)>;
-  struct Classification {bool known=false,automatic=false,authorized=false;std::string method;bool rejected=false;};
-  using Classify=std::function<Classification(const std::string&,const std::string&,const NativeRouteRegistry::Plan&)>;
-  using Resume=std::function<void(Dict,const std::string&,NativeRouteRegistry::Plan,double)>;
-  NativeNetworkPreflights(Send send,Resume resume,std::function<void(const std::string&)> failure,
-                          std::function<void()> wake,std::function<double()> now,std::function<void()> settled={})
-      :state_(std::make_shared<State>()) {
-    state_->send=std::move(send);state_->resume=std::move(resume);state_->failure=std::move(failure);
-    state_->wake=std::move(wake);state_->now=std::move(now);state_->settled=std::move(settled);
+  using Dict = CefRefPtr<CefDictionaryValue>;
+  using Result = std::function<void(bool, const std::string&)>;
+  using Send = std::function<void(const std::string&, const std::string&, Dict, Result, double)>;
+  struct Classification {
+    bool known = false, automatic = false, authorized = false;
+    std::string method;
+    bool rejected = false;
+  };
+  using Classify = std::function<Classification(const std::string&, const std::string&,
+                                                const NativeRouteRegistry::Plan&)>;
+  using Resume = std::function<void(Dict, const std::string&, NativeRouteRegistry::Plan, double)>;
+  NativeNetworkPreflights(Send send, Resume resume, std::function<void(const std::string&)> failure,
+                          std::function<void()> wake, std::function<double()> now,
+                          std::function<void()> settled = {})
+      : state_(std::make_shared<State>()) {
+    state_->send = std::move(send);
+    state_->resume = std::move(resume);
+    state_->failure = std::move(failure);
+    state_->wake = std::move(wake);
+    state_->now = std::move(now);
+    state_->settled = std::move(settled);
   }
-  ~NativeNetworkPreflights(){Clear();}
+  ~NativeNetworkPreflights() { Clear(); }
   // Admission owns a detached copy. On rejection the caller still owns the
   // actual Fetch pause and must abort it or close the native channel.
-  static std::optional<size_t> RetainedBytes(Dict data){size_t bytes=256;if(!MeasureDictionary(data,bytes))return {};return bytes;}
-  bool Hold(Dict data,const std::string&session,NativeRouteRegistry::Plan plan,double deadline) {
-    auto state=state_;if(state->closed||state->failed||!data)return false;
-    const auto fetch=data->GetString("requestId").ToString(),network=data->GetString("networkId").ToString();
-    if(fetch.empty()||network.empty()||!std::isfinite(deadline)||deadline<=state->now())return false;
-    const auto key=session+"\n"+fetch;if(state->entries.contains(key))return false;
-    size_t bytes=256+key.size()+network.size()+session.size();
-    if(!MeasureDictionary(data,bytes))return false;
-    bytes+=plan.bytes();
-    auto budget=state->budget;
-    auto entry=std::make_shared<Entry>();entry->budget=budget;entry->bytes=bytes;
-    ++budget->entries;budget->bytes+=bytes;++global_entries_;global_bytes_+=bytes;
-    entry->fetch=fetch;entry->network=network;entry->session=session;entry->plan=std::move(plan);entry->deadline=deadline;entry->data=data->Copy(false);
-    state->entries.emplace(key,std::move(entry));state->wake();return true;
+  static std::optional<size_t> RetainedBytes(Dict data) {
+    size_t bytes = 256;
+    if (!MeasureDictionary(data, bytes)) return {};
+    return bytes;
+  }
+  bool Hold(Dict data, const std::string& session, NativeRouteRegistry::Plan plan,
+            double deadline) {
+    auto state = state_;
+    if (state->closed || state->failed || !data) return false;
+    const auto fetch = data->GetString("requestId").ToString(),
+               network = data->GetString("networkId").ToString();
+    if (fetch.empty() || network.empty() || !std::isfinite(deadline) || deadline <= state->now())
+      return false;
+    const auto key = session + "\n" + fetch;
+    if (state->entries.contains(key)) return false;
+    size_t bytes = 256 + key.size() + network.size() + session.size();
+    if (!MeasureDictionary(data, bytes)) return false;
+    bytes += plan.bytes();
+    auto budget = state->budget;
+    auto entry = std::make_shared<Entry>();
+    entry->budget = budget;
+    entry->bytes = bytes;
+    ++budget->entries;
+    budget->bytes += bytes;
+    ++global_entries_;
+    global_bytes_ += bytes;
+    entry->fetch = fetch;
+    entry->network = network;
+    entry->session = session;
+    entry->plan = std::move(plan);
+    entry->deadline = deadline;
+    entry->data = data->Copy(false);
+    state->entries.emplace(key, std::move(entry));
+    state->wake();
+    return true;
   }
   void Resolve(const Classify& classify) {
-    auto state=state_;if(state->closed||state->failed)return;
+    auto state = state_;
+    if (state->closed || state->failed) return;
     // Classification/resume can synchronously close this owner. Restart from
     // live state after every delivery; no iterator survives a callback.
-    while(!state->closed&&!state->failed) {
-      std::string key;std::shared_ptr<Entry> entry;Classification classification;
-      const std::vector<std::pair<std::string,std::shared_ptr<Entry>>> snapshot(state->entries.begin(),state->entries.end());
-      for(const auto&[candidate,current]:snapshot)if(!current->dispatched&&!current->delivering){
-        auto result=classify(current->network,current->session,current->plan);
-        if(state->closed||state->failed)return;
-        const auto live=state->entries.find(candidate);if(live==state->entries.end()||live->second!=current)continue;
-        if(result.known){key=candidate;entry=current;classification=std::move(result);break;}
+    while (!state->closed && !state->failed) {
+      std::string key;
+      std::shared_ptr<Entry> entry;
+      Classification classification;
+      const std::vector<std::pair<std::string, std::shared_ptr<Entry>>> snapshot(
+          state->entries.begin(), state->entries.end());
+      for (const auto& [candidate, current] : snapshot)
+        if (!current->dispatched && !current->delivering) {
+          auto result = classify(current->network, current->session, current->plan);
+          if (state->closed || state->failed) return;
+          const auto live = state->entries.find(candidate);
+          if (live == state->entries.end() || live->second != current) continue;
+          if (result.known) {
+            key = candidate;
+            entry = current;
+            classification = std::move(result);
+            break;
+          }
+        }
+      if (!entry) return;
+      if (state->now() >= entry->deadline) {
+        Fail(state, "Native automatic preflight classification deadline expired");
+        return;
       }
-      if(!entry)return;
-      if(state->now()>=entry->deadline){Fail(state,"Native automatic preflight classification deadline expired");return;}
-      if(!classification.automatic) {
-        entry->delivering=true;state->entries.erase(key);
-        auto data=std::move(entry->data);auto plan=std::move(entry->plan);
-        auto resume=state->resume;resume(std::move(data),entry->session,std::move(plan),entry->deadline);
+      if (!classification.automatic) {
+        entry->delivering = true;
+        state->entries.erase(key);
+        auto data = std::move(entry->data);
+        auto plan = std::move(entry->plan);
+        auto resume = state->resume;
+        resume(std::move(data), entry->session, std::move(plan), entry->deadline);
         continue;
       }
-      auto params=CefDictionaryValue::Create();params->SetString("requestId",entry->fetch);
-      const auto response=!classification.rejected&&classification.authorized?Response(entry->data,classification.method):nullptr;
-      const std::string method=classification.rejected?"Fetch.failRequest":response?"Fetch.fulfillRequest":"Fetch.continueRequest";
-      if(classification.rejected)params->SetString("errorReason","Aborted");
-      if(response){params=response;params->SetString("requestId",entry->fetch);}
-      entry->dispatched=true;
+      auto params = CefDictionaryValue::Create();
+      params->SetString("requestId", entry->fetch);
+      const auto response = !classification.rejected && classification.authorized
+                                ? Response(entry->data, classification.method)
+                                : nullptr;
+      const std::string method = classification.rejected ? "Fetch.failRequest"
+                                 : response              ? "Fetch.fulfillRequest"
+                                                         : "Fetch.continueRequest";
+      if (classification.rejected) params->SetString("errorReason", "Aborted");
+      if (response) {
+        params = response;
+        params->SetString("requestId", entry->fetch);
+      }
+      entry->dispatched = true;
       // Retain the pause and its metadata until this exact physical receipt
       // or a genuine channel close, including a logical deadline failure.
-      auto send=state->send;send(entry->session,method,params,[state,key,entry](bool ok,const std::string&error){
-        if(state->closed)return;
-        const auto found=state->entries.find(key);if(found==state->entries.end()||found->second!=entry)return;
-        state->entries.erase(found);
-        if(!ok){Fail(state,"Native automatic preflight control failed: "+error);return;}
-        auto settled=state->settled;if(settled&&!state->failed)settled();
-      },entry->deadline);
+      auto send = state->send;
+      send(
+          entry->session, method, params,
+          [state, key, entry](bool ok, const std::string& error) {
+            if (state->closed) return;
+            const auto found = state->entries.find(key);
+            if (found == state->entries.end() || found->second != entry) return;
+            state->entries.erase(found);
+            if (!ok) {
+              Fail(state, "Native automatic preflight control failed: " + error);
+              return;
+            }
+            auto settled = state->settled;
+            if (settled && !state->failed) settled();
+          },
+          entry->deadline);
     }
   }
   void Tick(double now) {
-    auto state=state_;if(state->closed||state->failed)return;
-    for(const auto&[key,entry]:state->entries)if(now>=entry->deadline){Fail(state,"Native automatic preflight ownership deadline expired");return;}
+    auto state = state_;
+    if (state->closed || state->failed) return;
+    for (const auto& [key, entry] : state->entries)
+      if (now >= entry->deadline) {
+        Fail(state, "Native automatic preflight ownership deadline expired");
+        return;
+      }
   }
   // Only genuine Target.detachedFromTarget or real browser OnBeforeClose.
-  void SessionClosed(const std::string&session) {
-    auto state=state_;for(auto it=state->entries.begin();it!=state->entries.end();)if(it->second->session==session)it=state->entries.erase(it);else ++it;
+  void SessionClosed(const std::string& session) {
+    auto state = state_;
+    for (auto it = state->entries.begin(); it != state->entries.end();)
+      if (it->second->session == session)
+        it = state->entries.erase(it);
+      else
+        ++it;
   }
-  void Clear(){auto state=state_;state->closed=true;state->entries.clear();state->resume={};state->failure={};state->send={};state->wake={};state->settled={};}
-  bool NeedsTick()const{return !state_->entries.empty();}
-  size_t pending()const{return state_->entries.size();}
-  size_t bytes()const{return state_->budget->bytes;}
-  static size_t global_pending(){return global_entries_;}
-  static size_t global_bytes(){return global_bytes_;}
+  void Clear() {
+    auto state = state_;
+    state->closed = true;
+    state->entries.clear();
+    state->resume = {};
+    state->failure = {};
+    state->send = {};
+    state->wake = {};
+    state->settled = {};
+  }
+  bool NeedsTick() const { return !state_->entries.empty(); }
+  size_t pending() const { return state_->entries.size(); }
+  size_t bytes() const { return state_->budget->bytes; }
+  static size_t global_pending() { return global_entries_; }
+  static size_t global_bytes() { return global_bytes_; }
+
  private:
   // Accounting only (diagnostics); nothing is refused for size or count.
-  struct Budget{size_t entries=0,bytes=0;};
+  struct Budget {
+    size_t entries = 0, bytes = 0;
+  };
   struct Entry {
-    std::shared_ptr<Budget>budget;size_t bytes=0;Dict data;std::string fetch,network,session;
-    NativeRouteRegistry::Plan plan;double deadline=0;bool dispatched=false,delivering=false;
-    ~Entry(){if(budget){--budget->entries;budget->bytes-=bytes;--global_entries_;global_bytes_-=bytes;}}
+    std::shared_ptr<Budget> budget;
+    size_t bytes = 0;
+    Dict data;
+    std::string fetch, network, session;
+    NativeRouteRegistry::Plan plan;
+    double deadline = 0;
+    bool dispatched = false, delivering = false;
+    ~Entry() {
+      if (budget) {
+        --budget->entries;
+        budget->bytes -= bytes;
+        --global_entries_;
+        global_bytes_ -= bytes;
+      }
+    }
   };
   struct State {
-    Send send;Resume resume;std::function<void(const std::string&)>failure;std::function<void()>wake;std::function<double()>now;std::function<void()>settled;
-    std::shared_ptr<Budget>budget=std::make_shared<Budget>();std::map<std::string,std::shared_ptr<Entry>>entries;bool closed=false,failed=false;
+    Send send;
+    Resume resume;
+    std::function<void(const std::string&)> failure;
+    std::function<void()> wake;
+    std::function<double()> now;
+    std::function<void()> settled;
+    std::shared_ptr<Budget> budget = std::make_shared<Budget>();
+    std::map<std::string, std::shared_ptr<Entry>> entries;
+    bool closed = false, failed = false;
   };
-  static inline size_t global_entries_=0,global_bytes_=0;
-  std::shared_ptr<State>state_;
-  static void Fail(const std::shared_ptr<State>&state,const std::string&error){if(state->closed||state->failed)return;state->failed=true;auto failure=state->failure;if(failure)failure(error);}
-  static bool MeasureValue(CefRefPtr<CefValue>value,size_t&bytes){
-    if(!value)return false;
-    bytes+=64;
-    switch(value->GetType()){
-      case VTYPE_DICTIONARY:return MeasureDictionary(value->GetDictionary(),bytes);
-      case VTYPE_LIST:{auto list=value->GetList();if(!list)return false;for(size_t i=0;i<list->GetSize();++i)if(!MeasureValue(list->GetValue(i),bytes))return false;return true;}
-      case VTYPE_STRING:bytes+=value->GetString().length()*3;return true;
-      case VTYPE_BINARY:return false;
-      default:return true;
+  static inline size_t global_entries_ = 0, global_bytes_ = 0;
+  std::shared_ptr<State> state_;
+  static void Fail(const std::shared_ptr<State>& state, const std::string& error) {
+    if (state->closed || state->failed) return;
+    state->failed = true;
+    auto failure = state->failure;
+    if (failure) failure(error);
+  }
+  static bool MeasureValue(CefRefPtr<CefValue> value, size_t& bytes) {
+    if (!value) return false;
+    bytes += 64;
+    switch (value->GetType()) {
+      case VTYPE_DICTIONARY:
+        return MeasureDictionary(value->GetDictionary(), bytes);
+      case VTYPE_LIST: {
+        auto list = value->GetList();
+        if (!list) return false;
+        for (size_t i = 0; i < list->GetSize(); ++i)
+          if (!MeasureValue(list->GetValue(i), bytes)) return false;
+        return true;
+      }
+      case VTYPE_STRING:
+        bytes += value->GetString().length() * 3;
+        return true;
+      case VTYPE_BINARY:
+        return false;
+      default:
+        return true;
     }
   }
-  static bool MeasureDictionary(Dict data,size_t&bytes){
-    if(!data)return false;
-    CefDictionaryValue::KeyList keys;data->GetKeys(keys);
-    for(const auto&key:keys){bytes+=key.length()*3+64;if(!MeasureValue(data->GetValue(key),bytes))return false;}
+  static bool MeasureDictionary(Dict data, size_t& bytes) {
+    if (!data) return false;
+    CefDictionaryValue::KeyList keys;
+    data->GetKeys(keys);
+    for (const auto& key : keys) {
+      bytes += key.length() * 3 + 64;
+      if (!MeasureValue(data->GetValue(key), bytes)) return false;
+    }
     return true;
   }
-  static std::string Header(Dict headers,const std::string&name){
-    if(!headers)return {};
-    CefDictionaryValue::KeyList keys;headers->GetKeys(keys);
-    for(const auto&key:keys){auto normalized=key.ToString();for(auto&c:normalized)if(c>='A'&&c<='Z')c=char(c-'A'+'a');if(normalized==name&&headers->GetType(key)==VTYPE_STRING)return headers->GetString(key).ToString();}return {};
+  static std::string Header(Dict headers, const std::string& name) {
+    if (!headers) return {};
+    CefDictionaryValue::KeyList keys;
+    headers->GetKeys(keys);
+    for (const auto& key : keys) {
+      auto normalized = key.ToString();
+      for (auto& c : normalized)
+        if (c >= 'A' && c <= 'Z') c = char(c - 'A' + 'a');
+      if (normalized == name && headers->GetType(key) == VTYPE_STRING)
+        return headers->GetString(key).ToString();
+    }
+    return {};
   }
-  static bool Field(const std::string&value){return !value.empty()&&value.find_first_of("\r\n\0",0,3)==std::string::npos;}
-  static Dict Response(Dict data,const std::string&method){
-    auto request=data->GetDictionary("request");if(!request||request->GetString("method")!="OPTIONS")return nullptr;auto headers=request->GetDictionary("headers");
-    const auto origin=Header(headers,"origin"),requested=Header(headers,"access-control-request-headers");
-    if(!Field(origin)||!Field(method)||(!requested.empty()&&!Field(requested)))return nullptr;
-    auto result=CefDictionaryValue::Create();result->SetInt("responseCode",204);result->SetString("body","");auto output=CefListValue::Create();
-    const auto append=[&](const std::string&name,const std::string&value){auto pair=CefDictionaryValue::Create();pair->SetString("name",name);pair->SetString("value",value);output->SetDictionary(output->GetSize(),pair);};
-    append("Access-Control-Allow-Origin",origin);append("Access-Control-Allow-Methods",method);append("Access-Control-Allow-Credentials","true");
-    if(!requested.empty())append("Access-Control-Allow-Headers",requested);
-    append("Access-Control-Max-Age","0");append("Cache-Control","no-store");append("Vary","Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
-    result->SetList("responseHeaders",output);return result;
+  static bool Field(const std::string& value) {
+    return !value.empty() && value.find_first_of("\r\n\0", 0, 3) == std::string::npos;
+  }
+  static Dict Response(Dict data, const std::string& method) {
+    auto request = data->GetDictionary("request");
+    if (!request || request->GetString("method") != "OPTIONS") return nullptr;
+    auto headers = request->GetDictionary("headers");
+    const auto origin = Header(headers, "origin"),
+               requested = Header(headers, "access-control-request-headers");
+    if (!Field(origin) || !Field(method) || (!requested.empty() && !Field(requested)))
+      return nullptr;
+    auto result = CefDictionaryValue::Create();
+    result->SetInt("responseCode", 204);
+    result->SetString("body", "");
+    auto output = CefListValue::Create();
+    const auto append = [&](const std::string& name, const std::string& value) {
+      auto pair = CefDictionaryValue::Create();
+      pair->SetString("name", name);
+      pair->SetString("value", value);
+      output->SetDictionary(output->GetSize(), pair);
+    };
+    append("Access-Control-Allow-Origin", origin);
+    append("Access-Control-Allow-Methods", method);
+    append("Access-Control-Allow-Credentials", "true");
+    if (!requested.empty()) append("Access-Control-Allow-Headers", requested);
+    append("Access-Control-Max-Age", "0");
+    append("Cache-Control", "no-store");
+    append("Vary", "Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
+    result->SetList("responseHeaders", output);
+    return result;
   }
 };
-} // namespace suitecut
+}  // namespace suitecut

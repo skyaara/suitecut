@@ -27,40 +27,74 @@ bool HostEventsOn() { return HostEventsEnabled(); }
 // CSS cursor names for CEF's cursor types.
 const char* CssCursor(cef_cursor_type_t type) {
   switch (type) {
-    case CT_POINTER: return "default";
-    case CT_CROSS: return "crosshair";
-    case CT_HAND: return "pointer";
-    case CT_IBEAM: return "text";
-    case CT_WAIT: return "wait";
-    case CT_HELP: return "help";
-    case CT_EASTRESIZE: return "e-resize";
-    case CT_NORTHRESIZE: return "n-resize";
-    case CT_NORTHEASTRESIZE: return "ne-resize";
-    case CT_NORTHWESTRESIZE: return "nw-resize";
-    case CT_SOUTHRESIZE: return "s-resize";
-    case CT_SOUTHEASTRESIZE: return "se-resize";
-    case CT_SOUTHWESTRESIZE: return "sw-resize";
-    case CT_WESTRESIZE: return "w-resize";
-    case CT_NORTHSOUTHRESIZE: return "ns-resize";
-    case CT_EASTWESTRESIZE: return "ew-resize";
-    case CT_NORTHEASTSOUTHWESTRESIZE: return "nesw-resize";
-    case CT_NORTHWESTSOUTHEASTRESIZE: return "nwse-resize";
-    case CT_COLUMNRESIZE: return "col-resize";
-    case CT_ROWRESIZE: return "row-resize";
-    case CT_MOVE: return "move";
-    case CT_VERTICALTEXT: return "vertical-text";
-    case CT_CELL: return "cell";
-    case CT_CONTEXTMENU: return "context-menu";
-    case CT_ALIAS: return "alias";
-    case CT_PROGRESS: return "progress";
-    case CT_NODROP: return "no-drop";
-    case CT_COPY: return "copy";
-    case CT_NONE: return "none";
-    case CT_NOTALLOWED: return "not-allowed";
-    case CT_ZOOMIN: return "zoom-in";
-    case CT_ZOOMOUT: return "zoom-out";
-    case CT_GRAB: return "grab";
-    case CT_GRABBING: return "grabbing";
+    case CT_POINTER:
+      return "default";
+    case CT_CROSS:
+      return "crosshair";
+    case CT_HAND:
+      return "pointer";
+    case CT_IBEAM:
+      return "text";
+    case CT_WAIT:
+      return "wait";
+    case CT_HELP:
+      return "help";
+    case CT_EASTRESIZE:
+      return "e-resize";
+    case CT_NORTHRESIZE:
+      return "n-resize";
+    case CT_NORTHEASTRESIZE:
+      return "ne-resize";
+    case CT_NORTHWESTRESIZE:
+      return "nw-resize";
+    case CT_SOUTHRESIZE:
+      return "s-resize";
+    case CT_SOUTHEASTRESIZE:
+      return "se-resize";
+    case CT_SOUTHWESTRESIZE:
+      return "sw-resize";
+    case CT_WESTRESIZE:
+      return "w-resize";
+    case CT_NORTHSOUTHRESIZE:
+      return "ns-resize";
+    case CT_EASTWESTRESIZE:
+      return "ew-resize";
+    case CT_NORTHEASTSOUTHWESTRESIZE:
+      return "nesw-resize";
+    case CT_NORTHWESTSOUTHEASTRESIZE:
+      return "nwse-resize";
+    case CT_COLUMNRESIZE:
+      return "col-resize";
+    case CT_ROWRESIZE:
+      return "row-resize";
+    case CT_MOVE:
+      return "move";
+    case CT_VERTICALTEXT:
+      return "vertical-text";
+    case CT_CELL:
+      return "cell";
+    case CT_CONTEXTMENU:
+      return "context-menu";
+    case CT_ALIAS:
+      return "alias";
+    case CT_PROGRESS:
+      return "progress";
+    case CT_NODROP:
+      return "no-drop";
+    case CT_COPY:
+      return "copy";
+    case CT_NONE:
+      return "none";
+    case CT_NOTALLOWED:
+      return "not-allowed";
+    case CT_ZOOMIN:
+      return "zoom-in";
+    case CT_ZOOMOUT:
+      return "zoom-out";
+    case CT_GRAB:
+      return "grab";
+    case CT_GRABBING:
+      return "grabbing";
     case CT_MIDDLEPANNING:
     case CT_EASTPANNING:
     case CT_NORTHPANNING:
@@ -69,9 +103,12 @@ const char* CssCursor(cef_cursor_type_t type) {
     case CT_SOUTHPANNING:
     case CT_SOUTHEASTPANNING:
     case CT_SOUTHWESTPANNING:
-    case CT_WESTPANNING: return "all-scroll";
-    case CT_CUSTOM: return "custom";
-    default: return "default";
+    case CT_WESTPANNING:
+      return "all-scroll";
+    case CT_CUSTOM:
+      return "custom";
+    default:
+      return "default";
   }
 }
 
@@ -93,9 +130,10 @@ auto Source::HostEvent(const char* name, Dict fields) -> void {
   SendPacket(Header("host"), std::vector<uint8_t>(json.begin(), json.end()));
 }
 
-auto Source::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool loading, bool back, bool forward)
-    -> void {
-  if (auto tab = AdoptedTab(browser)) return tab->OnLoadingStateChange(browser, loading, back, forward);
+auto Source::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool loading, bool back,
+                                  bool forward) -> void {
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnLoadingStateChange(browser, loading, back, forward);
   auto fields = CefDictionaryValue::Create();
   fields->SetBool("loading", loading);
   fields->SetBool("canGoBack", back);
@@ -110,8 +148,8 @@ auto Source::OnLoadingProgressChange(CefRefPtr<CefBrowser> browser, double progr
   HostEvent("progress", fields);
 }
 
-auto Source::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor, cef_cursor_type_t type,
-                            const CefCursorInfo& custom) -> bool {
+auto Source::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle cursor,
+                            cef_cursor_type_t type, const CefCursorInfo& custom) -> bool {
   if (auto tab = AdoptedTab(browser)) return tab->OnCursorChange(browser, cursor, type, custom);
   if (!HostEventsOn()) return false;
   auto fields = CefDictionaryValue::Create();
@@ -128,7 +166,8 @@ auto Source::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHandle curso
 
 auto Source::OnImeCompositionRangeChanged(CefRefPtr<CefBrowser> browser, const CefRange& range,
                                           const RectList& bounds) -> void {
-  if (auto tab = AdoptedTab(browser)) return tab->OnImeCompositionRangeChanged(browser, range, bounds);
+  if (auto tab = AdoptedTab(browser))
+    return tab->OnImeCompositionRangeChanged(browser, range, bounds);
   auto fields = CefDictionaryValue::Create();
   auto selected = CefListValue::Create();
   selected->SetInt(0, static_cast<int>(range.from));
@@ -183,7 +222,8 @@ auto Source::HostCommand(int id, Dict message) -> void {
       }
       host->ImeCommitText(message->GetString("text"), RangeOf(message, "replacement"), 0);
     } else if (op == "finish") {
-      host->ImeFinishComposingText(message->GetType("keepSelection") == VTYPE_BOOL && message->GetBool("keepSelection"));
+      host->ImeFinishComposingText(message->GetType("keepSelection") == VTYPE_BOOL &&
+                                   message->GetBool("keepSelection"));
     } else if (op == "cancel") {
       host->ImeCancelComposition();
     } else {
@@ -198,13 +238,20 @@ auto Source::HostCommand(int id, Dict message) -> void {
     if (!frame) frame = browser_->GetMainFrame();
     const auto edit = message->GetString("edit").ToString();
     host->SetFocus(true);
-    if (edit == "copy") frame->Copy();
-    else if (edit == "cut") frame->Cut();
-    else if (edit == "paste") frame->Paste();
-    else if (edit == "undo") frame->Undo();
-    else if (edit == "redo") frame->Redo();
-    else if (edit == "selectAll") frame->SelectAll();
-    else if (edit == "delete") frame->Delete();
+    if (edit == "copy")
+      frame->Copy();
+    else if (edit == "cut")
+      frame->Cut();
+    else if (edit == "paste")
+      frame->Paste();
+    else if (edit == "undo")
+      frame->Undo();
+    else if (edit == "redo")
+      frame->Redo();
+    else if (edit == "selectAll")
+      frame->SelectAll();
+    else if (edit == "delete")
+      frame->Delete();
     else {
       Complete(id, false, "An edit is copy, cut, paste, undo, redo, selectAll or delete");
       return;

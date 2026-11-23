@@ -18,7 +18,9 @@ inline std::optional<std::uint64_t> wire_count(const Json& value) {
   }
   if (!value.is_number()) return std::nullopt;
   const double number = value.as_double();
-  if (!std::isfinite(number) || number < 0 || number > 9007199254740992.0 || std::floor(number) != number) return std::nullopt;
+  if (!std::isfinite(number) || number < 0 || number > 9007199254740992.0 ||
+      std::floor(number) != number)
+    return std::nullopt;
   return static_cast<std::uint64_t>(number);
 }
 // Serialized reader-thread decoder. Callback owns each completed packet. An
@@ -30,6 +32,7 @@ class PacketDecoder {
   explicit PacketDecoder(std::size_t max_header_bytes = 0, std::size_t max_payload_bytes = 0);
   void feed(std::span<const std::uint8_t> bytes, const std::function<void(Packet&&)>& callback);
   void finish();
+
  private:
   std::size_t max_header_, max_payload_;
   std::array<std::uint8_t, 4> prefix_{};
@@ -39,4 +42,4 @@ class PacketDecoder {
   void read_header();
   void emit(const std::function<void(Packet&&)>& callback);
 };
-} // namespace suitecut
+}  // namespace suitecut

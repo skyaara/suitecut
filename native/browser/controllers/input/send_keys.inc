@@ -3,13 +3,18 @@
 // or caret preparation so competing input cannot steal the prepared target.
 void BeginSendKeys(int id, uint64_t generation, Dict config) {
   const int delay = config->GetInt("delay");
-  if ((config->HasKey("delay") && config->GetType("delay") != VTYPE_INT) || delay < 0 || delay > 120000) {
-    Complete(id, false, "Invalid native send-keys delay"); return;
+  if ((config->HasKey("delay") && config->GetType("delay") != VTYPE_INT) || delay < 0 ||
+      delay > 120000) {
+    Complete(id, false, "Invalid native send-keys delay");
+    return;
   }
   if (input_work_.contains(id)) return;
   auto work = std::make_shared<InputWork>();
-  work->owner = id; work->generation = generation;
-  work->kind = "keyboard"; work->action = "prepareSendKeys"; work->standards_send_keys = true;
+  work->owner = id;
+  work->generation = generation;
+  work->kind = "keyboard";
+  work->action = "prepareSendKeys";
+  work->standards_send_keys = true;
   work->message = config->Copy(false);
   work->text = config->GetString("value").ToString();
   input_work_.emplace(id, work);
@@ -18,11 +23,14 @@ void BeginSendKeys(int id, uint64_t generation, Dict config) {
 }
 void SendKeysPrepared(int id, Dict state) {
   const auto found = input_work_.find(id);
-  if (found == input_work_.end() || keyboard_input_ != id || found->second->action != "prepareSendKeys") {
-    Complete(id, false, "Native send-keys physical owner is unavailable"); return;
+  if (found == input_work_.end() || keyboard_input_ != id ||
+      found->second->action != "prepareSendKeys") {
+    Complete(id, false, "Native send-keys physical owner is unavailable");
+    return;
   }
   auto work = found->second;
-  work->busy = false; work->action = "type";
+  work->busy = false;
+  work->action = "type";
   work->message->SetBool("caretEnd", state->GetBool("caretEnd"));
   context_retries_.erase(id);
   ContinueInput(work);

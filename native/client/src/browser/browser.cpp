@@ -40,7 +40,7 @@ Json context_call(const std::shared_ptr<Transport>& transport, const std::string
                             Json{{"action", action}, {"params", std::move(params)}}, timeout));
 }
 int default_context(const std::shared_ptr<Transport>& transport) {
-  live(transport,1);
+  live(transport, 1);
   const auto ready = Json::parse(transport->ready().header);
   return ready.contains("backend") && ready.at("backend") != Json("cef") ? 0 : 1;
 }
@@ -60,7 +60,10 @@ int new_page_id(const std::shared_ptr<Transport>& transport, int context, Timeou
     if (now >= deadline) throw std::runtime_error("Native page creation original deadline expired");
     transport->wait_ready(page, std::chrono::ceil<Timeout>(deadline - now));
   } catch (...) {
-    try { context_call(transport, "closePage", Json{{"pageId", page}}, Timeout{5000}); } catch (...) {}
+    try {
+      context_call(transport, "closePage", Json{{"pageId", page}}, Timeout{5000});
+    } catch (...) {
+    }
     throw;
   }
   return page;
@@ -83,8 +86,7 @@ Json scoped(std::string engine, const std::string& text, bool exact) {
                      Json{{"engine", std::move(engine)}, {"text", text}, {"exact", exact}}};
 }
 std::vector<std::uint8_t> decode_base64(const std::string& text) {
-  if (text.empty() || text.size() % 4)
-    throw std::runtime_error("Invalid native artifact encoding");
+  if (text.empty() || text.size() % 4) throw std::runtime_error("Invalid native artifact encoding");
   const auto digit = [](unsigned char c) -> int {
     if (c >= 'A' && c <= 'Z') return c - 'A';
     if (c >= 'a' && c <= 'z') return c - 'a' + 26;
@@ -122,14 +124,16 @@ Json download_info(Json info) {
     throw std::runtime_error("Native download response has no identity");
   if (info.contains("state")) {
     const auto state = info.at("state").as_string();
-    if (state == "complete") info["state"] = "completed";
+    if (state == "complete")
+      info["state"] = "completed";
     else if (state == "failed" && info.contains("failure") && info.at("failure").is_string() &&
-             info.at("failure").as_string() == "canceled") info["state"] = "canceled";
+             info.at("failure").as_string() == "canceled")
+      info["state"] = "canceled";
   }
   return info;
 }
 void emulation_text(const std::string& text, const char* name) {
-  if (std::any_of(text.begin(),text.end(),[](unsigned char c){return c<0x20||c==0x7f;}))
+  if (std::any_of(text.begin(), text.end(), [](unsigned char c) { return c < 0x20 || c == 0x7f; }))
     throw std::invalid_argument(std::string("Invalid emulated ") + name);
 }
 }  // namespace
@@ -150,7 +154,9 @@ Locator::Locator(std::shared_ptr<Transport> transport, int page, Json query,
       page_(page),
       query_(std::move(query)),
       description_(std::move(description)),
-      timeout_(timeout), frame_(std::move(frame)), frame_path_(std::move(frame_path)) {}
+      timeout_(timeout),
+      frame_(std::move(frame)),
+      frame_path_(std::move(frame_path)) {}
 Json Locator::target(Json fields) const {
   object(fields);
   fields["selector"] = description_;
@@ -166,7 +172,8 @@ Json Locator::command(const std::string& family, Json fields) const {
 Json Locator::observe(bool boxes, int depth) const {
   Json fields{{"referenceFormat", "json"}, {"accessibilityBoxes", boxes}};
   if (depth >= 0) fields["referenceDepth"] = depth;
-  return Json::parse(command("snapshotReferences", std::move(fields)).at("snapshotJSON").as_string());
+  return Json::parse(
+      command("snapshotReferences", std::move(fields)).at("snapshotJSON").as_string());
 }
 Locator Locator::nth(int index) const {
   auto query = query_;
@@ -176,7 +183,8 @@ Locator Locator::nth(int index) const {
 Locator Locator::locator(const std::string& css) const {
   auto query = query_;
   query.as_array().emplace_back(Json{{"engine", "css"}, {"selector", css}});
-  return Locator(transport_, page_, std::move(query), description_ + " >> " + css, timeout_, frame_, frame_path_);
+  return Locator(transport_, page_, std::move(query), description_ + " >> " + css, timeout_, frame_,
+                 frame_path_);
 }
 Locator Locator::with_timeout(Timeout timeout) const {
   valid_timeout(timeout);
@@ -253,7 +261,9 @@ Json Locator::text_content() const {
 std::string Locator::inner_text() const {
   return read("function(element){return element.innerText;}").as_string();
 }
-std::string Locator::inner_html() const { return read("function(element){return element.innerHTML;}").as_string(); }
+std::string Locator::inner_html() const {
+  return read("function(element){return element.innerHTML;}").as_string();
+}
 std::string Locator::input_value() const {
   return command("locator", Json{{"action", "inputValue"}}).as_string();
 }
@@ -263,11 +273,13 @@ Json Locator::attribute(const std::string& name) const {
 Json Locator::evaluate(const std::string& function) const { return read(function); }
 void Locator::wait_for(const std::string& value) const {
   if (value != "attached" && value != "detached" && value != "visible" && value != "hidden")
-    throw std::invalid_argument("Native locator wait state must be attached, detached, visible or hidden");
+    throw std::invalid_argument(
+        "Native locator wait state must be attached, detached, visible or hidden");
   command("waitFor", Json{{"state", value}});
 }
 bool Locator::state(const std::string& name) const {
-  return evaluated(command("queryEvaluate", Json{{"elementState", true}, {"state", name}})).as_bool();
+  return evaluated(command("queryEvaluate", Json{{"elementState", true}, {"state", name}}))
+      .as_bool();
 }
 bool Locator::is_visible() const { return state("visible"); }
 bool Locator::is_hidden() const { return state("hidden"); }
@@ -278,7 +290,8 @@ bool Locator::is_editable() const { return state("editable"); }
 void Locator::set_input_files(const std::vector<std::string>& paths) const {
   Json::array files;
   for (const auto& path : paths) {
-    if (path.empty() || path.find('\0') != std::string::npos || !std::filesystem::path(path).is_absolute())
+    if (path.empty() || path.find('\0') != std::string::npos ||
+        !std::filesystem::path(path).is_absolute())
       throw std::invalid_argument("Native upload paths must be absolute and contain no NUL");
     files.emplace_back(Json{{"path", path}, {"directory", false}});
   }
@@ -297,7 +310,9 @@ Page::Page(Page&& other) noexcept
     : transport_(std::move(other.transport_)),
       page_(std::exchange(other.page_, 0)),
       owned_(std::exchange(other.owned_, false)),
-      timeout_(other.timeout_), frame_(std::move(other.frame_)), frame_path_(std::move(other.frame_path_)) {}
+      timeout_(other.timeout_),
+      frame_(std::move(other.frame_)),
+      frame_path_(std::move(other.frame_path_)) {}
 Page& Page::operator=(Page&& other) noexcept {
   if (this != &other) {
     if (owned_) try {
@@ -359,32 +374,47 @@ Json Page::reload(const std::string& wait) const {
 Json Page::navigation_history() const { return command("navigationHistory"); }
 std::string Page::url() const { return evaluate("location.href").as_string(); }
 std::string Page::title() const { return evaluate("document.title").as_string(); }
-std::string Page::content() const { return evaluate("document.documentElement.outerHTML").as_string(); }
+std::string Page::content() const {
+  return evaluate("document.documentElement.outerHTML").as_string();
+}
 void Page::wait_for_url(const std::string& url, const std::string& wait) const {
   command("waitForURL", Json{{"url", url}, {"waitUntil", wait}});
 }
 Json Page::wait_for_function(const std::string& expression) const {
-  const auto ready=Json::parse(transport_->ready().header);
-  if(!ready.contains("backend")||ready.at("backend")==Json("cef")) {
-    const auto deadline=std::chrono::steady_clock::now()+timeout_;
-    auto handle=command("handle",Json{{"action","create"},{"predicate",true},{"pollInterval",20},{"expression",expression}});
-    const auto id=handle.at("handle");
+  const auto ready = Json::parse(transport_->ready().header);
+  if (!ready.contains("backend") || ready.at("backend") == Json("cef")) {
+    const auto deadline = std::chrono::steady_clock::now() + timeout_;
+    auto handle = command("handle", Json{{"action", "create"},
+                                         {"predicate", true},
+                                         {"pollInterval", 20},
+                                         {"expression", expression}});
+    const auto id = handle.at("handle");
     try {
-      const auto remaining=std::chrono::ceil<Timeout>(deadline-std::chrono::steady_clock::now());
-      if(remaining.count()<=0)throw std::runtime_error("wait_for_function original deadline expired");
-      auto value=evaluated(with_timeout(remaining).command("handle",Json{{"action","evaluate"},{"handle",id},
-        {"function","function(){return this.value;}"},{"handles",Json::array{}}}));
-      command("handle",Json{{"action","dispose"},{"handle",id}});
+      const auto remaining =
+          std::chrono::ceil<Timeout>(deadline - std::chrono::steady_clock::now());
+      if (remaining.count() <= 0)
+        throw std::runtime_error("wait_for_function original deadline expired");
+      auto value = evaluated(with_timeout(remaining).command(
+          "handle", Json{{"action", "evaluate"},
+                         {"handle", id},
+                         {"function", "function(){return this.value;}"},
+                         {"handles", Json::array{}}}));
+      command("handle", Json{{"action", "dispose"}, {"handle", id}});
       return value;
-    }catch(...) {
-      try{command("handle",Json{{"action","dispose"},{"handle",id}});}catch(...){}
+    } catch (...) {
+      try {
+        command("handle", Json{{"action", "dispose"}, {"handle", id}});
+      } catch (...) {
+      }
       throw;
     }
   }
   return command("waitForFunction", Json{{"expression", expression}});
 }
 void Page::wait_for_load_state(const std::string& state) const {
-  command("waitLoadState", Json{{"waitUntil", state},{"api",frame_.empty()?"page.waitForLoadState":"frame.waitForLoadState"}});
+  command("waitLoadState",
+          Json{{"waitUntil", state},
+               {"api", frame_.empty() ? "page.waitForLoadState" : "frame.waitForLoadState"}});
 }
 void Page::wait_for_selector(const std::string& css, const std::string& state) const {
   locator(css).wait_for(state);
@@ -407,7 +437,8 @@ void Page::set_viewport(int width, int height) const {
 }
 void Page::bring_to_front() const { command("bringToFront", Json{{"api", "page.bringToFront"}}); }
 void Page::keyboard_press(const std::string& key, int delay) const {
-  if (delay < 0 || delay > 120000) throw std::invalid_argument("Native input delay must be 0 to 120000 ms");
+  if (delay < 0 || delay > 120000)
+    throw std::invalid_argument("Native input delay must be 0 to 120000 ms");
   command("input", Json{{"kind", "keyboard"}, {"action", "press"}, {"key", key}, {"delay", delay}});
 }
 void Page::keyboard_down(const std::string& key) const {
@@ -417,23 +448,28 @@ void Page::keyboard_up(const std::string& key) const {
   command("input", Json{{"kind", "keyboard"}, {"action", "up"}, {"key", key}});
 }
 void Page::type_text(const std::string& text, int delay) const {
-  if (delay < 0 || delay > 120000) throw std::invalid_argument("Native input delay must be 0 to 120000 ms");
-  command("input", Json{{"kind", "keyboard"}, {"action", "type"}, {"text", text}, {"delay", delay}});
+  if (delay < 0 || delay > 120000)
+    throw std::invalid_argument("Native input delay must be 0 to 120000 ms");
+  command("input",
+          Json{{"kind", "keyboard"}, {"action", "type"}, {"text", text}, {"delay", delay}});
 }
 void Page::insert_text(const std::string& text) const {
   command("input", Json{{"kind", "keyboard"}, {"action", "insertText"}, {"text", text}});
 }
 void Page::mouse_click(double x, double y, Json options) const {
   object(options);
-  options["kind"] = "mouse"; options["action"] = "click";
-  options["x"] = x; options["y"] = y;
+  options["kind"] = "mouse";
+  options["action"] = "click";
+  options["x"] = x;
+  options["y"] = y;
   if (!options.contains("button")) options["button"] = "left";
   if (!options.contains("clickCount")) options["clickCount"] = 1;
   command("input", std::move(options));
 }
 void Page::mouse_move(double x, double y, int steps) const {
   if (steps < 1) throw std::invalid_argument("Native mouse steps must be at least 1");
-  command("input", Json{{"kind", "mouse"}, {"action", "move"}, {"x", x}, {"y", y}, {"steps", steps}});
+  command("input",
+          Json{{"kind", "mouse"}, {"action", "move"}, {"x", x}, {"y", y}, {"steps", steps}});
 }
 void Page::mouse_down(const std::string& button) const {
   command("input", Json{{"kind", "mouse"}, {"action", "down"}, {"button", button}});
@@ -461,9 +497,9 @@ Locator Page::locator(const std::string& css) const {
 }
 Locator Page::locator_query(Json query, std::string description) const {
   live(transport_, page_);
-  if (!query.is_array())
-    throw std::invalid_argument("Locator query must be an array of steps");
-  return Locator(transport_, page_, std::move(query), std::move(description), timeout_, frame_, frame_path_);
+  if (!query.is_array()) throw std::invalid_argument("Locator query must be an array of steps");
+  return Locator(transport_, page_, std::move(query), std::move(description), timeout_, frame_,
+                 frame_path_);
 }
 Locator Page::get_by_role(const std::string& role, const std::string& name, bool exact) const {
   Json step{{"engine", "role"}, {"role", role}};
@@ -543,22 +579,40 @@ std::vector<std::uint8_t> Page::screenshot(Json options) const {
 }
 Packet Page::pdf_raw(Json options) const {
   object(options);
-  const auto ready=Json::parse(transport_->ready().header);
-  if(!ready.contains("backend")||ready.at("backend")==Json("cef")) {
-    const Json defaults{{"paperWidth",8.5},{"paperHeight",11},{"marginTop",.4},{"marginBottom",.4},
-      {"marginLeft",.4},{"marginRight",.4},{"scale",1},{"displayHeaderFooter",false},
-      {"printBackground",false},{"landscape",false},{"preferCSSPageSize",false},{"tagged",false},
-      {"outline",false},{"headerTemplate",""},{"footerTemplate",""},{"pageRanges",""}};
-    for(const auto& [key,value]:defaults.as_object())if(!options.contains(key))options[key]=value;
-    for(const auto& [input,output]:{std::pair{"generateTaggedPDF","tagged"},std::pair{"generateDocumentOutline","outline"}})
-      if(options.contains(input)){options[output]=options.at(input);options.as_object().erase(input);}
+  const auto ready = Json::parse(transport_->ready().header);
+  if (!ready.contains("backend") || ready.at("backend") == Json("cef")) {
+    const Json defaults{{"paperWidth", 8.5},
+                        {"paperHeight", 11},
+                        {"marginTop", .4},
+                        {"marginBottom", .4},
+                        {"marginLeft", .4},
+                        {"marginRight", .4},
+                        {"scale", 1},
+                        {"displayHeaderFooter", false},
+                        {"printBackground", false},
+                        {"landscape", false},
+                        {"preferCSSPageSize", false},
+                        {"tagged", false},
+                        {"outline", false},
+                        {"headerTemplate", ""},
+                        {"footerTemplate", ""},
+                        {"pageRanges", ""}};
+    for (const auto& [key, value] : defaults.as_object())
+      if (!options.contains(key)) options[key] = value;
+    for (const auto& [input, output] : {std::pair{"generateTaggedPDF", "tagged"},
+                                        std::pair{"generateDocumentOutline", "outline"}})
+      if (options.contains(input)) {
+        options[output] = options.at(input);
+        options.as_object().erase(input);
+      }
   }
   options["action"] = "pdf";
   return request("artifact", std::move(options));
 }
 std::vector<std::uint8_t> Page::pdf(Json options) const {
   auto bytes = decode_base64(response_json(pdf_raw(std::move(options))).at("data").as_string());
-  if (bytes.size() < 5 || std::string_view(reinterpret_cast<const char*>(bytes.data()), 5) != "%PDF-")
+  if (bytes.size() < 5 ||
+      std::string_view(reinterpret_cast<const char*>(bytes.data()), 5) != "%PDF-")
     throw std::runtime_error("Native PDF response has an invalid signature");
   return bytes;
 }
@@ -586,7 +640,8 @@ void Page::save_download(const std::string& id, const std::string& path) const {
 }
 Json Page::route(const std::string& pattern, Json options) const {
   object(options);
-  options["action"] = "route"; options["pattern"] = pattern;
+  options["action"] = "route";
+  options["pattern"] = pattern;
   if (!options.contains("behavior")) options["behavior"] = "continue";
   return command("network", std::move(options));
 }
@@ -614,11 +669,14 @@ void Page::set_http_credentials(Json credentials) const {
   if (!credentials.is_null()) object(credentials);
   command("network", Json{{"action", "credentials"}, {"credentials", std::move(credentials)}});
 }
-void Page::set_offline(bool value) const { command("network", Json{{"action", "offline"}, {"offline", value}}); }
+void Page::set_offline(bool value) const {
+  command("network", Json{{"action", "offline"}, {"offline", value}});
+}
 void Page::start_har(Json options) const {
   object(options);
-  for (const auto& [key,value] : options.as_object()) {
-    if (key != "content" || !value.is_string() || (value.as_string() != "embed" && value.as_string() != "omit"))
+  for (const auto& [key, value] : options.as_object()) {
+    if (key != "content" || !value.is_string() ||
+        (value.as_string() != "embed" && value.as_string() != "omit"))
       throw std::invalid_argument("HAR options support content embed or omit");
   }
   if (!options.contains("content")) options["content"] = "embed";
@@ -641,24 +699,32 @@ Json Page::page_errors() const {
 }
 void Page::clear_console() const { command("console", Json{{"action", "clear"}}); }
 std::string Page::add_init_script(const std::string& source) const {
-  return command("initScript", Json{{"action", "add"}, {"source", source}}).at("identifier").as_string();
+  return command("initScript", Json{{"action", "add"}, {"source", source}})
+      .at("identifier")
+      .as_string();
 }
 void Page::remove_init_script(const std::string& id) const {
   command("initScript", Json{{"action", "remove"}, {"identifier", id}});
 }
-Json Page::init_scripts() const { return command("initScript", Json{{"action", "list"}}).at("scripts"); }
+Json Page::init_scripts() const {
+  return command("initScript", Json{{"action", "list"}}).at("scripts");
+}
 void Page::emulate_media(Json options) const {
   object(options);
-  for (const auto& [name,value] : options.as_object()) {
-    if (name != "media" && name != "colorScheme" && name != "reducedMotion" && name != "forcedColors" && name != "contrast")
+  for (const auto& [name, value] : options.as_object()) {
+    if (name != "media" && name != "colorScheme" && name != "reducedMotion" &&
+        name != "forcedColors" && name != "contrast")
       throw std::invalid_argument("Unsupported native media option");
     if (value.is_null()) continue;
-    if (!value.is_string()) throw std::invalid_argument("Native media settings must be strings or null");
+    if (!value.is_string())
+      throw std::invalid_argument("Native media settings must be strings or null");
     const auto& text = value.as_string();
-    const bool valid = name == "media" ? text == "screen" || text == "print" :
-        name == "colorScheme" ? text == "light" || text == "dark" || text == "no-preference" :
-        name == "reducedMotion" ? text == "reduce" || text == "no-preference" :
-        name == "forcedColors" ? text == "active" || text == "none" : text == "more" || text == "no-preference";
+    const bool valid = name == "media" ? text == "screen" || text == "print"
+                       : name == "colorScheme"
+                           ? text == "light" || text == "dark" || text == "no-preference"
+                       : name == "reducedMotion" ? text == "reduce" || text == "no-preference"
+                       : name == "forcedColors"  ? text == "active" || text == "none"
+                                                 : text == "more" || text == "no-preference";
     if (!valid) throw std::invalid_argument("Invalid native media setting");
   }
   options["action"] = "media";
@@ -668,15 +734,21 @@ void Page::emulate_geolocation(double latitude, double longitude, double accurac
   if (!std::isfinite(latitude) || !std::isfinite(longitude) || !std::isfinite(accuracy) ||
       latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || accuracy < 0)
     throw std::invalid_argument("Invalid emulated geolocation coordinates or accuracy");
-  command("emulation", Json{{"action", "geolocation"}, {"latitude", latitude}, {"longitude", longitude}, {"accuracy", accuracy}});
+  command("emulation", Json{{"action", "geolocation"},
+                            {"latitude", latitude},
+                            {"longitude", longitude},
+                            {"accuracy", accuracy}});
 }
 void Page::clear_geolocation() const { command("emulation", Json{{"action", "clearGeolocation"}}); }
 void Page::emulate_timezone(const std::string& zone) const {
-  emulation_text(zone,"timezone");
+  emulation_text(zone, "timezone");
   command("emulation", Json{{"action", "timezone"}, {"timezoneId", zone}});
 }
-void Page::emulate_user_agent(const std::string& user_agent, const std::string& language, const std::string& platform) const {
-  emulation_text(user_agent,"user agent"); emulation_text(language,"accept language"); emulation_text(platform,"platform");
+void Page::emulate_user_agent(const std::string& user_agent, const std::string& language,
+                              const std::string& platform) const {
+  emulation_text(user_agent, "user agent");
+  emulation_text(language, "accept language");
+  emulation_text(platform, "platform");
   Json options{{"action", "userAgent"}, {"userAgent", user_agent}};
   if (!language.empty()) options["acceptLanguage"] = language;
   if (!platform.empty()) options["platform"] = platform;
@@ -687,42 +759,57 @@ Json Page::storage_state() const {
 }
 void Page::restore_storage_state(Json state) const {
   object(state);
-  command("context", Json{{"action", "setStorageState"}, {"params", Json{{"pageId", page_}, {"state", std::move(state)}}}});
+  command("context", Json{{"action", "setStorageState"},
+                          {"params", Json{{"pageId", page_}, {"state", std::move(state)}}}});
 }
 void Page::subscribe_frames(bool enabled) const {
   command("frameSubscription", Json{{"enabled", enabled}});
 }
 Json Page::start_recording(const std::string& path, double fps, Json options) const {
-  object(options); options["action"]="start"; options["path"]=path; options["fps"]=fps;
-  return command("recording",std::move(options));
+  object(options);
+  options["action"] = "start";
+  options["path"] = path;
+  options["fps"] = fps;
+  return command("recording", std::move(options));
 }
-Json Page::stop_recording() const { return command("recording",Json{{"action","stop"}}); }
-Json Page::recording_status() const { return command("recording",Json{{"action","status"}}); }
-void Page::cancel_recording() const { command("recording",Json{{"action","cancel"}}); }
+Json Page::stop_recording() const { return command("recording", Json{{"action", "stop"}}); }
+Json Page::recording_status() const { return command("recording", Json{{"action", "status"}}); }
+void Page::cancel_recording() const { command("recording", Json{{"action", "cancel"}}); }
 void Page::start_tracing(const std::string& categories) const {
-  command("tracing",Json{{"action","start"},{"categories",categories}});
+  command("tracing", Json{{"action", "start"}, {"categories", categories}});
 }
-Json Page::stop_tracing(const std::string& path) const { return command("tracing",Json{{"action","stop"},{"path",path}}); }
+Json Page::stop_tracing(const std::string& path) const {
+  return command("tracing", Json{{"action", "stop"}, {"path", path}});
+}
 void Page::start_profiler(int sampling_interval_us) const {
-  command("profiler",Json{{"action","start"},{"samplingIntervalUs",sampling_interval_us}});
+  command("profiler", Json{{"action", "start"}, {"samplingIntervalUs", sampling_interval_us}});
 }
-Json Page::stop_profiler(const std::string& path) const { return command("profiler",Json{{"action","stop"},{"path",path}}); }
+Json Page::stop_profiler(const std::string& path) const {
+  return command("profiler", Json{{"action", "stop"}, {"path", path}});
+}
 Json Page::bidi(const std::string& method, Json params) const {
-  if (method.empty() || !params.is_object()) throw std::invalid_argument("BiDi requires a method and object params");
-  return command("bidi", Json{{"method",method},{"params",std::move(params)}});
+  if (method.empty() || !params.is_object())
+    throw std::invalid_argument("BiDi requires a method and object params");
+  return command("bidi", Json{{"method", method}, {"params", std::move(params)}});
 }
 Json Page::devtools(const std::string& method, Json params) const {
   object(params);
   return command("devtools", Json{{"method", method}, {"params", std::move(params)}});
 }
 
-Frame::Frame(std::shared_ptr<Transport> transport, int page, std::string frame, Json path, Timeout timeout)
-    : transport_(std::move(transport)), page_(page), frame_(std::move(frame)),
-      frame_path_(std::move(path)), timeout_(timeout) {}
+Frame::Frame(std::shared_ptr<Transport> transport, int page, std::string frame, Json path,
+             Timeout timeout)
+    : transport_(std::move(transport)),
+      page_(page),
+      frame_(std::move(frame)),
+      frame_path_(std::move(path)),
+      timeout_(timeout) {}
 Page Frame::view() const {
   live(transport_, page_);
   Page page(transport_, page_, false);
-  page.timeout_ = timeout_; page.frame_ = frame_; page.frame_path_ = frame_path_;
+  page.timeout_ = timeout_;
+  page.frame_ = frame_;
+  page.frame_path_ = frame_path_;
   return page;
 }
 Frame Frame::with_timeout(Timeout timeout) const {
@@ -737,22 +824,40 @@ Locator Frame::locator_query(Json query, std::string description) const {
 Locator Frame::get_by_role(const std::string& role, const std::string& name, bool exact) const {
   return view().get_by_role(role, name, exact);
 }
-Locator Frame::get_by_label(const std::string& text, bool exact) const { return view().get_by_label(text, exact); }
-Locator Frame::get_by_text(const std::string& text, bool exact) const { return view().get_by_text(text, exact); }
-Locator Frame::get_by_placeholder(const std::string& text, bool exact) const { return view().get_by_placeholder(text, exact); }
-Locator Frame::get_by_alt_text(const std::string& text, bool exact) const { return view().get_by_alt_text(text, exact); }
-Locator Frame::get_by_title(const std::string& text, bool exact) const { return view().get_by_title(text, exact); }
+Locator Frame::get_by_label(const std::string& text, bool exact) const {
+  return view().get_by_label(text, exact);
+}
+Locator Frame::get_by_text(const std::string& text, bool exact) const {
+  return view().get_by_text(text, exact);
+}
+Locator Frame::get_by_placeholder(const std::string& text, bool exact) const {
+  return view().get_by_placeholder(text, exact);
+}
+Locator Frame::get_by_alt_text(const std::string& text, bool exact) const {
+  return view().get_by_alt_text(text, exact);
+}
+Locator Frame::get_by_title(const std::string& text, bool exact) const {
+  return view().get_by_title(text, exact);
+}
 Locator Frame::get_by_test_id(const std::string& text) const { return view().get_by_test_id(text); }
 Locator Frame::get_by_ref(const std::string& ref) const { return view().get_by_ref(ref); }
 Json Frame::evaluate(const std::string& expression) const { return view().evaluate(expression); }
-Packet Frame::evaluate_raw(const std::string& expression) const { return view().evaluate_raw(expression); }
+Packet Frame::evaluate_raw(const std::string& expression) const {
+  return view().evaluate_raw(expression);
+}
 std::string Frame::url() const { return view().url(); }
 std::string Frame::title() const { return view().title(); }
 std::string Frame::content() const { return view().content(); }
-void Frame::wait_for_selector(const std::string& css, const std::string& state) const { locator(css).wait_for(state); }
-void Frame::wait_for_text(const std::string& text, bool exact) const { get_by_text(text, exact).wait_for(); }
+void Frame::wait_for_selector(const std::string& css, const std::string& state) const {
+  locator(css).wait_for(state);
+}
+void Frame::wait_for_text(const std::string& text, bool exact) const {
+  get_by_text(text, exact).wait_for();
+}
 Json Frame::observe(bool boxes, int depth) const { return view().observe(boxes, depth); }
-Json Frame::command(const std::string& family, Json fields) const { return view().command(family, std::move(fields)); }
+Json Frame::command(const std::string& family, Json fields) const {
+  return view().command(family, std::move(fields));
+}
 
 Context::Context(std::shared_ptr<Transport> transport, int context)
     : transport_(std::move(transport)), context_(context) {}
@@ -801,16 +906,20 @@ void Context::clear_cookies(Json filter, Timeout timeout) const {
   object(filter);
   command("clearCookies", Json{{"filter", std::move(filter)}}, timeout);
 }
-void Context::grant_permissions(const std::vector<std::string>& permissions, const std::string& origin,
-                                Timeout timeout) const {
+void Context::grant_permissions(const std::vector<std::string>& permissions,
+                                const std::string& origin, Timeout timeout) const {
   Json::array values;
   for (const auto& value : permissions) values.emplace_back(value);
   Json fields{{"permissions", std::move(values)}};
   if (!origin.empty()) fields["origin"] = origin;
   command("grantPermissions", std::move(fields), timeout);
 }
-void Context::clear_permissions(Timeout timeout) const { command("clearPermissions", Json::object{}, timeout); }
-Json Context::storage_state(Timeout timeout) const { return command("storageState", Json::object{}, timeout); }
+void Context::clear_permissions(Timeout timeout) const {
+  command("clearPermissions", Json::object{}, timeout);
+}
+Json Context::storage_state(Timeout timeout) const {
+  return command("storageState", Json::object{}, timeout);
+}
 void Context::restore_storage_state(Json state, Timeout timeout) const {
   object(state);
   command("setStorageState", Json{{"state", std::move(state)}}, timeout);
@@ -855,11 +964,14 @@ Browser Browser::connect_chromium(const std::string& endpoint, const LaunchOptio
   return launch(config);
 }
 Browser Browser::launch_firefox(const LaunchOptions& options) {
-  auto config = options; config.backend = BrowserBackend::firefox;
+  auto config = options;
+  config.backend = BrowserBackend::firefox;
   return launch(config);
 }
 Browser Browser::connect_firefox(const std::string& endpoint, const LaunchOptions& options) {
-  auto config = options; config.backend = BrowserBackend::firefox; config.cdp_endpoint = endpoint;
+  auto config = options;
+  config.backend = BrowserBackend::firefox;
+  config.cdp_endpoint = endpoint;
   return launch(config);
 }
 Browser::~Browser() {
@@ -888,12 +1000,14 @@ Page Browser::new_page(Timeout timeout) const {
   return Page(transport_, new_page_id(transport_, default_context(transport_), timeout), true);
 }
 Page Browser::page(int page_id) const {
-  if (page_id < 2) throw std::invalid_argument("Adopted page ID must name a page other than the main page");
+  if (page_id < 2)
+    throw std::invalid_argument("Adopted page ID must name a page other than the main page");
   live(transport_, 1);
   return Page(transport_, page_id, true);
 }
 Json Browser::pages(Timeout timeout) const {
-  const auto result = context_call(transport_, "pages", Json{{"contextId", default_context(transport_)}}, timeout);
+  const auto result =
+      context_call(transport_, "pages", Json{{"contextId", default_context(transport_)}}, timeout);
   return result.contains("pages") ? result.at("pages") : result;
 }
 Context Browser::new_context(Json options, Timeout timeout) const {

@@ -27,9 +27,10 @@ class CdpConnection {
   // True marks only an actively consumed Page.screencastFrame as disposable
   // public telemetry; other lifecycle/control events remain protected.
   void set_event_handler_with_disposition(std::function<bool(const Json&)>);
+
  private:
   struct Impl;
   explicit CdpConnection(std::unique_ptr<Impl>);
   std::unique_ptr<Impl> impl_;
 };
-} // namespace suitecut::detail
+}  // namespace suitecut::detail

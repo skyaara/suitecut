@@ -81,8 +81,10 @@ class ChromeWindowCommands : public CefCommandHandler {
 
 inline void RemoveInspectionItems(CefRefPtr<CefMenuModel> model) {
   for (size_t i = model->GetCount(); i-- > 0;) {
-    if (InspectionCommand(model->GetCommandIdAt(i))) model->RemoveAt(i);
-    else if (auto sub = model->GetSubMenuAt(i)) RemoveInspectionItems(sub);
+    if (InspectionCommand(model->GetCommandIdAt(i)))
+      model->RemoveAt(i);
+    else if (auto sub = model->GetSubMenuAt(i))
+      RemoveInspectionItems(sub);
   }
 }
 

@@ -50,8 +50,7 @@ inline std::optional<uint64_t> PositiveInteger(std::string_view text) {
 }
 
 // An absent limit covers both unlimited and unreadable/malformed settings.
-inline std::optional<double> ParseCpuQuota(const std::string& quota,
-                                          const std::string& period) {
+inline std::optional<double> ParseCpuQuota(const std::string& quota, const std::string& period) {
   const auto q = PositiveInteger(quota), p = PositiveInteger(period);
   if (!q || !p) return std::nullopt;
   return static_cast<double>(*q) / static_cast<double>(*p);
@@ -72,28 +71,27 @@ inline void Tighten(std::optional<double>& limit, std::optional<double> candidat
 inline bool HasController(const std::string& controllers, const std::string& name) {
   std::istringstream input(controllers);
   std::string controller;
-  while (std::getline(input, controller, ',')) if (controller == name) return true;
+  while (std::getline(input, controller, ','))
+    if (controller == name) return true;
   return false;
 }
 
 inline std::string UnescapeMountPath(const std::string& path) {
   std::string result;
   for (size_t i = 0; i < path.size(); ++i) {
-    if (path[i] == '\\' && i + 3 < path.size() &&
-        path[i + 1] >= '0' && path[i + 1] <= '7' &&
-        path[i + 2] >= '0' && path[i + 2] <= '7' &&
-        path[i + 3] >= '0' && path[i + 3] <= '7') {
-      result += static_cast<char>((path[i + 1] - '0') * 64 +
-                                  (path[i + 2] - '0') * 8 + path[i + 3] - '0');
+    if (path[i] == '\\' && i + 3 < path.size() && path[i + 1] >= '0' && path[i + 1] <= '7' &&
+        path[i + 2] >= '0' && path[i + 2] <= '7' && path[i + 3] >= '0' && path[i + 3] <= '7') {
+      result +=
+          static_cast<char>((path[i + 1] - '0') * 64 + (path[i + 2] - '0') * 8 + path[i + 3] - '0');
       i += 3;
-    } else result += path[i];
+    } else
+      result += path[i];
   }
   return result;
 }
 
 inline bool SafeAbsolutePath(const std::string& path) {
-  if (path.empty() || path.front() != '/' || path.find('\0') != std::string::npos)
-    return false;
+  if (path.empty() || path.front() != '/' || path.find('\0') != std::string::npos) return false;
   std::istringstream input(path);
   std::string component;
   while (std::getline(input, component, '/'))
@@ -103,28 +101,29 @@ inline bool SafeAbsolutePath(const std::string& path) {
 
 // Translate cgroup membership through a mount's root (which may be a subtree).
 inline std::optional<std::string> ResolveCgroupPath(const std::string& membership,
-                                                   const std::string& root,
-                                                   const std::string& mount) {
-  if (!SafeAbsolutePath(membership) || !SafeAbsolutePath(root) ||
-      !SafeAbsolutePath(mount)) return std::nullopt;
+                                                    const std::string& root,
+                                                    const std::string& mount) {
+  if (!SafeAbsolutePath(membership) || !SafeAbsolutePath(root) || !SafeAbsolutePath(mount))
+    return std::nullopt;
   if (root != "/" && membership != root &&
       (membership.size() <= root.size() || membership.compare(0, root.size(), root) ||
-       membership[root.size()] != '/')) return std::nullopt;
-  const std::string suffix = root == "/" ? (membership == "/" ? "" : membership)
-                                         : membership.substr(root.size());
+       membership[root.size()] != '/'))
+    return std::nullopt;
+  const std::string suffix =
+      root == "/" ? (membership == "/" ? "" : membership) : membership.substr(root.size());
   if (suffix.empty()) return mount;
   return (mount == "/" ? std::string{} : mount) + suffix;
 }
 
 // Share membership/mount translation and ancestor traversal across controllers.
 template <typename Visitor>
-inline void VisitCgroupAncestors(const std::string& memberships,
-                                const std::string& mounts,
-                                const std::string& controller, Visitor visit) {
+inline void VisitCgroupAncestors(const std::string& memberships, const std::string& mounts,
+                                 const std::string& controller, Visitor visit) {
   std::string v2_path, v1_path, line;
   std::istringstream membership_input(memberships);
   while (std::getline(membership_input, line)) {
-    const auto first = line.find(':'), second = line.find(':', first == std::string::npos ? 0 : first + 1);
+    const auto first = line.find(':'),
+               second = line.find(':', first == std::string::npos ? 0 : first + 1);
     if (first == std::string::npos || second == std::string::npos) continue;
     const auto controllers = line.substr(first + 1, second - first - 1);
     if (controllers.empty()) v2_path = line.substr(second + 1);
@@ -137,7 +136,8 @@ inline void VisitCgroupAncestors(const std::string& memberships,
     std::istringstream left(line.substr(0, separator)), right(line.substr(separator + 3));
     std::string id, parent, device, root, mount, options, type, source, super_options;
     if (!(left >> id >> parent >> device >> root >> mount >> options) ||
-        !(right >> type >> source >> super_options)) continue;
+        !(right >> type >> source >> super_options))
+      continue;
     const bool v2 = type == "cgroup2";
     if (!v2 && (type != "cgroup" || !HasController(super_options, controller))) continue;
     root = UnescapeMountPath(root);
@@ -158,18 +158,18 @@ inline void VisitCgroupAncestors(const std::string& memberships,
 // The reader makes hierarchy detection testable without changing real cgroups.
 template <typename Reader>
 inline std::optional<double> CgroupCpuLimit(const std::string& memberships,
-                                           const std::string& mounts,
-                                           Reader read) {
+                                            const std::string& mounts, Reader read) {
   std::optional<double> limit;
   Tighten(limit, ParseCpuMax(read("/sys/fs/cgroup/cpu.max")));
   VisitCgroupAncestors(memberships, mounts, "cpu", [&](bool v2, const std::string& path) {
-    if (v2) Tighten(limit, ParseCpuMax(read(path + "/cpu.max")));
+    if (v2)
+      Tighten(limit, ParseCpuMax(read(path + "/cpu.max")));
     else {
       std::istringstream quota_input(read(path + "/cpu.cfs_quota_us"));
       std::istringstream period_input(read(path + "/cpu.cfs_period_us"));
       std::string quota, period, extra;
-      if ((quota_input >> quota) && !(quota_input >> extra) &&
-          (period_input >> period) && !(period_input >> extra))
+      if ((quota_input >> quota) && !(quota_input >> extra) && (period_input >> period) &&
+          !(period_input >> extra))
         Tighten(limit, ParseCpuQuota(quota, period));
     }
   });
@@ -182,31 +182,30 @@ inline std::optional<uint64_t> ParseMemoryLimit(const std::string& contents) {
   if (!(input >> token) || input >> extra) return std::nullopt;
   uint64_t bytes = 0;
   const auto parsed = std::from_chars(token.data(), token.data() + token.size(), bytes);
-  if (parsed.ec != std::errc{} || parsed.ptr != token.data() + token.size())
-    return std::nullopt;
+  if (parsed.ec != std::errc{} || parsed.ptr != token.data() + token.size()) return std::nullopt;
   return bytes;
 }
 
-inline void TightenMemory(std::optional<uint64_t>& limit,
-                          std::optional<uint64_t> candidate) {
+inline void TightenMemory(std::optional<uint64_t>& limit, std::optional<uint64_t> candidate) {
   if (candidate) limit = limit ? std::min(*limit, *candidate) : candidate;
 }
 
 template <typename Reader>
 inline std::optional<uint64_t> CgroupMemoryLimit(const std::string& memberships,
-                                               const std::string& mounts, Reader read) {
+                                                 const std::string& mounts, Reader read) {
   std::optional<uint64_t> limit;
   TightenMemory(limit, ParseMemoryLimit(read("/sys/fs/cgroup/memory.max")));
   VisitCgroupAncestors(memberships, mounts, "memory", [&](bool v2, const std::string& path) {
-    TightenMemory(limit, ParseMemoryLimit(read(path + (v2 ? "/memory.max" : "/memory.limit_in_bytes"))));
+    TightenMemory(limit,
+                  ParseMemoryLimit(read(path + (v2 ? "/memory.max" : "/memory.limit_in_bytes"))));
   });
   return limit;
 }
 
 inline double CpuCapacity(unsigned fallback, std::optional<double> affinity,
                           std::optional<double> quota) {
-  double available = affinity && std::isfinite(*affinity) && *affinity > 0
-                         ? *affinity : std::max(1u, fallback);
+  double available =
+      affinity && std::isfinite(*affinity) && *affinity > 0 ? *affinity : std::max(1u, fallback);
   if (quota && std::isfinite(*quota) && *quota > 0) available = std::min(available, *quota);
   return available;
 }
@@ -219,8 +218,7 @@ inline size_t WorkerCount(double available_cpus) {
   return half >= static_cast<double>(maximum) ? maximum : static_cast<size_t>(half);
 }
 
-inline WorkerPolicy ComputeWorkerPolicy(double available_cpus,
-                                        std::optional<uint64_t> memory_bytes,
+inline WorkerPolicy ComputeWorkerPolicy(double available_cpus, std::optional<uint64_t> memory_bytes,
                                         size_t stack_bytes) {
   size_t workers = WorkerCount(available_cpus);
   // Reserve at most 1/64 of the effective memory limit for native pool stacks,
@@ -238,16 +236,15 @@ inline std::optional<uint64_t> PhysicalMemoryBytes() {
 #if defined(__APPLE__)
   uint64_t bytes = 0;
   size_t size = sizeof(bytes);
-  if (sysctlbyname("hw.memsize", &bytes, &size, nullptr, 0) == 0 && bytes)
-    return bytes;
+  if (sysctlbyname("hw.memsize", &bytes, &size, nullptr, 0) == 0 && bytes) return bytes;
 #elif defined(_WIN32)
   return WindowsMemoryBytes();
 #endif
 #if !defined(_WIN32) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
   const long pages = sysconf(_SC_PHYS_PAGES), page_bytes = sysconf(_SC_PAGESIZE);
   if (pages > 0 && page_bytes > 0 &&
-      static_cast<uint64_t>(pages) <= std::numeric_limits<uint64_t>::max() /
-                                          static_cast<uint64_t>(page_bytes))
+      static_cast<uint64_t>(pages) <=
+          std::numeric_limits<uint64_t>::max() / static_cast<uint64_t>(page_bytes))
     return static_cast<uint64_t>(pages) * static_cast<uint64_t>(page_bytes);
 #endif
   return std::nullopt;
@@ -282,7 +279,11 @@ inline std::optional<double> AffinityCpuCount() {
     std::vector<unsigned long> mask(bytes / sizeof(unsigned long), 0);
     if (sched_getaffinity(0, bytes, reinterpret_cast<cpu_set_t*>(mask.data())) == 0) {
       size_t count = 0;
-      for (auto word : mask) while (word) { word &= word - 1; ++count; }
+      for (auto word : mask)
+        while (word) {
+          word &= word - 1;
+          ++count;
+        }
       if (count) return static_cast<double>(count);
       return std::nullopt;
     }
@@ -312,8 +313,8 @@ inline WorkerPolicy AutomaticWorkerPolicy() {
   TightenMemory(memory, CgroupMemoryLimit(memberships, mounts, ReadFile));
 #endif
   return ComputeWorkerPolicy(
-      CpuCapacity(std::thread::hardware_concurrency(), AffinityCpuCount(), quota),
-      memory, DefaultThreadStackBytes());
+      CpuCapacity(std::thread::hardware_concurrency(), AffinityCpuCount(), quota), memory,
+      DefaultThreadStackBytes());
 }
 
 inline size_t AutomaticWorkerCount() { return AutomaticWorkerPolicy().workers; }

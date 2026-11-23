@@ -11,7 +11,10 @@
 
 namespace {
 using Dict = SuiteCutPersonPrompts::Dict;
-struct Calls { int answered = 0, policy = 0, cancel = 0; std::string last; };
+struct Calls {
+  int answered = 0, policy = 0, cancel = 0;
+  std::string last;
+};
 SuiteCutPersonPrompts::Hold Holding(Calls& calls, bool document = false, std::string key = {}) {
   SuiteCutPersonPrompts::Hold hold;
   hold.answer = [&calls](Dict answer) -> std::string {
@@ -49,12 +52,16 @@ int main() {
   const auto first = events[0]->GetString("id").ToString();
   std::string error;
   // An answer that does not fit keeps the prompt.
-  assert(!prompts.Answer(first, Answer("other", "x"), error) && error == "An answer has a value" && prompts.Size() == 1);
+  assert(!prompts.Answer(first, Answer("other", "x"), error) && error == "An answer has a value" &&
+         prompts.Size() == 1);
   // The answer's contents never reach an event.
-  assert(prompts.Answer(first, Answer("value", "s3cret"), error) && calls.answered == 1 && calls.last == "s3cret");
-  assert(events.size() == 2 && events[1]->GetString("state") == "closed" && events[1]->GetString("reason") == "answered" &&
-         events[1]->GetString("id") == first && !events[1]->HasKey("value") && !events[1]->HasKey("mode"));
-  assert(!prompts.Answer(first, Answer("value", "again"), error) && error == "The prompt was answered or has closed");
+  assert(prompts.Answer(first, Answer("value", "s3cret"), error) && calls.answered == 1 &&
+         calls.last == "s3cret");
+  assert(events.size() == 2 && events[1]->GetString("state") == "closed" &&
+         events[1]->GetString("reason") == "answered" && events[1]->GetString("id") == first &&
+         !events[1]->HasKey("value") && !events[1]->HasKey("mode"));
+  assert(!prompts.Answer(first, Answer("value", "again"), error) &&
+         error == "The prompt was answered or has closed");
   // {"policy":true} is today's answer.
   assert(prompts.Show("auth", CefDictionaryValue::Create(), Holding(calls)));
   auto policy = CefDictionaryValue::Create();
@@ -63,7 +70,8 @@ int main() {
   assert(events.back()->GetString("reason") == "policy");
   // A navigation drops document prompts only; a dismissal finds its key.
   assert(prompts.Show("file", CefDictionaryValue::Create(), Holding(calls, true)));
-  assert(prompts.Show("permission", CefDictionaryValue::Create(), Holding(calls, false, "permission:7")));
+  assert(prompts.Show("permission", CefDictionaryValue::Create(),
+                      Holding(calls, false, "permission:7")));
   assert(prompts.Show("certificate", CefDictionaryValue::Create(), Holding(calls)));
   const auto before = events.size();
   prompts.Reset();
@@ -72,10 +80,12 @@ int main() {
   prompts.Dismissed("permission:8");
   assert(prompts.Size() == 2);
   prompts.Dismissed("permission:7");
-  assert(prompts.Size() == 1 && events.back()->GetString("kind") == "permission" && calls.cancel == 2);
+  assert(prompts.Size() == 1 && events.back()->GetString("kind") == "permission" &&
+         calls.cancel == 2);
   // The last window leaving answers what is held as today's policy.
   prompts.Subscribe(false);
-  assert(prompts.Size() == 0 && calls.policy == 2 && events.back()->GetString("kind") == "certificate" &&
+  assert(prompts.Size() == 0 && calls.policy == 2 &&
+         events.back()->GetString("kind") == "certificate" &&
          events.back()->GetString("reason") == "policy");
   assert(!prompts.Show("file", CefDictionaryValue::Create(), Holding(calls)));
   // A closing page releases callbacks and reports nothing.
@@ -97,9 +107,12 @@ int main() {
   assert(prompts.Show("permission", CefDictionaryValue::Create(), std::move(hold)));
   const auto asked = events.back()->GetString("id").ToString();
   const auto shown = events.size();
-  assert(!prompts.Answer(asked, Answer("other", "x"), error) && prompts.Size() == 1 && events.size() == shown);
-  assert(prompts.Answer(asked, Answer("value", "allow"), error) && reentered.answered == 1 && reentered.cancel == 0);
-  assert(prompts.Size() == 0 && events.size() == shown + 1 && events.back()->GetString("reason") == "answered");
+  assert(!prompts.Answer(asked, Answer("other", "x"), error) && prompts.Size() == 1 &&
+         events.size() == shown);
+  assert(prompts.Answer(asked, Answer("value", "allow"), error) && reentered.answered == 1 &&
+         reentered.cancel == 0);
+  assert(prompts.Size() == 0 && events.size() == shown + 1 &&
+         events.back()->GetString("reason") == "answered");
   prompts.Clear();
   // The agent's credentials: one try per challenge until a document commits.
   SuiteCutAgentAuthTries tries;

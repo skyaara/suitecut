@@ -19,41 +19,69 @@ class SuiteCutContextBindings {
   };
   using Entries = std::map<std::string, Entry>;
   bool Add(const std::string& scope, const std::string& name, std::string installer,
-      std::string codec, bool handle, Entry& output, std::string& error) {
+           std::string codec, bool handle, Entry& output, std::string& error) {
     if (name.empty() || SuiteCutBindingNameUnits(name) == std::numeric_limits<size_t>::max() ||
-        installer.empty() || codec.empty() || installer.find('\0') != std::string::npos || codec.find('\0') != std::string::npos) {
-      error = "Invalid native context binding registration"; return false;
+        installer.empty() || codec.empty() || installer.find('\0') != std::string::npos ||
+        codec.find('\0') != std::string::npos) {
+      error = "Invalid native context binding registration";
+      return false;
     }
-    if (entries_.contains(name)) { error = "Function \"" + SuiteCutBindingNameDiagnostic(name) + "\" has been already registered"; return false; }
+    if (entries_.contains(name)) {
+      error =
+          "Function \"" + SuiteCutBindingNameDiagnostic(name) + "\" has been already registered";
+      return false;
+    }
     const size_t bytes = installer.size() + codec.size();
     // Reserve a version increment for removing every active entry, so cleanup
     // remains possible when a counter approaches exhaustion.
     const auto remaining = static_cast<size_t>(std::numeric_limits<int>::max() - version_);
     if (remaining < entries_.size() + 2 || next_id_ == std::numeric_limits<int>::max()) {
-      error = "Native context binding version exhausted"; return false;
+      error = "Native context binding version exhausted";
+      return false;
     }
-    Entry entry; entry.id = ++next_id_; entry.name = name;
+    Entry entry;
+    entry.id = ++next_id_;
+    entry.name = name;
     entry.bridge = "__suitecut_context_binding_" + scope + "_" + std::to_string(entry.id);
-    entry.state = entry.bridge + "_state"; entry.installer = std::move(installer);
-    entry.codec = std::move(codec); entry.handle = handle; entry.bytes = bytes;
-    bytes_ += bytes; ++version_; entries_.emplace(name, entry); output = std::move(entry); return true;
+    entry.state = entry.bridge + "_state";
+    entry.installer = std::move(installer);
+    entry.codec = std::move(codec);
+    entry.handle = handle;
+    entry.bytes = bytes;
+    bytes_ += bytes;
+    ++version_;
+    entries_.emplace(name, entry);
+    output = std::move(entry);
+    return true;
   }
   bool SetBootstrap(const std::string& name, int id, std::string source) {
-    auto found = entries_.find(name); if (found == entries_.end() || found->second.id != id) return false;
+    auto found = entries_.find(name);
+    if (found == entries_.end() || found->second.id != id) return false;
     if (source.empty() || !found->second.bootstrap.empty()) return false;
-    bytes_ += source.size(); found->second.bytes += source.size(); found->second.bootstrap = std::move(source); return true;
+    bytes_ += source.size();
+    found->second.bytes += source.size();
+    found->second.bootstrap = std::move(source);
+    return true;
   }
   bool Remove(const std::string& name, int id) {
-    const auto found = entries_.find(name); if (found == entries_.end() || found->second.id != id) return false;
-    bytes_ -= found->second.bytes; entries_.erase(found); ++version_; return true;
+    const auto found = entries_.find(name);
+    if (found == entries_.end() || found->second.id != id) return false;
+    bytes_ -= found->second.bytes;
+    entries_.erase(found);
+    ++version_;
+    return true;
   }
   const Entry* Find(const std::string& name) const {
-    const auto found = entries_.find(name); return found == entries_.end() ? nullptr : &found->second;
+    const auto found = entries_.find(name);
+    return found == entries_.end() ? nullptr : &found->second;
   }
   const Entries& All() const { return entries_; }
   int Version() const { return version_; }
   size_t Size() const { return entries_.size(); }
   size_t Bytes() const { return bytes_; }
+
  private:
-  Entries entries_; int next_id_ = 0, version_ = 0; size_t bytes_ = 0;
+  Entries entries_;
+  int next_id_ = 0, version_ = 0;
+  size_t bytes_ = 0;
 };

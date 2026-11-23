@@ -12,56 +12,160 @@ namespace suitecut {
 // enter this journal. Brokers never acquire a fabricated public page.
 class NativeHARPages {
  public:
-  struct Page {std::string id,title,loader;double wall=0,start=-1,dom=-1,load=-1;};
-  bool Created(int context,const std::string&owner,const std::string&id,double wall){
-    if(context<1||owner.empty()||id.empty()||!std::isfinite(wall)||wall<0||live_.contains(owner))return false;
-    Page page{id,"","",wall};
-    live_.emplace(owner,Live{context,page});bytes_+=Cost(owner,page);
-    const auto capture=captures_.find(context);if(capture!=captures_.end())Add(capture->second,owner,page);
+  struct Page {
+    std::string id, title, loader;
+    double wall = 0, start = -1, dom = -1, load = -1;
+  };
+  bool Created(int context, const std::string& owner, const std::string& id, double wall) {
+    if (context < 1 || owner.empty() || id.empty() || !std::isfinite(wall) || wall < 0 ||
+        live_.contains(owner))
+      return false;
+    Page page{id, "", "", wall};
+    live_.emplace(owner, Live{context, page});
+    bytes_ += Cost(owner, page);
+    const auto capture = captures_.find(context);
+    if (capture != captures_.end()) Add(capture->second, owner, page);
     return true;
   }
-  bool Start(int context){
-    if(context<1||captures_.contains(context))return false;
+  bool Start(int context) {
+    if (context < 1 || captures_.contains(context)) return false;
     Capture capture;
-    for(const auto&[owner,live]:live_)if(live.context==context)Add(capture,owner,live.page);
-    captures_.emplace(context,std::move(capture));return true;
+    for (const auto& [owner, live] : live_)
+      if (live.context == context) Add(capture, owner, live.page);
+    captures_.emplace(context, std::move(capture));
+    return true;
   }
-  void Seal(int context){const auto capture=captures_.find(context);if(capture!=captures_.end())capture->second.sealed=true;}
-  void Stop(int context){const auto capture=captures_.find(context);if(capture!=captures_.end()){Release(capture->second);captures_.erase(capture);}}
-  void Detach(const std::string&owner){const auto live=live_.find(owner);if(live!=live_.end()){bytes_-=Cost(owner,live->second.page);live_.erase(live);}}
-  bool Title(int context,const std::string&owner,const std::string&title){
-    const auto live=live_.find(owner);if(live==live_.end()||live->second.context!=context)return false;
-    const auto capture=captures_.find(context);
-    Page*record=nullptr;if(capture!=captures_.end()&&!capture->second.sealed){const auto found=capture->second.pages.find(owner);if(found!=capture->second.pages.end())record=&found->second;}
-    const auto old=Cost(owner,live->second.page)+(record?Cost(owner,*record):0);
-    const auto next=Cost(owner,live->second.page)-live->second.page.title.size()+title.size()+(record?Cost(owner,*record)-record->title.size()+title.size():0);
+  void Seal(int context) {
+    const auto capture = captures_.find(context);
+    if (capture != captures_.end()) capture->second.sealed = true;
+  }
+  void Stop(int context) {
+    const auto capture = captures_.find(context);
+    if (capture != captures_.end()) {
+      Release(capture->second);
+      captures_.erase(capture);
+    }
+  }
+  void Detach(const std::string& owner) {
+    const auto live = live_.find(owner);
+    if (live != live_.end()) {
+      bytes_ -= Cost(owner, live->second.page);
+      live_.erase(live);
+    }
+  }
+  bool Title(int context, const std::string& owner, const std::string& title) {
+    const auto live = live_.find(owner);
+    if (live == live_.end() || live->second.context != context) return false;
+    const auto capture = captures_.find(context);
+    Page* record = nullptr;
+    if (capture != captures_.end() && !capture->second.sealed) {
+      const auto found = capture->second.pages.find(owner);
+      if (found != capture->second.pages.end()) record = &found->second;
+    }
+    const auto old = Cost(owner, live->second.page) + (record ? Cost(owner, *record) : 0);
+    const auto next = Cost(owner, live->second.page) - live->second.page.title.size() +
+                      title.size() +
+                      (record ? Cost(owner, *record) - record->title.size() + title.size() : 0);
     // Assigning a short string, even by move from an SSO string, can retain
     // the old allocation. Swap fresh storage so refunded bytes are released.
-    std::string fresh_live(title),fresh_record(record?title:std::string{});
-    live->second.page.title.swap(fresh_live);if(record)record->title.swap(fresh_record);
-    bytes_=bytes_-old+next;return true;
+    std::string fresh_live(title), fresh_record(record ? title : std::string{});
+    live->second.page.title.swap(fresh_live);
+    if (record) record->title.swap(fresh_record);
+    bytes_ = bytes_ - old + next;
+    return true;
   }
-  bool Lifecycle(int context,const std::string&owner,const std::string&phase,double timestamp,double wall,const std::string&loader){
-    const auto live=live_.find(owner);if(live==live_.end()||live->second.context!=context||loader.empty()||!std::isfinite(timestamp)||timestamp<0||!std::isfinite(wall)||wall<0)return false;
-    const auto update=[&](Page&page,bool first){
-      if(phase=="init"||phase=="request"){if((!first||page.start<0)&&(page.start<0||page.loader!=loader)){page.start=timestamp;page.wall=wall;page.loader=loader;page.dom=page.load=-1;}}
-      else if(page.loader==loader&&page.start>=0&&timestamp>=page.start){if(phase=="DOMContentLoaded"&&(page.dom<0||!first))page.dom=timestamp-page.start;else if(phase=="load"&&(page.load<0||!first))page.load=timestamp-page.start;}
+  bool Lifecycle(int context, const std::string& owner, const std::string& phase, double timestamp,
+                 double wall, const std::string& loader) {
+    const auto live = live_.find(owner);
+    if (live == live_.end() || live->second.context != context || loader.empty() ||
+        !std::isfinite(timestamp) || timestamp < 0 || !std::isfinite(wall) || wall < 0)
+      return false;
+    const auto update = [&](Page& page, bool first) {
+      if (phase == "init" || phase == "request") {
+        if ((!first || page.start < 0) && (page.start < 0 || page.loader != loader)) {
+          page.start = timestamp;
+          page.wall = wall;
+          page.loader = loader;
+          page.dom = page.load = -1;
+        }
+      } else if (page.loader == loader && page.start >= 0 && timestamp >= page.start) {
+        if (phase == "DOMContentLoaded" && (page.dom < 0 || !first))
+          page.dom = timestamp - page.start;
+        else if (phase == "load" && (page.load < 0 || !first))
+          page.load = timestamp - page.start;
+      }
     };
-    update(live->second.page,false);const auto capture=captures_.find(context);if(capture!=captures_.end()&&!capture->second.sealed){const auto page=capture->second.pages.find(owner);if(page!=capture->second.pages.end())update(page->second,true);}return true;
+    update(live->second.page, false);
+    const auto capture = captures_.find(context);
+    if (capture != captures_.end() && !capture->second.sealed) {
+      const auto page = capture->second.pages.find(owner);
+      if (page != capture->second.pages.end()) update(page->second, true);
+    }
+    return true;
   }
-  std::string Reference(int context,const std::string&owner)const{const auto capture=captures_.find(context);if(capture==captures_.end())return {};const auto page=capture->second.pages.find(owner);return page==capture->second.pages.end()?std::string{}:page->second.id;}
-  template<class Date>CefRefPtr<CefListValue> Export(int context,Date date)const{
-    auto pages=CefListValue::Create();const auto capture=captures_.find(context);if(capture==captures_.end())return pages;
-    for(const auto&owner:capture->second.order){const auto&observed=capture->second.pages.at(owner);auto page=CefDictionaryValue::Create();page->SetString("id",observed.id);page->SetString("title",observed.title);page->SetString("startedDateTime",date(observed.wall));auto timing=CefDictionaryValue::Create();timing->SetDouble("onContentLoad",observed.dom);timing->SetDouble("onLoad",observed.load);page->SetDictionary("pageTimings",timing);pages->SetDictionary(pages->GetSize(),page);}return pages;
+  std::string Reference(int context, const std::string& owner) const {
+    const auto capture = captures_.find(context);
+    if (capture == captures_.end()) return {};
+    const auto page = capture->second.pages.find(owner);
+    return page == capture->second.pages.end() ? std::string{} : page->second.id;
   }
-  void Clear(){live_.clear();captures_.clear();bytes_=0;}
-  size_t bytes()const{return bytes_;}
-  size_t title_capacity()const{size_t count=0;for(const auto&[owner,live]:live_)count+=live.page.title.capacity();for(const auto&[context,capture]:captures_)for(const auto&[owner,page]:capture.pages)count+=page.title.capacity();return count;}
+  template <class Date>
+  CefRefPtr<CefListValue> Export(int context, Date date) const {
+    auto pages = CefListValue::Create();
+    const auto capture = captures_.find(context);
+    if (capture == captures_.end()) return pages;
+    for (const auto& owner : capture->second.order) {
+      const auto& observed = capture->second.pages.at(owner);
+      auto page = CefDictionaryValue::Create();
+      page->SetString("id", observed.id);
+      page->SetString("title", observed.title);
+      page->SetString("startedDateTime", date(observed.wall));
+      auto timing = CefDictionaryValue::Create();
+      timing->SetDouble("onContentLoad", observed.dom);
+      timing->SetDouble("onLoad", observed.load);
+      page->SetDictionary("pageTimings", timing);
+      pages->SetDictionary(pages->GetSize(), page);
+    }
+    return pages;
+  }
+  void Clear() {
+    live_.clear();
+    captures_.clear();
+    bytes_ = 0;
+  }
+  size_t bytes() const { return bytes_; }
+  size_t title_capacity() const {
+    size_t count = 0;
+    for (const auto& [owner, live] : live_) count += live.page.title.capacity();
+    for (const auto& [context, capture] : captures_)
+      for (const auto& [owner, page] : capture.pages) count += page.title.capacity();
+    return count;
+  }
+
  private:
-  struct Live{int context;Page page;};struct Capture{std::map<std::string,Page>pages;std::vector<std::string>order;bool sealed=false;};
-  static size_t Cost(const std::string&owner,const Page&page){return owner.size()+page.id.size()+page.title.size()+256;}
-  void Add(Capture&capture,const std::string&owner,const Page&page){if(capture.sealed||capture.pages.contains(owner))return;capture.pages.emplace(owner,page);capture.order.push_back(owner);bytes_+=Cost(owner,page);}
-  void Release(Capture&capture){for(const auto&[owner,page]:capture.pages)bytes_-=Cost(owner,page);}
-  std::map<std::string,Live>live_;std::map<int,Capture>captures_;size_t bytes_=0;
+  struct Live {
+    int context;
+    Page page;
+  };
+  struct Capture {
+    std::map<std::string, Page> pages;
+    std::vector<std::string> order;
+    bool sealed = false;
+  };
+  static size_t Cost(const std::string& owner, const Page& page) {
+    return owner.size() + page.id.size() + page.title.size() + 256;
+  }
+  void Add(Capture& capture, const std::string& owner, const Page& page) {
+    if (capture.sealed || capture.pages.contains(owner)) return;
+    capture.pages.emplace(owner, page);
+    capture.order.push_back(owner);
+    bytes_ += Cost(owner, page);
+  }
+  void Release(Capture& capture) {
+    for (const auto& [owner, page] : capture.pages) bytes_ -= Cost(owner, page);
+  }
+  std::map<std::string, Live> live_;
+  std::map<int, Capture> captures_;
+  size_t bytes_ = 0;
 };
-}
+}  // namespace suitecut

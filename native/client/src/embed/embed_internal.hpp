@@ -17,12 +17,19 @@ namespace suitecut::embed {
 
 // A protocol refusal: becomes SC_REFUSED with "code: message".
 struct Refusal : std::runtime_error {
-  Refusal(std::string code_, const std::string& message) : std::runtime_error(message), code(std::move(code_)) {}
+  Refusal(std::string code_, const std::string& message)
+      : std::runtime_error(message), code(std::move(code_)) {}
   std::string code;
 };
-struct Unsupported : std::runtime_error { using std::runtime_error::runtime_error; };
-struct Closed : std::runtime_error { using std::runtime_error::runtime_error; };
-struct TimedOut : std::runtime_error { using std::runtime_error::runtime_error; };
+struct Unsupported : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+struct Closed : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+struct TimedOut : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
 
 // One connection to the session socket: a little-endian u32 length, then
 // that many bytes of JSON, each way. A request that times out or fails
@@ -50,16 +57,17 @@ Program Run(const std::vector<std::string>& argv, std::chrono::milliseconds time
 
 // Throws when |requirement| is not met by the bundle or programs at |paths|.
 // Elsewhere than macOS any requirement is Unsupported.
-void CheckSignature(const std::string& bundle, const std::vector<std::string>& programs, const std::string& requirement);
+void CheckSignature(const std::string& bundle, const std::vector<std::string>& programs,
+                    const std::string& requirement);
 
 // A library-owned frame receiver (SC_SINK_LIBRARY). Only macOS has one.
 class FrameReceiver {
  public:
   virtual ~FrameReceiver() = default;
-  virtual std::string Name() const = 0;          // what the engine is told to send to
-  virtual void ExpectSender(int pid) = 0;        // frames from any other process are dropped
+  virtual std::string Name() const = 0;    // what the engine is told to send to
+  virtual void ExpectSender(int pid) = 0;  // frames from any other process are dropped
   virtual bool Next(std::chrono::milliseconds wait, sc_frame& out) = 0;
-  static std::unique_ptr<FrameReceiver> Create(); // throws Unsupported elsewhere
+  static std::unique_ptr<FrameReceiver> Create();  // throws Unsupported elsewhere
 };
 void ReleaseFrame(sc_frame& frame);
 

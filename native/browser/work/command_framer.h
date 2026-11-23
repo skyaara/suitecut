@@ -28,7 +28,10 @@ class SuiteCutCommandFramer {
         return false;
       }
       if (end == std::string_view::npos) break;
-      if (!deliver(std::move(pending_))) { failed_ = true; return false; }
+      if (!deliver(std::move(pending_))) {
+        failed_ = true;
+        return false;
+      }
       pending_.clear();
       bytes.remove_prefix(end + 1);
     }
@@ -36,6 +39,7 @@ class SuiteCutCommandFramer {
   }
   bool End() const { return !failed_ && pending_.empty(); }
   std::size_t BufferedBytes() const { return pending_.size(); }
+
  private:
   std::string pending_;
   bool failed_ = false;

@@ -15,15 +15,17 @@ struct VisualRect {
   double x = 0, y = 0, width = 0, height = 0;
   bool operator==(const VisualRect&) const = default;
 };
-struct VisualPoint { double x = 0, y = 0; };
+struct VisualPoint {
+  double x = 0, y = 0;
+};
 struct VisualCaptureOptions {
-  std::string scale = "css"; // "css" or "device"; viewport captures only.
+  std::string scale = "css";  // "css" or "device"; viewport captures only.
   std::optional<VisualRect> clip;
 };
 struct VisualCaptureMetadata {
   std::string id;
   std::uint32_t pixel_width = 0, pixel_height = 0;
-  VisualRect css_clip; // Effective viewport-relative CSS rectangle.
+  VisualRect css_clip;  // Effective viewport-relative CSS rectangle.
   double pixel_to_css_scale_x = 0, pixel_to_css_scale_y = 0;
 };
 struct VisualCapture : VisualCaptureMetadata {
@@ -33,10 +35,9 @@ struct VisualCapture : VisualCaptureMetadata {
 // Pure validation/mapping helpers. Metadata and calculated points grant no
 // permission to act. PNG inspection checks its first 24 bytes, not its codec,
 // CRCs or remaining image data; capture() obtains bytes from the native engine.
-std::pair<std::uint32_t, std::uint32_t> visual_png_dimensions(
-    std::span<const std::uint8_t> png);
+std::pair<std::uint32_t, std::uint32_t> visual_png_dimensions(std::span<const std::uint8_t> png);
 VisualRect visual_clip_to_viewport(double width, double height,
-                                 std::optional<VisualRect> requested = std::nullopt);
+                                   std::optional<VisualRect> requested = std::nullopt);
 VisualPoint visual_pixel_to_css(const VisualCaptureMetadata& capture, double x, double y);
 
 // One non-thread-safe controller per page. Holds a non-owning Page view and
@@ -61,4 +62,4 @@ class VisualController {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-} // namespace suitecut
+}  // namespace suitecut

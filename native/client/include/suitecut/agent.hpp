@@ -13,7 +13,11 @@ enum class AgentExecution { not_sent, completed, outcome_unknown };
 enum class AgentEffect { unverified, confirmed, unconfirmed };
 enum class AgentPhase { validation, action, verification, observation };
 enum class AgentErrorCode {
-  invalid_batch, action_failed, observation_failed, verification_failed, budget_exceeded
+  invalid_batch,
+  action_failed,
+  observation_failed,
+  verification_failed,
+  budget_exceeded
 };
 struct AgentError {
   AgentErrorCode code;
@@ -36,10 +40,10 @@ struct AgentActionResult {
   std::optional<AgentEvidence> evidence;
 };
 struct AgentBatchOptions {
-  std::size_t max_actions = 0; // Optional action-count limit; 0 means no limit.
-  std::size_t max_bytes = 0;   // Optional serialized-batch byte limit; 0 means no limit.
+  std::size_t max_actions = 0;  // Optional action-count limit; 0 means no limit.
+  std::size_t max_bytes = 0;    // Optional serialized-batch byte limit; 0 means no limit.
   bool final_observation = true;
-  Timeout max_duration{60000}; // Whole batch, including readbacks/observation; 1..300000 ms.
+  Timeout max_duration{60000};  // Whole batch, including readbacks/observation; 1..300000 ms.
 };
 struct AgentBatchResult {
   bool ok = false;
@@ -80,4 +84,4 @@ class Agent {
   static AgentBatchResult run(const Page& page, const Json& actions,
                               AgentBatchOptions options = {});
 };
-} // namespace suitecut
+}  // namespace suitecut

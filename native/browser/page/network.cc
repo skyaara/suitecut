@@ -60,7 +60,9 @@ auto Source::NativeStartContextHAR() -> void {
             }
             self->NativeStartContextRoutes();
           }))
-    NetworkFatal("Native Source context HAR policy target is already attached, closed or its context is unknown");
+    NetworkFatal(
+        "Native Source context HAR policy target is already attached, closed or its context is "
+        "unknown");
 }
 
 auto Source::ContextWorkerNetworkEvent(Dict event) -> bool {

@@ -47,6 +47,7 @@ class SimpleAgent {
   // Resolve a current short ref for another native driver operation. Borrowed
   // page identity is checked; callers must still serialize driver calls.
   Json target_ref(const std::string& alias) const;
+
  private:
   using Deadline = std::chrono::steady_clock::time_point;
   Json invoke(const std::string& tool, const Json& arguments, Deadline deadline);
@@ -68,4 +69,4 @@ class SimpleAgent {
   std::uint64_t revision_ = 0;
   int observed_page_ = 0;
 };
-} // namespace suitecut
+}  // namespace suitecut

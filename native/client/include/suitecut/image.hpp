@@ -44,4 +44,4 @@ struct ImageComparison {
 ImageComparison compare_png(const std::vector<std::uint8_t>& expected,
                             const std::vector<std::uint8_t>& actual,
                             ImageCompareOptions options = {});
-} // namespace suitecut
+}  // namespace suitecut

@@ -38,7 +38,7 @@
 namespace {
 struct Options {
   std::string runtime, requirement, session = "suitecut-sample", directory, profile,
-      url = "https://example.com/", snapshot, typed;
+                                    url = "https://example.com/", snapshot, typed;
   double exit_after = 0, click_x = -1, click_y = -1;
   bool keep = false;
 };
@@ -57,28 +57,41 @@ void write_png(IOSurfaceRef surface, const std::string& path) {
   CGImageRef cg = [context createCGImage:image fromRect:image.extent];
   if (!cg) return;
   NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:path.c_str()]];
-  CGImageDestinationRef out = CGImageDestinationCreateWithURL((__bridge CFURLRef)url, CFSTR("public.png"), 1, nullptr);
+  CGImageDestinationRef out =
+      CGImageDestinationCreateWithURL((__bridge CFURLRef)url, CFSTR("public.png"), 1, nullptr);
   if (out) {
     CGImageDestinationAddImage(out, cg, nullptr);
     CGImageDestinationFinalize(out);
     CFRelease(out);
-    std::fprintf(stderr, "suitecut-embed-sample: wrote %s (%zux%zu)\n", path.c_str(), CGImageGetWidth(cg),
-                 CGImageGetHeight(cg));
+    std::fprintf(stderr, "suitecut-embed-sample: wrote %s (%zux%zu)\n", path.c_str(),
+                 CGImageGetWidth(cg), CGImageGetHeight(cg));
   }
   CGImageRelease(cg);
 }
 // The cursor the page asked for, from its CSS name.
 NSCursor* cursor_named(NSString* name) {
   static NSDictionary<NSString*, NSCursor*>* cursors = @{
-    @"default" : NSCursor.arrowCursor, @"pointer" : NSCursor.pointingHandCursor, @"text" : NSCursor.IBeamCursor,
-    @"vertical-text" : NSCursor.IBeamCursorForVerticalLayout, @"crosshair" : NSCursor.crosshairCursor,
-    @"grab" : NSCursor.openHandCursor, @"grabbing" : NSCursor.closedHandCursor, @"move" : NSCursor.openHandCursor,
-    @"all-scroll" : NSCursor.openHandCursor, @"not-allowed" : NSCursor.operationNotAllowedCursor,
-    @"no-drop" : NSCursor.operationNotAllowedCursor, @"copy" : NSCursor.dragCopyCursor, @"alias" : NSCursor.dragLinkCursor,
-    @"context-menu" : NSCursor.contextualMenuCursor, @"e-resize" : NSCursor.resizeRightCursor,
-    @"w-resize" : NSCursor.resizeLeftCursor, @"ew-resize" : NSCursor.resizeLeftRightCursor,
-    @"col-resize" : NSCursor.resizeLeftRightCursor, @"n-resize" : NSCursor.resizeUpCursor,
-    @"s-resize" : NSCursor.resizeDownCursor, @"ns-resize" : NSCursor.resizeUpDownCursor,
+    @"default" : NSCursor.arrowCursor,
+    @"pointer" : NSCursor.pointingHandCursor,
+    @"text" : NSCursor.IBeamCursor,
+    @"vertical-text" : NSCursor.IBeamCursorForVerticalLayout,
+    @"crosshair" : NSCursor.crosshairCursor,
+    @"grab" : NSCursor.openHandCursor,
+    @"grabbing" : NSCursor.closedHandCursor,
+    @"move" : NSCursor.openHandCursor,
+    @"all-scroll" : NSCursor.openHandCursor,
+    @"not-allowed" : NSCursor.operationNotAllowedCursor,
+    @"no-drop" : NSCursor.operationNotAllowedCursor,
+    @"copy" : NSCursor.dragCopyCursor,
+    @"alias" : NSCursor.dragLinkCursor,
+    @"context-menu" : NSCursor.contextualMenuCursor,
+    @"e-resize" : NSCursor.resizeRightCursor,
+    @"w-resize" : NSCursor.resizeLeftCursor,
+    @"ew-resize" : NSCursor.resizeLeftRightCursor,
+    @"col-resize" : NSCursor.resizeLeftRightCursor,
+    @"n-resize" : NSCursor.resizeUpCursor,
+    @"s-resize" : NSCursor.resizeDownCursor,
+    @"ns-resize" : NSCursor.resizeUpDownCursor,
     @"row-resize" : NSCursor.resizeUpDownCursor,
   };
   return cursors[name] ?: NSCursor.arrowCursor;
@@ -86,20 +99,35 @@ NSCursor* cursor_named(NSString* name) {
 // The DOM key for keys that are not text.
 const char* special_key(unsigned short code) {
   switch (code) {
-    case 36: case 76: return "Enter";
-    case 48: return "Tab";
-    case 51: return "Backspace";
-    case 117: return "Delete";
-    case 53: return "Escape";
-    case 123: return "ArrowLeft";
-    case 124: return "ArrowRight";
-    case 125: return "ArrowDown";
-    case 126: return "ArrowUp";
-    case 115: return "Home";
-    case 119: return "End";
-    case 116: return "PageUp";
-    case 121: return "PageDown";
-    default: return nullptr;
+    case 36:
+    case 76:
+      return "Enter";
+    case 48:
+      return "Tab";
+    case 51:
+      return "Backspace";
+    case 117:
+      return "Delete";
+    case 53:
+      return "Escape";
+    case 123:
+      return "ArrowLeft";
+    case 124:
+      return "ArrowRight";
+    case 125:
+      return "ArrowDown";
+    case 126:
+      return "ArrowUp";
+    case 115:
+      return "Home";
+    case 119:
+      return "End";
+    case 116:
+      return "PageUp";
+    case 121:
+      return "PageDown";
+    default:
+      return nullptr;
   }
 }
 }  // namespace
@@ -131,7 +159,9 @@ const char* special_key(unsigned short code) {
   }
   return self;
 }
-- (BOOL)isFlipped { return YES; }
+- (BOOL)isFlipped {
+  return YES;
+}
 // The page's cursor while the pointer is over the view.
 - (void)pageCursor:(NSString*)name {
   _cursor = cursor_named(name);
@@ -146,17 +176,20 @@ const char* special_key(unsigned short code) {
   NSRect all = NSZeroRect;
   for (NSArray* rect in bounds)
     if (rect.count == 4)
-      all = NSUnionRect(all, NSMakeRect([rect[0] doubleValue], [rect[1] doubleValue], [rect[2] doubleValue],
-                                        [rect[3] doubleValue]));
+      all = NSUnionRect(all, NSMakeRect([rect[0] doubleValue], [rect[1] doubleValue],
+                                        [rect[2] doubleValue], [rect[3] doubleValue]));
   _composition = all;
 }
-- (BOOL)acceptsFirstResponder { return YES; }
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
 - (void)updateTrackingAreas {
   if (_tracking) [self removeTrackingArea:_tracking];
-  _tracking = [[NSTrackingArea alloc] initWithRect:self.bounds
-                                           options:NSTrackingMouseMoved | NSTrackingActiveInKeyWindow | NSTrackingInVisibleRect
-                                             owner:self
-                                          userInfo:nil];
+  _tracking = [[NSTrackingArea alloc]
+      initWithRect:self.bounds
+           options:NSTrackingMouseMoved | NSTrackingActiveInKeyWindow | NSTrackingInVisibleRect
+             owner:self
+          userInfo:nil];
   [self addTrackingArea:_tracking];
   [super updateTrackingAreas];
 }
@@ -167,17 +200,20 @@ const char* special_key(unsigned short code) {
   const CGFloat scale = self.window.backingScaleFactor ?: 2;
   _content.contentsScale = scale;
   _content.frame = CGRectMake(0, 0, frame.width / scale, frame.height / scale);
-  _content.contents = (__bridge id)static_cast<IOSurfaceRef>(frame.surface);
+  _content.contents = (__bridge id) static_cast<IOSurfaceRef>(frame.surface);
   [CATransaction commit];
   sc_frame_release(&_shown);
   _shown = frame;
 }
-- (IOSurfaceRef)shownSurface { return static_cast<IOSurfaceRef>(_shown.surface); }
+- (IOSurfaceRef)shownSurface {
+  return static_cast<IOSurfaceRef>(_shown.surface);
+}
 - (void)setFrameSize:(NSSize)size {
   [super setFrameSize:size];
   if (!view || size.width < 1 || size.height < 1) return;
   sc_error error;
-  if (sc_view_resize(view, static_cast<int>(size.width), static_cast<int>(size.height), &error) != SC_OK)
+  if (sc_view_resize(view, static_cast<int>(size.width), static_cast<int>(size.height), &error) !=
+      SC_OK)
     fail("resize", error);
 }
 - (void)pointer:(NSEvent*)event action:(sc_pointer_action)action button:(sc_button)button {
@@ -189,19 +225,40 @@ const char* special_key(unsigned short code) {
   pointer.x = at.x;
   pointer.y = at.y;
   pointer.button = button;
-  pointer.click_count = action == SC_POINTER_MOVE ? 1 : static_cast<uint32_t>(std::max<NSInteger>(1, event.clickCount));
+  pointer.click_count = action == SC_POINTER_MOVE
+                            ? 1
+                            : static_cast<uint32_t>(std::max<NSInteger>(1, event.clickCount));
   sc_error error;
   if (sc_view_pointer(view, &pointer, &error) != SC_OK) fail("pointer", error);
 }
-- (void)mouseDown:(NSEvent*)e { [self.window makeFirstResponder:self]; [self pointer:e action:SC_POINTER_DOWN button:SC_BUTTON_LEFT]; }
-- (void)mouseUp:(NSEvent*)e { [self pointer:e action:SC_POINTER_UP button:SC_BUTTON_LEFT]; }
-- (void)rightMouseDown:(NSEvent*)e { [self pointer:e action:SC_POINTER_DOWN button:SC_BUTTON_RIGHT]; }
-- (void)rightMouseUp:(NSEvent*)e { [self pointer:e action:SC_POINTER_UP button:SC_BUTTON_RIGHT]; }
-- (void)otherMouseDown:(NSEvent*)e { [self pointer:e action:SC_POINTER_DOWN button:SC_BUTTON_MIDDLE]; }
-- (void)otherMouseUp:(NSEvent*)e { [self pointer:e action:SC_POINTER_UP button:SC_BUTTON_MIDDLE]; }
-- (void)mouseMoved:(NSEvent*)e { [self pointer:e action:SC_POINTER_MOVE button:SC_BUTTON_LEFT]; }
-- (void)mouseDragged:(NSEvent*)e { [self pointer:e action:SC_POINTER_MOVE button:SC_BUTTON_LEFT]; }
-- (void)rightMouseDragged:(NSEvent*)e { [self pointer:e action:SC_POINTER_MOVE button:SC_BUTTON_RIGHT]; }
+- (void)mouseDown:(NSEvent*)e {
+  [self.window makeFirstResponder:self];
+  [self pointer:e action:SC_POINTER_DOWN button:SC_BUTTON_LEFT];
+}
+- (void)mouseUp:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_UP button:SC_BUTTON_LEFT];
+}
+- (void)rightMouseDown:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_DOWN button:SC_BUTTON_RIGHT];
+}
+- (void)rightMouseUp:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_UP button:SC_BUTTON_RIGHT];
+}
+- (void)otherMouseDown:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_DOWN button:SC_BUTTON_MIDDLE];
+}
+- (void)otherMouseUp:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_UP button:SC_BUTTON_MIDDLE];
+}
+- (void)mouseMoved:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_MOVE button:SC_BUTTON_LEFT];
+}
+- (void)mouseDragged:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_MOVE button:SC_BUTTON_LEFT];
+}
+- (void)rightMouseDragged:(NSEvent*)e {
+  [self pointer:e action:SC_POINTER_MOVE button:SC_BUTTON_RIGHT];
+}
 - (void)scrollWheel:(NSEvent*)event {
   if (!view) return;
   const NSPoint at = [self convertPoint:event.locationInWindow fromView:nil];
@@ -261,7 +318,9 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   const char* utf8 = text.UTF8String;
   if (sc_view_text(view, utf8, std::strlen(utf8), &error) != SC_OK) fail("text", error);
 }
-- (void)setMarkedText:(id)string selectedRange:(NSRange)selected replacementRange:(NSRange)replacement {
+- (void)setMarkedText:(id)string
+        selectedRange:(NSRange)selected
+     replacementRange:(NSRange)replacement {
   NSString* text = [string isKindOfClass:NSAttributedString.class] ? [string string] : string;
   sc_error error;
   if (!text.length) {
@@ -293,14 +352,25 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   sc_error error;
   if (sc_view_ime_commit(view, &composition, &error) != SC_OK) fail("ime commit", error);
 }
-- (BOOL)hasMarkedText { return _marked != nil; }
-- (NSRange)markedRange { return _marked ? NSMakeRange(0, _marked.length) : NSMakeRange(NSNotFound, 0); }
-- (NSRange)selectedRange { return NSMakeRange(NSNotFound, 0); }
-- (NSArray<NSAttributedStringKey>*)validAttributesForMarkedText { return @[]; }
-- (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actual {
+- (BOOL)hasMarkedText {
+  return _marked != nil;
+}
+- (NSRange)markedRange {
+  return _marked ? NSMakeRange(0, _marked.length) : NSMakeRange(NSNotFound, 0);
+}
+- (NSRange)selectedRange {
+  return NSMakeRange(NSNotFound, 0);
+}
+- (NSArray<NSAttributedStringKey>*)validAttributesForMarkedText {
+  return @[];
+}
+- (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range
+                                               actualRange:(NSRangePointer)actual {
   return nil;
 }
-- (NSUInteger)characterIndexForPoint:(NSPoint)point { return NSNotFound; }
+- (NSUInteger)characterIndexForPoint:(NSPoint)point {
+  return NSNotFound;
+}
 // The candidate window goes under the composition the page reported.
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actual {
   const NSRect local = NSIsEmptyRect(_composition) ? NSMakeRect(0, 0, 1, 20) : _composition;
@@ -316,24 +386,40 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   sc_error error;
   if (sc_view_edit(view, command, &error) != SC_OK) fail("edit", error);
 }
-- (void)copy:(id)sender { [self edit:SC_EDIT_COPY]; }
-- (void)cut:(id)sender { [self edit:SC_EDIT_CUT]; }
-- (void)paste:(id)sender { [self edit:SC_EDIT_PASTE]; }
-- (void)undo:(id)sender { [self edit:SC_EDIT_UNDO]; }
-- (void)redo:(id)sender { [self edit:SC_EDIT_REDO]; }
-- (void)selectAll:(id)sender { [self edit:SC_EDIT_SELECT_ALL]; }
-- (void)delete:(id)sender { [self edit:SC_EDIT_DELETE]; }
+- (void)copy:(id)sender {
+  [self edit:SC_EDIT_COPY];
+}
+- (void)cut:(id)sender {
+  [self edit:SC_EDIT_CUT];
+}
+- (void)paste:(id)sender {
+  [self edit:SC_EDIT_PASTE];
+}
+- (void)undo:(id)sender {
+  [self edit:SC_EDIT_UNDO];
+}
+- (void)redo:(id)sender {
+  [self edit:SC_EDIT_REDO];
+}
+- (void)selectAll:(id)sender {
+  [self edit:SC_EDIT_SELECT_ALL];
+}
+- (void)delete:(id)sender {
+  [self edit:SC_EDIT_DELETE];
+}
 - (void)keyUp:(NSEvent*)event {
   if (!view) return;
   if (const char* name = special_key(event.keyCode)) [self key:name down:0];
 }
 - (void)flagsChanged:(NSEvent*)event {
   if (!view) return;
-  const struct { NSEventModifierFlags flag; const char* key; } modifiers[] = {
-      {NSEventModifierFlagShift, "Shift"},
-      {NSEventModifierFlagControl, "Control"},
-      {NSEventModifierFlagOption, "Alt"},
-      {NSEventModifierFlagCommand, "Meta"}};
+  const struct {
+    NSEventModifierFlags flag;
+    const char* key;
+  } modifiers[] = {{NSEventModifierFlagShift, "Shift"},
+                   {NSEventModifierFlagControl, "Control"},
+                   {NSEventModifierFlagOption, "Alt"},
+                   {NSEventModifierFlagCommand, "Meta"}};
   for (const auto& modifier : modifiers) {
     const bool now = event.modifierFlags & modifier.flag, before = _held & modifier.flag;
     if (now != before) [self key:modifier.key down:now];
@@ -352,11 +438,11 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   NSButton* _control;
   NSTextField* _status;
   NSButton *_back, *_forward, *_reload;
-  bool _person;   // the tab is the person's
+  bool _person;  // the tab is the person's
   bool _first;
   bool _loading;  // the reload button stops while the tab loads
   NSAlert* _dialog;
-  NSWindow* _sheet;        // the sheet showing the prompt _dialog_id
+  NSWindow* _sheet;  // the sheet showing the prompt _dialog_id
   std::string _dialog_id;
 }
 - (NSButton*)button:(NSString*)title action:(SEL)action {
@@ -388,11 +474,12 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   edit_item.submenu = edit;
   NSApp.mainMenu = bar;
 
-  _window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 1024, 720)
-                                        styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                                                  NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable
-                                          backing:NSBackingStoreBuffered
-                                            defer:NO];
+  _window = [[NSWindow alloc]
+      initWithContentRect:NSMakeRect(0, 0, 1024, 720)
+                styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                          NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable
+                  backing:NSBackingStoreBuffered
+                    defer:NO];
   _window.title = @"SuiteCut embedding sample";
   _address = [NSTextField textFieldWithString:[NSString stringWithUTF8String:options.url.c_str()]];
   _address.target = self;
@@ -402,9 +489,11 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   _back = [self button:@"◀" action:@selector(back:)];
   _forward = [self button:@"▶" action:@selector(forward:)];
   _reload = [self button:@"↻" action:@selector(reload:)];
-  NSStackView* bar_view = [NSStackView stackViewWithViews:@[ _back, _forward, _reload, _address, _control, _status ]];
+  NSStackView* bar_view =
+      [NSStackView stackViewWithViews:@[ _back, _forward, _reload, _address, _control, _status ]];
   bar_view.edgeInsets = NSEdgeInsetsMake(6, 8, 6, 8);
-  [_address setContentHuggingPriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
+  [_address setContentHuggingPriority:NSLayoutPriorityDefaultLow
+                       forOrientation:NSLayoutConstraintOrientationHorizontal];
   _tab = [[TabView alloc] initWithFrame:NSZeroRect];
   NSStackView* column = [NSStackView stackViewWithViews:@[ bar_view, _tab ]];
   column.orientation = NSUserInterfaceLayoutOrientationVertical;
@@ -423,23 +512,28 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
     std::exit(1);
   }
   if (options.exit_after > 0)
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(options.exit_after * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{ [NSApp terminate:nil]; });
+    dispatch_after(
+        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(options.exit_after * NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{
+          [NSApp terminate:nil];
+        });
 }
 - (BOOL)start {
   sc_error error;
   sc_runtime_options runtime_options;
   sc_runtime_options_init(&runtime_options);
   runtime_options.path = options.runtime.c_str();
-  if (!options.requirement.empty()) runtime_options.signing_requirement = options.requirement.c_str();
+  if (!options.requirement.empty())
+    runtime_options.signing_requirement = options.requirement.c_str();
   static sc_runtime_info runtime;
   sc_runtime_info_init(&runtime);
   if (sc_runtime_inspect(&runtime_options, &runtime, &error) != SC_OK) {
     fail("runtime", error);
     return NO;
   }
-  std::fprintf(stderr, "suitecut-embed-sample: runtime %s, protocol %u, signature %s\n", runtime.service_version,
-               runtime.protocol, runtime.signature_verified ? "verified" : "not checked");
+  std::fprintf(stderr, "suitecut-embed-sample: runtime %s, protocol %u, signature %s\n",
+               runtime.service_version, runtime.protocol,
+               runtime.signature_verified ? "verified" : "not checked");
   ::mkdir(options.directory.c_str(), 0700);
   ::mkdir(options.profile.c_str(), 0700);
   sc_session_options session_options;
@@ -517,7 +611,9 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
       const auto kind = sc_event_kind_of(event);
       const auto at = sc_event_page(event);
       sc_event_destroy(event);
-      dispatch_async(dispatch_get_main_queue(), ^{ [app event:kind page:at json:json]; });
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [app event:kind page:at json:json];
+      });
     }
   }).detach();
 }
@@ -537,7 +633,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
         if (sc_view_pointer(view, &pointer, &error) != SC_OK) fail("click", error);
       }
     }
-    if (!options.typed.empty() && sc_view_text(view, options.typed.c_str(), options.typed.size(), &error) != SC_OK)
+    if (!options.typed.empty() &&
+        sc_view_text(view, options.typed.c_str(), options.typed.size(), &error) != SC_OK)
       fail("type", error);
   });
 }
@@ -547,7 +644,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   NSDictionary* body = [NSJSONSerialization JSONObjectWithData:bytes options:0 error:nil];
   if (kind == SC_EVENT_TAB_TITLE) {
     NSString* title = body[@"title"];
-    _window.title = [title isKindOfClass:NSString.class] && title.length ? title : @"SuiteCut embedding sample";
+    _window.title =
+        [title isKindOfClass:NSString.class] && title.length ? title : @"SuiteCut embedding sample";
     return;
   }
   if (kind == SC_EVENT_TAB_LOADING) {
@@ -571,7 +669,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   }
   if (kind == SC_EVENT_PROMPT_CLOSED) {
     // Answered elsewhere, timed out, or the page moved on.
-    if (_sheet && [body[@"prompt"] isKindOfClass:NSString.class] && _dialog_id == [body[@"prompt"] UTF8String])
+    if (_sheet && [body[@"prompt"] isKindOfClass:NSString.class] &&
+        _dialog_id == [body[@"prompt"] UTF8String])
       [_window endSheet:_sheet returnCode:NSModalResponseAbort];
     return;
   }
@@ -589,8 +688,11 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   NSDictionary* tab = parsed[@"tab"];
   _person = [tab[@"control"] isEqual:@"human"];
   _control.title = _person ? @"Hand back" : @"Take over";
-  _status.stringValue = [tab[@"control"] isEqual:@"agent"] ? @"An agent is driving" : _person ? @"You have it" : @"Watching";
-  if ([tab[@"url"] isKindOfClass:NSString.class] && _window.firstResponder != _address.currentEditor)
+  _status.stringValue = [tab[@"control"] isEqual:@"agent"] ? @"An agent is driving"
+                        : _person                          ? @"You have it"
+                                                           : @"Watching";
+  if ([tab[@"url"] isKindOfClass:NSString.class] &&
+      _window.firstResponder != _address.currentEditor)
     _address.stringValue = tab[@"url"];
 }
 // A page's alert, confirm, prompt or beforeunload, as a sheet on the window.
@@ -600,7 +702,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   NSString* type = prompt[@"dialog"];
   NSAlert* alert = [NSAlert new];
   alert.messageText = [type isEqual:@"beforeunload"] ? @"Leave this page?" : @"The page says";
-  alert.informativeText = [prompt[@"message"] isKindOfClass:NSString.class] ? prompt[@"message"] : @"";
+  alert.informativeText =
+      [prompt[@"message"] isKindOfClass:NSString.class] ? prompt[@"message"] : @"";
   [alert addButtonWithTitle:[type isEqual:@"beforeunload"] ? @"Leave" : @"OK"];
   if (![type isEqual:@"alert"]) [alert addButtonWithTitle:@"Cancel"];
   NSTextField* field = nil;
@@ -624,7 +727,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
                   sc_error error;
                   const int accept = response == NSAlertFirstButtonReturn;
                   const char* text = field ? field.stringValue.UTF8String : nullptr;
-                  if (sc_prompt_answer_dialog(session, id.c_str(), accept, text, &error) != SC_OK) fail("dialog", error);
+                  if (sc_prompt_answer_dialog(session, id.c_str(), accept, text, &error) != SC_OK)
+                    fail("dialog", error);
                 }];
 }
 // What only the person answers. A sheet closed by prompt.closed (the page
@@ -654,7 +758,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
     NSSavePanel* panel;
     if ([mode isEqual:@"save"]) {
       panel = [NSSavePanel savePanel];
-      NSString* name = [kind isEqual:@"download"] ? prompt[@"suggestedName"] : [prompt[@"defaultPath"] lastPathComponent];
+      NSString* name = [kind isEqual:@"download"] ? prompt[@"suggestedName"]
+                                                  : [prompt[@"defaultPath"] lastPathComponent];
       if ([name isKindOfClass:NSString.class]) panel.nameFieldStringValue = name;
     } else {
       NSOpenPanel* open = [NSOpenPanel openPanel];
@@ -663,7 +768,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
       open.allowsMultipleSelection = [mode isEqual:@"openMultiple"];
       panel = open;
     }
-    if ([prompt[@"title"] isKindOfClass:NSString.class] && [prompt[@"title"] length]) panel.message = prompt[@"title"];
+    if ([prompt[@"title"] isKindOfClass:NSString.class] && [prompt[@"title"] length])
+      panel.message = prompt[@"title"];
     _sheet = panel;
     [panel beginSheetModalForWindow:_window
                   completionHandler:^(NSModalResponse response) {
@@ -672,18 +778,21 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
                     if (response != NSModalResponseOK) return refuse();
                     sc_error error;
                     if ([kind isEqual:@"download"]) {
-                      if (sc_prompt_answer_download(session, id.c_str(), panel.URL.path.UTF8String, &error) != SC_OK)
+                      if (sc_prompt_answer_download(session, id.c_str(), panel.URL.path.UTF8String,
+                                                    &error) != SC_OK)
                         fail("download", error);
                       return;
                     }
                     std::vector<std::string> chosen;
                     if ([panel isKindOfClass:NSOpenPanel.class])
-                      for (NSURL* url in ((NSOpenPanel*)panel).URLs) chosen.push_back(url.path.UTF8String);
+                      for (NSURL* url in ((NSOpenPanel*)panel).URLs)
+                        chosen.push_back(url.path.UTF8String);
                     else
                       chosen.push_back(panel.URL.path.UTF8String);
                     std::vector<const char*> paths;
                     for (const auto& path : chosen) paths.push_back(path.c_str());
-                    if (sc_prompt_answer_files(session, id.c_str(), paths.data(), paths.size(), &error) != SC_OK)
+                    if (sc_prompt_answer_files(session, id.c_str(), paths.data(), paths.size(),
+                                               &error) != SC_OK)
                       fail("files", error);
                   }];
     return;
@@ -693,14 +802,16 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   NSSecureTextField* password = nil;
   NSPopUpButton* certificates = nil;
   if ([kind isEqual:@"permission"]) {
-    NSArray* names = [prompt[@"permissions"] isKindOfClass:NSArray.class] ? prompt[@"permissions"] : @[];
+    NSArray* names =
+        [prompt[@"permissions"] isKindOfClass:NSArray.class] ? prompt[@"permissions"] : @[];
     alert.messageText = [NSString stringWithFormat:@"%@ wants to use your %@", prompt[@"origin"],
                                                    [names componentsJoinedByString:@" and "]];
     [alert addButtonWithTitle:@"Allow"];
     [alert addButtonWithTitle:@"Block"];
   } else if ([kind isEqual:@"auth"]) {
     alert.messageText = [NSString stringWithFormat:@"Log in to %@", prompt[@"host"]];
-    alert.informativeText = [prompt[@"realm"] isKindOfClass:NSString.class] ? prompt[@"realm"] : @"";
+    alert.informativeText =
+        [prompt[@"realm"] isKindOfClass:NSString.class] ? prompt[@"realm"] : @"";
     NSView* fields = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 260, 56)];
     user = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 32, 260, 24)];
     user.placeholderString = @"Username";
@@ -715,7 +826,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
     alert.messageText = [NSString stringWithFormat:@"%@ asks for a certificate", prompt[@"host"]];
     certificates = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 300, 26) pullsDown:NO];
     for (NSDictionary* row in prompt[@"certificates"])
-      [certificates addItemWithTitle:[NSString stringWithFormat:@"%@ (%@)", row[@"subject"], row[@"issuer"]]];
+      [certificates
+          addItemWithTitle:[NSString stringWithFormat:@"%@ (%@)", row[@"subject"], row[@"issuer"]]];
     alert.accessoryView = certificates;
     [alert addButtonWithTitle:@"Send"];
     [alert addButtonWithTitle:@"Don't Send"];
@@ -732,11 +844,13 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
                   sc_error error;
                   sc_status status = SC_OK;
                   if (user)
-                    status = sc_prompt_answer_login(session, id.c_str(), user.stringValue.UTF8String,
-                                                    password.stringValue.UTF8String, &error);
+                    status =
+                        sc_prompt_answer_login(session, id.c_str(), user.stringValue.UTF8String,
+                                               password.stringValue.UTF8String, &error);
                   else if (certificates)
-                    status = sc_prompt_answer_certificate(session, id.c_str(),
-                                                          static_cast<int32_t>(certificates.indexOfSelectedItem), &error);
+                    status = sc_prompt_answer_certificate(
+                        session, id.c_str(), static_cast<int32_t>(certificates.indexOfSelectedItem),
+                        &error);
                   else
                     status = sc_prompt_answer_permission(session, id.c_str(), 1, &error);
                   if (status != SC_OK) fail("prompt", error);
@@ -746,7 +860,8 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   sc_error error;
   sc_tab tab;
   sc_tab_init(&tab);
-  if (sc_tab_navigate(session, page, _address.stringValue.UTF8String, &tab, &error) != SC_OK) fail("navigate", error);
+  if (sc_tab_navigate(session, page, _address.stringValue.UTF8String, &tab, &error) != SC_OK)
+    fail("navigate", error);
   [_window makeFirstResponder:_tab];
 }
 - (void)history:(sc_history)step {
@@ -755,8 +870,12 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   sc_tab_init(&tab);
   if (sc_tab_history(session, page, step, &tab, &error) != SC_OK) fail("history", error);
 }
-- (void)back:(id)sender { [self history:SC_HISTORY_BACK]; }
-- (void)forward:(id)sender { [self history:SC_HISTORY_FORWARD]; }
+- (void)back:(id)sender {
+  [self history:SC_HISTORY_BACK];
+}
+- (void)forward:(id)sender {
+  [self history:SC_HISTORY_FORWARD];
+}
 - (void)reload:(id)sender {
   if (!_loading) return [self history:SC_HISTORY_RELOAD];
   sc_error error;
@@ -768,13 +887,17 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   sc_error error;
   sc_tab tab;
   sc_tab_init(&tab);
-  const auto status = _person ? sc_tab_release(session, page, &tab, &error) : sc_tab_take(session, page, &tab, &error);
+  const auto status = _person ? sc_tab_release(session, page, &tab, &error)
+                              : sc_tab_take(session, page, &tab, &error);
   if (status != SC_OK) fail("control", error);
 }
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app { return YES; }
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app {
+  return YES;
+}
 - (void)applicationWillTerminate:(NSNotification*)note {
   stopping = true;
-  if (!options.snapshot.empty() && _tab.shownSurface) write_png(_tab.shownSurface, options.snapshot);
+  if (!options.snapshot.empty() && _tab.shownSurface)
+    write_png(_tab.shownSurface, options.snapshot);
   sc_error error;
   if (view) sc_view_detach(view, &error);
   if (session) {
@@ -794,16 +917,26 @@ int main(int argc, char** argv) {
       }
       return argv[++i];
     };
-    if (argument == "--runtime") options.runtime = value();
-    else if (argument == "--signing-requirement") options.requirement = value();
-    else if (argument == "--session") options.session = value();
-    else if (argument == "--session-dir") options.directory = value();
-    else if (argument == "--profile") options.profile = value();
-    else if (argument == "--url") options.url = value();
-    else if (argument == "--exit-after") options.exit_after = std::stod(value());
-    else if (argument == "--snapshot") options.snapshot = value();
-    else if (argument == "--type") options.typed = value();
-    else if (argument == "--keep-session") options.keep = true;
+    if (argument == "--runtime")
+      options.runtime = value();
+    else if (argument == "--signing-requirement")
+      options.requirement = value();
+    else if (argument == "--session")
+      options.session = value();
+    else if (argument == "--session-dir")
+      options.directory = value();
+    else if (argument == "--profile")
+      options.profile = value();
+    else if (argument == "--url")
+      options.url = value();
+    else if (argument == "--exit-after")
+      options.exit_after = std::stod(value());
+    else if (argument == "--snapshot")
+      options.snapshot = value();
+    else if (argument == "--type")
+      options.typed = value();
+    else if (argument == "--keep-session")
+      options.keep = true;
     else if (argument == "--click") {
       const auto at = value();
       if (std::sscanf(at.c_str(), "%lf,%lf", &options.click_x, &options.click_y) != 2) {
@@ -819,9 +952,11 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "usage: suitecut-embed-sample --runtime /path/SuiteCut.app [options]\n");
     return 2;
   }
-  if (options.directory.empty()) options.directory = "/tmp/suitecut-sample-" + std::to_string(::getuid());
+  if (options.directory.empty())
+    options.directory = "/tmp/suitecut-sample-" + std::to_string(::getuid());
   if (options.profile.empty())
-    options.profile = std::string(NSHomeDirectory().UTF8String) + "/Library/Application Support/SuiteCut Sample";
+    options.profile =
+        std::string(NSHomeDirectory().UTF8String) + "/Library/Application Support/SuiteCut Sample";
   @autoreleasepool {
     NSApplication* app = NSApplication.sharedApplication;
     app.activationPolicy = NSApplicationActivationPolicyRegular;

@@ -69,4 +69,4 @@ const root=visit(input,0);for(const[tag,id]of references){if(!ids.has(id))throw 
 }
 return{pack,unpack};})JS";
 }
-}
+}  // namespace suitecut

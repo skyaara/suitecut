@@ -9,11 +9,10 @@ inline CefRefPtr<CefDictionaryValue> NativeBackendCapabilities() {
   auto result = CefDictionaryValue::Create();
   result->SetInt("schemaVersion", 1);
   result->SetString("backend", "cef");
-  for (const char* name : {"directoryUpload", "nativeFileSelectionReset",
-                          "webSocketRouting", "fullClockControl",
-                          "coverageAcrossNavigation", "offscreenOopifFullPageCapture",
-                          "clientCertificateImport", "concurrentCredentialCeremonies",
-                          "originalWidgetInputReceipts"})
+  for (const char* name :
+       {"directoryUpload", "nativeFileSelectionReset", "webSocketRouting", "fullClockControl",
+        "coverageAcrossNavigation", "offscreenOopifFullPageCapture", "clientCertificateImport",
+        "concurrentCredentialCeremonies", "originalWidgetInputReceipts"})
     result->SetBool(name, false);
   result->SetBool("frameSubscription", true);
 #if defined(__APPLE__)

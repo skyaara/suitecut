@@ -11,7 +11,7 @@ struct NativeDropPayload {
   uint64_t renderer = 0;
   std::vector<NativeDropDocument> documents;
   std::string packet;
-  Dict manual_data; // Read-only identity pin; never reparented into a packet.
+  Dict manual_data;  // Read-only identity pin; never reparented into a packet.
   std::shared_ptr<NativeDragWork> helper;
   std::shared_ptr<InputWork> manual;
   std::function<void()> done;
@@ -26,14 +26,14 @@ bool NativeDropBusy() const {
 }
 bool NativeDropOwns(int owner) const {
   return native_drop_failed_owner_ == owner ||
-         (NativeDropBusy() && native_drop_payload_ &&
-          native_drop_payload_->scope.owner == owner);
+         (NativeDropBusy() && native_drop_payload_ && native_drop_payload_->scope.owner == owner);
 }
 bool NativeDropManualCurrent(const std::shared_ptr<NativeDropPayload>& payload) const {
   if (!payload || !payload->manual || !payload->manual_data || !browser_ ||
       native_drag_incarnation_ != payload->scope.incarnation ||
       static_cast<uint64_t>(browser_->GetIdentifier()) != payload->scope.channel ||
-      manual_drag_.get() != payload->manual_data.get()) return false;
+      manual_drag_.get() != payload->manual_data.get())
+    return false;
   const auto found = input_work_.find(payload->scope.owner);
   return found == input_work_.end() || found->second == payload->manual;
 }
@@ -44,12 +44,14 @@ void NativeDropRetired() {
   // data after those receipts. Never clear a replacement incarnation/work/data.
   const auto payload = native_drop_payload_;
   if (NativeDropManualCurrent(payload)) manual_drag_ = nullptr;
-  native_drop_payload_.reset(); WakeDeadlines();
+  native_drop_payload_.reset();
+  WakeDeadlines();
 }
 bool NativeDropOperationCurrent(const NativeDropCore::Scope& scope) const {
   const auto payload = native_drop_payload_;
   if (!payload || !(payload->scope == scope) ||
-      !operations_.IsCurrent(scope.owner, scope.generation)) return false;
+      !operations_.IsCurrent(scope.owner, scope.generation))
+    return false;
   if (payload->manual) {
     const auto found = input_work_.find(scope.owner);
     return found != input_work_.end() && found->second == payload->manual;
@@ -60,9 +62,10 @@ bool NativeDropOperationCurrent(const NativeDropCore::Scope& scope) const {
 bool NativeDropDocumentCurrent(const NativeDropCore::Scope& scope) const {
   const auto payload = native_drop_payload_;
   if (!payload || !(payload->scope == scope) || !browser_ || closing_page_ ||
-      static_cast<uint64_t>(browser_->GetIdentifier()) != scope.channel ||
-      renderer_failed_ || native_pristine_renderer_epoch_ != payload->renderer ||
-      native_drag_incarnation_ != scope.incarnation) return false;
+      static_cast<uint64_t>(browser_->GetIdentifier()) != scope.channel || renderer_failed_ ||
+      native_pristine_renderer_epoch_ != payload->renderer ||
+      native_drag_incarnation_ != scope.incarnation)
+    return false;
   if (payload->manual && !NativeDropManualCurrent(payload)) return false;
   // Observe only documents present at admission. A new unrelated iframe alone
   // does not invalidate the receipt; replacement/death of any pinned document
@@ -70,9 +73,9 @@ bool NativeDropDocumentCurrent(const NativeDropCore::Scope& scope) const {
   for (const auto& pin : payload->documents) {
     const auto frame = frame_states_.find(pin.frame);
     if (frame == frame_states_.end() || frame->second.session != pin.session ||
-        frame->second.loader != pin.loader ||
-        frame->second.context_identity != pin.identity ||
-        frame->second.context_generation != pin.generation) return false;
+        frame->second.loader != pin.loader || frame->second.context_identity != pin.identity ||
+        frame->second.context_generation != pin.generation)
+      return false;
   }
   return true;
 }
@@ -85,7 +88,8 @@ bool NativeDropDispatchRefused(int command, const std::string& error) {
   const auto found = native_drop_transport_.find(command);
   if (found == native_drop_transport_.end()) return false;
   auto receipt = std::exchange(found->second.reply, nullptr);
-  native_drop_transport_.erase(found); devtools_.erase(command);
+  native_drop_transport_.erase(found);
+  devtools_.erase(command);
   auto callback = std::move(*receipt);
   if (callback) callback(NativeDropCore::Outcome::Refused, error);
   return true;
@@ -97,16 +101,14 @@ bool NativeDropDispatchReady(int command) {
   const bool cleanup = found->second.stage == NativeDropCore::Stage::DisableIntercept;
   if (!NativeDropDocumentCurrent(scope) || (native_drop_ && native_drop_->Closing()) ||
       (!cleanup && (!NativeDropOperationCurrent(scope) ||
-       operations_.IsExpired(scope.owner, scope.generation, Now())))) {
+                    operations_.IsExpired(scope.owner, scope.generation, Now())))) {
     NativeDropDispatchRefused(command, "Native drag owner expired before actual submission");
     return false;
   }
   return true;
 }
-bool NativeDropSend(const NativeDropCore::Scope& scope,
-                    NativeDropCore::Stage stage,
-                    const NativeDropCore::Payload& opaque,
-                    NativeDropCore::Reply reply) {
+bool NativeDropSend(const NativeDropCore::Scope& scope, NativeDropCore::Stage stage,
+                    const NativeDropCore::Payload& opaque, NativeDropCore::Reply reply) {
   if (!NativeDropDocumentCurrent(scope) || !reply) return false;
   const auto payload = std::static_pointer_cast<NativeDropPayload>(opaque);
   if (payload != native_drop_payload_) return false;
@@ -123,7 +125,8 @@ bool NativeDropSend(const NativeDropCore::Scope& scope,
     params = MousePacket("mouseReleased", "left", 1);
     method = "Input.dispatchMouseEvent";
   } else {
-    params = CefDictionaryValue::Create(); params->SetBool("enabled", false);
+    params = CefDictionaryValue::Create();
+    params->SetBool("enabled", false);
     method = "Input.setInterceptDrags";
   }
   const int command = AllocateDevToolsId();
@@ -132,19 +135,19 @@ bool NativeDropSend(const NativeDropCore::Scope& scope,
   auto actual_reply = [this, receipt, command](bool ok, const std::string& json) {
     native_drop_transport_.erase(command);
     auto callback = std::move(*receipt);
-    if (callback) callback(ok ? NativeDropCore::Outcome::Acknowledged
-                             : NativeDropCore::Outcome::Error,
-                           ok ? "" : json);
+    if (callback)
+      callback(ok ? NativeDropCore::Outcome::Acknowledged : NativeDropCore::Outcome::Error,
+               ok ? "" : json);
     NativeDropRetired();
   };
   // Register before submission. Do not use DevTools(owner,...): selector-wait
   // wrappers legitimately stop logical continuations after cancellation.
   native_drop_transport_.emplace(command, NativeDropTransport{scope, stage, receipt});
   try {
-    devtools_.emplace(command, DevToolsCall{scope.owner, std::move(actual_reply),
-                                          "", true, true});
+    devtools_.emplace(command, DevToolsCall{scope.owner, std::move(actual_reply), "", true, true});
   } catch (...) {
-    native_drop_transport_.erase(command); throw;
+    native_drop_transport_.erase(command);
+    throw;
   }
   if (!SubmitDevTools(command, method, params, "")) {
     // No accepted transport command exists. Settle exactly this registered
@@ -158,8 +161,7 @@ NativeDropCore& NativeDropCompletions() {
     NativeDropCore::Hooks hooks;
     hooks.now = [] { return Now(); };
     hooks.wake = [this] { WakeDeadlines(); };
-    hooks.send = [this](const auto& scope, auto stage, const auto& payload,
-                        auto reply) {
+    hooks.send = [this](const auto& scope, auto stage, const auto& payload, auto reply) {
       return NativeDropSend(scope, stage, payload, std::move(reply));
     };
     hooks.operation_current = [this](const auto& scope) {
@@ -172,7 +174,10 @@ NativeDropCore& NativeDropCompletions() {
                            const std::string& error) {
       const auto payload = std::static_pointer_cast<NativeDropPayload>(opaque);
       if (!NativeDropOperationCurrent(scope)) return;
-      if (!ok) { Complete(scope.owner, false, error); return; }
+      if (!ok) {
+        Complete(scope.owner, false, error);
+        return;
+      }
       // Core publication has rechecked original deadline and document pins.
       // Clear only the matching incarnation, never a later drag's state.
       if (payload != native_drop_payload_) return;
@@ -181,41 +186,36 @@ NativeDropCore& NativeDropCompletions() {
         payload->manual->busy = false;
       } else if (payload->helper) {
         const auto found = drag_work_.find(scope.owner);
-        if (found != drag_work_.end() && found->second == payload->helper)
-          drag_work_.erase(found);
+        if (found != drag_work_.end() && found->second == payload->helper) drag_work_.erase(found);
       }
       native_drop_payload_.reset();
       if (payload->done) payload->done();
     };
-    hooks.close_channel = [this](const auto&, const std::string& error) {
-      NetworkFatal(error);
-    };
+    hooks.close_channel = [this](const auto&, const std::string& error) { NetworkFatal(error); };
     native_drop_ = NativeDropCore::Create(std::move(hooks), NativeDropBudget());
   }
   return *native_drop_;
 }
 bool NativeDropBegin(int owner, uint64_t generation, Dict data,
-                     std::shared_ptr<NativeDragWork> helper,
-                     std::shared_ptr<InputWork> manual,
+                     std::shared_ptr<NativeDragWork> helper, std::shared_ptr<InputWork> manual,
                      std::function<void()> done) {
   const auto entry = operations_.Get(owner);
   if (!entry || !operations_.IsCurrent(owner, generation)) return false;
-  if (NativeDropBusy() || !browser_ || closing_page_ || !data ||
-      !native_drag_incarnation_) {
+  if (NativeDropBusy() || !browser_ || closing_page_ || !data || !native_drag_incarnation_) {
     native_drop_failed_owner_ = owner;
     NetworkFatal("Native drag completion admission unavailable");
     Complete(owner, false, "Native drag completion admission unavailable");
     return false;
   }
   auto payload = std::make_shared<NativeDropPayload>();
-  payload->scope = {static_cast<uint64_t>(browser_->GetIdentifier()),
-                    native_drag_incarnation_, owner, generation};
+  payload->scope = {static_cast<uint64_t>(browser_->GetIdentifier()), native_drag_incarnation_,
+                    owner, generation};
   payload->renderer = native_pristine_renderer_epoch_;
   payload->packet = Json(NativeManualDragPacket("drop", data));
   size_t bytes = payload->packet.size();
   for (const auto& [id, frame] : frame_states_) {
-    payload->documents.push_back({id, frame.session, frame.loader,
-                                 frame.context_identity, frame.context_generation});
+    payload->documents.push_back(
+        {id, frame.session, frame.loader, frame.context_identity, frame.context_generation});
     bytes += id.size() + frame.session.size() + frame.loader.size() +
              frame.context_identity.size() + sizeof(NativeDropDocument);
   }
@@ -225,7 +225,8 @@ bool NativeDropBegin(int owner, uint64_t generation, Dict data,
     Complete(owner, false, "Native drag completion has no current document");
     return false;
   }
-  payload->helper = std::move(helper); payload->manual = std::move(manual);
+  payload->helper = std::move(helper);
+  payload->manual = std::move(manual);
   if (payload->manual) payload->manual_data = data;
   payload->done = std::move(done);
   // Transfer cleanup responsibility before any submission can reply/reenter
@@ -234,9 +235,11 @@ bool NativeDropBegin(int owner, uint64_t generation, Dict data,
   if (payload->manual) payload->manual->held_mouse = false;
   native_drop_payload_ = payload;
   try {
-    if (NativeDropCompletions().Begin(payload->scope,
-          payload->helper ? NativeDropCore::Kind::Helper : NativeDropCore::Kind::Manual,
-          bytes, entry->deadline_ms, payload)) return true;
+    if (NativeDropCompletions().Begin(
+            payload->scope,
+            payload->helper ? NativeDropCore::Kind::Helper : NativeDropCore::Kind::Manual, bytes,
+            entry->deadline_ms, payload))
+      return true;
   } catch (...) {
     // Transfer has already suppressed ordinary logical cleanup. Allocation of
     // the controller/record/map can fail before a watchdog exists. Preserve a
@@ -248,7 +251,8 @@ bool NativeDropBegin(int owner, uint64_t generation, Dict data,
     Complete(owner, false, "Native drag completion admission failed");
     return false;
   }
-  native_drop_failed_owner_ = owner; native_drop_payload_.reset();
+  native_drop_failed_owner_ = owner;
+  native_drop_payload_.reset();
   NetworkFatal("Native drag completion admission was refused");
   Complete(owner, false, "Native drag completion admission was refused");
   return false;
@@ -266,14 +270,16 @@ bool NativeDropNeedsTick() const { return native_drop_ && native_drop_->NeedsTic
 void NativeDropClosed() {
   native_drop_transport_.clear();
   if (native_drop_) native_drop_->ChannelClosed();
-  native_drop_payload_.reset(); native_drop_failed_owner_ = 0;
+  native_drop_payload_.reset();
+  native_drop_failed_owner_ = 0;
 }
 bool NativeDragNextIncarnation() {
   if (NativeDropBusy() || native_drag_incarnation_ == UINT64_MAX) {
     NetworkFatal("Native drag incarnation cannot be replaced while physically owned");
     return false;
   }
-  ++native_drag_incarnation_; return true;
+  ++native_drag_incarnation_;
+  return true;
 }
 std::shared_ptr<NativeDropCore> native_drop_;
 std::shared_ptr<NativeDropPayload> native_drop_payload_;

@@ -23,7 +23,9 @@ namespace suitecut {
 class SurfaceOutput {
  public:
   enum class Sent { delivered, dropped, closed };
-  struct Rect { int x = 0, y = 0, width = 0, height = 0; };
+  struct Rect {
+    int x = 0, y = 0, width = 0, height = 0;
+  };
   // Null with |error| set when the name is malformed or nobody checked it in.
   static std::unique_ptr<SurfaceOutput> Open(const std::string& name, std::string& error);
   ~SurfaceOutput();

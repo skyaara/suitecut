@@ -17,12 +17,19 @@ std::deque<CefRefPtr<CefTask>> scheduled;
 class Task : public CefTask {
  public:
   explicit Task(std::function<void()> work) : work_(std::move(work)) {}
-  void Execute() override { assert(on_ui); work_(); }
+  void Execute() override {
+    assert(on_ui);
+    work_();
+  }
+
  private:
   std::function<void()> work_;
   IMPLEMENT_REFCOUNTING(Task);
 };
-bool TestCurrentlyOn(cef_thread_id_t thread) { assert(thread == TID_UI); return on_ui; }
+bool TestCurrentlyOn(cef_thread_id_t thread) {
+  assert(thread == TID_UI);
+  return on_ui;
+}
 bool TestPostTask(cef_thread_id_t thread, CefRefPtr<CefTask> task) {
   assert(thread == TID_UI);
   if (!accept_post) return false;
@@ -32,14 +39,23 @@ bool TestPostTask(cef_thread_id_t thread, CefRefPtr<CefTask> task) {
 struct Contexts {
   bool closing = false;
   uint64_t unload = 0;
-  bool PageClosePending(int) const { assert(on_ui); return closing || unload; }
-  uint64_t BeforeUnloadCloseToken(int) const { assert(on_ui); return unload; }
+  bool PageClosePending(int) const {
+    assert(on_ui);
+    return closing || unload;
+  }
+  uint64_t BeforeUnloadCloseToken(int) const {
+    assert(on_ui);
+    return unload;
+  }
 };
 struct Engine {
   Contexts state;
   std::shared_ptr<bool> alive = std::make_shared<bool>(true);
   std::shared_ptr<bool> Alive() const { return alive; }
-  Contexts* contexts() { assert(on_ui); return &state; }
+  Contexts* contexts() {
+    assert(on_ui);
+    return &state;
+  }
 };
 struct Observation {
   std::vector<std::string> errors;
@@ -47,7 +63,8 @@ struct Observation {
 };
 class Source : public CefBaseRefCounted {
  public:
-  explicit Source(std::shared_ptr<Observation> observation) : observation_(std::move(observation)) {}
+  explicit Source(std::shared_ptr<Observation> observation)
+      : observation_(std::move(observation)) {}
   ~Source() override { ++observation_->destroyed; }
   void OnAudioStreamError(CefRefPtr<CefBrowser>, const CefString&);
   void Error(const char* message) { observation_->errors.emplace_back(message); }
@@ -57,6 +74,7 @@ class Source : public CefBaseRefCounted {
   bool closing_page_ = false;
   const int page_id_ = 1;
   Engine engine_;
+
  private:
   std::shared_ptr<Observation> observation_;
   IMPLEMENT_REFCOUNTING(Source);
@@ -132,7 +150,8 @@ int main() {
   source = new Source(rejected);
   source->OnAudioStreamError(nullptr, "capture failed");
   assert(rejected->errors.size() == 1 && scheduled.empty());
-  assert(rejected->errors[0] == "Native audio capture failed: capture failed (UI dispatch rejected)");
+  assert(rejected->errors[0] ==
+         "Native audio capture failed: capture failed (UI dispatch rejected)");
 
   // A stopping source's rejected dispatch is teardown, not a capture failure.
   auto stopping = std::make_shared<Observation>();

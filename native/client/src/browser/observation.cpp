@@ -27,14 +27,15 @@ bool truth(const Json& node, std::string_view key) {
 bool password(const Json& node) {
   const auto states = field(node, "states");
   return text(node, "type") == "password" || text(node, "inputType") == "password" ||
-         text(node, "role") == "password" || truth(node, "password") ||
-         truth(node, "protected") || (states && truth(*states, "protected"));
+         text(node, "role") == "password" || truth(node, "password") || truth(node, "protected") ||
+         (states && truth(*states, "protected"));
 }
 bool interactive(const Json& node) {
   const auto role = text(node, "role");
-  for (const auto candidate : {"button", "link", "textbox", "searchbox", "combobox", "listbox",
-        "checkbox", "radio", "switch", "slider", "spinbutton", "tab", "menuitem",
-        "menuitemcheckbox", "menuitemradio", "option", "treeitem", "scrollbar", "password"})
+  for (const auto candidate :
+       {"button", "link", "textbox", "searchbox", "combobox", "listbox", "checkbox", "radio",
+        "switch", "slider", "spinbutton", "tab", "menuitem", "menuitemcheckbox", "menuitemradio",
+        "option", "treeitem", "scrollbar", "password"})
     if (role == candidate) return true;
   return truth(node, "focusable") || truth(node, "editable") || truth(node, "interactive") ||
          truth(node, "clickable") || text(node, "cursor") == "pointer" ||
@@ -47,37 +48,51 @@ std::size_t utf8_prefix(std::string_view value, std::size_t bytes) {
   return size;
 }
 struct Budget {
-  std::size_t limit; // 0: no limit.
+  std::size_t limit;  // 0: no limit.
   std::size_t used = 0;
   bool limited = false;
   void copy(Json& target, std::string_view key, std::string_view value, bool indivisible = false) {
     const auto remaining = limit - used;
-    const auto length = !limit ? value.size() : indivisible && value.size() > remaining ? 0 : utf8_prefix(value, remaining);
+    const auto length = !limit                                    ? value.size()
+                        : indivisible && value.size() > remaining ? 0
+                                                                  : utf8_prefix(value, remaining);
     if (length < value.size()) limited = true;
     if (length || value.empty()) target[key] = std::string(value.substr(0, length));
     used += length;
   }
 };
-Json make_node(const Json& source, std::size_t index, bool hidden, bool descendant_hidden, Budget& budget) {
+Json make_node(const Json& source, std::size_t index, bool hidden, bool descendant_hidden,
+               Budget& budget) {
   Json result{{"index", index}};
   budget.copy(result, "role", source.is_string() ? "text" : text(source, "role"), true);
   if (!text(source, "ref").empty()) budget.copy(result, "ref", text(source, "ref"), true);
-  for (const auto key : {"name", "text", "value", "valueText", "url", "placeholder", "type", "inputType", "cursor"}) {
+  for (const auto key : {"name", "text", "value", "valueText", "url", "placeholder", "type",
+                         "inputType", "cursor"}) {
     if ((hidden && (std::string_view(key) == "value" || std::string_view(key) == "valueText" ||
-                    std::string_view(key) == "text")) || descendant_hidden) continue;
+                    std::string_view(key) == "text")) ||
+        descendant_hidden)
+      continue;
     const auto value = field(source, key);
-    if (value && value->is_string()) budget.copy(result, key, value->as_string());
-    else if (value && (value->is_bool() || value->is_number())) result[key] = *value;
+    if (value && value->is_string())
+      budget.copy(result, key, value->as_string());
+    else if (value && (value->is_bool() || value->is_number()))
+      result[key] = *value;
   }
   if (source.is_string() && !hidden) budget.copy(result, "text", source.as_string());
-  for (const auto key : {"checked", "disabled", "expanded", "active", "invalid", "level", "pressed",
-                         "selected", "focused", "focusable", "editable", "interactive", "clickable", "required", "readonly", "readOnly",
-                         "multiline", "valuemin", "valuemax", "valuenow"}) {
+  for (const auto key :
+       {"checked",  "disabled", "expanded",  "active",   "invalid",     "level",     "pressed",
+        "selected", "focused",  "focusable", "editable", "interactive", "clickable", "required",
+        "readonly", "readOnly", "multiline", "valuemin", "valuemax",    "valuenow"}) {
     if (hidden && std::string_view(key) == "valuenow") continue;
     auto value = field(source, key);
-    if (!value) { const auto states = field(source, "states"); if (states) value = field(*states, key); }
-    if (value && (value->is_bool() || value->is_number())) result[key] = *value;
-    else if (value && value->is_string()) budget.copy(result, key, value->as_string());
+    if (!value) {
+      const auto states = field(source, "states");
+      if (states) value = field(*states, key);
+    }
+    if (value && (value->is_bool() || value->is_number()))
+      result[key] = *value;
+    else if (value && value->is_string())
+      budget.copy(result, key, value->as_string());
   }
   if (hidden) result["protected"] = true;
   const auto box = field(source, "box");
@@ -89,7 +104,8 @@ Json make_node(const Json& source, std::size_t index, bool hidden, bool descenda
     }
     if (!bounded_box.as_object().empty()) result["box"] = std::move(bounded_box);
   } else if (box && box->is_array() && box->as_array().size() == 4 &&
-             std::all_of(box->as_array().begin(), box->as_array().end(), [](const Json& value) { return value.is_number(); })) {
+             std::all_of(box->as_array().begin(), box->as_array().end(),
+                         [](const Json& value) { return value.is_number(); })) {
     result["box"] = *box;
   }
   return result;
@@ -97,26 +113,44 @@ Json make_node(const Json& source, std::size_t index, bool hidden, bool descenda
 bool incomplete(const Json& observation) { return truth(observation, "truncated"); }
 constexpr auto kNone = static_cast<std::size_t>(-1);
 std::size_t reference(const Json& value, std::size_t below, const char* what) {
-  if (!value.is_integer() || value.as_int() < 0 || static_cast<std::uint64_t>(value.as_int()) >= below) throw std::invalid_argument(what);
+  if (!value.is_integer() || value.as_int() < 0 ||
+      static_cast<std::uint64_t>(value.as_int()) >= below)
+    throw std::invalid_argument(what);
   return static_cast<std::size_t>(value.as_int());
 }
-std::size_t parent(const Json& node) { const auto value = field(node, "parent"); return value ? static_cast<std::size_t>(value->as_int()) : kNone; }
-// Ancestor chains are interned to small ids shared by both observations, so equal chains compare equal in O(1)
-// and no per-node copy of a chain is ever built.
+std::size_t parent(const Json& node) {
+  const auto value = field(node, "parent");
+  return value ? static_cast<std::size_t>(value->as_int()) : kNone;
+}
+// Ancestor chains are interned to small ids shared by both observations, so equal chains compare
+// equal in O(1) and no per-node copy of a chain is ever built.
 struct Chains {
   std::map<std::tuple<std::size_t, std::string, std::string>, std::size_t> contexts;
   std::map<std::pair<std::size_t, std::int64_t>, std::size_t> slots;
   std::size_t context(std::size_t outer, const Json& entry) {
-    return contexts.emplace(std::tuple{outer, std::string(text(entry, "role")), std::string(text(entry, "name"))}, contexts.size() + 1).first->second;
+    return contexts
+        .emplace(
+            std::tuple{outer, std::string(text(entry, "role")), std::string(text(entry, "name"))},
+            contexts.size() + 1)
+        .first->second;
   }
-  std::size_t slot(std::size_t outer, const Json& entry) { return slots.emplace(std::pair{outer, entry.at("index").as_int()}, slots.size() + 1).first->second; }
+  std::size_t slot(std::size_t outer, const Json& entry) {
+    return slots.emplace(std::pair{outer, entry.at("index").as_int()}, slots.size() + 1)
+        .first->second;
+  }
 };
 struct Observed {
   const Json::array* nodes;
   const Json::array* ancestors;
-  std::vector<std::size_t> context, slot; // Per ancestor entry; 0 is the empty chain.
-  std::size_t context_of(const Json& node) const { const auto at = parent(node); return at == kNone ? 0 : context[at]; }
-  std::size_t slot_of(const Json& node) const { const auto at = parent(node); return at == kNone ? 0 : slot[at]; }
+  std::vector<std::size_t> context, slot;  // Per ancestor entry; 0 is the empty chain.
+  std::size_t context_of(const Json& node) const {
+    const auto at = parent(node);
+    return at == kNone ? 0 : context[at];
+  }
+  std::size_t slot_of(const Json& node) const {
+    const auto at = parent(node);
+    return at == kNone ? 0 : slot[at];
+  }
 };
 const Json::array kNoAncestors;
 Observed checked(const Json& observation, Chains& chains) {
@@ -124,7 +158,8 @@ Observed checked(const Json& observation, Chains& chains) {
   if (!nodes || !nodes->is_array())
     throw std::invalid_argument("Expected compact observation nodes");
   const auto ancestors = field(observation, "ancestors");
-  if (ancestors && !ancestors->is_array()) throw std::invalid_argument("Expected compact observation ancestors");
+  if (ancestors && !ancestors->is_array())
+    throw std::invalid_argument("Expected compact observation ancestors");
   Observed result{&nodes->as_array(), ancestors ? &ancestors->as_array() : &kNoAncestors, {}, {}};
   const auto& entries = *result.ancestors;
   for (std::size_t at = 0; at < entries.size(); ++at) {
@@ -132,15 +167,22 @@ Observed checked(const Json& observation, Chains& chains) {
     if (!entry.is_object() || !entry.contains("index") || !entry.at("index").is_integer())
       throw std::invalid_argument("Expected compact observation ancestor with index");
     // Entries precede their descendants, so one forward pass resolves every chain.
-    const auto outer = entry.contains("parent") ? reference(entry.at("parent"), at, "Compact observation ancestor parent must precede it") : kNone;
+    const auto outer = entry.contains("parent")
+                           ? reference(entry.at("parent"), at,
+                                       "Compact observation ancestor parent must precede it")
+                           : kNone;
     const auto outer_context = outer == kNone ? 0 : result.context[outer];
-    result.context.push_back(entry.contains("role") || entry.contains("name") ? chains.context(outer_context, entry) : outer_context);
+    result.context.push_back(entry.contains("role") || entry.contains("name")
+                                 ? chains.context(outer_context, entry)
+                                 : outer_context);
     result.slot.push_back(chains.slot(outer == kNone ? 0 : result.slot[outer], entry));
   }
   for (const auto& node : *result.nodes) {
     if (!node.is_object() || !node.contains("index") || !node.at("index").is_integer())
       throw std::invalid_argument("Expected compact observation node with index");
-    if (node.contains("parent")) (void)reference(node.at("parent"), entries.size(), "Compact observation node parent is not an ancestor");
+    if (node.contains("parent"))
+      (void)reference(node.at("parent"), entries.size(),
+                      "Compact observation node parent is not an ancestor");
   }
   return result;
 }
@@ -153,12 +195,19 @@ Json semantic(const Json& node, const Observed& observed) {
 std::string identity(const Json& node, const Observed& observed) {
   auto label = text(node, "name");
   if (label.empty() && text(node, "role") == "text") label = text(node, "text");
-  return Json{{"role", std::string(text(node, "role"))}, {"name", std::string(label)}, {"context", observed.context_of(node)}}.dump();
+  return Json{{"role", std::string(text(node, "role"))},
+              {"name", std::string(label)},
+              {"context", observed.context_of(node)}}
+      .dump();
 }
 std::string slot(const Json& node, const Observed& observed) {
-  return Json{{"role", std::string(text(node, "role"))}, {"outer", observed.slot_of(node)}, {"index", node.at("index")}}.dump();
+  return Json{{"role", std::string(text(node, "role"))},
+              {"outer", observed.slot_of(node)},
+              {"index", node.at("index")}}
+      .dump();
 }
-// Copies the ancestor entries a node refers to into a destination table once, rewriting parent indices.
+// Copies the ancestor entries a node refers to into a destination table once, rewriting parent
+// indices.
 struct Remap {
   const Json::array* source;
   Json::array* target;
@@ -182,7 +231,7 @@ struct Remap {
     return node;
   }
 };
-} // namespace
+}  // namespace
 
 Json compact_observation(const Json& forest, ObservationOptions options) {
   if (!forest.is_array()) throw std::invalid_argument("Observation must be an array forest");
@@ -190,15 +239,15 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     const Json::array* nodes;
     std::size_t index = 0;
     bool protected_parent = false;
-    std::size_t position = 0; // The container's index among its siblings.
+    std::size_t position = 0;  // The container's index among its siblings.
     bool named = false;
-    std::size_t entry = kNone; // Its ancestors-table index, once an emitted descendant needs it.
+    std::size_t entry = kNone;  // Its ancestors-table index, once an emitted descendant needs it.
   };
   std::vector<Frame> frames{{&forest.as_array()}};
   Json::array ancestors, output;
   Budget budget{options.max_text_bytes};
-  // Each open container is emitted into the ancestor table at most once, outermost first, so a node refers to its
-  // whole chain by one index and the output stays linear in the forest at any depth.
+  // Each open container is emitted into the ancestor table at most once, outermost first, so a node
+  // refers to its whole chain by one index and the output stays linear in the forest at any depth.
   const auto enclosing = [&]() -> std::size_t {
     auto first = frames.size();
     while (first > 1 && frames[first - 1].entry == kNone) --first;
@@ -219,8 +268,14 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
   bool node_limit = false, scan_limit = false;
   while (!frames.empty()) {
     auto& frame = frames.back();
-    if (frame.index == frame.nodes->size()) { frames.pop_back(); continue; }
-    if (options.max_scan_nodes && scanned >= options.max_scan_nodes) { scan_limit = true; break; }
+    if (frame.index == frame.nodes->size()) {
+      frames.pop_back();
+      continue;
+    }
+    if (options.max_scan_nodes && scanned >= options.max_scan_nodes) {
+      scan_limit = true;
+      break;
+    }
     const auto index = frame.index++;
     const auto& node = frame.nodes->at(index);
     ++scanned;
@@ -228,19 +283,27 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     const bool protected_parent = frame.protected_parent;
     const bool hidden = protected_parent || password(node);
     if (!options.interactive_only || interactive(node)) {
-      if (options.max_nodes && output.size() >= options.max_nodes) { node_limit = true; break; }
+      if (options.max_nodes && output.size() >= options.max_nodes) {
+        node_limit = true;
+        break;
+      }
       auto made = make_node(node, index, hidden, protected_parent, budget);
       if (const auto at = enclosing(); at != kNone) made["parent"] = at;
       output.push_back(std::move(made));
     }
     const auto children = field(node, "children");
     if (!children || !children->is_array() || children->as_array().empty()) continue;
-    frames.push_back({&children->as_array(), 0, hidden, index, !hidden && !text(node, "name").empty(), kNone});
+    frames.push_back(
+        {&children->as_array(), 0, hidden, index, !hidden && !text(node, "name").empty(), kNone});
   }
-  return Json{{"nodes", std::move(output)}, {"ancestors", std::move(ancestors)},
+  return Json{{"nodes", std::move(output)},
+              {"ancestors", std::move(ancestors)},
               {"truncated", node_limit || scan_limit || budget.limited},
-              {"nodeLimit", node_limit}, {"textLimit", budget.limited}, {"scanLimit", scan_limit},
-              {"scannedNodes", scanned}, {"textBytes", budget.used}};
+              {"nodeLimit", node_limit},
+              {"textLimit", budget.limited},
+              {"scanLimit", scan_limit},
+              {"scannedNodes", scanned},
+              {"textBytes", budget.used}};
 }
 
 Json observation_diff(const Json& previous, const Json& current, std::size_t max_changes) {
@@ -253,31 +316,41 @@ Json observation_diff(const Json& previous, const Json& current, std::size_t max
   std::vector<std::string> old_identity, new_identity;
   for (std::size_t i = 0; i < before.size(); ++i) {
     old_identity.push_back(identity(before[i], before_seen));
-    old_ids[old_identity.back()].push_back(i); old_slots[slot(before[i], before_seen)].push_back(i);
+    old_ids[old_identity.back()].push_back(i);
+    old_slots[slot(before[i], before_seen)].push_back(i);
   }
   for (std::size_t i = 0; i < after.size(); ++i) {
     new_identity.push_back(identity(after[i], after_seen));
-    new_ids[new_identity.back()].push_back(i); new_slots[slot(after[i], after_seen)].push_back(i);
+    new_ids[new_identity.back()].push_back(i);
+    new_slots[slot(after[i], after_seen)].push_back(i);
   }
   std::vector<bool> old_used(before.size()), new_used(after.size());
   Json::array added, removed, changed, ancestors;
   // Reported nodes refer into this result's own ancestor table, holding only the chains they use.
-  Remap from_before{before_seen.ancestors, &ancestors}, from_after{after_seen.ancestors, &ancestors};
+  Remap from_before{before_seen.ancestors, &ancestors},
+      from_after{after_seen.ancestors, &ancestors};
   std::size_t changes = 0;
   bool limited = false, ambiguous = false;
   auto admit = [&] {
-    if (max_changes && changes >= max_changes) { limited = true; return false; }
+    if (max_changes && changes >= max_changes) {
+      limited = true;
+      return false;
+    }
     ++changes;
     return true;
   };
   auto pair = [&](std::size_t old_index, std::size_t new_index) {
-    old_used[old_index] = true; new_used[new_index] = true;
-    if (semantic(before[old_index], before_seen) != semantic(after[new_index], after_seen) && admit())
-      changed.push_back(Json{{"before", from_before(before[old_index])}, {"after", from_after(after[new_index])}});
+    old_used[old_index] = true;
+    new_used[new_index] = true;
+    if (semantic(before[old_index], before_seen) != semantic(after[new_index], after_seen) &&
+        admit())
+      changed.push_back(Json{{"before", from_before(before[old_index])},
+                             {"after", from_after(after[new_index])}});
   };
   for (const auto& [key, indices] : old_ids) {
     const auto found = new_ids.find(key);
-    if (indices.size() > 1 || (found != new_ids.end() && found->second.size() > 1)) ambiguous = true;
+    if (indices.size() > 1 || (found != new_ids.end() && found->second.size() > 1))
+      ambiguous = true;
     if (indices.size() == 1 && found != new_ids.end() && found->second.size() == 1)
       pair(indices.front(), found->second.front());
   }
@@ -285,16 +358,24 @@ Json observation_diff(const Json& previous, const Json& current, std::size_t max
     const auto found = new_slots.find(key);
     if (indices.size() != 1 || found == new_slots.end() || found->second.size() != 1) continue;
     const auto old_index = indices.front(), new_index = found->second.front();
-    if (!old_used[old_index] && !new_used[new_index] && old_ids.at(old_identity[old_index]).size() == 1 &&
-        new_ids.at(new_identity[new_index]).size() == 1) pair(old_index, new_index);
+    if (!old_used[old_index] && !new_used[new_index] &&
+        old_ids.at(old_identity[old_index]).size() == 1 &&
+        new_ids.at(new_identity[new_index]).size() == 1)
+      pair(old_index, new_index);
   }
   const bool complete = !incomplete(previous) && !incomplete(current);
-  for (std::size_t i = 0; i < after.size(); ++i) if (!new_used[i] && admit()) added.push_back(from_after(after[i]));
+  for (std::size_t i = 0; i < after.size(); ++i)
+    if (!new_used[i] && admit()) added.push_back(from_after(after[i]));
   if (complete)
-    for (std::size_t i = 0; i < before.size(); ++i) if (!old_used[i] && admit()) removed.push_back(from_before(before[i]));
-  for (const auto& [key, indices] : new_ids) { (void)key; if (indices.size() > 1) ambiguous = true; }
-  return Json{{"added", std::move(added)}, {"removed", std::move(removed)}, {"changed", std::move(changed)},
-              {"ancestors", std::move(ancestors)}, {"ambiguous", ambiguous}, {"complete", complete && !limited},
-              {"truncated", limited}, {"removalsSuppressed", !complete}};
+    for (std::size_t i = 0; i < before.size(); ++i)
+      if (!old_used[i] && admit()) removed.push_back(from_before(before[i]));
+  for (const auto& [key, indices] : new_ids) {
+    (void)key;
+    if (indices.size() > 1) ambiguous = true;
+  }
+  return Json{{"added", std::move(added)},     {"removed", std::move(removed)},
+              {"changed", std::move(changed)}, {"ancestors", std::move(ancestors)},
+              {"ambiguous", ambiguous},        {"complete", complete && !limited},
+              {"truncated", limited},          {"removalsSuppressed", !complete}};
 }
-} // namespace suitecut
+}  // namespace suitecut

@@ -40,9 +40,11 @@ class Json {
   ~Json();
   Json(std::nullptr_t) noexcept {}
   Json(bool value) : value_(value) {}
-  template<std::integral T> requires (!std::same_as<T, bool>)
+  template <std::integral T>
+    requires(!std::same_as<T, bool>)
   Json(T value) {
-    if (!std::in_range<std::int64_t>(value)) throw std::out_of_range("JSON integer exceeds int64 range");
+    if (!std::in_range<std::int64_t>(value))
+      throw std::out_of_range("JSON integer exceeds int64 range");
     value_ = static_cast<std::int64_t>(value);
   }
   Json(double value);
@@ -78,7 +80,8 @@ class Json {
   Json& operator[](std::string_view key);
   const Json& operator[](std::string_view key) const { return at(key); }
   bool operator==(const Json& other) const;
+
  private:
   std::variant<std::monostate, bool, std::int64_t, double, std::string, array, object> value_;
 };
-} // namespace suitecut
+}  // namespace suitecut

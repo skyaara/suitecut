@@ -9,12 +9,13 @@ class BidiPermissions {
  public:
   BidiPermissions();
   ~BidiPermissions();
-  Json command(BidiRuntime&,int sdk_context,const std::string& native_user_context,
-               const std::string& action,const Json& params,Deadline);
+  Json command(BidiRuntime&, int sdk_context, const std::string& native_user_context,
+               const std::string& action, const Json& params, Deadline);
   void forget(int sdk_context);
-  void close(BidiRuntime&,Deadline);
+  void close(BidiRuntime&, Deadline);
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+}  // namespace suitecut::detail

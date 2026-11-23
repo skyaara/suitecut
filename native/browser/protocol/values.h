@@ -13,8 +13,10 @@ inline constexpr int kDevToolsBufferBytes = std::numeric_limits<int>::max();
 // A byte count or offset on the wire: an integer while it fits an int, as
 // every client expects, and a double (exact to 2^53) only beyond that.
 inline void SetByteCount(const Dict& dict, const char* key, size_t value) {
-  if (value <= static_cast<size_t>(std::numeric_limits<int>::max())) dict->SetInt(key, static_cast<int>(value));
-  else dict->SetDouble(key, static_cast<double>(value));
+  if (value <= static_cast<size_t>(std::numeric_limits<int>::max()))
+    dict->SetInt(key, static_cast<int>(value));
+  else
+    dict->SetDouble(key, static_cast<double>(value));
 }
 double Now();
 Dict Header(const char* type);

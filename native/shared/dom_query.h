@@ -3,7 +3,8 @@
 
 // Authored DOM query logic. C++ supplies the query, execution world, operation
 // identity, retry scheduling and deadline; no external browser driver is used.
-inline constexpr char kSuiteCutDomQuery[] = R"JS(function(steps,start=document,options={},nativeQueryIntrinsics){
+inline constexpr char kSuiteCutDomQuery[] =
+    R"JS(function(steps,start=document,options={},nativeQueryIntrinsics){
   // This optional object exists only in Source-authored strict main-dispatch
   // callbacks. It is captured before author code, never accepted from selector
   // IPC, exposed on globalThis, or passed to a registered engine callback.

@@ -11,7 +11,7 @@
 namespace {
 std::atomic_int refuse_threads{0};
 using CreateThread = int (*)(pthread_t*, const pthread_attr_t*, void* (*)(void*), void*);
-}
+}  // namespace
 
 extern "C" int pthread_create(pthread_t* thread, const pthread_attr_t* attributes,
                               void* (*entry)(void*), void* argument) noexcept {
@@ -31,7 +31,10 @@ int main() {
 
   std::promise<void> started, release, drained;
   const auto gate = release.get_future().share();
-  assert(pool.Submit([&] { started.set_value(); gate.wait(); }));
+  assert(pool.Submit([&] {
+    started.set_value();
+    gate.wait();
+  }));
   assert(started.get_future().wait_for(2s) == std::future_status::ready);
   // Growth failure must not discard work that an existing worker can drain.
   refuse_threads = 1;

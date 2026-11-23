@@ -90,7 +90,8 @@ class MediaPipeline {
  public:
   using Completion = std::function<void(const MediaPipelineResult&)>;
   using Started = std::function<void(double first_timestamp_ms)>;
-  explicit MediaPipeline(MediaPipelineOptions options, Completion completion = {}, Started started = {}, Completion progress = {});
+  explicit MediaPipeline(MediaPipelineOptions options, Completion completion = {},
+                         Started started = {}, Completion progress = {});
   ~MediaPipeline();
   MediaPipeline(const MediaPipeline&) = delete;
   MediaPipeline& operator=(const MediaPipeline&) = delete;
@@ -100,10 +101,10 @@ class MediaPipeline {
   bool WantsFrames() const;
   bool NativeCanvasFrame(std::shared_ptr<MacCaptureFrame> surface, double timestamp_ms,
                          std::function<void(std::vector<uint8_t>)> painted);
-  void CanvasFrame(const std::vector<uint8_t>& bgra, int width, int height,
-                   double timestamp_ms, uint64_t capture_sequence);
-  void ViewportFrame(const std::vector<uint8_t>& bgra, int width, int height,
-                     double css_width, double css_height, double timestamp_ms);
+  void CanvasFrame(const std::vector<uint8_t>& bgra, int width, int height, double timestamp_ms,
+                   uint64_t capture_sequence);
+  void ViewportFrame(const std::vector<uint8_t>& bgra, int width, int height, double css_width,
+                     double css_height, double timestamp_ms);
   void Audio(std::vector<uint8_t> stereo_s16, double timestamp_ms);
   void Pause(double timestamp_ms);
   void Resume(double timestamp_ms);

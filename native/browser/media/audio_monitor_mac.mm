@@ -10,8 +10,8 @@
 namespace suitecut {
 namespace {
 constexpr int kRate = 48000;
-constexpr size_t kFrameBytes = 4;                     // stereo s16
-constexpr size_t kBufferBytes = 480 * kFrameBytes;    // 10 ms per queue buffer
+constexpr size_t kFrameBytes = 4;                       // stereo s16
+constexpr size_t kBufferBytes = 480 * kFrameBytes;      // 10 ms per queue buffer
 constexpr size_t kMaxQueued = kRate / 5 * kFrameBytes;  // 200 ms
 constexpr int kBuffers = 3;
 }  // namespace
@@ -29,7 +29,8 @@ struct AudioMonitor::Impl {
       std::lock_guard lock(impl->mutex);
       taken = std::min(kBufferBytes, impl->pending.size());
       std::copy_n(impl->pending.begin(), taken, out);
-      impl->pending.erase(impl->pending.begin(), impl->pending.begin() + static_cast<std::ptrdiff_t>(taken));
+      impl->pending.erase(impl->pending.begin(),
+                          impl->pending.begin() + static_cast<std::ptrdiff_t>(taken));
     }
     std::memset(out + taken, 0, kBufferBytes - taken);  // underrun plays silence
     buffer->mAudioDataByteSize = kBufferBytes;
@@ -47,7 +48,8 @@ AudioMonitor::AudioMonitor() : impl_(std::make_unique<Impl>()) {
   format.mBytesPerFrame = kFrameBytes;
   format.mFramesPerPacket = 1;
   format.mBytesPerPacket = kFrameBytes;
-  if (AudioQueueNewOutput(&format, &Impl::Fill, impl_.get(), nullptr, nullptr, 0, &impl_->queue) != noErr) {
+  if (AudioQueueNewOutput(&format, &Impl::Fill, impl_.get(), nullptr, nullptr, 0, &impl_->queue) !=
+      noErr) {
     impl_->queue = nullptr;
     return;
   }
@@ -75,7 +77,8 @@ void AudioMonitor::Play(const std::vector<uint8_t>& pcm) {
   std::lock_guard lock(impl_->mutex);
   impl_->pending.insert(impl_->pending.end(), pcm.begin(), pcm.end());
   if (impl_->pending.size() > kMaxQueued)
-    impl_->pending.erase(impl_->pending.begin(),
-                         impl_->pending.begin() + static_cast<std::ptrdiff_t>(impl_->pending.size() - kMaxQueued));
+    impl_->pending.erase(
+        impl_->pending.begin(),
+        impl_->pending.begin() + static_cast<std::ptrdiff_t>(impl_->pending.size() - kMaxQueued));
 }
 }  // namespace suitecut

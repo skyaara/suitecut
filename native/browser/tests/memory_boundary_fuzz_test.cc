@@ -20,7 +20,8 @@ Bytes Compress(const Bytes& input, unsigned kind) {
   if (kind == 3) {
     size_t size = BrotliEncoderMaxCompressedSize(input.size());
     Bytes output(size);
-    assert(BrotliEncoderCompress(3, 20, BROTLI_MODE_GENERIC, input.size(), input.data(), &size, output.data()));
+    assert(BrotliEncoderCompress(3, 20, BROTLI_MODE_GENERIC, input.size(), input.data(), &size,
+                                 output.data()));
     output.resize(size);
     return output;
   }
@@ -52,7 +53,10 @@ int main(int argc, char** argv) {
     const auto compressed = Compress(input, kind);
     {
       Bytes output;
-      Decoder decoder([&](auto chunk) { output.insert(output.end(), chunk.begin(), chunk.end()); return true; });
+      Decoder decoder([&](auto chunk) {
+        output.insert(output.end(), chunk.begin(), chunk.end());
+        return true;
+      });
       assert(decoder.Configure(encoding[kind]));
       for (size_t offset = 0; offset < compressed.size();) {
         const size_t count = std::min(compressed.size() - offset, size_t(1 + random() % 1024));
@@ -69,12 +73,21 @@ int main(int argc, char** argv) {
       // sink rejection, explicit cancellation and genuine truncated EOF.
       Bytes mutated = compressed;
       switch (iteration % 3) {
-        case 0: mutated.resize(random() % mutated.size()); break;
-        case 1: mutated[random() % mutated.size()] ^= 1u << (random() % 8); break;
-        case 2: for (auto& byte : mutated) byte = random(); break;
+        case 0:
+          mutated.resize(random() % mutated.size());
+          break;
+        case 1:
+          mutated[random() % mutated.size()] ^= 1u << (random() % 8);
+          break;
+        case 2:
+          for (auto& byte : mutated) byte = random();
+          break;
       }
       size_t delivered = 0;
-      Decoder decoder([&](auto chunk) { delivered += chunk.size(); return iteration % 7 != 0; });
+      Decoder decoder([&](auto chunk) {
+        delivered += chunk.size();
+        return iteration % 7 != 0;
+      });
       if (decoder.Configure(encoding[kind])) {
         for (size_t offset = 0; offset < mutated.size();) {
           const size_t count = std::min(mutated.size() - offset, size_t(1 + random() % 511));
@@ -91,7 +104,9 @@ int main(int argc, char** argv) {
       ++malformed_streams;
     }
     {
-      struct Rect { int x, y, width, height; };
+      struct Rect {
+        int x, y, width, height;
+      };
       const int width = 1 + random() % 64, height = 1 + random() % 64;
       Bytes surface(size_t(width) * height * 4), retained;
       for (auto& byte : surface) byte = random();
@@ -105,7 +120,8 @@ int main(int argc, char** argv) {
           for (int column = x * 4; column < (x + w) * 4; ++column)
             surface[size_t(row) * width * 4 + column] = random();
         if (paint == 7) dirty.push_back({-1, 0, 1, 1});
-        assert(SuiteCutUpdateCapture(retained, surface.data(), width, height, width, height, dirty));
+        assert(
+            SuiteCutUpdateCapture(retained, surface.data(), width, height, width, height, dirty));
         assert(surface == retained);
         ++capture_cases;
       }
@@ -113,14 +129,17 @@ int main(int argc, char** argv) {
     {
       // Failure must release previous wire capacity, and range arithmetic
       // must reject arbitrary size_t inputs before slicing source memory.
-      std::vector<suitecut::NativeHTTPMultipartPart> parts{{"field", "", "", 0, input.size(), false}};
+      std::vector<suitecut::NativeHTTPMultipartPart> parts{
+          {"field", "", "", 0, input.size(), false}};
       Bytes wire;
       std::string error;
-      assert(suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", wire, error));
+      assert(suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", wire,
+                                                 error));
       assert(wire.size() >= input.size());
       parts[0].offset = size_t(random()) << 32 | random();
       if (!parts[0].offset) parts[0].offset = 1;
-      assert(!suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", wire, error));
+      assert(!suitecut::EncodeNativeHTTPMultipart(input, parts, "nativeMemoryBoundary1234", wire,
+                                                  error));
       assert(wire.empty() && wire.capacity() == 0);
       ++multipart_cases;
     }
@@ -137,7 +156,8 @@ int main(int argc, char** argv) {
         const size_t bytes = random() % 8192;
         auto lease = budget->Reserve(bytes);
         assert(lease);  // No byte limit: every reservation is admitted.
-        owned += bytes; leases.push_back(std::move(lease));
+        owned += bytes;
+        leases.push_back(std::move(lease));
         assert(budget->Used() == owned);
         if (!leases.empty() && random() % 3 == 0) {
           const size_t remaining = random() % (leases.back()->bytes + 1);
@@ -150,6 +170,10 @@ int main(int argc, char** argv) {
       assert(budget->Used() == 0);
     }
   }
-  std::printf("PASS seed 0x6d656d31: %zu valid codec streams, %zu malformed/lifetime codec schedules, %zu damage-model paints, %zu multipart failure/release cases, %u storage and screenshot-budget schedules; peak codec charged bytes %zu\n",
-              valid_streams, malformed_streams, capture_cases, multipart_cases, iterations, peak_codec_bytes);
+  std::printf(
+      "PASS seed 0x6d656d31: %zu valid codec streams, %zu malformed/lifetime codec schedules, %zu "
+      "damage-model paints, %zu multipart failure/release cases, %u storage and screenshot-budget "
+      "schedules; peak codec charged bytes %zu\n",
+      valid_streams, malformed_streams, capture_cases, multipart_cases, iterations,
+      peak_codec_bytes);
 }

@@ -48,7 +48,8 @@ class Client : public CefClient, public CefLifeSpanHandler {
     }
     // Pages may still ask to confirm leaving; a cancelled close keeps that
     // window, and closing it later finishes the quit.
-    for (const auto& browser : std::vector(browsers_)) suitecut::browser::CloseBrowser(browser, false);
+    for (const auto& browser : std::vector(browsers_))
+      suitecut::browser::CloseBrowser(browser, false);
   }
   const std::vector<CefRefPtr<CefBrowser>>& browsers() const { return browsers_; }
 
@@ -92,8 +93,8 @@ class Browser : public CefApp, public CefBrowserProcessHandler {
     if (profiles_.Rename(dir, name)) profiles_.Save();
   }
   std::string DirOf(CefRefPtr<CefBrowser> browser) const {
-    const auto path = std::filesystem::path(
-        browser->GetHost()->GetRequestContext()->GetCachePath().ToString());
+    const auto path =
+        std::filesystem::path(browser->GetHost()->GetRequestContext()->GetCachePath().ToString());
     return path.filename().string();
   }
   BrowserProfiles& profiles() { return profiles_; }
@@ -183,7 +184,8 @@ std::vector<std::pair<void*, std::string>> Windows() {
   if (!Current()) return out;
   for (const auto& browser : Current()->client()->browsers())
     // CefWindowHandle is a pointer on macOS and an X11 window id on Linux.
-    out.emplace_back(reinterpret_cast<void*>(browser->GetHost()->GetWindowHandle()), Current()->DirOf(browser));
+    out.emplace_back(reinterpret_cast<void*>(browser->GetHost()->GetWindowHandle()),
+                     Current()->DirOf(browser));
   return out;
 }
 

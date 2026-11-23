@@ -24,7 +24,7 @@ struct LaunchOptions {
   // TLS always verifies the peer chain and hostname/IP. Empty CA uses system
   // trust. Client certificate and private key must be supplied together (PEM).
   std::string tls_ca_file, tls_client_certificate, tls_client_key;
-  std::string profile; // Empty creates an owned temporary profile.
+  std::string profile;  // Empty creates an owned temporary profile.
   std::vector<std::string> arguments;
   int width = 1280, height = 720;
   // Device pixels per CSS pixel for the SuiteCut engine: 1 or 2. A viewer on
@@ -72,11 +72,11 @@ class Transport {
   Request submit(std::string fields_json,
                  std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
   Request submit_json(Json fields,
-                 std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
+                      std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
   Packet call(std::string fields_json,
               std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
   Packet call_json(Json fields,
-              std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
+                   std::chrono::milliseconds timeout = std::chrono::milliseconds{30000});
   void cancel(int request_id);
   std::optional<Packet> poll(std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
   Packet ready() const;
@@ -87,9 +87,10 @@ class Transport {
   // frame. Empty for an attached or CDP/BiDi browser.
   std::optional<int> process_id() const;
   void close();
+
  private:
   struct Impl;
   explicit Transport(std::unique_ptr<Impl> impl);
   std::unique_ptr<Impl> impl_;
 };
-} // namespace suitecut
+}  // namespace suitecut
