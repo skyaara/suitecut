@@ -33,6 +33,10 @@ ROOT = Path(__file__).resolve().parent.parent
 PINS = json.loads((ROOT / 'native/browser/macos-kit-deps.json').read_text())
 ORDER = ['openssl', 'brotli', 'libpsl', 'curl']
 JOBS = '2'
+# OpenSSL compiles its prefix in (ENGINESDIR, MODULESDIR, OPENSSLDIR). Give
+# it a folder no user can create, never this build's path: the kit loads no
+# engines or modules and reads no openssl.cnf.
+OPENSSL_PREFIX = '/var/empty/suitecut-openssl'
 
 
 def digest(path):
@@ -86,7 +90,8 @@ def build(work):
         shutil.rmtree(prefix)
     prefix.mkdir(parents=True)
     minimum = PINS['deploymentTarget']
-    flags = f'-arch arm64 -mmacosx-version-min={minimum} -O2'
+    # Source paths compiled in (__FILE__) name files from WORK, not this machine.
+    flags = f'-arch arm64 -mmacosx-version-min={minimum} -O2 -ffile-prefix-map={work}/='
     env = {key: value for key, value in os.environ.items() if not key.startswith(('CFLAGS', 'LDFLAGS', 'CPPFLAGS'))}
     env.update({'MACOSX_DEPLOYMENT_TARGET': minimum, 'CFLAGS': flags, 'LDFLAGS': flags,
                 # Nothing from Homebrew: only what is installed into the prefix.
@@ -97,13 +102,19 @@ def build(work):
              '-DBUILD_SHARED_LIBS=OFF']
 
     source = extract(work, 'openssl')
-    # OPENSSLDIR is compiled in and read for openssl.cnf; point it at a folder
-    # no user can create, not at this build's path.
     run(['./Configure', 'darwin64-arm64-cc', 'no-shared', 'no-module', 'no-tests', 'no-docs',
-         f'--prefix={prefix}', '--libdir=lib', '--openssldir=/var/empty/suitecut-openssl',
-         f'-mmacosx-version-min={minimum}'], source, env)
+         f'--prefix={OPENSSL_PREFIX}', '--libdir=lib', f'--openssldir={OPENSSL_PREFIX}',
+         f'-mmacosx-version-min={minimum}', f'-ffile-prefix-map={work}/='], source, env)
     run(['make', f'-j{JOBS}', 'build_libs'], source, env)
-    run(['make', 'install_dev'], source, env)
+    # Install through DESTDIR, then point the pkg-config and CMake files at
+    # the real prefix the other builds use.
+    stage = work / 'openssl-stage'
+    shutil.rmtree(stage, ignore_errors=True)
+    run(['make', 'install_dev', f'DESTDIR={stage}'], source, env)
+    shutil.copytree(stage / OPENSSL_PREFIX.lstrip('/'), prefix, dirs_exist_ok=True, symlinks=True)
+    shutil.rmtree(stage)
+    for path in [*(prefix / 'lib/pkgconfig').glob('*.pc'), *(prefix / 'lib/cmake').rglob('*.cmake')]:
+        path.write_text(path.read_text().replace(OPENSSL_PREFIX, str(prefix)))
 
     source = extract(work, 'brotli')
     run(cmake + ['-S', source, '-B', source / 'build', '-DBROTLI_DISABLE_TESTS=ON', '-DBROTLI_BUILD_TOOLS=OFF'],
@@ -142,6 +153,9 @@ def build(work):
 
     for path in sorted((prefix / 'lib').glob('*.dylib')):
         raise ValueError(f'A shared library was installed: {path}')
+    for path in sorted((prefix / 'lib').glob('*.a')):
+        if str(work).encode() in path.read_bytes():
+            raise ValueError(f'{path.name} names this build\'s folder {work}')
     shutil.rmtree(work / 'src')
     manifest = {'deploymentTarget': minimum, 'packages': PINS['packages'],
                 'libraries': {p.name: digest(p) for p in sorted((prefix / 'lib').glob('*.a'))}}

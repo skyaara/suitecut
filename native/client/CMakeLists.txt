@@ -26,6 +26,11 @@ if(SUITECUT_CLIENT_BUILD_SESSION AND WIN32)
   message(FATAL_ERROR "suitecut-session is not ported to Windows yet")
 endif()
 
+# Compiled-in source paths name files from the repository, never the build
+# machine's folders.
+get_filename_component(suitecut_repository "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+add_compile_options("-ffile-prefix-map=${suitecut_repository}/=")
+
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(ZLIB REQUIRED)

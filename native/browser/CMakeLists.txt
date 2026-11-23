@@ -69,6 +69,11 @@ find_library(SUITECUT_BROTLI_ENCODER brotlienc REQUIRED)
 add_library(suitecut-http-content-codec INTERFACE)
 target_include_directories(suitecut-http-content-codec INTERFACE "${SUITECUT_BROTLI_INCLUDE_DIR}")
 target_link_libraries(suitecut-http-content-codec INTERFACE ZLIB::ZLIB "${SUITECUT_BROTLI_DECODER}")
+# Compiled-in source paths (__FILE__, std::source_location) name files from
+# the repository, CEF and libyuv roots, never the build machine's folders.
+get_filename_component(suitecut_repository "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+add_compile_options("-ffile-prefix-map=${suitecut_repository}/=" "-ffile-prefix-map=${CEF_ROOT}=cef"
+                    "-ffile-prefix-map=${LIBYUV_ROOT}=libyuv")
 add_subdirectory("${CEF_LIBCEF_DLL_WRAPPER_PATH}" libcef_dll_wrapper)
 if(NOT IS_ABSOLUTE "${LIBYUV_ROOT}")
   message(FATAL_ERROR "Pass -DLIBYUV_ROOT=/absolute/path/to/the/pinned/libyuv/source")

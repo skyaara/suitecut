@@ -18,7 +18,8 @@ frameworks. `--enable-gpl` and `--enable-nonfree` are never passed.
   scripts/build-runtime-ffmpeg-macos.py build --work .suitecut/runtime-ffmpeg \\
       --openssl .suitecut/kit-deps/prefix
 
-`build` installs into WORK/prefix and writes WORK/prefix/runtime-ffmpeg.json
+`build` installs into WORK/prefix (configured as /var/empty/suitecut-ffmpeg,
+so no build path is compiled in) and writes WORK/prefix/runtime-ffmpeg.json
 with the configuration and hashes. Ship WORK/archives/ffmpeg-*.tar.xz with
 the runtime: it is the complete corresponding source of the FFmpeg binaries.
 """
@@ -36,6 +37,10 @@ ROOT = Path(__file__).resolve().parent.parent
 PINS = json.loads((ROOT / 'native/browser/macos-ffmpeg.json').read_text())
 ORDER = ['opus', 'libvpx', 'ffmpeg']
 JOBS = '4'
+# FFmpeg and libvpx compile their configure line, prefix included, into the
+# binaries (ffmpeg -buildconf). Configure them for a folder no user can
+# create and install through DESTDIR, so no build path ships.
+PREFIX = '/var/empty/suitecut-ffmpeg'
 
 
 def digest(path):
@@ -83,35 +88,47 @@ def extract(work, name):
     return top
 
 
+def install(source, env, work, prefix, command=('make', 'install')):
+    """Install a package configured for PREFIX into `prefix`."""
+    stage = work / 'stage'
+    shutil.rmtree(stage, ignore_errors=True)
+    run([*command, f'DESTDIR={stage}'], source, env)
+    shutil.copytree(stage / PREFIX.lstrip('/'), prefix, dirs_exist_ok=True, symlinks=True)
+    shutil.rmtree(stage)
+    for path in (prefix / 'lib/pkgconfig').glob('*.pc'):
+        path.write_text(path.read_text().replace(PREFIX, str(prefix)))
+
+
 def build(work, openssl):
     prefix = work / 'prefix'
     if prefix.exists():
         shutil.rmtree(prefix)
     (prefix / 'lib/pkgconfig').mkdir(parents=True)
     minimum = PINS['deploymentTarget']
-    flags = f'-arch arm64 -mmacosx-version-min={minimum} -O2'
+    # Source paths compiled in (__FILE__) name files from WORK, not this machine.
+    flags = f'-arch arm64 -mmacosx-version-min={minimum} -O2 -ffile-prefix-map={work}/='
     env = {key: value for key, value in os.environ.items() if not key.startswith(('CFLAGS', 'LDFLAGS', 'CPPFLAGS'))}
     env.update({'MACOSX_DEPLOYMENT_TARGET': minimum, 'CFLAGS': flags, 'LDFLAGS': flags,
                 # Nothing from Homebrew: only this prefix and the kit's OpenSSL.
                 'PKG_CONFIG_LIBDIR': f'{prefix}/lib/pkgconfig:{openssl}/lib/pkgconfig', 'PKG_CONFIG_PATH': ''})
 
     source = extract(work, 'opus')
-    run(['./configure', f'--prefix={prefix}', '--disable-shared', '--enable-static', '--disable-doc',
+    run(['./configure', f'--prefix={PREFIX}', '--disable-shared', '--enable-static', '--disable-doc',
          '--disable-extra-programs'], source, env)
     run(['make', f'-j{JOBS}'], source, env)
-    run(['make', 'install'], source, env)
+    install(source, env, work, prefix)
 
     source = extract(work, 'libvpx')
     # darwin23 is macOS 14; libvpx sets the matching minimum itself.
-    run(['./configure', f'--prefix={prefix}', '--target=arm64-darwin23-gcc', '--disable-shared', '--enable-static',
+    run(['./configure', f'--prefix={PREFIX}', '--target=arm64-darwin23-gcc', '--disable-shared', '--enable-static',
          '--enable-pic', '--enable-vp9-highbitdepth', '--disable-examples', '--disable-tools', '--disable-docs',
          '--disable-unit-tests'], source, env)
     run(['make', f'-j{JOBS}'], source, env)
-    run(['make', 'install'], source, env)
+    install(source, env, work, prefix)
 
     source = extract(work, 'ffmpeg')
     configuration = [
-        f'--prefix={prefix}', '--cc=clang', '--arch=arm64', '--enable-static', '--disable-shared',
+        f'--prefix={PREFIX}', '--cc=clang', '--arch=arm64', '--enable-static', '--disable-shared',
         '--disable-autodetect', '--enable-version3', '--disable-ffplay', '--disable-doc', '--disable-debug',
         '--enable-pthreads', '--enable-zlib', '--enable-bzlib',
         '--enable-videotoolbox', '--enable-audiotoolbox', '--enable-libvpx', '--enable-libopus', '--enable-openssl',
@@ -119,7 +136,7 @@ def build(work, openssl):
         f'--extra-ldflags=-mmacosx-version-min={minimum}']
     run(['./configure', *configuration], source, env)
     run(['make', f'-j{JOBS}'], source, env)
-    run(['make', 'install'], source, env)
+    install(source, env, work, prefix)
 
     tools = {name: prefix / 'bin' / name for name in ['ffmpeg', 'ffprobe']}
     for name, path in tools.items():
@@ -131,6 +148,9 @@ def build(work, openssl):
             library = line.strip().split(' ')[0]
             if not library.startswith(('/usr/lib/', '/System/Library/')):
                 raise ValueError(f'{name} links a library outside macOS: {library}')
+        for folder in [work, openssl]:
+            if str(folder).encode() in path.read_bytes():
+                raise ValueError(f'{name} names a build folder: {folder}')
     version = subprocess.run([tools['ffmpeg'], '-hide_banner', '-version'], capture_output=True, text=True,
                              check=True).stdout.splitlines()[0]
     shutil.rmtree(work / 'src')
