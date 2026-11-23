@@ -52,11 +52,13 @@ const runtime = `./bin/suitecut --session demo open https://example.com
   </p>
   <ReleaseArchives />
   <p>
-    None of them is published yet, so for now you build from this repository. The runtime archive is
-    built and verified but held from public release: its bundled FFmpeg is a GPLv3 build with x264
-    and x265, which may not be redistributed without its complete source, and its engine is the
-    third-party codec build of CEF, which carries no codec patent licence. The SDK archives and the
-    embed kit contain neither.
+    The SDK archives and the embed kit are on the
+    <a href={release.url}>GitHub pre-release</a> of {release.published}, with their
+    <code>SHA256SUMS</code>. They aren't notarized yet, so macOS blocks a downloaded copy until you
+    clear its quarantine; check the checksums first. The runtime archive is built and verified but
+    held from public release: its bundled FFmpeg is a GPLv3 build with x264 and x265, which may not
+    be redistributed without its complete source, and its engine is the third-party codec build of
+    CEF, which carries no codec patent licence. The SDK archives and the embed kit contain neither.
   </p>
   <p>
     Version numbers restart at {release.version} for the native line; 2.x was the Node.js package.

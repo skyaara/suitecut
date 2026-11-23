@@ -305,9 +305,11 @@ const format = (value: number) => (value < 10 ? value.toFixed(2) : String(Math.r
 
     <h2 id="start">Get started</h2>
     <p class="muted">
-      Build the C++ SDK with CMake and the engine against the pinned CEF SDK. The {release.name} archives
-      for macOS ARM64 are built and verified but not published yet;
-      <a href={sitePath('/docs#release')}>the guide lists them</a>.
+      Download the {release.name} SDK archives and embed kit for macOS ARM64 from the
+      <a href={release.url}>GitHub pre-release</a>, or build the C++ SDK with CMake and the engine
+      against the pinned CEF SDK. <a href={sitePath('/docs#release')}
+        >The guide lists the archives</a
+      >.
     </p>
     <p class="home-links">
       <a class="tag" href={sitePath('/docs')}>Read the guide</a>

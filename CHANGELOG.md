@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.1.0 alpha (native) — unreleased
+## 0.1.0 alpha (native) — 2026-11-23
+
+Published as the GitHub pre-release
+[`native-v0.1.0`](https://github.com/skyaara/suitecut/releases/tag/native-v0.1.0),
+with the two SDK archives, the embed kit and their `SHA256SUMS`.
 
 The first native-only release of suitecut, an **alpha for macOS arm64 (Apple
 Silicon)**. Interfaces can still change before 1.0. It has four archives:

@@ -3,8 +3,10 @@ export const release = {
   version: '0.1.0',
   name: '0.1.0 alpha',
   platform: 'macOS ARM64 (Apple silicon)',
-  /** False until the archives are attached to a public release. */
-  published: false,
+  /** The day the public archives went onto the GitHub pre-release. */
+  published: '2026-11-23',
+  /** The GitHub pre-release that carries the public archives and SHA256SUMS. */
+  url: 'https://github.com/skyaara/suitecut/releases/tag/native-v0.1.0',
 } as const
 
 export interface Archive {
