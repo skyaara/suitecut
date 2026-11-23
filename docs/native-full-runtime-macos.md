@@ -2,9 +2,10 @@
 
 The macOS recipe builds three local release candidates: a static C++20/C SDK,
 a shared C++20/C SDK, and a full runtime containing the static SDK's native
-tools, the SuiteCut application, CEF 156.0.30 (a third-party codec-enabled build;
-see [playback codecs](../native/browser/CODECS.md)), FFmpeg/ffprobe, and the complete
-non-system dynamic-library dependency closure. Application dylibs live directly
+tools, the SuiteCut application on the official CEF 156.0.30 build (no
+proprietary playback codecs; see [playback codecs](../native/browser/CODECS.md)),
+an LGPL FFmpeg/ffprobe built for it, and the complete non-system
+dynamic-library dependency closure. Application dylibs live directly
 in `Contents/Frameworks`, including their transitive dependencies; custom
 subdirectories can fail during macOS code-signing clone launches. See
 [Apple's code-signing layout guidance](https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html). Runtime paths are relative to
@@ -29,7 +30,8 @@ so an approved persistent-profile Keychain identity can remain approved. The
 first authorization, a locked Keychain, or revoked access can still require
 macOS interaction. Temporary automation profiles continue avoiding Keychain.
 Certificate-backed builds include Apple's trusted signing timestamp and require
-access to its timestamp service. They are not notarized or published. The October 19 qualification host is macOS 27.0.1 on
+access to its timestamp service. Release archives are signed with the
+hardened runtime; `--notarize PROFILE` also notarizes them (see below). The October 19 qualification host is macOS 27.0.1 on
 Apple Silicon. Bundled Homebrew dependencies can require newer macOS versions
 than the engine's compilation target; do not infer macOS 13 compatibility from
 that target. Intel and older macOS versions require their own dependency builds
@@ -89,25 +91,62 @@ cmake --build build/macos-client-shared --parallel 2
 ctest --test-dir build/macos-client-shared --output-on-failure
 cmake --install build/macos-client-shared --prefix "$PWD/build/macos-sdk-shared"
 
+python3 scripts/build-runtime-ffmpeg-macos.py fetch --work .suitecut/runtime-ffmpeg
+python3 scripts/build-runtime-ffmpeg-macos.py build --work .suitecut/runtime-ffmpeg --openssl $P
+M=$PWD/.suitecut/runtime-ffmpeg
+
 python3 scripts/package-native-runtime-macos.py \
   --sdk build/macos-sdk-static --kind runtime \
   --app build/macos-engine/suitecut-browser.app \
-  --ffmpeg /opt/homebrew/bin/ffmpeg --ffprobe /opt/homebrew/bin/ffprobe \
-  --system-library liblzma.5.dylib --require-macos 15.0 \
-  --output build/macos-runtime-artifact
+  --ffmpeg $M/prefix/bin/ffmpeg --ffprobe $M/prefix/bin/ffprobe --media-source $M \
+  --require-macos 14.0 --output build/macos-runtime-artifact
 ```
+
+Build the engine against the official CEF SDK
+(`scripts/package-embed-kit-macos.py fetch-cef --cef official`), as the embed
+kit does. The third-party codec build plays H.264, AAC and HEVC in pages but
+carries no codec patent licence, so it is for local builds only.
 
 The shared `libsuitecut_client` carries OpenSSL inside it, so a program that
 links it needs no OpenSSL of its own. A program that links the static
 `libsuitecut_client.a` supplies OpenSSL 3.5 or newer and zlib itself.
 
-The bundled media tools are Homebrew's FFmpeg, built for macOS 15, so the
-runtime archive needs macOS 15; the SDK archives need macOS 14.
-`--system-library liblzma.5.dylib` links FFmpeg to macOS's own liblzma instead
-of bundling Homebrew's, which is built for the host's macOS. `--require-macos`
-fails packaging if any file in the archive needs a newer macOS, and the
-manifest records the archive's real minimum as `minimumMacOS`. Package the SDK
-prefixes with `--require-macos 14.0`.
+The bundled media tools come from `scripts/build-runtime-ffmpeg-macos.py`:
+FFmpeg 9.0.2 with libvpx (VP9) and libopus, VideoToolbox (H.264) and
+AudioToolbox, and the embed kit's static OpenSSL for RTMPS and HTTPS, built
+for macOS 14 from the sources pinned in `native/browser/macos-ffmpeg.json`.
+Nothing is autodetected and nothing GPL or nonfree is enabled, so the tools
+link only macOS's own libraries and are LGPL-3.0-or-later. `--media-source`
+puts the FFmpeg source tarball in `share/src/` and its build record and the
+FFmpeg, libvpx and opus licences in `share/doc/SuiteCutRuntime/media/`; the
+packager refuses tools that are not the ones that work folder built, and
+records a publication hold for a GPL FFmpeg or a missing source. Homebrew's
+FFmpeg is a GPL build (x264, x265) for the host's macOS: do not ship it.
+
+`--require-macos` fails packaging if any file in the archive needs a newer
+macOS, and the manifest records the archive's real minimum as `minimumMacOS`.
+All four archives need macOS 14. `--system-library NAME` links a dependency to
+macOS's own copy in `/usr/lib` instead of bundling it; the LGPL FFmpeg needs
+none.
+
+### Notarization
+
+The packagers sign every Mach-O with the hardened runtime (the GPU and
+renderer helpers with `native/browser/entitlements/`), which notarization
+requires. To notarize, store an App Store Connect credential once in your
+keychain; notarytool asks for an app-specific password from
+[appleid.apple.com](https://appleid.apple.com), and nothing else ever sees it:
+
+```sh
+xcrun notarytool store-credentials suitecut --apple-id YOUR_APPLE_ID --team-id WTD7AF5L23
+```
+
+Then pass `--notarize suitecut` to `package-native-runtime-macos.py` or
+`package-embed-kit-macos.py package`. The packager uploads the signed folder,
+waits for Apple's verdict (printing the notary log when it is not
+`Accepted`), staples the ticket to each app and records the submission in the
+manifest before archiving. Executables and libraries outside an app cannot
+hold a ticket; Gatekeeper looks theirs up online.
 
 Package the two SDK prefixes with the same script, `--kind static` or
 `--kind shared`, and a separate new output directory. The script refuses to

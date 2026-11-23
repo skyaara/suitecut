@@ -19,8 +19,11 @@ suitecut ships native distributions only:
 
 Native SDK versioning and C ABI versioning are independent. Each platform needs
 its own dependency and runtime qualification. Windows runtime packaging is not
-implemented. Do not publish the GPL media bundle without its complete
-corresponding source.
+implemented. The macOS runtime bundles only the LGPL FFmpeg that
+`scripts/build-runtime-ffmpeg-macos.py` builds, with its source inside the
+archive (`--media-source`); never Homebrew's GPL build. Package release
+archives with `--notarize PROFILE` (see the
+[macOS recipe](docs/native-full-runtime-macos.md#notarization)).
 
 ## Gates
 

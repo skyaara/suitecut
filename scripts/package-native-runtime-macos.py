@@ -13,7 +13,7 @@ import subprocess
 import tarfile
 
 import suitecut_version
-from native_macos_signing import resolve_identity, sign, sign_app, signature
+from native_macos_signing import notarize, resolve_identity, sign, sign_app, signature
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -146,13 +146,14 @@ def bundle_dependencies(stage, origins, identity, system=()):
         if changes:
             binary.chmod(binary.stat().st_mode | 0o200)
             run('/usr/bin/install_name_tool', *changes, binary)
+    # The hardened runtime on everything: notarization requires it.
     for binary in sorted(processed):
         if not any(p.suffix == '.app' and p.is_relative_to(stage) for p in binary.parents):
-            sign(binary, identity)
+            sign(binary, identity, hardened=True)
     apps = [p for p in stage.rglob('*.app')
             if not any(parent.suffix == '.app' and parent.is_relative_to(stage) for parent in p.parents)]
     for app in apps:
-        sign_app(app, identity)
+        sign_app(app, identity, hardened=True)
     for binary in sorted(processed):
         for dependency in dependencies(binary):
             if dependency.startswith('/') and not dependency.startswith(('/usr/lib/', '/System/Library/')):
@@ -167,6 +168,37 @@ def bundle_dependencies(stage, origins, identity, system=()):
     return provenance
 
 
+def bundle_media_source(work, stage, notices):
+    """Copy the LGPL FFmpeg's source tarball, build record and licenses."""
+    record = json.loads((work / 'prefix/runtime-ffmpeg.json').read_text())
+    for tool, expected in record['tools'].items():
+        if digest(stage / 'bin' / tool) != expected:
+            raise ValueError(f'bin/{tool} is not the FFmpeg that {work} built')
+    source = stage / 'share/src'
+    source.mkdir(parents=True, exist_ok=True)
+    media = notices / 'media'
+    media.mkdir(parents=True, exist_ok=True)
+    clone(work / 'prefix/runtime-ffmpeg.json', media / 'runtime-ffmpeg.json')
+    licenses = {'ffmpeg': ['COPYING.LGPLv3', 'COPYING.LGPLv2.1', 'LICENSE.md'], 'libvpx': ['LICENSE', 'PATENTS'],
+                'opus': ['COPYING']}
+    for name, wanted in licenses.items():
+        url = record['packages'][name]['url']
+        archive = work / 'archives' / (name + '-' + url.rsplit('/', 1)[1].removeprefix(name + '-'))
+        if digest(archive) != record['packages'][name]['sha256']:
+            raise ValueError(f'{archive} differs from its pin')
+        if name == 'ffmpeg':
+            clone(archive, source / archive.name)
+        with tarfile.open(archive) as tar:
+            for member in tar.getmembers():
+                parts = Path(member.name).parts
+                if len(parts) == 2 and parts[1] in wanted and member.isfile():
+                    (media / name).mkdir(exist_ok=True)
+                    (media / name / parts[1]).write_bytes(tar.extractfile(member).read())
+    return {'license': record['license'], 'version': record['version'], 'configuration': record['configuration'],
+            'packages': {name: value['version'] for name, value in record['packages'].items()},
+            'source': str((source / Path(record['packages']['ffmpeg']['url']).name).relative_to(stage))}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--sdk', type=Path, required=True)
@@ -178,6 +210,10 @@ def main():
     parser.add_argument('--signing-identity', help='Pinned certificate fingerprint; - explicitly selects ad-hoc')
     parser.add_argument('--system-library', action='append', default=[], metavar='NAME',
                         help='Link this dependency (e.g. liblzma.5.dylib) to macOS\'s /usr/lib copy instead of bundling it')
+    parser.add_argument('--media-source', type=Path, metavar='WORK',
+                        help='Work folder of scripts/build-runtime-ffmpeg-macos.py: bundles its FFmpeg source and licenses')
+    parser.add_argument('--notarize', metavar='PROFILE',
+                        help='Notarize with this notarytool keychain profile (xcrun notarytool store-credentials)')
     parser.add_argument('--require-macos', metavar='VERSION',
                         help='Fail if any packaged Mach-O file needs a newer macOS than this')
     args = parser.parse_args()
@@ -239,6 +275,22 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
                 folder.mkdir(parents=True, exist_ok=True)
                 if not (folder / file.name).exists():
                     clone(file, folder / file.name)
+    media = None
+    holds = []
+    if args.kind == 'runtime':
+        # A GPL FFmpeg could ship only with its complete corresponding source
+        # and GPL terms for the whole runtime; the LGPL build ships with its
+        # source tarball and licenses inside the archive.
+        configuration = run(stage / 'bin/ffmpeg', '-hide_banner', '-buildconf')
+        if '--enable-gpl' in configuration or '--enable-nonfree' in configuration:
+            holds.append('The bundled FFmpeg is a GPL or nonfree build.')
+        if args.media_source:
+            media = bundle_media_source(args.media_source.resolve(strict=True), stage, notices)
+        else:
+            holds.append('FFmpeg\'s corresponding source is not bundled (--media-source).')
+    # Notarize the finished, signed tree before listing its files: stapling
+    # adds each app's ticket.
+    notarization = notarize(stage, args.notarize, output) if args.notarize else None
     files = []
     for path in sorted(stage.rglob('*')):
         if path.is_symlink():
@@ -253,14 +305,16 @@ exec "$bin/suitecut-native-control" --backend cef --browser "$bin/../libexec/sui
                 'nodeRequired': False, 'systemMediaRequired': False if args.kind == 'runtime' else None,
                 'signing': 'ad-hoc' if identity == '-' else 'certificate',
                 'signingIdentity': identity, 'signature': signature(app) if args.kind == 'runtime' else None,
-                'timestamped': identity != '-', 'notarized': False, 'published': False,
+                'timestamped': identity != '-', 'hardenedRuntime': True,
+                'notarized': bool(notarization), 'notarization': notarization, 'published': False,
                 'minimumMacOSTested': platform.mac_ver()[0],
                 'minimumMacOS': '.'.join(map(str, minimum)) if minimum else None,
                 'systemLibraries': sorted(args.system_library),
                 'cef': cef_provenance(json.loads((ROOT/'native/browser/cef-build.json').read_text())) if args.kind == 'runtime' else None,
                 'packagerSha256': digest(Path(__file__).resolve()),
-                'redistributionReady': False,
-                'publicationHold': 'Review bundled dependency licenses and supply corresponding source for GPL-enabled media before public redistribution.',
+                'media': media,
+                'redistributionReady': not holds,
+                'publicationHold': ' '.join(holds) or None,
                 'host': platform.mac_ver()[0], 'dependencies': provenance, 'files': files}
     (stage / 'runtime-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     archive = output / (name + '.tar.gz')

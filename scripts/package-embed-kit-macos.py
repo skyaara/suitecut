@@ -21,7 +21,8 @@ load a framework beside it).
 
 Every Mach-O links only system libraries, is built for macOS 14 or older, and
 is signed with the hardened runtime and the entitlements in
-native/browser/entitlements/. Nothing is notarized here.
+native/browser/entitlements/. --notarize PROFILE submits it to Apple's notary
+service and staples the engine's ticket.
 
 Steps:
 
@@ -54,12 +55,11 @@ import tempfile
 import urllib.request
 
 import suitecut_version
-from native_macos_signing import resolve_identity
+from native_macos_signing import ENTITLEMENTS, notarize, resolve_identity, sign as sign_code
 
 ROOT = Path(__file__).resolve().parent.parent
 CEF_PIN = json.loads((ROOT / 'native/browser/cef-build.json').read_text())
 DEPS_PIN = json.loads((ROOT / 'native/browser/macos-kit-deps.json').read_text())
-ENTITLEMENTS = ROOT / 'native/browser/entitlements'
 FRAMEWORK = 'Chromium Embedded Framework.framework'
 HELPERS = {  # helper app suffix -> (bundle identifier suffix, entitlements file)
     '': ('helper', None),
@@ -180,13 +180,7 @@ def version_tuple(text):
 
 
 def sign(path, identity, identifier=None, entitlements=None):
-    command = ['/usr/bin/codesign', '--force', '--sign', identity, '--options', 'runtime',
-               '--timestamp=none' if identity == '-' else '--timestamp']
-    if identifier:
-        command += ['--identifier', identifier]
-    if entitlements:
-        command += ['--entitlements', str(ENTITLEMENTS / entitlements)]
-    subprocess.run(command + [str(path)], check=True, timeout=300)
+    sign_code(path, identity, hardened=True, identifier=identifier, entitlements=entitlements)
 
 
 def license_from(archive, member_name):
@@ -297,6 +291,10 @@ def package(args):
     for name in signed:
         subprocess.run(['/usr/bin/codesign', '--verify', '--deep', '--strict', str(stage / name)], check=True)
 
+    # Notarize the signed kit before listing its files: stapling adds each
+    # app's ticket.
+    notarization = notarize(stage, args.notarize, stage.parent) if args.notarize else None
+
     described = json.loads(run(stage / 'suitecut-session', '--version', '--json'))
     # What an installer reading kit.json accepts (Napdock's): regular files
     # only, no symlinks or hidden names, and plain names.
@@ -330,7 +328,8 @@ def package(args):
                    'session': 'suitecut-session', 'framework': f'{inside}/{FRAMEWORK}',
                    'helpers': [f'{inside}/{h}.app' for h in helper_names]},
         'signing': {'identity': identity, 'teamIdentifier': team.group(1) if team else None,
-                    'hardenedRuntime': True, 'timestamped': identity != '-', 'notarized': False,
+                    'hardenedRuntime': True, 'timestamped': identity != '-', 'notarized': bool(notarization),
+                    'notarization': notarization,
                     'entitlements': {name: (str((ENTITLEMENTS / e).relative_to(ROOT)) if e else None)
                                      for name, e in signed.items()}},
         'sourceCommit': run('git', '-C', ROOT, 'rev-parse', 'HEAD').strip(),
@@ -361,6 +360,8 @@ def main():
     pack.add_argument('--output', type=Path, required=True)
     pack.add_argument('--replace', action='store_true')
     pack.add_argument('--signing-identity', help='Certificate fingerprint; - for ad-hoc')
+    pack.add_argument('--notarize', metavar='PROFILE',
+                      help='Notarize with this notarytool keychain profile (xcrun notarytool store-credentials)')
     args = parser.parse_args()
     if args.step == 'fetch-cef':
         fetch_cef(args.cef, args.dest)

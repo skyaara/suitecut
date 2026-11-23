@@ -31,12 +31,30 @@ def resolve_identity(explicit=None):
     return identity
 
 
-def sign(path, identity):
+ENTITLEMENTS = ROOT / 'native/browser/entitlements'
+# CEF's GPU and renderer helpers JIT, which the hardened runtime allows only
+# with these entitlements. Keys are the end of the helper app's name.
+HELPER_ENTITLEMENTS = {' (GPU)': 'helper-gpu.plist', ' (Renderer)': 'helper-renderer.plist'}
+
+
+def sign(path, identity, *, hardened=False, identifier=None, entitlements=None):
     # Certificate-backed builds retain stable identity requirements and use
     # Apple's trusted timestamp; ad-hoc development builds remain offline.
     # No keychain ACL edits, password exports, or per-build certificate creation.
-    subprocess.run(['/usr/bin/codesign', '--force', '--sign', identity,
-                    '--timestamp=none' if identity == '-' else '--timestamp', str(path)], check=True, timeout=120)
+    # Release archives sign with the hardened runtime, which notarization needs.
+    command = ['/usr/bin/codesign', '--force', '--sign', identity,
+               '--timestamp=none' if identity == '-' else '--timestamp']
+    if hardened:
+        command += ['--options', 'runtime']
+    if identifier:
+        command += ['--identifier', identifier]
+    if entitlements:
+        command += ['--entitlements', str(ENTITLEMENTS / entitlements)]
+    subprocess.run(command + [str(path)], check=True, timeout=300)
+
+
+def helper_entitlements(bundle):
+    return next((plist for suffix, plist in HELPER_ENTITLEMENTS.items() if Path(bundle).stem.endswith(suffix)), None)
 
 
 def verify(path):
@@ -52,7 +70,7 @@ def signature(path):
             'designatedRequirement': next((x.removeprefix('designated => ') for x in lines if x.startswith('designated => ')), None)}
 
 
-def sign_app(app, identity):
+def sign_app(app, identity, hardened=False):
     app = Path(app).resolve(strict=True)
     binaries = []
     for path in app.rglob('*'):
@@ -61,11 +79,44 @@ def sign_app(app, identity):
                 if stream.read(4) in (b'\xcf\xfa\xed\xfe', b'\xca\xfe\xba\xbe'):
                     binaries.append(path)
     for path in sorted(binaries, key=lambda p: len(p.parts), reverse=True):
-        sign(path, identity)
+        sign(path, identity, hardened=hardened)
     # Seal nested bundles explicitly inside-out; do not rely on --deep signing.
     bundles = [p for p in app.rglob('*') if p.suffix in ('.app', '.framework') and not p.is_symlink()]
     for path in sorted(bundles, key=lambda p: len(p.parts), reverse=True):
-        sign(path, identity)
-    sign(app, identity)
+        sign(path, identity, hardened=hardened, entitlements=helper_entitlements(path) if hardened else None)
+    sign(app, identity, hardened=hardened)
     verify(app)
     return signature(app)
+
+
+def notarize(folder, profile, scratch):
+    """Submit a signed folder to Apple's notary service, then staple its apps.
+
+    `profile` names a notarytool keychain profile, created once with
+    `xcrun notarytool store-credentials`; no password passes through here.
+    Bare executables and libraries cannot hold a ticket: Gatekeeper finds
+    theirs online by code hash. Each outermost .app gets its ticket stapled.
+    """
+    folder = Path(folder).resolve(strict=True)
+    upload = Path(scratch) / (folder.name + '.zip')
+    subprocess.run(['/usr/bin/ditto', '-c', '-k', '--keepParent', str(folder), str(upload)], check=True)
+    try:
+        submitted = subprocess.run(['/usr/bin/xcrun', 'notarytool', 'submit', str(upload), '--keychain-profile', profile,
+                                    '--wait', '--timeout', '2h', '--output-format', 'json'],
+                                   capture_output=True, text=True, timeout=7500)
+    finally:
+        upload.unlink(missing_ok=True)
+    try:
+        result = json.loads(submitted.stdout)
+    except ValueError:
+        raise ValueError(f'notarytool failed: {(submitted.stderr or submitted.stdout).strip()}') from None
+    if result.get('status') != 'Accepted':
+        log = subprocess.run(['/usr/bin/xcrun', 'notarytool', 'log', result.get('id', ''), '--keychain-profile', profile],
+                             capture_output=True, text=True).stdout
+        raise ValueError(f'Notarization {result.get("status")} ({result.get("id")}): {log[-4000:]}')
+    apps = [p for p in folder.rglob('*.app') if not any(q.suffix == '.app' for q in p.relative_to(folder).parents)]
+    for app in sorted(apps):
+        subprocess.run(['/usr/bin/xcrun', 'stapler', 'staple', str(app)], check=True, capture_output=True)
+        subprocess.run(['/usr/bin/xcrun', 'stapler', 'validate', str(app)], check=True, capture_output=True)
+    return {'submissionId': result['id'], 'status': result['status'],
+            'stapled': [str(app.relative_to(folder)) for app in sorted(apps)]}
