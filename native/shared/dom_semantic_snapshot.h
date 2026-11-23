@@ -79,6 +79,12 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
           node.readOnly=!!e.readOnly||e.getAttribute('aria-readonly')==='true';
           node.editable=query([],e,{elementStateOnly:true}).editable===true;
         }
+        // A rich-text editor is a field too: its text is a draft, not a caption.
+        // Only its top element, which is where the snapshot emits it.
+        else if(ai&&e.isContentEditable&&!up?.isContentEditable){
+          node.readOnly=e.getAttribute('aria-readonly')==='true';
+          node.editable=query([],e,{elementStateOnly:true}).editable===true;
+        }
         if(Object.keys(states).length)node.states=states;
         const properties={};if(r==='link'&&e.hasAttribute('href'))properties.url=options.captureReferences===true?sameOriginPath(e.getAttribute('href')):e.getAttribute('href');
         if((e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement)&&(['textbox','searchbox'].includes(r)||aiGeneric)){if(!(e instanceof HTMLInputElement&&e.type==='password'))node.text=tools.normalize(e.value);const placeholder=e.getAttribute('placeholder');if(placeholder&&tools.normalize(placeholder)!==tools.normalize(node.name))properties.placeholder=placeholder;node.children=[];}

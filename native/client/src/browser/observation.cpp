@@ -56,9 +56,10 @@ bool listed(const Json& node, bool inside_pointer) {
   return semantic_control(node) || (pointer(node) && (!inside_pointer || text(node, "role") == "generic"));
 }
 // A node whose text is what a person typed or picked, not a caption: fields, pickers, and a generic emitted without a
-// pointer, which the snapshot keeps only for an input, a focus stop or an editor.
+// pointer, which the snapshot keeps only for an input, a focus stop or an editor. The snapshot gives every field and
+// rich-text editor a readOnly flag, so a read-only or disabled editor (editable false) still counts.
 bool holds_value(const Json& node) {
-  if (password(node) || truth(node, "editable") || !text(node, "inputType").empty()) return true;
+  if (password(node) || truth(node, "editable") || field(node, "readOnly") || !text(node, "inputType").empty()) return true;
   const auto role = text(node, "role");
   for (const auto candidate : {"textbox", "searchbox", "combobox", "listbox", "spinbutton", "slider"})
     if (role == candidate) return true;

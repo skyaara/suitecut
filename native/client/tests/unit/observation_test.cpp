@@ -101,6 +101,24 @@ int main() {
           !row_nodes.at(3).contains("label") && row.dump().find("draft-in-editor") == std::string::npos &&
           row.dump().find("picked-option") == std::string::npos && row.dump().find("typed-text") == std::string::npos,
           "A label carried a field's typed or picked value");
+    // A rich-text editor inside a clickable card inherits its pointer, as the snapshot emits it: a nameless generic
+    // with the editable and readOnly flags, its draft text in paragraphs below. A read-only one is editable false.
+    const auto card = compact_observation(Json::array{
+      Json{{"role", "generic"}, {"ref", "rFixture_9_0"}, {"cursor", "pointer"}, {"children", Json::array{
+        "Reply",
+        Json{{"role", "generic"}, {"ref", "rFixture_9_1"}, {"cursor", "pointer"}, {"readOnly", false}, {"editable", true},
+             {"children", Json::array{Json{{"role", "paragraph"}, {"children", Json::array{"draft-paragraph"}}}, "draft-tail"}}},
+        Json{{"role", "generic"}, {"ref", "rFixture_9_2"}, {"cursor", "pointer"}, {"readOnly", true}, {"editable", false},
+             {"children", Json::array{"locked-draft"}}}}}}
+    }, options);
+    const auto& card_nodes = card.at("nodes").as_array();
+    check(card_nodes.size() == 3 && card_nodes.at(1).at("ref").as_string() == "rFixture_9_1" &&
+          card_nodes.at(1).at("editable").as_bool() && card_nodes.at(2).at("ref").as_string() == "rFixture_9_2",
+          "An editor inside a clickable card was dropped or lost its editable flag");
+    check(card_nodes.at(0).at("label").as_string() == "Reply" && !card_nodes.at(1).contains("label") &&
+          !card_nodes.at(2).contains("label") && card.dump().find("draft-") == std::string::npos &&
+          card.dump().find("locked-draft") == std::string::npos,
+          "A label carried an editor's draft text");
     options.max_text_bytes = 30; // Room for the role and ref, not the whole label.
     const auto tight = compact_observation(Json::array{
       Json{{"role", "generic"}, {"ref", "s7e0"}, {"cursor", "pointer"}, {"children", Json::array{"A long caption here"}}}
