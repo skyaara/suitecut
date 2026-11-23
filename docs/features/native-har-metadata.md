@@ -42,12 +42,12 @@ exports an empty MIME field and its sixteen captured bytes remain intact, while
 the stock oracle expects application/octet-stream and empty text. The original
 failure remains; no wire header or empty body was fabricated.
 
-`native/browser/har_metadata_test.cc` exercises the existing page/TLS/worker
+`native/browser/har/har_metadata_test.cc` exercises the existing page/TLS/worker
 contracts and the POST, coding, missing-provenance, header-readiness, failed-body
 and large form parameter lists using actual CEF value objects. It does not
 initialize CEF or substitute for a real browser/cross-process proof.
 
-`native/browser/har_response_provenance_test.cc` separately checks real empty
+`native/browser/har/har_response_provenance_test.cc` separately checks real empty
 header observations against absent-header defaults and detached captured-header
 ownership using the exact native response projector.
 
@@ -65,7 +65,7 @@ on sealed `b074f3e2` produced one pass and five failures, with zero native stder
 and unchanged 2002 inputs, 230 assets and SDK. The actual archives established
 unobserved false flags and missing SameSite; they also preserve a separate
 missing Max-Age expiry. Optional attribute projection has controlled CEF-valued
-coverage in `native/browser/har_cookies_test.cc`. Matching sealed `4ba1c9d9`
+coverage in `native/browser/har/har_cookies_test.cc`. Matching sealed `4ba1c9d9`
 collected all six original cookie cases: all six passed, with no skips, retries
 or native stderr and unchanged 2075 inputs, 230 assets and the sealed SDK. The
 expiry implementation is documented separately below.

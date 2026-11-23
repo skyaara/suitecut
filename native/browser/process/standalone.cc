@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 #include "process/standalone.h"
-#include "context_menus.h"
+#include "app/context_menus.h"
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <map>
 #include <memory>
-#include "browser_profiles.h"
+#include "app/browser_profiles.h"
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
 #include "include/cef_request_context.h"
-#include "init_snapshot_scheme.h"
-#include "profile_lock.h"
+#include "init/init_snapshot_scheme.h"
+#include "app/profile_lock.h"
 
 namespace suitecut::browser::standalone {
 namespace {

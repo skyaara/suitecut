@@ -30,18 +30,18 @@
 #include "include/views/cef_fill_layout.h"
 #include "include/views/cef_panel.h"
 #include "include/views/cef_window.h"
-#include "init_snapshot_scheme.h"
+#include "init/init_snapshot_scheme.h"
 #if defined(__APPLE__)
 #include <chrono>
 #include <cmath>
 
 #include <atomic>
 
-#include "audio_clock.h"
-#include "audio_monitor.h"
-#include "mac_capture.h"
-#include "media_pipeline.h"
-#include "window_frames.h"
+#include "media/audio_clock.h"
+#include "media/audio_monitor.h"
+#include "media/mac_capture.h"
+#include "media/media_pipeline.h"
+#include "app/window_frames.h"
 #endif
 
 namespace suitecut::browser::prototype {

@@ -2,9 +2,9 @@
 #pragma once
 #include <map>
 
-#include "context_menus.h"
-#include "person_prompts.h"
-#include "network_request_rows.h"
+#include "app/context_menus.h"
+#include "input/person_prompts.h"
+#include "network/network_request_rows.h"
 #include "page/window_mode.h"
 #include "runtime/engine.h"
 namespace suitecut::browser {

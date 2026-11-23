@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "protocol/values.h"
-#include "accepted_packet_receipt.h"
-#include "accepted_publication_audit.h"
-#include "command_credits.h"
+#include "work/accepted_packet_receipt.h"
+#include "work/accepted_publication_audit.h"
+#include "work/command_credits.h"
 #include <atomic>
 #include <condition_variable>
 #include <deque>

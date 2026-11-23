@@ -6,8 +6,8 @@
 // as it always has.
 #include "page/source.h"
 
-#include "context_auth_policy.h"
-#include "context_permissions.h"
+#include "context/context_auth_policy.h"
+#include "context/context_permissions.h"
 #include "include/cef_parser.h"
 
 #include <cstdlib>

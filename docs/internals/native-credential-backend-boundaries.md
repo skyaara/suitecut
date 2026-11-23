@@ -29,7 +29,7 @@ snapshot/version publication or native clear/import fanout. This only reuses
 already committed genuine state; it does not acknowledge an uncompleted native
 operation or synthesize an assertion counter.
 
-Implementation: `native/browser/credential_controls.cc`, `credential_page.h`,
+Implementation: `native/browser/credentials/credential_controls.cc`, `credential_page.h`,
 `credential_source.inc`, `credential_ready.h`, and `renderer_script_sources.h`.
 
 ## Shared-context concurrent ceremonies require a browser-side contract

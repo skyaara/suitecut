@@ -20,6 +20,11 @@ def check():
         raise ValueError('Every implementation must belong to exactly one module')
     if (ROOT / 'browser.cc').exists() or list(ROOT.glob('*.inc')):
         raise ValueError('Flat browser monolith/controller fragments reintroduced')
+    # Every source lives in its domain folder (network/, media/, ...); the
+    # engine root holds only its docs, CMake entry point and version pins.
+    flat = sorted(p.name for p in ROOT.iterdir() if p.is_file() and p.suffix in {'.cc', '.h', '.mm'})
+    if flat:
+        raise ValueError(f'Source outside a domain folder: {", ".join(flat)}')
     include = re.compile(r'^\s*#\s*include\s*"([^"]+)"', re.MULTILINE)
     count = 0
     for path in ROOT.rglob('*'):

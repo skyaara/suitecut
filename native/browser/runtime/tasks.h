@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
-#include "accepted_task_work.h"
-#include "creation_watchdog.h"
+#include "work/accepted_task_work.h"
+#include "work/creation_watchdog.h"
 #include "include/cef_task.h"
 namespace suitecut::browser {
 suitecut::NativeWorkOrigin LocatorHandlerMonitorOrigin() noexcept;

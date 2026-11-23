@@ -53,7 +53,7 @@ in-process library could come later. The reasons:
   but it can reach a socket.
 - Frames already cross processes with no pixel copy on macOS. The engine
   paints into an IOSurface and only a port right moves
-  ([surface_output.mm](../../native/browser/surface_output.mm)).
+  ([surface_output.mm](../../native/browser/media/surface_output.mm)).
 
 The alternatives considered:
 

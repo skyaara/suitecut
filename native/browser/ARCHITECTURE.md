@@ -24,10 +24,37 @@ initialization, lifecycle, commands, accessors and accepted work. The headers an
 object targets are private implementation boundaries, not supported CEF-facing
 SDKs or separately versioned shared libraries.
 
-The older standalone controllers (network, media pipelines, storage, tracing,
-contexts and other services) retain their existing `.h`/`.cc` implementations.
+The standalone controllers (network, media pipelines, storage, tracing,
+contexts and other services) are ordinary `.h`/`.cc` files in domain folders,
+each beside its focused tests (`name_test.cc`) and notes (`name.md`). Sources
+include them from the engine root, as `#include "network/network_controls.h"`.
 The extracted adapter modules call those controllers; they do not introduce a
 parallel service registry or a second set of lifecycle state.
+
+| Folder           | Holds                                                                          |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `app/`           | Platform entry points, helpers, the renderer app, profiles and window glue     |
+| `artifacts/`     | Screenshots, screenshot assertions, artifacts and downloads                    |
+| `context/`       | Browser contexts: settings, permissions, bindings, routes and video options    |
+| `coverage/`      | JavaScript and CSS coverage                                                     |
+| `credentials/`   | The credential store, its encryption and login pages                           |
+| `debugger/`      | The developer debugger: breakpoints, frames, scopes, scripts and evaluation    |
+| `dom/`           | Queries, element state, ARIA and accessibility trees, frames and handles       |
+| `har/`           | HAR recording, replay and network archives                                     |
+| `http/`          | The engine's own HTTP client: curl transport, cookies and request policy       |
+| `init/`          | Init scripts and the startup snapshot sent to renderers                        |
+| `input/`         | Keyboard, mouse, touch, drag, forms and dialogs                                |
+| `lifecycle/`     | Virtual time, page activation, before-unload and idle detection                |
+| `locators/`      | Locator handlers, normalization, highlighting and selector waits               |
+| `media/`         | Capture, the recording and streaming pipelines, encoders and audio             |
+| `network/`       | Request interception, routes, bodies, WebSocket routing and URL predicates     |
+| `observability/` | Console journals, page errors and memory diagnostics                           |
+| `snapshots/`     | Snapshot references and their stable refs                                      |
+| `storage/`       | Storage state codecs and scripts                                                |
+| `trace/`         | Tracing: journals, archives, DOM trees, live and raw traces                    |
+| `work/`          | Accepted work, dispatch queues, budgets, shutdown fences and the Linux endpoint |
+| `workers/`       | Worker control and worker route fetch tests                                    |
+| `tests/`         | Engine-wide control and fuzz tests, architecture checks and test support       |
 
 ## Ownership and execution
 

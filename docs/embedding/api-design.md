@@ -304,11 +304,11 @@ events, and drops everything else (`shared_session.cpp:515-567`).
 | Loading state | Partly: load events exist for waits; no `OnLoadingStateChange`; the session reports navigations only | `navigation.cc:4-71`, decision record "Open" |
 | Title, favicon | Partly: `OnTitleChange` only feeds HAR; no favicon | `navigation.cc:63-69` |
 | Audio | Captured, and so muted (CEF mutes captured pages): `GetAudioParameters` always accepts, and the session drops the `audio` packets, so a person hears nothing (inferred from code, not measured) | `capture.cc:181-187`, `:245`, [shared-browser.md](../shared-browser.md) "CEF's audio capture mutes the page" |
-| Clipboard | Partly: `clipboard-write` permission only; no host clipboard bridge | `native/browser/context_controls.cc:449` |
+| Clipboard | Partly: `clipboard-write` permission only; no host clipboard bridge | `native/browser/context/context_controls.cc:449` |
 | Drag and drop | Missing for the person (`StartDragging` not implemented); the agent's `drag` tool exists | – |
 | Accessibility | Missing for the platform (no `OnAccessibilityTreeChange`); the agent reads CDP snapshots | – |
 | Crash and recovery | Supported in the engine; the session reports only `engine_exited` | `navigation.cc` (`OnRenderProcessTerminated`), `shared_session.cpp:118-126` |
-| Recording | Needs FFmpeg: every recording validates an absolute FFmpeg path, and Napdock's bundle has none | [media_pipeline.cc:457-458](../../native/browser/media_pipeline.cc) |
+| Recording | Needs FFmpeg: every recording validates an absolute FFmpeg path, and Napdock's bundle has none | [media_pipeline.cc:457-458](../../native/browser/media/media_pipeline.cc) |
 
 ### MCP: `suitecut-native-control` and `browserhost mcp`
 
@@ -751,7 +751,7 @@ items").
 switch nothing changes.
 
 - **The engine holds the callbacks.** `SuiteCutPersonPrompts`
-  (`native/browser/person_prompts.h`, `page/person_prompts.cc`) keeps each
+  (`native/browser/input/person_prompts.h`, `page/person_prompts.cc`) keeps each
   held CEF callback with its answer, today's policy and a cancel. The
   session turns it on per page with `{"command":"host","action":"prompts",
   "enabled":true}`, while its owner has a host connection that listed

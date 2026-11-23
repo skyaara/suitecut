@@ -76,6 +76,11 @@ class ModuleContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'monolith'):
             self.check()
 
+    def test_flat_source_is_rejected(self):
+        (layout.ROOT / 'network_controls.h').write_text('// Belongs in network/\n')
+        with self.assertRaisesRegex(ValueError, 'outside a domain folder'):
+            self.check()
+
     def test_missing_macro_fixture_include_is_rejected(self):
         (layout.ROOT / 'page/impl.cc').write_text(
             '#define SUITECUT_TEST_INCLUDE "missing.inc"\n#include SUITECUT_TEST_INCLUDE\n')
