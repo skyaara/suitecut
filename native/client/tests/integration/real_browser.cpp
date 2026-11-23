@@ -105,7 +105,9 @@ const Json* FindEditor(const Json& nodes) {
   if (!nodes.is_array()) return nullptr;
   for (const auto& node : nodes.as_array()) {
     if (!node.is_object()) continue;
-    if (node.contains("editable") && node.contains("readOnly") && !node.contains("inputType")) return &node;
+    // A textarea carries both flags too, without inputType; only a contenteditable editor is a generic.
+    if (node.contains("editable") && node.contains("readOnly") && !node.contains("inputType") &&
+        node.contains("role") && node.at("role") == Json("generic")) return &node;
     if (node.contains("children"))
       if (const auto nested = FindEditor(node.at("children"))) return nested;
   }
@@ -220,7 +222,7 @@ int main(int argc, char** argv) {
     // compact view gives it no label and keeps its draft out of the card's, and the agent can fill it.
     page.navigate("about:blank");
     page.navigate(DataUrl("<div id=card style='cursor:pointer' onclick='0'>Reply"
-      "<div id=editor contenteditable><p>draft-paragraph</p></div></div>"));
+      "<div id=editor contenteditable aria-placeholder='Write a reply'><p>draft-paragraph</p></div></div>"));
     const auto editor_snapshot = page.observe();
     const auto editor = FindEditor(editor_snapshot);
     Check(editor && editor->at("role") == Json("generic") && editor->at("editable") == Json(true) &&
@@ -231,9 +233,10 @@ int main(int argc, char** argv) {
     const auto editor_controls = suitecut::compact_observation(editor_snapshot, controls_only);
     bool editor_listed = false;
     for (const auto& node : editor_controls.at("nodes").as_array())
-      if (node.contains("editable")) editor_listed = !node.contains("label");
+      if (node.contains("editable"))
+        editor_listed = !node.contains("label") && node.contains("placeholder") && node.at("placeholder") == Json("Write a reply");
     Check(editor_listed && editor_controls.dump().find("draft-paragraph") == std::string::npos,
-          "compact view lists the editor without its draft text", report);
+          "compact view lists the editor by its placeholder, without its draft text", report);
     page.get_by_ref(editor->at("ref").as_string()).fill("Filled reply");
     Check(page.evaluate("document.querySelector('#editor').textContent").as_string() == "Filled reply",
           "editor ref from the snapshot accepts fill", report);

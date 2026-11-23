@@ -58,8 +58,10 @@ is kept, since it is there for a handler of its own. A nameless control
 carries a short `label` read from its own visible text, whole or not at all,
 and never from a field's typed or picked value or a rich-text editor's draft
 (the snapshot flags a contenteditable editor `editable`, with `readOnly`), so
-neighbours such as menu headers can be told apart. An editor offers
-`fill`/`type`/`clear` like a text field. `scope` selects a CSS subtree, `query` filters literal
+neighbours such as menu headers can be told apart. Nothing inside a field or
+editor gets a label. An editor offers `fill`/`type`/`clear` like a text field,
+and carries its `aria-placeholder` (or `data-placeholder`) as `placeholder`,
+which deltas use to tell nameless editors apart. `scope` selects a CSS subtree, `query` filters literal
 case-insensitive text, and optional `maxControls`/`maxTextBytes` bound the control
 output when a caller sets them (by default there is no limit). Truncation is explicit. Compact input controls omit current values;
 password values are also redacted by the underlying observation projection.

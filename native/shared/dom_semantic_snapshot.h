@@ -88,6 +88,8 @@ inline constexpr char kSuiteCutDOMSemanticSnapshot[] = R"JS(function(scope,query
         if(Object.keys(states).length)node.states=states;
         const properties={};if(r==='link'&&e.hasAttribute('href'))properties.url=options.captureReferences===true?sameOriginPath(e.getAttribute('href')):e.getAttribute('href');
         if((e instanceof HTMLInputElement||e instanceof HTMLTextAreaElement)&&(['textbox','searchbox'].includes(r)||aiGeneric)){if(!(e instanceof HTMLInputElement&&e.type==='password'))node.text=tools.normalize(e.value);const placeholder=e.getAttribute('placeholder');if(placeholder&&tools.normalize(placeholder)!==tools.normalize(node.name))properties.placeholder=placeholder;node.children=[];}
+        // An editor's placeholder is a caption, unlike its draft, so it can tell nameless editors apart.
+        if(ai&&e.isContentEditable&&!up?.isContentEditable){const placeholder=tools.normalize(e.getAttribute('aria-placeholder')||e.getAttribute('data-placeholder')||'');if(placeholder&&placeholder!==tools.normalize(node.name))properties.placeholder=placeholder;}
         if(Object.keys(properties).length)node.properties=properties;if(options.boxes)node.box=box(e);
         if(node.children.length===1&&node.children[0].role==='text'&&tools.normalize(node.children[0].text)===tools.normalize(node.name))node.children=[];
         result=[node];
