@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 # macOS 14 is the oldest release the session service and the embed kit support.
 set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version")
-project(SuiteCutClient VERSION 0.1.0 LANGUAGES C CXX)
+project(SuiteCutClient VERSION 0.1.1 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
