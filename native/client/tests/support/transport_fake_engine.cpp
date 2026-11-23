@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "suitecut/json.hpp"
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <csignal>
@@ -14,8 +15,12 @@ using suitecut::Json;
 namespace {
 void bytes(const void* data, std::size_t size, bool fragmented = false) {
   const auto* p = static_cast<const char*>(data);
+  // Fragmented writes split every read the client makes. Large bodies go in
+  // odd 4093-byte pieces: one byte at a time is millions of system calls,
+  // which made the test a CPU benchmark that missed its deadlines under load.
+  const std::size_t piece = !fragmented ? size : size > 65536 ? 4093 : 1;
   while (size) {
-    const auto count = ::write(STDOUT_FILENO, p, fragmented ? 1 : size);
+    const auto count = ::write(STDOUT_FILENO, p, std::min(piece, size));
     if (count <= 0) std::_Exit(0);
     p += count;
     size -= static_cast<std::size_t>(count);
