@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.1.1 alpha (native) — unreleased
+
+Fixes the 0.1.0 known issues and makes the runtime archive publishable.
+
+- Open software `.webm` recordings at the first audio sample. With audio,
+  the VP9/Opus path now waits up to 1 s (or the first-frame deadline) for
+  CEF's first audio packet and starts the recording there, like `.mp4`
+  already did, instead of padding about 140 ms of silence.
+- Run `evaluate` in the new document when a navigation refused it. When
+  Chromium reports that the script never ran ("Cannot find default execution
+  context", "Cannot find context with specified id"), `evaluate` runs it
+  again within the page's timeout. When the document was replaced while the
+  script ran, it is not run again; the error now says it may have partly run.
+  The batch `evaluate` step behaves the same way.
+- The runtime's FFmpeg is now an LGPL-3.0-or-later build (FFmpeg 9.0.2 with
+  libvpx 1.17.0, opus 1.6.1 and the kit's static OpenSSL), built for macOS 14
+  by `scripts/build-runtime-ffmpeg-macos.py` from sources pinned in
+  `native/browser/macos-ffmpeg.json`. It links only macOS's own libraries.
+  H.264 goes through VideoToolbox (`h264_videotoolbox`) for recordings and
+  streams on macOS; there is no x264 or x265.
+- The runtime archive ships the complete corresponding FFmpeg source and its
+  licences (`share/src/`, `share/doc/SuiteCutRuntime/media/`), and uses the
+  official CEF engine (no proprietary codecs), so it is no longer held. Its
+  manifest records `redistributionReady` and any `publicationHold`.
+- Sign release archives with the hardened runtime and CEF's GPU and renderer
+  helper entitlements, ready for notarization. `--notarize PROFILE` on the
+  runtime and embed-kit packagers submits to Apple's notary service with a
+  `notarytool` keychain profile and staples each app.
+- The MCP server reports the project version instead of a hard-coded 0.1.0.
+- Fix the Linux engine build, which still included a header from the
+  archived Node runner; the header now lives in `native/browser/work/`.
+- Group the engine's flat source files into domain folders (`network/`,
+  `media/`, `input/`, `dom/` and others; see `native/browser/ARCHITECTURE.md`),
+  and format all native code with one `native/.clang-format`. No behaviour
+  change.
+
 ## 0.1.0 alpha (native) — 2026-11-23
 
 Published as the GitHub pre-release
