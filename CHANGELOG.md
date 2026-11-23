@@ -3,6 +3,17 @@
 ## 0.1.1 alpha (native) — unreleased
 
 Fixes the 0.1.0 known issues and makes the runtime archive publishable.
+Built and checked from commit `8346047`; see the
+[release record](docs/releases/0.1.1-alpha.md). Not published or notarized
+yet.
+
+- Keep the build machine's folders out of every binary. The engine, CEF's
+  wrapper, static OpenSSL, FFmpeg and libvpx compiled in absolute source
+  paths, install prefixes or configure lines, which named the build
+  machine's home folder; the 0.1.0 archives still do. Source paths are now
+  mapped to the repository, CEF and libyuv roots, the dependency builds use
+  prefixes under `/var/empty` and fail if a library names its build folder,
+  and the release gates search every packaged file for the home path.
 
 - Open software `.webm` recordings at the first audio sample. With audio,
   the VP9/Opus path now waits up to 1 s (or the first-frame deadline) for
@@ -28,7 +39,17 @@ Fixes the 0.1.0 known issues and makes the runtime archive publishable.
   helper entitlements, ready for notarization. `--notarize PROFILE` on the
   runtime and embed-kit packagers submits to Apple's notary service with a
   `notarytool` keychain profile and staples each app.
+- The runtime packager checks which CEF the engine was built against
+  (`--cef official|codecs`, `--cef-sdk`), records it in the manifest and holds
+  a codec engine from publication. It also checks the bundled FFmpeg against
+  its build record before re-signing it, which certificate-signed packaging
+  could not pass before.
+- Retry `codesign` for about three minutes when Apple's timestamp service is
+  unavailable, instead of failing the build.
 - The MCP server reports the project version instead of a hard-coded 0.1.0.
+- Test fixes: the control fuzz accepts a socket the worker already closed on
+  macOS, and `network_body_transport_test` no longer misses its deadline
+  under load (its fake engine wrote 2 MiB bodies one byte per system call).
 - Fix the Linux engine build, which still included a header from the
   archived Node runner; the header now lives in `native/browser/work/`.
 - Group the engine's flat source files into domain folders (`network/`,
