@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
+import time
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / '.suitecut/macos-signing.json'
@@ -50,7 +52,14 @@ def sign(path, identity, *, hardened=False, identifier=None, entitlements=None):
         command += ['--identifier', identifier]
     if entitlements:
         command += ['--entitlements', str(ENTITLEMENTS / entitlements)]
-    subprocess.run(command + [str(path)], check=True, timeout=300)
+    # Apple's timestamp service drops requests now and then; retry only that.
+    for attempt in range(6):
+        result = subprocess.run(command + [str(path)], capture_output=True, text=True, timeout=300)
+        if result.returncode == 0 or 'timestamp service is not available' not in result.stderr or attempt == 5:
+            break
+        time.sleep(2 ** attempt)
+    sys.stderr.write(result.stderr)
+    result.check_returncode()
 
 
 def helper_entitlements(bundle):
