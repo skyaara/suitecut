@@ -737,19 +737,33 @@ a:hover {
     font-size: 1.125rem;
   }
 
+  /* Six links don't fit a phone's width: the pinned bar scrolls sideways and fades at its edges. */
   .nav-stuck .site-nav {
-    right: 1rem;
-    left: 1rem;
+    right: 0;
+    left: 0;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 1.25rem;
+    padding: 0 1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 1rem,
+      #000 calc(100% - 1rem),
+      transparent
+    );
+  }
+
+  .nav-stuck .site-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-stuck .site-nav a {
+    flex: none;
     font-size: 16px;
-  }
-
-  .nav-stuck .site-nav .github > span:not(.github-stars) {
-    display: none;
+    white-space: nowrap;
   }
 
   .nav-strip-logo {

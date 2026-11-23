@@ -105,12 +105,25 @@ const formatStars = (count: number) =>
     }
     // Glide each link from where it was to where it lands (FLIP), in both directions.
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    // On a phone the pinned bar scrolls sideways; keep the current page's link in view.
+    const showCurrent = () => {
+      const current = nav.querySelector<HTMLElement>('a[aria-current="page"]')
+      const overflow = nav.scrollWidth - nav.clientWidth
+      nav.scrollLeft =
+        current && overflow > 0
+          ? Math.min(
+              overflow,
+              Math.max(0, current.offsetLeft + current.offsetWidth - nav.clientWidth + 32),
+            )
+          : 0
+    }
     const update = (animate: boolean | Event = true) => {
       const stuck = window.scrollY >= threshold
       if (stuck === root.classList.contains('nav-stuck')) return
       const items = [...nav.querySelectorAll<HTMLElement>(':scope > a')]
       const before = items.map((item) => item.getBoundingClientRect())
       root.classList.toggle('nav-stuck', stuck)
+      showCurrent()
       if (animate === false || reduceMotion.matches) return
       items.forEach((item, index) => {
         const from = before[index]
@@ -144,6 +157,8 @@ const formatStars = (count: number) =>
       root.classList.add('js')
       measure()
     })
+    // The current link is marked on page-load, after this handler; scroll to it on the next frame.
+    document.addEventListener('astro:page-load', () => requestAnimationFrame(showCurrent))
   }
 
   // The header persists across client navigation, so mark the current page here.
