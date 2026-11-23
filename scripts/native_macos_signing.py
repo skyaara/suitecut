@@ -53,11 +53,11 @@ def sign(path, identity, *, hardened=False, identifier=None, entitlements=None):
     if entitlements:
         command += ['--entitlements', str(ENTITLEMENTS / entitlements)]
     # Apple's timestamp service drops requests now and then; retry only that.
-    for attempt in range(6):
+    for attempt in range(9):  # about three minutes of waiting in all
         result = subprocess.run(command + [str(path)], capture_output=True, text=True, timeout=300)
-        if result.returncode == 0 or 'timestamp service is not available' not in result.stderr or attempt == 5:
+        if result.returncode == 0 or 'timestamp service is not available' not in result.stderr or attempt == 8:
             break
-        time.sleep(2 ** attempt)
+        time.sleep(min(2 ** attempt, 60))
     sys.stderr.write(result.stderr)
     result.check_returncode()
 
