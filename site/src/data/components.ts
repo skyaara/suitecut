@@ -463,11 +463,14 @@ export const components: readonly Component[] = [
       ['Backpressure', 'Callbacks never wait on pipes; one pending frame, audio queued whole'],
       ['Recording', 'WebM, or hardware H.264 MP4 on macOS, at any output rate'],
       ['Publishing', 'RTMP, RTMPS or TCP, with an optional reconnect policy'],
-      ['Playback', 'H.264, AAC and HEVC on macOS ARM64 through a third-party codec build'],
-      ['Release', '0.1.0 alpha for macOS ARM64, signed with a Developer ID certificate'],
+      [
+        'Playback',
+        'H.264, AAC and HEVC on macOS ARM64 only with the third-party codec build; release archives use official CEF',
+      ],
+      ['Release', '0.1.1 alpha for macOS ARM64, signed with a Developer ID certificate'],
     ],
     limits: [
-      'Linux x64 builds from source but was not tested for 0.1.0.',
+      'Linux x64 builds from source but was not tested for 0.1.1.',
       'Windows configuration fails on purpose until its sandbox and packaging exist.',
       'The official Linux CEF build plays no H.264 or AAC.',
       'The macOS codec build is a third-party build and carries no codec patent licence.',
@@ -502,7 +505,7 @@ export const components: readonly Component[] = [
     facts: [
       ['Library', 'C++20 headers and a versioned C ABI, static or shared'],
       [
-        '0.1.0 archives',
+        '0.1.1 archives',
         'Shared, with OpenSSL inside the library, or static, where your program supplies OpenSSL 3.5 or newer; both need macOS 14',
       ],
       ['Backends', 'suitecut engine, Chrome or Chromium over CDP, Firefox over BiDi'],
@@ -513,7 +516,7 @@ export const components: readonly Component[] = [
       ['Extras', 'Encrypted credential vault, PNG comparison, Chromium recording and tracing'],
     ],
     limits: [
-      '0.1.0 is qualified on macOS ARM64. Linux builds from source but was not tested for it. Windows transport is not implemented.',
+      '0.1.1 is qualified on macOS ARM64. Linux builds from source but was not tested for it. Windows transport is not implemented.',
       'Safari and WebKit are not supported.',
       'Feature support differs by backend; unsupported calls fail with an explicit error.',
     ],
@@ -551,7 +554,7 @@ export const components: readonly Component[] = [
       ['Sessions', 'Named sessions keep a browser alive; idle after ten minutes'],
       ['Artifacts', 'Screenshots as image content, PDFs as embedded resources'],
       ['Remote', 'Connection headers and TLS client certificates for remote browsers'],
-      ['Ships in', 'Both 0.1.0 SDK archives, with the agent skill'],
+      ['Ships in', 'Both 0.1.1 SDK archives and the runtime, with the agent skill'],
     ],
     limits: [
       'Named sessions and exclusive output files need POSIX.',
@@ -589,7 +592,7 @@ export const components: readonly Component[] = [
       ['Agents', 'Grants that name tool groups and can expire or be revoked'],
       ['Signing', 'Developer ID, hardened runtime, JIT only for the GPU and renderer helpers'],
       ['Size', '333 MB, mostly the CEF framework'],
-      ['0.1.0 archive', 'suitecut-embed-kit-0.1.0-macos-arm64, for macOS 14 or newer'],
+      ['0.1.1 archive', 'suitecut-embed-kit-0.1.1-macos-arm64, for macOS 14 or newer'],
     ],
     limits: [
       'The kit is not notarized.',

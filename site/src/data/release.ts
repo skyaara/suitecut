@@ -1,12 +1,12 @@
 /** The current release, as CHANGELOG.md describes it. Keep the two in step. */
 export const release = {
-  version: '0.1.0',
-  name: '0.1.0 alpha',
+  version: '0.1.1',
+  name: '0.1.1 alpha',
   platform: 'macOS ARM64 (Apple silicon)',
   /** The day the public archives went onto the GitHub pre-release. */
-  published: '2026-11-23',
+  published: '2026-11-24',
   /** The GitHub pre-release that carries the public archives and SHA256SUMS. */
-  url: 'https://github.com/skyaara/suitecut/releases/tag/native-v0.1.0',
+  url: 'https://github.com/skyaara/suitecut/releases/tag/native-v0.1.1',
 } as const
 
 export interface Archive {
@@ -41,14 +41,14 @@ export const archives: readonly Archive[] = [
   {
     name: `SuiteCutRuntime-${release.version}-macos-arm64`,
     holds:
-      'Everything in one folder: the SDK, the command line with a suitecut launcher, the codec-enabled engine and FFmpeg for recording',
-    needs: 'macOS 15',
-    publicRelease: 'Held',
+      'Everything in one folder: the SDK, the command line with a suitecut launcher, the engine on official CEF 156.0.30 and an LGPL FFmpeg, with its source, for recording',
+    needs: 'macOS 14',
+    publicRelease: 'Yes',
   },
 ]
 
-/** Results of the 0.1.0 release recording checks on macOS ARM64. */
+/** Results of the 0.1.1 release recording checks on macOS ARM64. */
 export const recordingChecks = {
   mp4: '12 of 12 cases passed, up to 3840×2160 at 120 FPS with 120 distinct frames per second',
-  webm: '10 of 12 cases passed; the two with audio failed on the opening silence, and software VP9 fell short of 120 FPS above 1920×1080',
+  webm: '12 of 12 cases passed, with audio opening within 30 ms; software VP9 kept 71 distinct frames per second at 3840×2160',
 } as const

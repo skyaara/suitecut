@@ -175,8 +175,8 @@ const streamingActions: Row[] = [
     falls that far behind.
   </p>
 
-  <h2 id="known-issues">Known issues in 0.1.0</h2>
-  <p>The 0.1.0 release recordings on macOS ARM64 came out like this:</p>
+  <h2 id="known-issues">Known issues in 0.1.1</h2>
+  <p>The 0.1.1 release recordings on macOS ARM64 came out like this:</p>
   <ul class="dp-rows">
     <li>
       <code>.mp4</code>
@@ -188,16 +188,20 @@ const streamingActions: Row[] = [
     </li>
   </ul>
   <p>
-    A <code>.webm</code> recording with audio, which uses software VP9 and Opus, can open with about 140
-    ms of silence: that path admits video before CEF's first audio packet, and the recorder pads the gap.
-    A <code>.mp4</code> recording, which uses VideoToolbox H.264 and AAC, waits for the first audio packet
-    and opens within about 10 ms. Record to <code>.mp4</code> when the opening audio matters.
+    Both containers now start a recording with audio at CEF's first audio packet. A <code
+      >.webm</code
+    >
+    recording, which uses software VP9 and Opus, opens within about 30 ms; a <code>.mp4</code>
+    recording, which uses VideoToolbox H.264 and AAC, within about 10 ms. In 0.1.0 a <code
+      >.webm</code
+    >
+    recording opened with about 140 ms of silence.
   </p>
   <p>
     Recording throughput depends on the encoder and on machine load. Asked for 120 FPS, software VP9
-    kept 96 distinct frames per second at 2560×1440 and 44 at 3840×2160, while hardware H.264 kept
-    120 up to 3840×2160. In one earlier full run a 2560×1440 <code>.webm</code> recording failed under
-    load with
+    kept 120 distinct frames per second up to 2560×1440 and 71 at 3840×2160 in the release run,
+    while hardware H.264 kept 120 up to 3840×2160. In one 0.1.0 run a 2560×1440 <code>.webm</code> recording
+    failed under load with
     <code>Native encoder video pipe failed</code>, and passed when run alone.
   </p>
   <p>

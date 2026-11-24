@@ -46,22 +46,20 @@ const runtime = `./bin/suitecut --session demo open https://example.com
 
   <h2 id="release">The {release.name}</h2>
   <p>
-    {release.version} is the first native-only version of suitecut, an alpha for {release.platform}.
-    Interfaces can still change before 1.0. It has four archives, each signed with a Developer ID
-    certificate:
+    {release.version} is an alpha of native suitecut for {release.platform}. Interfaces can still
+    change before 1.0. It has four archives, each signed with a Developer ID certificate:
   </p>
   <ReleaseArchives />
   <p>
-    The SDK archives and the embed kit are on the
-    <a href={release.url}>GitHub pre-release</a> of {release.published}, with their
-    <code>SHA256SUMS</code>. They aren't notarized yet, so macOS blocks a downloaded copy until you
-    clear its quarantine; check the checksums first. The runtime archive is built and verified but
-    held from public release: its bundled FFmpeg is a GPLv3 build with x264 and x265, which may not
-    be redistributed without its complete source, and its engine is the third-party codec build of
-    CEF, which carries no codec patent licence. The SDK archives and the embed kit contain neither.
+    All four are on the <a href={release.url}>GitHub pre-release</a> of {release.published}, with
+    their <code>SHA256SUMS</code>. They aren't notarized yet, so macOS blocks a downloaded copy
+    until you clear its quarantine; check the checksums first. The runtime's engine is the official
+    CEF build, which plays no H.264, AAC or HEVC in pages, and its FFmpeg is an LGPL-3.0-or-later
+    build with its complete source inside the archive. Recording to <code>.mp4</code> encodes H.264 through
+    VideoToolbox.
   </p>
   <p>
-    Version numbers restart at {release.version} for the native line; 2.x was the Node.js package.
+    Version numbers restarted at 0.1.0 for the native line; 2.x was the Node.js package.
     <code>SC_ABI_VERSION</code> and <code>SC_EMBED_ABI_VERSION</code> are both 1.
   </p>
 
@@ -77,9 +75,9 @@ const runtime = `./bin/suitecut --session demo open https://example.com
     on stable Chromium 156.0.8078.96. Recording and streaming need FFmpeg and FFprobe.
   </p>
   <p>
-    {release.version} is qualified on macOS ARM64. Its SDK archives and embed kit are built for macOS
-    14 and its full runtime for macOS 15; they were built and checked on macOS 27 with Apple silicon,
-    and Intel Macs aren't supported. Linux x64 builds from source but wasn't tested for
+    {release.version} is qualified on macOS ARM64. All four archives are built for macOS 14; they were
+    built and checked on macOS 27 with Apple silicon, and Intel Macs aren't supported. Linux x64 builds
+    from source but wasn't tested for
     {release.version}. Windows runtime packaging isn't implemented. The <a
       href={`${repo}/docs/building.md`}>build requirements</a
     > list every dependency.
