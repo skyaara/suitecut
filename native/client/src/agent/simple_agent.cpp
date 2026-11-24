@@ -143,10 +143,12 @@ Json SimpleAgent::tools() {
       {"steps",integer},{"source",str},{"target",str},{"from",object},{"to",object},{"options",object},{"expect",object},
       {"accept",boolean},{"promptText",str},{"url",str},{"waitUntil",str},{"timeoutMs",integer},
       {"actions",Json{{"type","array"},{"items",object},{"minItems",1}}},
-      {"response",Json{{"type","string"},{"enum",Json::array{"full","compact","delta","none"}}}}}));
+      {"response",Json{{"type","string"},{"enum",Json::array{"full","compact","delta","none"}}}},
+      {"maxControls",integer},{"maxTextBytes",integer}}));
   result.push_back(tool("wait","Wait for a visible UI condition within one bounded deadline, then return a fresh observation. Conditions are UI evidence, not a task grade.",
     Json{{"ref",str},{"state",str},{"text",str},{"url",str},{"changed",boolean},{"timeoutMs",integer},
-      {"response",Json{{"type","string"},{"enum",Json::array{"full","compact","delta","none"}}}}}));
+      {"response",Json{{"type","string"},{"enum",Json::array{"full","compact","delta","none"}}}},
+      {"maxControls",integer},{"maxTextBytes",integer}}));
   return result;
 }
 Json SimpleAgent::invoke(const std::string& name,const Json& args,Deadline deadline) {
@@ -485,7 +487,7 @@ Json SimpleAgent::present(Json result,const Json& args) {
   for(auto node:compact.at("nodes").as_array()) {
     if(!node.contains("ref")||!node.contains("role"))continue;
     auto actions=actions_for(node);
-    if(!query.empty()&&lower(text(node,"name")+" "+text(node,"role")+" "+text(node,"placeholder")).find(query)==std::string::npos)continue;
+    if(!query.empty()&&lower(text(node,"name")+" "+text(node,"label")+" "+text(node,"role")+" "+text(node,"placeholder")).find(query)==std::string::npos)continue;
     if(options.max_nodes&&controls.size()==options.max_nodes){compact["truncated"]=true;break;}
     // Input values are unnecessary for control selection; passwords are also
     // redacted by the native snapshot and compact projection themselves.
@@ -522,7 +524,11 @@ Json SimpleAgent::present(Json result,const Json& args) {
     // Native snapshot refs expire on every snapshot. Publish CURRENT aliases
     // explicitly instead of rebinding old aliases based on similar appearance.
     Json index=Json::object{};
-    for(const auto& node:controls)index[node.at("ref").as_string()]=Json{{"role",node.at("role")},{"name",text(node,"name")}};
+    for(const auto& node:controls) {
+      Json entry{{"role",node.at("role")},{"name",text(node,"name")}};
+      if(node.contains("label"))entry["label"]=node.at("label");
+      index[node.at("ref").as_string()]=std::move(entry);
+    }
     out["refIndex"]=std::move(index);out["reset"]=false;
   } else {out["controls"]=std::move(controls);out["ancestors"]=std::move(ancestors);out["reset"]=delta;}
   compact_baseline_=std::move(compact);compact_scope_=scope;
@@ -538,16 +544,23 @@ Json SimpleAgent::call(const std::string& tool,const Json& args) {
     require(response=="full"||response=="compact"||response=="delta"||response=="none","Unsupported response policy");
     prepared.as_object().erase("response");
     Json presentation=Json::object{};
+    for(const auto* key:{"maxControls","maxTextBytes"})if(prepared.contains(key)) {
+      const auto n=prepared.at(key).as_int();require(n>=0,"Observation limits must be nonnegative (0 means no limit)");
+    }
     if(tool=="observe") {
       presentation=prepared;
       require(text(presentation,"format","full")=="full"||text(presentation,"format")=="compact","Unknown observation format");
-      for(const auto* key:{"maxControls","maxTextBytes"})if(presentation.contains(key)) {
-        const auto n=presentation.at(key).as_int();require(n>=0,"Observation limits must be nonnegative (0 means no limit)");
-      }
       if(presentation.contains("delta"))require(!presentation.at("delta").as_bool()||text(presentation,"format")=="compact","Delta requires compact format");
       if(presentation.contains("query")){presentation.at("query").as_string();require(text(presentation,"format")=="compact","Query requires compact format");}
       for(const auto* key:{"format","query","delta","maxControls","maxTextBytes"})prepared.as_object().erase(key);
-    } else {presentation["format"]=response=="full"?"full":"compact";if(response=="delta")presentation["delta"]=true;}
+    } else {
+      presentation["format"]=response=="full"?"full":"compact";if(response=="delta")presentation["delta"]=true;
+      // The observation an action or wait returns takes observe's own limits, which bound only a compact one.
+      for(const auto* key:{"maxControls","maxTextBytes"})if(prepared.contains(key)) {
+        require(response=="compact"||response=="delta","maxControls and maxTextBytes need a compact or delta response");
+        presentation[key]=prepared.at(key);prepared.as_object().erase(key);
+      }
+    }
     const auto deadline=Clock::now()+Timeout{timeout};
     if(tool=="observe")return present(observe(prepared,deadline),presentation);
     Json result;

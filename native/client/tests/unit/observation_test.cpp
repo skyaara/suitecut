@@ -2,6 +2,7 @@
 #include "suitecut/observation.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 using suitecut::Json;
 using suitecut::compact_observation;
@@ -56,6 +57,61 @@ int main() {
     check(custom.at("nodes").as_array().size() == 1 &&
           custom.at("nodes").at(0).at("box") == Json(Json::array{1, 2, 10, 20}),
           "Custom clickable control lost or inert layout advertised as interactive");
+    // The cursor is inherited: icons inside a clickable control are not controls of their own, and a nameless
+    // control carries its own text so it can be told apart.
+    const auto headers = [](const char* stamp) {
+      const auto ref = [stamp](int at) { return std::string("rFixture_") + stamp + "_" + std::to_string(at); };
+      return Json::array{
+        Json{{"role", "generic"}, {"ref", ref(0)}, {"cursor", "pointer"}, {"children", Json::array{
+          Json{{"role", "img"}, {"ref", ref(1)}, {"cursor", "pointer"}}, "Elements",
+          Json{{"role", "button"}, {"ref", ref(2)}, {"name", "Expand"}, {"cursor", "pointer"}},
+          Json{{"role", "textbox"}, {"type", "password"}, {"children", Json::array{"secret-in-header"}}}}}},
+        Json{{"role", "generic"}, {"ref", ref(3)}, {"cursor", "pointer"}, {"children", Json::array{
+          Json{{"role", "img"}, {"ref", ref(4)}, {"cursor", "pointer"}}, Json{{"role", "text"}, {"text", " Forms "}}}}},
+        Json{{"role", "link"}, {"ref", ref(5)}, {"name", "Home"}, {"cursor", "pointer"}, {"children", Json::array{
+          Json{{"role", "img"}, {"ref", ref(6)}, {"cursor", "pointer"}}}}}};
+    };
+    auto listed = compact_observation(headers("4"), options);
+    const auto& rows = listed.at("nodes").as_array();
+    check(rows.size() == 5 && listed.dump().find("\"img\"") == std::string::npos,
+          "An icon inside a clickable control was listed as its own control");
+    check(rows.at(0).at("label").as_string() == "Elements" && rows.at(1).at("name").as_string() == "Expand" &&
+          rows.at(3).at("label").as_string() == "Forms" && rows.at(4).at("name").as_string() == "Home",
+          "A nameless control lost its text, or a real control inside one was dropped");
+    check(listed.dump().find("secret-in-header") == std::string::npos, "A nameless control's text read a password field");
+    const auto header_diff = observation_diff(listed, compact_observation(headers("5"), options));
+    check(!header_diff.at("ambiguous").as_bool() && header_diff.at("added").as_array().empty() && header_diff.at("removed").as_array().empty() &&
+          header_diff.at("changed").as_array().empty(), "Nameless controls with new refs were reported as changes");
+    // A generic inside a clickable control is there for a handler of its own (the snapshot emits a pointer generic
+    // only where the pointer starts), so it stays. Labels never carry what was typed or picked.
+    const auto row = compact_observation(Json::array{
+      Json{{"role", "generic"}, {"ref", "rFixture_6_0"}, {"cursor", "pointer"}, {"children", Json::array{
+        "Invoice 12",
+        Json{{"role", "generic"}, {"ref", "rFixture_6_1"}, {"cursor", "pointer"}, {"children", Json::array{"Dismiss"}}},
+        Json{{"role", "generic"}, {"ref", "rFixture_6_2"}, {"children", Json::array{"draft-in-editor"}}},
+        Json{{"role", "combobox"}, {"ref", "rFixture_6_3"}, {"cursor", "pointer"}, {"children", Json::array{"picked-option"}}},
+        Json{{"role", "generic"}, {"ref", "rFixture_6_4"}, {"cursor", "pointer"}, {"editable", true},
+             {"children", Json::array{"typed-text"}}}}}}
+    }, options);
+    const auto& row_nodes = row.at("nodes").as_array();
+    check(row_nodes.size() == 4 && row_nodes.at(1).at("ref").as_string() == "rFixture_6_1" &&
+          row_nodes.at(1).at("label").as_string() == "Dismiss",
+          "A handler-backed control inside a clickable one was dropped");
+    check(row_nodes.at(0).at("label").as_string() == "Invoice 12 Dismiss" && !row_nodes.at(2).contains("label") &&
+          !row_nodes.at(3).contains("label") && row.dump().find("draft-in-editor") == std::string::npos &&
+          row.dump().find("picked-option") == std::string::npos && row.dump().find("typed-text") == std::string::npos,
+          "A label carried a field's typed or picked value");
+    options.max_text_bytes = 30; // Room for the role and ref, not the whole label.
+    const auto tight = compact_observation(Json::array{
+      Json{{"role", "generic"}, {"ref", "rFixture_7_0"}, {"cursor", "pointer"}, {"children", Json::array{"A long caption here"}}}
+    }, options);
+    check(!tight.at("nodes").at(0).contains("label") && tight.at("textLimit").as_bool(), "A label was cut to fit the budget");
+    options.max_text_bytes = 0;
+    const std::string huge(1 << 20, 'x');
+    const auto long_label = compact_observation(Json::array{
+      Json{{"role", "generic"}, {"ref", "rFixture_8_0"}, {"cursor", "pointer"}, {"children", Json::array{huge}}}
+    }, options);
+    check(long_label.at("nodes").at(0).at("label").as_string().size() == 80, "A long caption's label is not capped");
 
     options.max_nodes = 1;
     auto bounded = compact_observation(forest, options);

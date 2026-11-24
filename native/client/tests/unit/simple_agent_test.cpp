@@ -187,6 +187,14 @@ int main(int argc,char** argv) {
     check(!compact_whole.at("truncated").as_bool()&&compact_whole.at("controls").as_array().size()>=4199,"Default compact observation was limited");
     const auto compact_capped=simple.call("observe",Json{{"format","compact"},{"maxControls",5}});
     check(compact_capped.at("truncated").as_bool()&&compact_capped.at("controls").as_array().size()==5,"Caller maxControls was ignored");
+    // The observation an action returns takes observe's limits.
+    const auto act_capped=simple.call("act",Json{{"action","press"},{"key","Enter"},{"response","compact"},{"maxControls",5}});
+    check(act_capped.at("observation").at("truncated").as_bool()&&act_capped.at("observation").at("controls").as_array().size()==5,
+      "Action ignored its maxControls");
+    check(!simple.call("act",Json{{"action","press"},{"key","Enter"},{"response","compact"},{"maxControls",-1}}).at("ok").as_bool(),"Negative action limit accepted");
+    for(const auto* response:{"full","none"})
+      check(!simple.call("act",Json{{"action","press"},{"key","Enter"},{"response",response},{"maxControls",5}}).at("ok").as_bool(),
+        "An action limit was silently ignored by a full or acknowledgement-only response");
     driver.call("evaluate",Json{{"expression","deep"}});
     // Alias rewriting, ref stripping, text search and the compact projection walk the tree without recursion.
     const auto tall=simple.call("observe",Json{{"timeoutMs",30000}});
