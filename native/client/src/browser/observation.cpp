@@ -56,13 +56,20 @@ bool listed(const Json& node, bool inside_pointer) {
   return semantic_control(node) || (pointer(node) && (!inside_pointer || text(node, "role") == "generic"));
 }
 // A node whose text is what a person typed or picked, not a caption: fields, pickers, and a generic emitted without a
-// pointer, which the snapshot keeps only for an input, a focus stop or an editor.
+// pointer, which the snapshot keeps only for an input, a focus stop or an editor. The snapshot gives every field and
+// rich-text editor a readOnly flag, so a read-only or disabled editor (editable false) still counts.
 bool holds_value(const Json& node) {
-  if (password(node) || truth(node, "editable") || !text(node, "inputType").empty()) return true;
+  if (password(node) || truth(node, "editable") || field(node, "readOnly") || !text(node, "inputType").empty()) return true;
   const auto role = text(node, "role");
   for (const auto candidate : {"textbox", "searchbox", "combobox", "listbox", "spinbutton", "slider"})
     if (role == candidate) return true;
   return role == "generic" && !pointer(node);
+}
+// A node whose whole subtree is what a person typed: a text field or a rich-text editor, flagged as such by the
+// snapshot. Nothing inside one is a caption, so nothing inside one gets a label (a mention chip in a draft, say).
+bool holds_draft(const Json& node) {
+  const auto role = text(node, "role");
+  return truth(node, "editable") || field(node, "readOnly") || role == "textbox" || role == "searchbox";
 }
 // A nameless control's own visible text, so it can be told apart from its neighbours: a few words, read from a
 // bounded walk of its subtree that never enters a field's contents.
@@ -196,8 +203,9 @@ Json semantic(const Json& node, const Observed& observed) {
 }
 std::string identity(const Json& node, const Observed& observed) {
   auto label = text(node, "name");
-  // A text node is its text; a nameless control is known by the text it carries.
+  // A text node is its text; a nameless control is known by the text it carries, or else by its placeholder.
   if (label.empty()) label = text(node, text(node, "role") == "text" ? "text" : "label");
+  if (label.empty()) label = text(node, "placeholder");
   return Json{{"role", std::string(text(node, "role"))}, {"name", std::string(label)}, {"context", observed.context_of(node)}}.dump();
 }
 std::string slot(const Json& node, const Observed& observed) {
@@ -239,6 +247,7 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     bool named = false;
     std::size_t entry = kNone; // Its ancestors-table index, once an emitted descendant needs it.
     bool pointer = false; // The container shows a pointer cursor.
+    bool draft = false; // The container is, or sits inside, a field or editor.
   };
   std::vector<Frame> frames{{&forest.as_array()}};
   Json::array ancestors, output;
@@ -278,14 +287,16 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
       auto made = make_node(node, index, hidden, protected_parent, budget);
       // Controls are listed without the text around them, so a nameless one carries its own. Whole or not at all:
       // a cut label would name the same control differently from one observation to the next.
-      if (options.interactive_only && !hidden && !made.contains("name") && !holds_value(node) && field(node, "children"))
+      if (options.interactive_only && !hidden && !frame.draft && !made.contains("name") && !holds_value(node) &&
+          field(node, "children"))
         if (const auto label = visible_text(node); !label.empty()) budget.copy(made, "label", label, true);
       if (const auto at = enclosing(); at != kNone) made["parent"] = at;
       output.push_back(std::move(made));
     }
     const auto children = field(node, "children");
     if (!children || !children->is_array() || children->as_array().empty()) continue;
-    frames.push_back({&children->as_array(), 0, hidden, index, !hidden && !text(node, "name").empty(), kNone, pointer(node)});
+    frames.push_back({&children->as_array(), 0, hidden, index, !hidden && !text(node, "name").empty(), kNone, pointer(node),
+                      frame.draft || holds_draft(node)});
   }
   return Json{{"nodes", std::move(output)}, {"ancestors", std::move(ancestors)},
               {"truncated", node_limit || scan_limit || budget.limited},

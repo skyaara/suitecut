@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Independent executable proof of the public native C++ browser facade.
 #include <suitecut/browser.hpp>
+#include <suitecut/observation.hpp>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -99,6 +100,18 @@ std::string FindButtonRef(const Json& nodes, const std::string& name) {
     }
   }
   return {};
+}
+const Json* FindEditor(const Json& nodes) {
+  if (!nodes.is_array()) return nullptr;
+  for (const auto& node : nodes.as_array()) {
+    if (!node.is_object()) continue;
+    // A textarea carries both flags too, without inputType; only a contenteditable editor is a generic.
+    if (node.contains("editable") && node.contains("readOnly") && !node.contains("inputType") &&
+        node.contains("role") && node.at("role") == Json("generic")) return &node;
+    if (node.contains("children"))
+      if (const auto nested = FindEditor(node.at("children"))) return nested;
+  }
+  return nullptr;
 }
 template<class Operation>
 void Measure(Json& report, const std::string& name, int count, Operation operation) {
@@ -205,6 +218,28 @@ int main(int argc, char** argv) {
     Check(page.evaluate("window.race.downs===0&&window.race.overlayDowns===0&&window.race.traps===0").as_bool(),
       "overlay blocks stale pointer down", report);
     page.set_timeout(std::chrono::milliseconds{3000});
+    // A rich-text editor inside a clickable card inherits its pointer cursor. The snapshot flags it editable, so the
+    // compact view gives it no label and keeps its draft out of the card's, and the agent can fill it.
+    page.navigate("about:blank");
+    page.navigate(DataUrl("<div id=card style='cursor:pointer' onclick='0'>Reply"
+      "<div id=editor contenteditable aria-placeholder='Write a reply'><p>draft-paragraph</p></div></div>"));
+    const auto editor_snapshot = page.observe();
+    const auto editor = FindEditor(editor_snapshot);
+    Check(editor && editor->at("role") == Json("generic") && editor->at("editable") == Json(true) &&
+          editor->at("readOnly") == Json(false) && editor->contains("ref") && editor->at("cursor") == Json("pointer"),
+          "snapshot flags a pointer-inheriting contenteditable as editable", report);
+    suitecut::ObservationOptions controls_only;
+    controls_only.interactive_only = true;
+    const auto editor_controls = suitecut::compact_observation(editor_snapshot, controls_only);
+    bool editor_listed = false;
+    for (const auto& node : editor_controls.at("nodes").as_array())
+      if (node.contains("editable"))
+        editor_listed = !node.contains("label") && node.contains("placeholder") && node.at("placeholder") == Json("Write a reply");
+    Check(editor_listed && editor_controls.dump().find("draft-paragraph") == std::string::npos,
+          "compact view lists the editor by its placeholder, without its draft text", report);
+    page.get_by_ref(editor->at("ref").as_string()).fill("Filled reply");
+    Check(page.evaluate("document.querySelector('#editor').textContent").as_string() == "Filled reply",
+          "editor ref from the snapshot accepts fill", report);
     page.navigate("about:blank"); page.navigate(url);
     for (int index = 0; index < 5; ++index) (void)page.evaluate("40+2");
     std::int64_t events_drained = 0;
