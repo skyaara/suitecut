@@ -1,11 +1,14 @@
 # Changelog
 
-## 0.1.1 alpha (native) — unreleased
+## 0.1.1 alpha (native) — 2026-11-24
 
+Published as the GitHub pre-release
+[`native-v0.1.1`](https://github.com/skyaara/suitecut/releases/tag/native-v0.1.1),
+with the two SDK archives, the embed kit, the runtime and their `SHA256SUMS`.
 Fixes the 0.1.0 known issues and makes the runtime archive publishable.
 Built and checked from commit `70381b4`; see the
-[release record](docs/releases/0.1.1-alpha.md). Not published or notarized
-yet.
+[release record](docs/releases/0.1.1-alpha.md). Not notarized yet: Gatekeeper
+blocks a downloaded copy of the runtime's or the embed kit's app until it is.
 
 - Agent snapshots
   ([#2](https://github.com/skyaara/suitecut/pull/2),
