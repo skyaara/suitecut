@@ -3,7 +3,7 @@
 ## 0.1.1 alpha (native) — unreleased
 
 Fixes the 0.1.0 known issues and makes the runtime archive publishable.
-Built and checked from commit `8346047`; see the
+Built and checked from commit `70381b4`; see the
 [release record](docs/releases/0.1.1-alpha.md). Not published or notarized
 yet.
 
