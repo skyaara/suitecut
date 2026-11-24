@@ -7,6 +7,15 @@ Built and checked from commit `8346047`; see the
 [release record](docs/releases/0.1.1-alpha.md). Not published or notarized
 yet.
 
+- Agent snapshots
+  ([#2](https://github.com/skyaara/suitecut/pull/2),
+  [#3](https://github.com/skyaara/suitecut/pull/3),
+  [#4](https://github.com/skyaara/suitecut/pull/4)): compact views leave out
+  icons that only inherit a pointer cursor and label nameless controls; controls
+  with event handlers stay, and typed values stay out of labels. Rich-text
+  editors are flagged as editable, drafts inside them stay out of labels, and
+  editors are told apart by placeholder. The Chromium and Firefox DOM driver
+  mints `s<ticket>e<index>` refs with a fresh ticket for every snapshot.
 - Keep the build machine's folders out of every binary. The engine, CEF's
   wrapper, static OpenSSL, FFmpeg and libvpx compiled in absolute source
   paths, install prefixes or configure lines, which named the build
