@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
       check(page.locator("#name").count() == 1, "Native count tagged scalar");
       page.get_by_role("button", "Save").click(300ms);
       page.get_by_test_id("save").click(Json{{"force", false}});
-      page.get_by_ref("rFixture_1_0").click();
+      page.get_by_ref("s1e0").click();
       page.locator("#name").press("Enter");
       page.locator("#agree").check();
       check(page.evaluate("report").at("checked").as_bool(), "Genuine checkbox form command");
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
       check(page.locator("#plan").select_option("Team").at(0).as_string() == "Team",
             "Native option value-or-label envelope");
       const auto observation = page.observe();
-      check(observation.at(0).at("ref").as_string() == "rFixture_1_0",
+      check(observation.at(0).at("ref").as_string() == "s1e0",
             "Native snapshot inner JSON remains real reference");
       const auto png = page.screenshot();
       check(png.size() == 8 && png[0] == 137 && png[1] == 80, "Native artifact decoding");

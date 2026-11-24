@@ -4,6 +4,7 @@
 #include <map>
 #include <cstdint>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <utility>
@@ -30,7 +31,15 @@ bool password(const Json& node) {
          text(node, "role") == "password" || truth(node, "password") || truth(node, "protected") ||
          (states && truth(*states, "protected"));
 }
-bool interactive(const Json& node) {
+std::size_t utf8_prefix(std::string_view value, std::size_t bytes) {
+  auto size = std::min(value.size(), bytes);
+  if (size < value.size())
+    while (size && (static_cast<unsigned char>(value[size]) & 0xc0) == 0x80) --size;
+  return size;
+}
+bool pointer(const Json& node) { return text(node, "cursor") == "pointer"; }
+// A control by its role or state, leaving out the pointer cursor.
+bool semantic_control(const Json& node) {
   const auto role = text(node, "role");
   for (const auto candidate :
        {"button", "link", "textbox", "searchbox", "combobox", "listbox", "checkbox", "radio",
@@ -38,14 +47,67 @@ bool interactive(const Json& node) {
         "option", "treeitem", "scrollbar", "password"})
     if (role == candidate) return true;
   return truth(node, "focusable") || truth(node, "editable") || truth(node, "interactive") ||
-         truth(node, "clickable") || text(node, "cursor") == "pointer" ||
-         !text(node, "inputType").empty();
+         truth(node, "clickable") || !text(node, "inputType").empty();
 }
-std::size_t utf8_prefix(std::string_view value, std::size_t bytes) {
-  auto size = std::min(value.size(), bytes);
-  if (size < value.size())
-    while (size && (static_cast<unsigned char>(value[size]) & 0xc0) == 0x80) --size;
-  return size;
+// Whether a node belongs in the controls-only view. The cursor is inherited, so an image or wrapper
+// inside a clickable control shows a pointer too; clicking it clicks the control, which is listed
+// already. The snapshot emits a pointer generic only where the pointer starts, so a generic inside
+// one is there for a reason of its own (a handler, a focus stop, an editor) and stays.
+bool listed(const Json& node, bool inside_pointer) {
+  return semantic_control(node) ||
+         (pointer(node) && (!inside_pointer || text(node, "role") == "generic"));
+}
+// A node whose text is what a person typed or picked, not a caption: fields, pickers, and a generic
+// emitted without a pointer, which the snapshot keeps only for an input, a focus stop or an editor.
+// The snapshot gives every field and rich-text editor a readOnly flag, so a read-only or disabled
+// editor (editable false) still counts.
+bool holds_value(const Json& node) {
+  if (password(node) || truth(node, "editable") || field(node, "readOnly") ||
+      !text(node, "inputType").empty())
+    return true;
+  const auto role = text(node, "role");
+  for (const auto candidate :
+       {"textbox", "searchbox", "combobox", "listbox", "spinbutton", "slider"})
+    if (role == candidate) return true;
+  return role == "generic" && !pointer(node);
+}
+// A node whose whole subtree is what a person typed: a text field or a rich-text editor, flagged as
+// such by the snapshot. Nothing inside one is a caption, so nothing inside one gets a label (a
+// mention chip in a draft, say).
+bool holds_draft(const Json& node) {
+  const auto role = text(node, "role");
+  return truth(node, "editable") || field(node, "readOnly") || role == "textbox" ||
+         role == "searchbox";
+}
+// A nameless control's own visible text, so it can be told apart from its neighbours: a few words,
+// read from a bounded walk of its subtree that never enters a field's contents.
+std::string visible_text(const Json& node) {
+  constexpr std::size_t kBytes = 80, kVisits = 64;
+  std::string result;
+  std::vector<const Json*> pending{&node};
+  for (std::size_t visits = 0; !pending.empty() && visits < kVisits && result.size() < kBytes;
+       ++visits) {
+    const auto current = pending.back();
+    pending.pop_back();
+    if (current->is_object() && holds_value(*current)) continue;
+    auto value = current->is_string()               ? std::string_view(current->as_string())
+                 : text(*current, "role") == "text" ? text(*current, "text")
+                                                    : std::string_view{};
+    while (!value.empty() && value.front() == ' ') value.remove_prefix(1);
+    while (!value.empty() && value.back() == ' ') value.remove_suffix(1);
+    if (!value.empty()) {
+      if (!result.empty()) result += ' ';
+      // One byte past the cap shows whether a cut is needed; the rest of a long text is never
+      // copied.
+      result += value.substr(0, kBytes + 1 - std::min(result.size(), kBytes + 1));
+    }
+    const auto children = field(*current, "children");
+    if (children && children->is_array())
+      for (auto at = children->as_array().rbegin(); at != children->as_array().rend(); ++at)
+        pending.push_back(&*at);
+  }
+  if (result.size() > kBytes) result.resize(utf8_prefix(result, kBytes));
+  return result;
 }
 struct Budget {
   std::size_t limit;  // 0: no limit.
@@ -194,7 +256,10 @@ Json semantic(const Json& node, const Observed& observed) {
 }
 std::string identity(const Json& node, const Observed& observed) {
   auto label = text(node, "name");
-  if (label.empty() && text(node, "role") == "text") label = text(node, "text");
+  // A text node is its text; a nameless control is known by the text it carries, or else by its
+  // placeholder.
+  if (label.empty()) label = text(node, text(node, "role") == "text" ? "text" : "label");
+  if (label.empty()) label = text(node, "placeholder");
   return Json{{"role", std::string(text(node, "role"))},
               {"name", std::string(label)},
               {"context", observed.context_of(node)}}
@@ -242,6 +307,8 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     std::size_t position = 0;  // The container's index among its siblings.
     bool named = false;
     std::size_t entry = kNone;  // Its ancestors-table index, once an emitted descendant needs it.
+    bool pointer = false;       // The container shows a pointer cursor.
+    bool draft = false;         // The container is, or sits inside, a field or editor.
   };
   std::vector<Frame> frames{{&forest.as_array()}};
   Json::array ancestors, output;
@@ -282,19 +349,27 @@ Json compact_observation(const Json& forest, ObservationOptions options) {
     if (!node.is_object() && !node.is_string()) continue;
     const bool protected_parent = frame.protected_parent;
     const bool hidden = protected_parent || password(node);
-    if (!options.interactive_only || interactive(node)) {
+    if (!options.interactive_only || listed(node, frame.pointer)) {
       if (options.max_nodes && output.size() >= options.max_nodes) {
         node_limit = true;
         break;
       }
       auto made = make_node(node, index, hidden, protected_parent, budget);
+      // Controls are listed without the text around them, so a nameless one carries its own. Whole
+      // or not at all: a cut label would name the same control differently from one observation to
+      // the next.
+      if (options.interactive_only && !hidden && !frame.draft && !made.contains("name") &&
+          !holds_value(node) && field(node, "children"))
+        if (const auto label = visible_text(node); !label.empty())
+          budget.copy(made, "label", label, true);
       if (const auto at = enclosing(); at != kNone) made["parent"] = at;
       output.push_back(std::move(made));
     }
     const auto children = field(node, "children");
     if (!children || !children->is_array() || children->as_array().empty()) continue;
-    frames.push_back(
-        {&children->as_array(), 0, hidden, index, !hidden && !text(node, "name").empty(), kNone});
+    frames.push_back({&children->as_array(), 0, hidden, index,
+                      !hidden && !text(node, "name").empty(), kNone, pointer(node),
+                      frame.draft || holds_draft(node)});
   }
   return Json{{"nodes", std::move(output)},
               {"ancestors", std::move(ancestors)},
