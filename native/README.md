@@ -25,8 +25,8 @@ cmake --build .suitecut/build/client-release --parallel 2
 ctest --test-dir .suitecut/build/client-release --output-on-failure -L unit
 ```
 
-Presets also provide `sanitizers` for Debug ASan/UBSan checks. They are local
-commands; no CI jobs are installed. Unit checks are labeled `client;unit` and
+Presets also provide `sanitizers` for Debug ASan/UBSan checks. CI runs both on
+Linux and macOS ([CI and releases](../docs/ci.md)). Unit checks are labeled `client;unit` and
 have hard timeouts. Browser integrations run through the isolated
 [CEF regression package](../tests/cef/README.md), with an explicitly supplied
 runtime. Build its five C++ dependencies using target `client-cef-binaries`.

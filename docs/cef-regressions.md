@@ -7,8 +7,8 @@ checks their evidence. The workflows own their local fixtures and fresh browser
 profiles. They do not use public websites, external accounts, CAPTCHA solvers,
 fingerprint patches, or third-party uptime as a release gate.
 
-**The runner is ready for future CI use; no CI configuration is changed or
-enabled by this work. A failing regression is a failure, including shutdown.**
+**The full suite runs locally; CI runs only its harness unit tests
+([CI and releases](ci.md)). A failing regression is a failure, including shutdown.**
 
 ## Run locally
 

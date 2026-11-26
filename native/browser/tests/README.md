@@ -31,5 +31,5 @@ python3 tests/cef --engine /absolute/path/to/suitecut-browser --profile full --w
 
 The full runner also requires a compiled client integration build and media
 tools; see [the execution guide](../../../docs/cef-regressions.md). It verifies
-real outcomes, process retirement and pinned source/runtime hashes. No CI job
-is configured by this layout.
+real outcomes, process retirement and pinned source/runtime hashes. CI runs the
+harness unit tests; the full suite stays local ([CI and releases](../../../docs/ci.md)).

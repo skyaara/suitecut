@@ -1,0 +1,206 @@
+# Checks every push and pull request on Linux x64 and macOS arm64:
+# the website and tooling, the C++ client SDK (Release and ASan/UBSan) and the
+# CEF engine with its native checks. Nothing here signs or publishes.
+name: CI
+
+on:
+  push:
+    branches: [main, native]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CMAKE_GENERATOR: Ninja
+
+jobs:
+  web:
+    name: Site and tooling
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm site:check
+      - run: pnpm site:build
+      - name: CEF regression harness unit tests
+        run: python3 -m unittest discover -s tests/cef/unit -p 'test_*.py'
+
+  client:
+    name: Client SDK (${{ matrix.os }}, ${{ matrix.config }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-26]
+        config: [release, sanitizers]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      BUILD: ${{ github.workspace }}/.suitecut/ci/client
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build libssl-dev zlib1g-dev
+      - name: Install build dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew list ninja >/dev/null 2>&1 || brew install ninja
+          echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+      - name: Configure
+        run: |
+          if [ "${{ matrix.config }}" = sanitizers ]; then
+            type=RelWithDebInfo; sanitizers=ON
+          else
+            type=Release; sanitizers=OFF
+          fi
+          cmake -S native/client -B "$BUILD" -DCMAKE_BUILD_TYPE=$type \
+            -DSUITECUT_CLIENT_BUILD_TESTS=ON -DSUITECUT_CLIENT_BUILD_EXAMPLES=ON \
+            -DSUITECUT_CLIENT_BUILD_SESSION=ON -DSUITECUT_CLIENT_SANITIZERS=$sanitizers
+      - name: Build
+        run: cmake --build "$BUILD" --parallel 3
+      - name: Test
+        run: |
+          if [ "${{ matrix.config }}" = sanitizers ]; then
+            # macOS ASan has no leak detector; detect_leaks=1 aborts there.
+            if [ "$RUNNER_OS" = Linux ]; then
+              export ASAN_OPTIONS=detect_leaks=1:halt_on_error=1
+            else
+              export ASAN_OPTIONS=halt_on_error=1
+            fi
+            export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+          fi
+          ctest --test-dir "$BUILD" -j2 --output-on-failure
+      - name: Installed SDK builds an outside consumer
+        if: matrix.config == 'release'
+        run: |
+          cmake --install "$BUILD" --prefix "$RUNNER_TEMP/sdk prefix"
+          cmake -S native/client/tests/consumer -B "$RUNNER_TEMP/consumer" -DCMAKE_BUILD_TYPE=Release \
+            "-DCMAKE_PREFIX_PATH=$RUNNER_TEMP/sdk prefix"
+          cmake --build "$RUNNER_TEMP/consumer"
+          ctest --test-dir "$RUNNER_TEMP/consumer" --output-on-failure
+      - name: Control CLI fuzz
+        if: matrix.config == 'release'
+        run: |
+          python3 scripts/fuzz-native-control.py --cli "$BUILD/suitecut-native-control" \
+            --engine "$BUILD/simple_agent_test" --iterations 2000 \
+            --output "$RUNNER_TEMP/fuzz-control-report.json"
+      - name: Keep test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-${{ matrix.os }}-${{ matrix.config }}-logs
+          path: ${{ env.BUILD }}/Testing/Temporary
+          if-no-files-found: ignore
+
+  engine:
+    name: CEF engine (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64
+            os: ubuntu-24.04
+            pin: linux64
+            arch: x86_64
+          - name: macos-arm64
+            os: macos-26
+            pin: macosarm64Official
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 150
+    env:
+      CEF_ROOT: ${{ github.workspace }}/.suitecut/ci/cef-sdk
+      LIBYUV_ROOT: ${{ github.workspace }}/.suitecut/ci/libyuv
+      KIT_DEPS: ${{ github.workspace }}/.suitecut/ci/kit-deps
+      BUILD: ${{ github.workspace }}/.suitecut/ci/engine
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build and runtime dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build xvfb xauth \
+            libcurl4-openssl-dev libpsl-dev libbrotli-dev libssl-dev zlib1g-dev libx11-dev \
+            libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 \
+            libxcomposite1 libxdamage1 libxrandr2 libxfixes3 libgbm1 libpango-1.0-0 libcairo2 \
+            libasound2t64 libxshmfence1 libdbus-1-3 fonts-liberation
+      - name: Install build dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew list ninja >/dev/null 2>&1 || brew install ninja
+      - name: Cache the CEF SDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CEF_ROOT }}
+          key: cef-${{ matrix.pin }}-${{ hashFiles('native/browser/cef-build.json') }}
+      - name: Fetch the pinned CEF SDK
+        run: python3 scripts/fetch-cef-sdk.py --pin ${{ matrix.pin }} --dest "$CEF_ROOT"
+      - name: Fetch the pinned libyuv commit
+        run: |
+          commit=$(python3 -c "import json; print(json.load(open('native/browser/libyuv-build.json'))['commit'])")
+          git init -q "$LIBYUV_ROOT"
+          git -C "$LIBYUV_ROOT" fetch -q --depth=1 https://chromium.googlesource.com/libyuv/libyuv "$commit"
+          git -C "$LIBYUV_ROOT" checkout -q --detach FETCH_HEAD
+          test "$(git -C "$LIBYUV_ROOT" rev-parse HEAD)" = "$commit"
+      - name: Cache the macOS static libraries
+        if: runner.os == 'macOS'
+        id: kit-deps
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.KIT_DEPS }}/prefix
+          key: kit-deps-${{ matrix.os }}-${{ hashFiles('native/browser/macos-kit-deps.json', 'scripts/build-embed-kit-deps-macos.py') }}
+      - name: Build the macOS static libraries
+        if: runner.os == 'macOS' && steps.kit-deps.outputs.cache-hit != 'true'
+        run: |
+          python3 scripts/build-embed-kit-deps-macos.py fetch --work "$KIT_DEPS"
+          python3 scripts/build-embed-kit-deps-macos.py build --work "$KIT_DEPS"
+      - name: Configure
+        run: |
+          extra=()
+          if [ "$RUNNER_OS" = macOS ]; then
+            P=$KIT_DEPS/prefix
+            extra=(-DCMAKE_PREFIX_PATH=$P "-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew;/usr/local"
+              -DOPENSSL_ROOT_DIR=$P -DOPENSSL_USE_STATIC_LIBS=ON
+              -DSUITECUT_PSL_INCLUDE_DIR=$P/include -DSUITECUT_PSL=$P/lib/libpsl.a
+              -DSUITECUT_BROTLI_INCLUDE_DIR=$P/include
+              -DSUITECUT_BROTLI_DECODER=$P/lib/libsuitecut-brotlidec.a
+              -DSUITECUT_BROTLI_ENCODER=$P/lib/libsuitecut-brotlienc.a
+              -DCMAKE_CXX_FLAGS=-D_LIBCPP_ENABLE_EXPERIMENTAL)
+          fi
+          cmake -S native/browser -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DPROJECT_ARCH=${{ matrix.arch }} \
+            -DCEF_ROOT="$CEF_ROOT" -DLIBYUV_ROOT="$LIBYUV_ROOT" -DSUITECUT_BUILD_BROWSER_CHECKS=ON "${extra[@]}"
+      - name: Build
+        run: cmake --build "$BUILD" --parallel 3
+      - name: Engine checks
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then
+            xvfb-run -a -s "-screen 0 1920x1080x24" ctest --test-dir "$BUILD" -j2 --output-on-failure
+          else
+            ctest --test-dir "$BUILD" -j2 --output-on-failure
+          fi
+      - name: Keep test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-${{ matrix.name }}-logs
+          path: ${{ env.BUILD }}/Testing/Temporary
+          if-no-files-found: ignore

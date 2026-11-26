@@ -19,8 +19,9 @@ frame handoff repetitions under the original three-second deadline. The local
 checks cover navigation-close shutdown, frame metadata ordering and libc++
 completion ownership. All 23 module translation units also passed compiler
 checks without forced precompiled headers. These results are scoped to macOS
-27.0.1; the historical Linux checks below are separate evidence. No CEF CI job
-is enabled. See [macOS packaging and signing](../../docs/native-full-runtime-macos.md).
+27.0.1; the historical Linux checks below are separate evidence. CI builds the
+engine and runs its native checks on Linux and macOS ([CI and releases](../../docs/ci.md)).
+See [macOS packaging and signing](../../docs/native-full-runtime-macos.md).
 
 ## Historical callback retry build a238fec
 
@@ -467,8 +468,7 @@ Diagnostics expose `nativeTraceBackgroundWorkerLimit` and
 is optional application-level concurrency and does not control these threads.
 
 The standalone `native/resource-policy` CMake project checks this component
-without CEF and can be run locally on Linux, Windows, and macOS. GitHub Actions
-are intentionally disabled for this repository; do not add CI workflows.
+without CEF and can be run locally on Linux, Windows, and macOS.
 Resource-policy portability does not implement missing browser backend support: Windows CEF
 packaging/sandbox and the native client's Windows transport remain unimplemented.
 Linux runtime checks do not establish complete macOS application support.

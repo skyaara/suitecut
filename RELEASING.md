@@ -4,6 +4,10 @@ Only maintainers with release access should use this checklist. Nothing here
 publishes on its own; publishing, pushing and deployment need explicit
 authorization.
 
+The `Release` workflow runs these gates on GitHub's runners and drafts the
+release from a pushed `native-v*` tag; see [CI and releases](docs/ci.md). It
+only drafts: a maintainer reviews and publishes the release by hand.
+
 ## What a release contains
 
 suitecut ships native distributions only:

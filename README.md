@@ -95,7 +95,8 @@ python3 tests/cef --engine /absolute/path/to/suitecut-browser \
   --client-build .suitecut/build/client-release
 ```
 
-These are local commands; there is no CI.
+CI runs these on Linux and macOS for every push and pull request; see
+[CI and releases](docs/ci.md).
 
 ## License
 

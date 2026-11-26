@@ -58,7 +58,8 @@ The [full execution guide](cef-regressions.md) lists the required C++ workflows,
 media tools, case selection, repetition and evidence contracts. Full runs retain
 JSON, HTML, JUnit and per-case logs under `.suitecut/cef-regressions/`. A missing
 dependency, timeout, nonzero shutdown, evidence mismatch or cleanup failure
-fails the run. The CEF suite remains local; no CEF CI job is enabled.
+fails the run. The CEF suite remains local; CI builds the engine and runs its native checks
+(see [CI and releases](ci.md)).
 
 ## Platform and signing requirements
 

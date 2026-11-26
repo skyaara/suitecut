@@ -21,7 +21,8 @@ Build the engine with `-DSUITECUT_BUILD_BROWSER_CHECKS=ON` and run `ctest` in it
 build directory for engine changes. Run the [full CEF suite](docs/cef-regressions.md)
 for runtime qualification. Report missing runtime evidence as blocked, not
 passing. Keep compiler jobs and browser workers bounded; on a 16 GB Mac use
-`--parallel 2` to `4` and one browser worker. There is no CI.
+`--parallel 2` to `4` and one browser worker. CI builds and tests the client
+and engine on Linux and macOS for every pull request; see [CI and releases](docs/ci.md).
 
 The website and benchmark harness use Node.js 22+ and pnpm 11 as tools only:
 
