@@ -17,15 +17,18 @@ class ProcessTreeTests(unittest.TestCase):
     def test_escaped_child_remains_owned_after_parent_exits(self):
         source = ('import subprocess,sys,time;'
                   'p=subprocess.Popen([sys.executable,"-c","import time;time.sleep(30)"],start_new_session=True);'
-                  'print(p.pid,flush=True);time.sleep(.5)')
+                  'print(p.pid,flush=True);sys.stdin.readline()')
+        # The parent stays until stdin closes, so the first observation always
+        # sees it alive however slowly ps runs.
         parent = subprocess.Popen([sys.executable,'-c',source],start_new_session=True,
-                                  stdout=subprocess.PIPE,text=True)
+                                  stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
         tree = processes.Descendants(parent.pid)
         escaped = int(parent.stdout.readline().strip())
         try:
             rows=tree.observe()
             actual=next(row for row in rows if row['pid']==escaped)
             self.assertNotEqual(actual['group'],parent.pid)
+            parent.stdin.close()
             parent.wait(timeout=3)
             self.assertTrue(tree.survivors())
             cleanup=tree.retire()
@@ -36,6 +39,8 @@ class ProcessTreeTests(unittest.TestCase):
             if parent.poll() is None:
                 parent.kill()
             parent.wait(timeout=3)
+            if not parent.stdin.closed:
+                parent.stdin.close()
             parent.stdout.close()
 
     def test_unrelated_process_and_mismatched_birth_are_not_signaled(self):
