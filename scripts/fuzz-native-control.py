@@ -23,6 +23,8 @@ def main():
     parser.add_argument('--engine', required=True, type=Path)
     parser.add_argument('--iterations', type=int, default=10000)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--exchange-timeout', type=float, default=3.0, metavar='SECONDS',
+                        help='How long one exchange may wait for the worker; raise it on shared CI runners')
     args = parser.parse_args()
     if not 1 <= args.iterations <= 1000000:
         parser.error('iterations must be 1..1000000')
@@ -57,7 +59,7 @@ def main():
 
         def exchange(wire):
             with socket.socket(socket.AF_UNIX) as client:
-                client.settimeout(3)
+                client.settimeout(args.exchange_timeout)
                 client.connect(directory+'/fuzz.sock')
                 client.sendall(wire)
                 try:
@@ -115,6 +117,9 @@ def main():
                     # Rejecting an oversized prefix may leave unread caller
                     # bytes, or close before the rest is sent.
                     pass
+                except TimeoutError:
+                    raise TimeoutError(f'Worker gave no answer within {args.exchange_timeout} s at iteration '
+                                       f'{iteration} (mode {mode}, {len(wire)} bytes sent)') from None
                 if iteration in {min(499, args.iterations//3), args.iterations-1}:
                     assert cli('status')['pid'] == pid
                     samples.append(memory(pid))

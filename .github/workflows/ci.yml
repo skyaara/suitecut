@@ -104,7 +104,7 @@ jobs:
         if: matrix.config == 'release'
         run: |
           python3 scripts/fuzz-native-control.py --cli "$BUILD/suitecut-native-control" \
-            --engine "$BUILD/simple_agent_test" --iterations 2000 \
+            --engine "$BUILD/simple_agent_test" --iterations 2000 --exchange-timeout 15 \
             --output "$RUNNER_TEMP/fuzz-control-report.json"
       - name: Keep test logs
         if: failure()
