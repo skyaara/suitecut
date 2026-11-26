@@ -13,6 +13,9 @@
 #ifdef __linux__
 #include <sys/prctl.h>
 #endif
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#endif
 extern char** environ;
 #include <iostream>
 #include <limits>
@@ -27,6 +30,24 @@ using suitecut::MediaPipelineOptions;
 using suitecut::MediaPipelineResult;
 using Clock = std::chrono::steady_clock;
 namespace {
+#ifdef __APPLE__
+// VideoToolbox in a macOS virtual machine (such as a hosted CI runner) logs
+// that the host's scaler driver is missing, then encodes normally. Drop only
+// that line, and only in a virtual machine; any other diagnostic still fails.
+std::string WithoutVirtualMachineNotes(std::string diagnostics) {
+  int virtual_machine = 0;
+  size_t size = sizeof(virtual_machine);
+  if (sysctlbyname("kern.hv_vmm_present", &virtual_machine, &size, nullptr, 0) != 0 ||
+      !virtual_machine)
+    return diagnostics;
+  const std::string note = "IOServiceMatchingfailed for: AppleM2ScalerParavirtDriver";
+  std::string kept;
+  std::istringstream lines(diagnostics);
+  for (std::string line; std::getline(lines, line);)
+    if (line != note && !line.empty()) kept += line + '\n';
+  return kept;
+}
+#endif
 std::vector<uint8_t> Frame(bool red) {
   std::vector<uint8_t> bytes(64 * 64 * 4);
   for (size_t offset = 0; offset < bytes.size(); offset += 4) {
@@ -246,8 +267,9 @@ int main(int argc, char** argv) {
         assert(result.preparation_frames > 0 && result.preparation_ms > 0);
         assert(result.encoder == "h264_videotoolbox" && result.container == "mp4");
         assert(DecodedFrames(argv[1], o.output_path) == result.output_frames);
-        if (!result.diagnostics.empty()) std::cerr << result.diagnostics << '\n';
-        assert(result.diagnostics.empty());
+        const auto diagnostics = WithoutVirtualMachineNotes(result.diagnostics);
+        if (!diagnostics.empty()) std::cerr << diagnostics << '\n';
+        assert(diagnostics.empty());
       }
 #endif
   }
