@@ -317,7 +317,7 @@ class SuiteCutArtifactController {
     std::shared_ptr<void> input = {};
     double viewport_width = 0, viewport_height = 0;
     uint64_t token = 0;
-    Dict viewport_metrics;
+    Dict viewport_metrics = {};
   };
   static Dict ViewportMetrics(const Job& job) {
     // Mobile layout innerWidth can differ from the actual device viewport.

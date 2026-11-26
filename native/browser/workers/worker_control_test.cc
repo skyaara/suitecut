@@ -131,7 +131,6 @@ class Source : public CefBaseRefCounted {
   void DevTools(int owner, const std::string& method, Dict params, DevToolsCallback callback,
                 std::optional<std::string> session = std::nullopt, bool retained = false,
                 bool lossless_scalars = false) {
-    (void)limit;
     assert(operations_.Contains(owner));
     assert(!lossless_scalars || method == "Runtime.getProperties");
     devtools_.emplace(++next_call, DevToolsCall{owner, std::move(callback),

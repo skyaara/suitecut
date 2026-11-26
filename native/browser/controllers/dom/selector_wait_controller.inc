@@ -20,7 +20,7 @@ suitecut::SelectorWaitControls& SelectorWaits() {
           auto params = CefDictionaryValue::Create();
           params->SetString("objectGroup", group);
           auto completed = [this, owner, session, settled = std::move(settled)](
-                               bool ok, const std::string& error) mutable {
+                               bool ok, const std::string&) mutable {
             if (!ok && browser_ && (session.empty() || sessions_.contains(session))) {
               AssertionDeadlineReleaseFailed(owner);
               ScreenshotAssertionReleaseFailed(owner);

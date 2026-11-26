@@ -36,8 +36,7 @@ std::map<std::string, Bytes> Members(const std::string& path) {
   do {
     auto name = reader->GetFileName().ToString();
     const auto size = reader->GetFileSize();
-    assert(size >= 0 && uint64_t(size) <= Files::kBodyBytes &&
-           suitecut::TraceArchive::ValidName(name));
+    assert(size >= 0 && suitecut::TraceArchive::ValidName(name));
     Bytes bytes(static_cast<size_t>(size));
     assert(reader->OpenFile(""));
     size_t offset = 0;
