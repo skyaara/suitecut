@@ -246,6 +246,7 @@ int main(int argc, char** argv) {
         assert(result.preparation_frames > 0 && result.preparation_ms > 0);
         assert(result.encoder == "h264_videotoolbox" && result.container == "mp4");
         assert(DecodedFrames(argv[1], o.output_path) == result.output_frames);
+        if (!result.diagnostics.empty()) std::cerr << result.diagnostics << '\n';
         assert(result.diagnostics.empty());
       }
 #endif
