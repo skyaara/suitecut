@@ -198,7 +198,8 @@ jobs:
           cmake -S native/browser -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DPROJECT_ARCH=${{ matrix.arch }} \
             -DCEF_ROOT="$CEF_ROOT" -DLIBYUV_ROOT="$LIBYUV_ROOT" -DSUITECUT_BUILD_BROWSER_CHECKS=ON "${extra[@]}"
       - name: Build
-        run: cmake --build "$BUILD" --parallel 3
+        # -k 0 reports every compile error in one run, not just the first.
+        run: cmake --build "$BUILD" --parallel 3 -- -k 0
       - name: Engine checks
         run: |
           if [ "$RUNNER_OS" = Linux ]; then

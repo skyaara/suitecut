@@ -8,6 +8,7 @@
 #include <array>
 #include <cctype>
 #include <limits>
+#include <utility>
 
 namespace suitecut {
 namespace {

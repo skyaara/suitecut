@@ -9,6 +9,7 @@
 #include <cassert>
 #include <iostream>
 #include <set>
+#include <utility>
 
 struct Harness {
   using Dict = CefRefPtr<CefDictionaryValue>;

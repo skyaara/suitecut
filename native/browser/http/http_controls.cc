@@ -19,6 +19,7 @@
 #include "http/http_transport_error_cef.h"
 #include "http/http_retry_policy.h"
 #include <set>
+#include <utility>
 #include <openssl/rand.h>
 #include "http/http_multipart.h"
 
