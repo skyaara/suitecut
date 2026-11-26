@@ -449,7 +449,7 @@ void RunScreenshotComparisonControlTests() {
     test.Start(test.Config(red));
     test.Capture(red);
     assert(test.replies.size() == 1 && !test.replies[0].ok &&
-           test.replies[0].error.find("background capacity") != std::string::npos);
+           test.replies[0].error.find("background executor did not accept") != std::string::npos);
     test.Empty();
   }
   {
