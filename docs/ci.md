@@ -20,7 +20,7 @@ Runners are GitHub's `ubuntu-24.04` (x64) and `macos-26` (arm64).
   the control CLI fuzzer (gate 3). Linux uses the system OpenSSL; macOS uses
   Homebrew's.
 - **CEF engine** with `SUITECUT_BUILD_BROWSER_CHECKS=ON` and its CTest checks
-  (gate 4). Linux uses the official `linux64` SDK, system libraries and Xvfb;
+  (gate 4). Linux uses the official `linux64` SDK, Clang 18, system libraries and Xvfb;
   macOS uses the official `macosarm64Official` SDK and the static libraries from
   `scripts/build-embed-kit-deps-macos.py`, cached by their pin.
   `scripts/fetch-cef-sdk.py` downloads the SDK and checks it against
