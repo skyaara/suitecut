@@ -124,7 +124,7 @@ class NativeNetworkAuthentication {
     response->SetString("requestId", id);
     response->SetDictionary("authChallengeResponse", decision->Copy(false));
     send_(session, "Fetch.continueWithAuth", response,
-          [this, alive = alive_, key, generation](bool ok, const std::string& error) {
+          [this, alive = alive_, key, generation](bool ok, const std::string&) {
             if (!*alive) return;
             const auto found = pending_.find(key);
             if (found == pending_.end() || found->second.generation != generation) return;

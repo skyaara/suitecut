@@ -1392,6 +1392,16 @@ include(cmake/locator_handlers.cmake)
 
 # Keep ordinary SDK/engine builds focused on the browser. Existing component
 # controls remain available by explicit target or as an opt-in default build.
+# CEF's SET_*_TARGET_PROPERTIES macros add the SDK as an ordinary include, so
+# checks built with -Wextra -Werror would fail on the SDK's own headers. Mark
+# it as a system include on every target here, including ones added later.
+get_property(suitecut_all_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(suitecut_target IN LISTS suitecut_all_targets)
+  get_target_property(suitecut_target_type ${suitecut_target} TYPE)
+  if(NOT suitecut_target_type STREQUAL "INTERFACE_LIBRARY" AND NOT suitecut_target_type STREQUAL "UTILITY")
+    target_include_directories(${suitecut_target} SYSTEM PRIVATE "${CEF_ROOT}")
+  endif()
+endforeach()
 option(SUITECUT_BUILD_BROWSER_CHECKS "Include native browser checks in the default build" OFF)
 if(NOT SUITECUT_BUILD_BROWSER_CHECKS)
   get_property(suitecut_browser_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
