@@ -197,18 +197,17 @@ int main() {
   }
   {
     Harness h;
-    for (int id = 1; id <= 64; ++id) {
+    // No preparation cap: waits past the former 64 are admitted and retained
+    // until Chromium answers each one.
+    for (int id = 1; id <= 65; ++id) {
       h.Admit(id);
       h.FrameElementHandle(id, h.Message());
       h.Complete(id, false, "genuine cancellation");
     }
-    assert(h.controls.Size() == 64 && h.controls.PhysicalSize() == 64);
-    h.Admit(65);
-    h.FrameElementHandle(65, h.Message());
-    assert(h.completions.size() == 65 && h.completions.back().owner == 65 &&
-           !h.completions.back().ok && h.controls.Size() == 64);
-    for (int id = 1; id <= 64; ++id) h.Complete(id, false, "genuine cancellation");
-    for (int id = 1; id <= 64; ++id) h.Ack("DOM.getFrameOwner", "{\"backendNodeId\":271}");
+    assert(h.completions.size() == 65 && h.controls.Size() == 65 &&
+           h.controls.PhysicalSize() == 65);
+    for (int id = 1; id <= 65; ++id) h.Complete(id, false, "genuine cancellation");
+    for (int id = 1; id <= 65; ++id) h.Ack("DOM.getFrameOwner", "{\"backendNodeId\":271}");
     assert(h.handoffs.empty());
     h.Drain();
   }

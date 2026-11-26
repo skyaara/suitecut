@@ -101,7 +101,17 @@ class NetworkControls {
     request_extras_ = std::make_unique<NativeNetworkResponseExtras>(
         [this](const std::string& id, Dict headers) {
           auto request = FindLogical(id);
-          if (!request) return;
+          if (!request) {
+            // Chromium may report a failure before the request's wire headers.
+            // A request already released keeps answering header queries with
+            // those actual headers, as it would have before its release.
+            const auto released = released_.find(id);
+            if (released != released_.end()) {
+              released->second.info->SetDictionary("headers", headers->Copy(false));
+              released->second.request_headers_ready = true;
+            }
+            return;
+          }
           request->info->SetDictionary("headers", headers->Copy(false));
           request->request_headers_ready = true;
           RetainMetadata(*request);

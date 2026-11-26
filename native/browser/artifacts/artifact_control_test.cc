@@ -160,9 +160,10 @@ int main(int argc, char** argv) {
             assert(call.params->GetBool("awaitPromise"));
             if (viewport) {
               ++observations;
-              // Custom style/animation events run before child discovery. Every
-              // capture retains a final post-preparation rendered observation.
-              assert(paints_now);
+              // Every capture keeps a final post-preparation observation; it
+              // renders frames only for an author stylesheet or disabled
+              // animations, whose events and observers need a rendering step.
+              assert(paints_now == (mode == 2 || mode == 3));
             } else
               assert(!paints_now);
           }
@@ -172,7 +173,7 @@ int main(int argc, char** argv) {
       }
       assert(!test.calls.empty() && test.calls.front().method == "Page.captureScreenshot");
       assert(observations == (documents ? 2 : 1));
-      assert(paints == (documents ? 2 : 1));
+      assert(paints == (mode == 2 || mode == 3 ? observations : 0));
       assert(prepared == (documents ? 1 : 0));
       test.Drain();
       test.Empty();
@@ -363,10 +364,10 @@ int main(int argc, char** argv) {
     Fixture test;
     test.Begin(1, true);
     test.ToCapture();
-    for (int owner = 2; owner <= 64; ++owner) test.Begin(owner);
-    test.Begin(65);
-    assert(test.replies.size() == 1 && !test.replies.front().ok);
-    for (int owner = 2; owner <= 64; ++owner) test.Cancel(owner);
+    // No job cap: owners past the former 64 are admitted and wait their turn.
+    for (int owner = 2; owner <= 65; ++owner) test.Begin(owner);
+    assert(test.replies.empty() && test.controller->Size() == 65);
+    for (int owner = 2; owner <= 65; ++owner) test.Cancel(owner);
     assert(test.controller->Size() == 1);
     test.Drain();
     test.Empty();
@@ -386,11 +387,13 @@ int main(int argc, char** argv) {
     assert(geometry && test.calls.empty());
     test.Cancel(1);
     test.Begin(1);
-    assert(test.calls.size() == 1);
+    // The new job sends its independent first steps together.
+    const auto dispatched = test.calls.size();
+    assert(dispatched >= 1);
     // A geometry callback may complete after cancellation and protocol-ID reuse.
     // It must not dispatch layout/capture commands for the newly admitted job.
     geometry(true, "");
-    assert(test.calls.size() == 1);
+    assert(test.calls.size() == dispatched);
     assert(test.replies.empty());
     test.Drain("fresh");
     assert(test.replies.size() == 1 && test.replies.front().ok);

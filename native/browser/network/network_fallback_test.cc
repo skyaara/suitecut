@@ -185,15 +185,8 @@ int main() {
     auto large = f.Resolve("fallback");
     const std::string body(900000, 'x');
     large->SetString("postData", CefBase64Encode(body.data(), body.size()));
-    bool rejected = false;
-    f.controller.Command(2, large, [&](bool ok, const std::string& error, const std::string&) {
-      rejected = !ok && error.find("remains owned") != std::string::npos;
-    });
-    assert(rejected);
-    auto diagnostics = CefDictionaryValue::Create();
-    f.controller.Diagnostics(diagnostics);
-    assert(diagnostics->GetInt("networkRoutes") == 1 && diagnostics->GetInt("networkPaused") == 1);
-    f.Command(f.Resolve("fallback"));
+    // No host message cap: a large fallback body goes on to the next route.
+    f.Command(large);
     assert(f.LastRoute()->GetDictionary("route")->GetString("registrationId") == "first");
     assert(f.errors.empty());
   }

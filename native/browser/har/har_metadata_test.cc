@@ -49,6 +49,12 @@ void PostMetadata(const char* type, const char* text, const char* coding, bool b
   assert(body);
   body(body_ok, body_ok ? Capture::Bytes{'O', 'K'} : Capture::Bytes{},
        body_ok ? "" : "Actual body read failure");
+  if (!ready) {
+    // Unready headers hold the entry for their receipt until its deadline.
+    assert(!capture.Export(1));
+    now += 30001;
+    capture.Tick(now);
+  }
   auto entry =
       capture.Export(1)->GetDictionary("log")->GetList("entries")->GetDictionary(0)->Copy(false);
   auto post = entry->GetDictionary("request")->GetDictionary("postData");

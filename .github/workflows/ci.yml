@@ -203,6 +203,10 @@ jobs:
       - name: Engine checks
         run: |
           if [ "$RUNNER_OS" = Linux ]; then
+            # Chromium's setuid sandbox helper must be root-owned and setuid;
+            # Ubuntu 24.04's AppArmor policy leaves no other sandbox.
+            sudo chown root:root "$BUILD/chrome-sandbox"
+            sudo chmod 4755 "$BUILD/chrome-sandbox"
             xvfb-run -a -s "-screen 0 1920x1080x24" ctest --test-dir "$BUILD" -j2 --output-on-failure
           else
             ctest --test-dir "$BUILD" -j2 --output-on-failure
