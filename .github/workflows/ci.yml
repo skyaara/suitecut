@@ -35,6 +35,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      # Lint and typecheck read Astro's generated types (site/.astro, ignored).
+      - run: pnpm site:sync
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
