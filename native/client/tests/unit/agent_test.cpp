@@ -99,8 +99,10 @@ int engine() {
         ok = false;
         error = "Fixture rejected action after dispatch";
       }
+      // Long enough that one SLOW press fits the 350 ms budget below with
+      // room for sanitizer and shared-runner overhead, and two never do.
       if (request.contains("key") && request.at("key").as_string() == "SLOW")
-        std::this_thread::sleep_for(80ms);
+        std::this_thread::sleep_for(200ms);
       if (command == "form" && request.at("action").as_string() == "selectOption")
         result = request.at("options");
     }
@@ -332,7 +334,7 @@ int main(int argc, char** argv) {
               unavailable.json().dump().find("read-error-secret") == std::string::npos,
           "Readback exceptions remain unverified and redact engine diagnostics");
     auto budget = no_observe;
-    budget.max_duration = 130ms;
+    budget.max_duration = 350ms;
     const auto before_budget = mutations(page);
     auto exhausted = suitecut::Agent::run(page,
                                           Json::array{Json{{"action", "press"}, {"key", "SLOW"}},
