@@ -794,6 +794,24 @@ uint32_t SuiteCutContextControls::AllowedPermissions(int page_id, const std::str
   return (exact == context->second.permissions.end() ? 0 : exact->second) |
          (all == context->second.permissions.end() ? 0 : all->second);
 }
+std::vector<std::string> SuiteCutContextControls::PermissionOrigins(int page_id,
+                                                                  const std::string& name) const {
+  std::vector<std::string> origins;
+  const auto page = pages_.find(page_id);
+  if (stopping_ || page == pages_.end() || page->second.closing) return origins;
+  const auto context = contexts_.find(page->second.context);
+  if (context == contexts_.end() || context->second.closing) return origins;
+  for (const auto& [origin, names] : context->second.content_permissions)
+    if (names.contains(name)) origins.push_back(origin);
+  return origins;
+}
+void SuiteCutContextControls::PermissionsChanged(int context_id) {
+  if (!hooks_.permissions_changed) return;
+  std::vector<int> pages;
+  for (const auto& [page_id, page] : pages_)
+    if (page.context == context_id && !page.closing) pages.push_back(page_id);
+  for (const int page : pages) hooks_.permissions_changed(page);
+}
 uint32_t SuiteCutContextControls::AllowedMediaPermissions(int page_id,
                                                           const std::string& origin) const {
   const auto page = pages_.find(page_id);
@@ -1273,6 +1291,9 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
       ApplySettings(context, origin);
     else
       for (const auto& seen : context.origins) ApplySettings(context, seen);
+    // Pages queue their fallback update on the same DevTools sessions before
+    // the caller's next command can reach them.
+    PermissionsChanged(id);
     reply(true, nullptr, "");
     return true;
   }
@@ -1295,6 +1316,9 @@ bool SuiteCutContextControls::Handle(const std::string& action, Dict params, Rep
     context.permissions.clear();
     context.media_permissions.clear();
     context.clipboard_write_origins.clear();
+    // Pages queue their fallback update on the same DevTools sessions before
+    // the caller's next command can reach them.
+    PermissionsChanged(id);
     reply(true, nullptr, "");
     return true;
   }

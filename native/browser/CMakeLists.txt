@@ -270,7 +270,7 @@ if(APPLE)
   target_include_directories(libcef_lib SYSTEM INTERFACE "${CEF_ROOT}")
   target_compile_definitions(libcef_lib INTERFACE
     SUITECUT_TEST_CEF_LIBRARY="${CEF_ROOT}/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework")
-  add_executable(suitecut-browser MACOSX_BUNDLE artifacts/screenshot_compare.cc artifacts/screenshot_artifact_files.cc artifacts/screenshot_inputs.cc artifacts/screenshot_pixels.cc artifacts/screenshot_png_codec.cc har/har_files.cc har/har_recording.cc har/har_replay_files.cc coverage/coverage_controls.cc coverage/coverage_retention.cc coverage/coverage_targets.cc lifecycle/virtual_time.cc trace/trace_archive.cc trace/trace_journal.cc trace/trace_controls.cc trace/trace_preview.cc trace/trace_sources.cc trace/trace_dom_tree.cc context/context_workers.cc credentials/credential_controls.cc credentials/credential_crypto.cc context/context_controls.cc http/cookie_controls.cc app/utility_browser.cc storage/storage_controls.cc http/http_controls.cc http/api_cookie_jar.cc artifacts/download_controls.cc media/media_pipeline.cc media/recording_controls.cc media/context_video.cc media/stream_pipeline.cc media/streaming_controls.cc http/curl_transport.cc app/main_mac.mm)
+  add_executable(suitecut-browser MACOSX_BUNDLE artifacts/screenshot_compare.cc artifacts/screenshot_artifact_files.cc artifacts/screenshot_inputs.cc artifacts/screenshot_pixels.cc artifacts/screenshot_png_codec.cc har/har_files.cc har/har_recording.cc har/har_replay_files.cc coverage/coverage_controls.cc coverage/coverage_retention.cc coverage/coverage_targets.cc lifecycle/virtual_time.cc trace/trace_archive.cc trace/trace_journal.cc trace/trace_controls.cc trace/trace_preview.cc trace/trace_sources.cc trace/trace_dom_tree.cc context/context_workers.cc credentials/credential_controls.cc credentials/credential_crypto.cc context/context_controls.cc context/context_geolocation_fallback.cc http/cookie_controls.cc app/utility_browser.cc storage/storage_controls.cc http/http_controls.cc http/api_cookie_jar.cc artifacts/download_controls.cc media/media_pipeline.cc media/recording_controls.cc media/context_video.cc media/stream_pipeline.cc media/streaming_controls.cc http/curl_transport.cc app/main_mac.mm)
   add_library(suitecut-mac-capture STATIC media/mac_capture.mm media/mac_encoder.mm media/surface_output.mm)
   target_link_libraries(suitecut-mac-capture PUBLIC "-framework Foundation" "-framework IOSurface" "-framework Metal" "-framework CoreVideo" "-framework CoreMedia" "-framework VideoToolbox")
   target_link_libraries(suitecut-browser suitecut-mac-capture)
@@ -329,7 +329,7 @@ else()
   find_library(SUITECUT_X11_LIBRARY NAMES X11 libX11.so.6 REQUIRED)
   list(REMOVE_ITEM CEF_STANDARD_LIBS X11)
   list(APPEND CEF_STANDARD_LIBS "${SUITECUT_X11_LIBRARY}")
-  add_executable(suitecut-browser artifacts/screenshot_compare.cc artifacts/screenshot_artifact_files.cc artifacts/screenshot_inputs.cc artifacts/screenshot_pixels.cc artifacts/screenshot_png_codec.cc har/har_files.cc har/har_recording.cc har/har_replay_files.cc coverage/coverage_controls.cc coverage/coverage_retention.cc coverage/coverage_targets.cc lifecycle/virtual_time.cc trace/trace_archive.cc trace/trace_journal.cc trace/trace_controls.cc trace/trace_preview.cc trace/trace_sources.cc trace/trace_dom_tree.cc context/context_workers.cc credentials/credential_controls.cc credentials/credential_crypto.cc context/context_controls.cc http/cookie_controls.cc app/utility_browser.cc storage/storage_controls.cc http/http_controls.cc http/api_cookie_jar.cc artifacts/download_controls.cc media/media_pipeline.cc media/recording_controls.cc media/context_video.cc media/stream_pipeline.cc media/streaming_controls.cc http/curl_transport.cc app/main_linux.cc)
+  add_executable(suitecut-browser artifacts/screenshot_compare.cc artifacts/screenshot_artifact_files.cc artifacts/screenshot_inputs.cc artifacts/screenshot_pixels.cc artifacts/screenshot_png_codec.cc har/har_files.cc har/har_recording.cc har/har_replay_files.cc coverage/coverage_controls.cc coverage/coverage_retention.cc coverage/coverage_targets.cc lifecycle/virtual_time.cc trace/trace_archive.cc trace/trace_journal.cc trace/trace_controls.cc trace/trace_preview.cc trace/trace_sources.cc trace/trace_dom_tree.cc context/context_workers.cc credentials/credential_controls.cc credentials/credential_crypto.cc context/context_controls.cc context/context_geolocation_fallback.cc http/cookie_controls.cc app/utility_browser.cc storage/storage_controls.cc http/http_controls.cc http/api_cookie_jar.cc artifacts/download_controls.cc media/media_pipeline.cc media/recording_controls.cc media/context_video.cc media/stream_pipeline.cc media/streaming_controls.cc http/curl_transport.cc app/main_linux.cc)
   SET_EXECUTABLE_TARGET_PROPERTIES(suitecut-browser)
   ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
   foreach(credential_check IN ITEMS page controls snapshot_owner)
@@ -630,6 +630,9 @@ if(APPLE)
   set_source_files_properties(app/window_frames_mac.mm media/audio_monitor_mac.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
   target_link_libraries(suitecut-window-frames PUBLIC "-framework AppKit" "-framework QuartzCore" "-framework IOSurface" "-framework ImageIO" "-framework AudioToolbox")
   target_link_libraries(suitecut-browser suitecut-window-frames)
+  # CoreLocation answers whether macOS denies location (geolocation fallback).
+  target_sources(suitecut-browser PRIVATE context/system_location_mac.mm)
+  target_link_libraries(suitecut-browser "-framework CoreLocation")
   target_link_libraries(suitecut-media-pipeline-test PRIVATE suitecut-media-activity suitecut-mac-capture)
   target_link_libraries(suitecut-recording-controls-test PRIVATE suitecut-media-activity suitecut-mac-capture)
 endif()
@@ -772,6 +775,18 @@ add_executable(suitecut-context-geolocation-test context/context_geolocation_tes
 target_compile_features(suitecut-context-geolocation-test PRIVATE cxx_std_20)
 target_compile_options(suitecut-context-geolocation-test PRIVATE -UNDEBUG -Wall -Wextra -Werror)
 add_test(NAME native-context-geolocation COMMAND suitecut-context-geolocation-test)
+
+# The macOS geolocation fallback activates only for a granted, emulated position under system denial.
+add_executable(suitecut-context-geolocation-fallback-test context/context_geolocation_fallback_test.cc context/context_geolocation_fallback.cc)
+target_compile_features(suitecut-context-geolocation-fallback-test PRIVATE cxx_std_20)
+target_compile_options(suitecut-context-geolocation-fallback-test PRIVATE -UNDEBUG -Wall -Wextra -Werror)
+add_test(NAME native-context-geolocation-fallback COMMAND suitecut-context-geolocation-fallback-test)
+find_program(SUITECUT_TEST_NODE node)
+if(SUITECUT_TEST_NODE)
+  add_test(NAME native-context-geolocation-fallback-script
+    COMMAND "${SUITECUT_TEST_NODE}" "${CMAKE_CURRENT_SOURCE_DIR}/context/context_geolocation_fallback_script_test.mjs"
+            "${CMAKE_CURRENT_SOURCE_DIR}/context/context_geolocation_fallback.cc")
+endif()
 
 # Distinct native WebDriver key grammar; ordinary type/press stay independent.
 add_executable(suitecut-send-keys-sequence-test input/send_keys_sequence_test.cc)

@@ -180,15 +180,6 @@ jobs:
             --require-macos 14.0 --output "$W/out/static" $NOTARIZE
           python3 scripts/package-native-runtime-macos.py --sdk "$W/sdk-shared" --kind shared \
             --require-macos 14.0 --output "$W/out/shared" $NOTARIZE
-      # Chromium on macOS denies geolocation, even when granted, while the
-      # system's Location Services is off, as it is on hosted runners.
-      - name: Turn on Location Services for the geolocation check
-        run: |
-          f=/var/db/locationd/Library/Preferences/ByHost/com.apple.locationd
-          if [ "$(sudo defaults read "$f" LocationServicesEnabled 2>/dev/null)" != 1 ]; then
-            sudo defaults write "$f" LocationServicesEnabled -bool true
-            sudo launchctl kickstart -k system/com.apple.locationd
-          fi
       - name: Verify the runtime from a relocated extraction
         run: |
           python3 scripts/verify-native-runtime-macos.py \

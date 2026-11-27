@@ -70,6 +70,8 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
     std::function<void(int, int)> cancel_credentials;
     std::function<bool(int, std::shared_ptr<const suitecut::CredentialPage::Config>)>
         adopt_credentials;
+    // A page's context grants changed (grantPermissions or clearPermissions).
+    std::function<void(int)> permissions_changed;
     // Optional engine-owned publication metadata, populated before PageCreated.
     std::function<Dict(int)> page_metadata;
   };
@@ -139,6 +141,8 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   std::string RequestPolicyError(int context_id) const;
   uint32_t AllowedPermissions(int page_id, const std::string& origin) const;
   uint32_t AllowedMediaPermissions(int page_id, const std::string& origin) const;
+  // Origins (or "*") whose grant names this permission in the page's context.
+  std::vector<std::string> PermissionOrigins(int page_id, const std::string& name) const;
   bool AcceptedWorkReady() const { return !AcceptedWorkBlocker(); }
   // The first condition keeping context work from being ready, for diagnostics.
   // A viewer handover also passes snapshots that earlier documents still hold.
@@ -257,6 +261,7 @@ class SuiteCutContextControls : public std::enable_shared_from_this<SuiteCutCont
   uint64_t next_script_ack_ = 0;
   bool script_deadline_timer_ = false;
   void ApplySettings(Context& context, const std::string& origin);
+  void PermissionsChanged(int context_id);
   struct Page {
     suitecut::PageBeforeUnload before_unload;
     bool download_close_started = false;

@@ -385,6 +385,13 @@ capabilities and runtime proof remain specific to each backend.
 | Other emulation | `emulate_geolocation`, `clear_geolocation`, `emulate_timezone`, `emulate_user_agent` | Actual browser engine overrides; unsupported extra fields fail explicitly |
 | HAR | `start_har`, `stop_har`, `export_har` / agent `network` | HAR 1.2 output; `start_har({{"content","embed"}})` captures bodies, while `"omit"` excludes response body text and retains available POST data |
 
+On macOS, Chromium refuses geolocation while the OS denies location to the
+browser or Location Services is off, even for a granted origin. In that state
+only, a granted context with `emulate_geolocation` gets a JavaScript fallback
+in its pages: `navigator.geolocation` and `permissions.query` answer from the
+emulated position. Otherwise geolocation is the browser's own (see
+`native/browser/AUDIT.md`).
+
 Download directory policy applies to a browser context; individual records and
 ID-based operations remain scoped to the owning page. Local paths and save
 destinations must be absolute. Firefox checks completed sources against the

@@ -383,6 +383,11 @@ Engine::Engine(Writer& writer, int width, int height, double scale, bool i420, i
            source->second->credentials_ &&
            source->second->credentials_->AdoptObserved(std::move(config));
   };
+  hooks.permissions_changed = [this](int page) {
+    const auto source = sources_.find(page);
+    if (source != sources_.end() && !source->second->closing_page_)
+      source->second->GeolocationFallbackRefresh();
+  };
   contexts_ = std::make_shared<SuiteCutContextControls>(std::move(hooks));
   SuiteCutContextWorkers::Hooks worker_hooks;
   worker_hooks.websocket_required = [this, alive = alive_](int context) {

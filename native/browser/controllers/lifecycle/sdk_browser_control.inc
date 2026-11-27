@@ -271,10 +271,27 @@ bool SDKBrowserControl(int id, uint64_t generation, Dict message, const std::str
     Complete(id, false, "Unsupported native SDK emulation action");
     return true;
   }
+  const bool geolocation = action == "geolocation" || action == "clearGeolocation";
+  std::optional<suitecut::NativeGeolocationFallbackCoordinates> coordinates;
+  if (action == "geolocation")
+    coordinates = suitecut::NativeGeolocationFallbackCoordinates{
+        params->GetDouble("latitude"), params->GetDouble("longitude"),
+        params->GetDouble("accuracy")};
   DevTools(id, method, params,
-           [self = CefRefPtr<Source>(this), id, generation](bool ok, const std::string&) {
+           [self = CefRefPtr<Source>(this), id, generation, geolocation, coordinates](
+               bool ok, const std::string&) {
              if (!self->operations_.IsCurrent(id, generation)) return;
-             self->Complete(id, ok, ok ? "" : "Native emulation command failed", ok ? "{}" : "");
+             if (!ok || !geolocation) {
+               self->Complete(id, ok, ok ? "" : "Native emulation command failed", ok ? "{}" : "");
+               return;
+             }
+             // On macOS with location denied, the JavaScript fallback follows.
+             self->geolocation_emulated_ = coordinates;
+             self->GeolocationFallbackSyncAll(
+                 [self, id, generation](bool installed, const std::string& error) {
+                   if (!self->operations_.IsCurrent(id, generation)) return;
+                   self->Complete(id, installed, installed ? "" : error, installed ? "{}" : "");
+                 });
            });
   return true;
 }

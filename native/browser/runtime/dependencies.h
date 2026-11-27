@@ -88,6 +88,7 @@
 #include "lifecycle/idle_controls.h"
 #include "context/context_authentication_clear.h"
 #include "context/context_geolocation.h"
+#include "context/context_geolocation_fallback.h"
 #include "context/context_auth_policy.h"
 #include "network/network_fatal_teardown.h"
 #include "work/dictionary_number.h"

@@ -2396,6 +2396,37 @@ The application owns fallback/restart policy. GPU texture sharing and native
 hardware-encoder integration are not implemented. Keep all CEF/Chromium and
 libyuv notices in binary distributions.
 
+## macOS geolocation fallback when the OS denies location
+
+Chromium 156 on macOS (`GeolocationPermissionContextSystem`) turns a granted
+geolocation content setting into BLOCK while macOS denies location to
+suitecut-browser or Location Services is off, so `grantPermissions` plus
+`emulate_geolocation` would report "User denied Geolocation". Chrome automation
+avoids this with DevTools permission overrides, but `Browser.setPermission`
+cannot find a CEF request context's profile ("Failed to find browser context
+for id"; CEF contexts are unique off-the-record profiles that
+`DevToolsBrowserContextManager` doesn't know).
+
+So, only in that state (a geolocation grant in the context, an emulated
+position, and CoreLocation reporting denied or restricted), each page session
+adds a JavaScript fallback with `Page.addScriptToEvaluateOnNewDocument`
+(`runImmediately`), in every frame of the page and its out-of-process frames,
+before page scripts. It answers `navigator.geolocation.getCurrentPosition`,
+`watchPosition` and `clearWatch`. The answers are `GeolocationPosition`s with
+`maximumAge`/`timeout` handling, and watchers see position updates. Clearing
+the emulation reports POSITION_UNAVAILABLE to watchers; revoking the grant
+reports PERMISSION_DENIED. `navigator.permissions.query({name:"geolocation"})`
+reports `granted` for granted top-level origins. Patched members keep their
+attributes and a native `toString`. Ungranted origins, invalid calls and every
+state without the fallback reach the native implementation. Clearing the
+emulation or the grant removes the script. When macOS allows location, or its
+answer is not yet determined (the engine answers that prompt from the grant),
+nothing is installed and the native path is unchanged. Workers have no
+`navigator.geolocation`; their `permissions.query` stays native. The decision
+and installer are `context/context_geolocation_fallback.{h,cc}`, and
+`SUITECUT_GEOLOCATION_SYSTEM_STATUS=denied` stands in for the OS answer in
+tests.
+
 ## Reproducible CEF-only sanitizer control
 
 On Linux, build `suitecut-cef-control` with `-DSUITECUT_CEF_CONTROL=ON` in both

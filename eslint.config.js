@@ -16,6 +16,8 @@ export default tseslint.config(
       'site/.astro/**',
       'site/dist/**',
       'eslint.config.js',
+      // Engine check run by ctest against stand-in browser prototypes.
+      'native/browser/context/context_geolocation_fallback_script_test.mjs',
     ],
   },
   eslint.configs.recommended,

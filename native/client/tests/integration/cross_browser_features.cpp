@@ -517,6 +517,18 @@ int main(int argc, char** argv) {
                 std::abs(position.at("longitude").as_double() + 122.4194) < 1e-6 &&
                 std::abs(position.at("accuracy").as_double() - 7) < 1e-6,
             "geolocation callback returns actual native emulated coordinates", checks);
+      geo.evaluate(
+          "window.__suitecutWatched=[];window.__suitecutWatch=navigator.geolocation.watchPosition("
+          "p=>__suitecutWatched.push(p.coords.latitude));0");
+      geo.emulate_geolocation(40.5, -74.25, 3);
+      const auto watched = geo.evaluate(
+          "new Promise(resolve=>{const until=Date.now()+5000;const poll=()=>{if("
+          "__suitecutWatched.includes(40.5)||Date.now()>until){navigator.geolocation.clearWatch("
+          "__suitecutWatch);resolve(__suitecutWatched);}else setTimeout(poll,50);};poll();})");
+      bool updated = false;
+      for (const auto& latitude : watched.as_array())
+        updated = updated || (latitude.is_number() && latitude.as_double() == 40.5);
+      check(updated, "watchPosition receives the updated emulated position", checks);
       geo.clear_geolocation();
       context.close();
       return position;
