@@ -253,6 +253,9 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install build dependencies
         run: |
+          # Nothing here comes from the runner image's Microsoft repository, which
+          # has failed apt-get update with 403s.
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ninja-build libssl-dev zlib1g-dev
       - name: Build, test, install and archive the clients

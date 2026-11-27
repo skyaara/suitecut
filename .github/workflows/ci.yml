@@ -61,6 +61,9 @@ jobs:
       - name: Install build dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
+          # Nothing here comes from the runner image's Microsoft repository, which
+          # has failed apt-get update with 403s.
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ninja-build libssl-dev zlib1g-dev
       - name: Install build dependencies (macOS)
@@ -140,6 +143,9 @@ jobs:
       - name: Install build and runtime dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
+          # Nothing here comes from the runner image's Microsoft repository, which
+          # has failed apt-get update with 403s.
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ninja-build xvfb xauth \
             libcurl4-openssl-dev libpsl-dev libbrotli-dev libssl-dev zlib1g-dev libx11-dev \
