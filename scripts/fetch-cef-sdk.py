@@ -19,6 +19,8 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parent.parent
 PINS = json.loads((ROOT / 'native/browser/cef-build.json').read_text())
+# The same marker package-embed-kit-macos.py fetch-cef writes; the macOS
+# packagers read its `cef` (official or codecs) and `sha256`.
 MARKER = '.suitecut-cef-pin.json'
 
 
@@ -26,7 +28,8 @@ def pin(name):
     if name == 'linux64':
         return {key: PINS[key] for key in ('url', 'sha256', 'size')}
     if name in ('macosarm64', 'macosarm64Official'):
-        return {key: PINS[name][key] for key in ('url', 'sha256', 'size')}
+        kind = 'official' if name == 'macosarm64Official' else 'codecs'
+        return {'cef': kind, **PINS[name]}
     raise ValueError(f'Unknown pin {name}')
 
 
@@ -46,9 +49,16 @@ def main():
     wanted = {'pin': args.pin, 'cefVersion': PINS['cefVersion'], **pin(args.pin)}
     dest = args.dest.resolve()
     marker = dest / MARKER
-    if marker.exists() and json.loads(marker.read_text()) == wanted:
-        print(f'{dest} already holds {args.pin}')
-        return
+    if marker.exists():
+        held = json.loads(marker.read_text())
+        if held == wanted:
+            print(f'{dest} already holds {args.pin}')
+            return
+        if (held.get('sha256'), held.get('size')) == (wanted['sha256'], wanted['size']):
+            # The same archive under an older marker format.
+            marker.write_text(json.dumps(wanted, indent=2) + '\n')
+            print(f'{dest} already holds {args.pin}; marker updated')
+            return
     if dest.exists():
         raise SystemExit(f'{dest} exists and holds another SDK; remove it first')
     work = dest.with_name(dest.name + '.download')
