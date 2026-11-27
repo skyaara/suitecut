@@ -1,6 +1,7 @@
 # Deploys the website to the Cloudflare Pages project `suitecut` when the site
 # changes on main. Needs the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
-# secrets (see docs/ci.md); without them the deploy is skipped.
+# secrets (see docs/ci.md); without them, or from any other branch, the site is
+# only built.
 name: Site
 
 on:
@@ -31,6 +32,7 @@ jobs:
       url: https://suitecut.aakashreddy.com
     env:
       HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+      ON_MAIN: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -42,10 +44,15 @@ jobs:
       - run: pnpm site:check
       - run: pnpm site:build
       - name: Skip without Cloudflare credentials
-        if: env.HAS_TOKEN != 'true'
-        run: echo "::warning::CLOUDFLARE_API_TOKEN is not set; the site was built but not deployed"
+        if: env.HAS_TOKEN != 'true' || env.ON_MAIN != 'true'
+        run: |
+          if [ "$ON_MAIN" != true ]; then
+            echo "::notice::Only main deploys; the site was built but not deployed"
+          else
+            echo "::warning::CLOUDFLARE_API_TOKEN is not set; the site was built but not deployed"
+          fi
       - name: Deploy to Cloudflare Pages
-        if: env.HAS_TOKEN == 'true'
+        if: env.HAS_TOKEN == 'true' && env.ON_MAIN == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

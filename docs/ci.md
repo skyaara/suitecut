@@ -48,7 +48,12 @@ more time and steadier timing than hosted runners give.
 Running the workflow by hand (Actions > Release > Run workflow) builds the same
 archives as workflow artifacts, kept for 30 days, without creating a release.
 Without the signing certificate a hand run signs ad hoc, which is fine for
-testing but not for publishing; a tag push without it fails.
+testing but not for publishing; a tag push without it fails. GitHub only offers
+Run workflow for a workflow file that is on the default branch (`main`); until
+it is there, a dry run needs a temporary push trigger on a throwaway branch.
+
+The site workflow deploys only from `main`. A run from any other branch builds
+the site and stops there.
 
 ## Secrets
 

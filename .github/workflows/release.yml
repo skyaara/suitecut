@@ -2,7 +2,8 @@
 #
 # Pushing a native-v* tag builds every archive and attaches them to a *draft*
 # pre-release; a maintainer reviews it and publishes it by hand. Running the
-# workflow by hand builds the same archives as workflow artifacts only.
+# workflow by hand (or from any branch) builds the same archives as workflow
+# artifacts only; only a tag signs for publication and drafts a release.
 #
 # Secrets (Settings > Secrets and variables > Actions), described in
 # docs/ci.md:
@@ -62,7 +63,7 @@ jobs:
       MEDIA: ${{ github.workspace }}/.suitecut/release/runtime-ffmpeg
       HAS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
       HAS_NOTARY_KEY: ${{ secrets.APPLE_API_KEY_P8 != '' }}
-      WANT_NOTARY: ${{ github.event_name == 'push' || inputs.notarize }}
+      WANT_NOTARY: ${{ github.ref_type == 'tag' || inputs.notarize == true }}
     steps:
       - uses: actions/checkout@v5
       - name: Install build tools
@@ -77,7 +78,7 @@ jobs:
           API_ISSUER: ${{ secrets.APPLE_API_ISSUER_ID }}
         run: |
           if [ "$HAS_CERTIFICATE" != true ]; then
-            if [ "$GITHUB_EVENT_NAME" = push ]; then
+            if [ "$GITHUB_REF_TYPE" = tag ]; then
               echo "::error::A tagged release needs the MACOS_CERTIFICATE_P12 secret"; exit 1
             fi
             echo "::warning::No signing certificate: the archives are ad-hoc signed and cannot be published"
@@ -288,7 +289,7 @@ jobs:
 
   draft:
     name: Draft the GitHub release
-    if: github.event_name == 'push'
+    if: github.ref_type == 'tag'
     needs: [version, macos, linux]
     runs-on: ubuntu-24.04
     permissions:
