@@ -43,14 +43,6 @@ ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / 'native/client/examples/embed-macos/reference/snapshot.png'
 CSS_WIDTH, CSS_HEIGHT = 1024, 684  # the sample's 1024x720 window less its bar
 CLICK = (200, 75)
-
-
-def display_scale():
-    """The main screen's backing scale: 2 on a Retina Mac, 1 on CI's virtual display."""
-    out = subprocess.run(['/usr/bin/osascript', '-l', 'JavaScript', '-e',
-                          'ObjC.import("AppKit"); $.NSScreen.mainScreen.backingScaleFactor'],
-                         capture_output=True, text=True, check=True).stdout.strip()
-    return round(float(out))
 TYPED = 'hello embed'
 
 # Fixed layout, no animation and a transparent caret, so the frame is stable.
@@ -192,9 +184,8 @@ def main():
             check('signature verified' in result.stderr, 'the runtime meets the signing requirement')
         check(snapshot.is_file(), 'the sample wrote its snapshot')
         width, height = png_size(snapshot)
-        scale = display_scale()
-        check((width, height) == (CSS_WIDTH * scale, CSS_HEIGHT * scale),
-              f"the snapshot is the view at the display's scale {scale}", width=width, height=height)
+        check((width, height) == (CSS_WIDTH * 2, CSS_HEIGHT * 2), 'the snapshot is the view at scale 2',
+              width=width, height=height)
 
         # Clean shutdown: the socket is gone and nothing runs with this profile.
         deadline = time.monotonic() + 15

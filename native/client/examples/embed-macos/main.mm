@@ -428,6 +428,18 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
 }
 @end
 
+// A snapshot run is compared pixel for pixel with a fixed reference, so its
+// window keeps the requested size even on a screen too short for it (a CI
+// runner's virtual display); AppKit would otherwise shrink it to fit.
+@interface SampleWindow : NSWindow
+@property BOOL keepsRequestedFrame;
+@end
+@implementation SampleWindow
+- (NSRect)constrainFrameRect:(NSRect)frame toScreen:(NSScreen*)screen {
+  return self.keepsRequestedFrame ? frame : [super constrainFrameRect:frame toScreen:screen];
+}
+@end
+
 @interface SampleApp : NSObject <NSApplicationDelegate, NSTextFieldDelegate>
 @end
 
@@ -474,12 +486,14 @@ static void ime_text(sc_ime_composition* composition, NSString* text, const char
   edit_item.submenu = edit;
   NSApp.mainMenu = bar;
 
-  _window = [[NSWindow alloc]
+  SampleWindow* window = [[SampleWindow alloc]
       initWithContentRect:NSMakeRect(0, 0, 1024, 720)
                 styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                           NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable
                   backing:NSBackingStoreBuffered
                     defer:NO];
+  window.keepsRequestedFrame = !options.snapshot.empty();
+  _window = window;
   _window.title = @"SuiteCut embedding sample";
   _address = [NSTextField textFieldWithString:[NSString stringWithUTF8String:options.url.c_str()]];
   _address.target = self;
