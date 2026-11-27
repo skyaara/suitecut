@@ -263,7 +263,9 @@ int main(int argc, char** argv) {
     {
       auto silent = options;
       silent.arguments = {"--transport-test-mode=stderr-silent"};
-      silent.startup_timeout = 100ms;
+      // Time for a sanitized fake engine to start and write all 256 KiB
+      // before startup gives up, even on a shared virtual machine.
+      silent.startup_timeout = 2s;
       try {
         Transport::launch(silent);
         check(false, "Silent startup succeeded");
