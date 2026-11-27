@@ -389,8 +389,10 @@ On macOS, Chromium refuses geolocation while the OS denies location to the
 browser or Location Services is off, even for a granted origin. In that state
 only, a granted context with `emulate_geolocation` gets a JavaScript fallback
 in its pages: `navigator.geolocation` and `permissions.query` answer from the
-emulated position. Otherwise geolocation is the browser's own (see
-`native/browser/AUDIT.md`).
+emulated position. Otherwise geolocation is the browser's own. The fallback
+exists because DevTools permission overrides can't reach CEF request contexts
+([CEF #4379](https://github.com/chromiumembedded/cef/issues/4379)), and it
+should be removed once that is fixed (see `native/browser/AUDIT.md`).
 
 Download directory policy applies to a browser context; individual records and
 ID-based operations remain scoped to the owning page. Local paths and save

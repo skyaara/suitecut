@@ -5,11 +5,14 @@
 // Chromium on macOS (GeolocationPermissionContextSystem) turns a granted
 // geolocation content setting into BLOCK while the system denies location to
 // the app, or Location Services is off. DevTools permission overrides would
-// skip that check, but CEF 156 cannot address a CEF request context's profile
-// with Browser.setPermission. So in exactly that state (context grant, an
-// emulated position, system denial) the page gets a JavaScript fallback that
-// answers navigator.geolocation and permissions.query from the emulated
-// position. When the system allows location, the native path is untouched.
+// skip that check, but CEF cannot address a CEF request context's profile
+// with Browser.setPermission (CEF issue #4379, also in CEF 158:
+// https://github.com/chromiumembedded/cef/issues/4379). Once that is fixed,
+// replace this fallback with a per-context DevTools permission override and
+// remove it. Until then, in exactly that state (context grant, an emulated
+// position, system denial) the page gets a JavaScript fallback that answers
+// navigator.geolocation and permissions.query from the emulated position.
+// When the system allows location, the native path is untouched.
 #include <cmath>
 #include <cstdint>
 #include <cstdio>

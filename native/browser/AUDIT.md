@@ -2405,7 +2405,10 @@ suitecut-browser or Location Services is off, so `grantPermissions` plus
 avoids this with DevTools permission overrides, but `Browser.setPermission`
 cannot find a CEF request context's profile ("Failed to find browser context
 for id"; CEF contexts are unique off-the-record profiles that
-`DevToolsBrowserContextManager` doesn't know).
+`DevToolsBrowserContextManager` doesn't know). This is CEF issue
+[#4379](https://github.com/chromiumembedded/cef/issues/4379), reproduced in
+cefclient 158.0.6 with `--request-context-per-browser`, so a CEF upgrade alone
+does not help.
 
 So, only in that state (a geolocation grant in the context, an emulated
 position, and CoreLocation reporting denied or restricted), each page session
@@ -2425,7 +2428,9 @@ nothing is installed and the native path is unchanged. Workers have no
 `navigator.geolocation`; their `permissions.query` stays native. The decision
 and installer are `context/context_geolocation_fallback.{h,cc}`, and
 `SUITECUT_GEOLOCATION_SYSTEM_STATUS=denied` stands in for the OS answer in
-tests.
+tests. Once CEF #4379 is fixed and `Browser.setPermission` reaches a context's
+profile, a per-context permission override should replace the fallback and the
+fallback should be removed.
 
 ## Reproducible CEF-only sanitizer control
 
