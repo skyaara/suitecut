@@ -303,13 +303,16 @@ int main() {
     const auto raw = std::make_shared<Controls>(raw_hooks);
     int count = 0;
     bool result = false;
+    // The writer turns the deadline into real time for its fsync and commit;
+    // 30 s leaves room for a busy shared runner after the 24 MiB write.
+    const double deadline = now + 30000;
     auto call = [&](const char* action, const char* name = nullptr, const char* zip = nullptr) {
       auto params = CefDictionaryValue::Create();
       params->SetString("action", action);
       if (name) params->SetString("name", name);
       if (zip) params->SetString("path", (raw_directory / zip).string());
       const int id = ++owner;
-      raw->Handle(id, 1, params, 100, [&](bool ok, Dict, const std::string&) {
+      raw->Handle(id, 1, params, deadline, [&](bool ok, Dict, const std::string&) {
         ++count;
         result = ok;
       });
@@ -340,7 +343,8 @@ int main() {
     discard->SetString("action", "discardChunk");
     discard->SetDouble("session", scope.session);
     discard->SetDouble("chunk", scope.chunk);
-    raw->Handle(++owner, 1, discard, 100, [&](bool ok, Dict, const std::string&) { assert(ok); });
+    raw->Handle(++owner, 1, discard, deadline,
+                [&](bool ok, Dict, const std::string&) { assert(ok); });
     assert(!std::filesystem::exists(raw_directory / "journals/discarded.trace") &&
            !raw->PhysicalCount());
     call("startChunk", "../invalid");
