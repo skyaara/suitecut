@@ -5,10 +5,12 @@
 # workflow by hand (or from any branch) builds the same archives as workflow
 # artifacts only; only a tag signs for publication and drafts a release.
 #
-# Secrets (Settings > Secrets and variables > Actions), described in
-# docs/ci.md:
+# Secrets live in the `release` environment (Settings > Environments), described
+# in docs/ci.md:
 #   MACOS_CERTIFICATE_P12, MACOS_CERTIFICATE_PASSWORD  Developer ID Application
 #   APPLE_API_KEY_P8, APPLE_API_KEY_ID, APPLE_API_ISSUER_ID  notarization (optional)
+# Only the macOS job of a native-v* tag, or of a hand run from main, enters that
+# environment; every other run signs ad hoc without seeing the secrets.
 name: Release
 
 on:
@@ -54,6 +56,9 @@ jobs:
     needs: version
     runs-on: macos-26
     timeout-minutes: 300
+    # The environment allows only native-v* tags and main and waits for a
+    # reviewer; an empty name runs the job outside it, with no signing secrets.
+    environment: ${{ (github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && 'release' || '' }}
     env:
       V: ${{ needs.version.outputs.version }}
       W: ${{ github.workspace }}/.suitecut/release

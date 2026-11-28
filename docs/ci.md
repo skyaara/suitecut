@@ -47,8 +47,9 @@ more time and steadier timing than hosted runners give.
 
 Running the workflow by hand (Actions > Release > Run workflow) builds the same
 archives as workflow artifacts, kept for 30 days, without creating a release.
-Without the signing certificate a hand run signs ad hoc, which is fine for
-testing but not for publishing; a tag push without it fails. GitHub only offers
+A hand run from `main` enters the `release` environment and signs like a tag;
+a hand run from any other branch signs ad hoc, which is fine for testing but not
+for publishing. A tag push without the certificate fails. GitHub only offers
 Run workflow for a workflow file that is on the default branch (`main`); until
 it is there, a dry run needs a temporary push trigger on a throwaway branch.
 
@@ -57,7 +58,14 @@ the site and stops there.
 
 ## Secrets
 
-Add these under Settings > Secrets and variables > Actions.
+The Apple secrets go in the `release` environment (Settings > Environments >
+release > Environment secrets), not in the repository secrets. That environment
+accepts only `native-v*` tags and `main`, and waits for a required reviewer
+(`skyaara`) before the macOS job starts and can read them. Only the macOS job of
+a tag or of a hand run from `main` names it, so CI, branch runs and pull requests
+from forks never see the signing key. The Cloudflare secrets go in the
+`production` environment or the repository secrets; `site.yml` deploys only from
+`main` either way.
 
 | Secret                       | Used by       | Value                                                                                                  |
 | ---------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
